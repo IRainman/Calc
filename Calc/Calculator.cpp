@@ -55,7 +55,7 @@ uint_8 find(const string& inp, const string& st, const string& en) {
 	return c_err_ok;
 }
 
-inline void ReplaceConstant(string& p_input, string& p_output,
+inline void ProcessingFunction(string& p_input, string& p_output,
 							const string& p_start, const string& p_end)
 {
 	while(true)
@@ -88,7 +88,7 @@ bool Analize(wstring p_input, wstring& p_output, wstring& p_ErrorString)
 	l_input_str.assign(p_input.begin(), p_input.end());
 	l_output_str.empty();
 
-	ReplaceConstant(l_input_str, l_output_str, "sin(", "_1_2)");
+	ProcessingFunction(l_input_str, l_output_str, "sin(", ")");
 
 	p_output.empty();
 	p_output.assign(l_output_str.begin(), l_output_str.end());
