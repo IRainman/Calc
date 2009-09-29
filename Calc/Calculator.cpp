@@ -66,9 +66,11 @@ inline void ProcessingFunction(string& p_input, string& p_output,
 				return;
 			case c_err_end: // не хватает закр скобки
 				AddFunctionError(p_start, p_end);
+				p_output = "";
 				return;
 			case c_err_emp: // нет аргументов
 				AddFunctionError(p_start, p_end, true);
+				p_output = "";
 				return;
 			case c_err_ok:
 				count++;
