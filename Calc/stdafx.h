@@ -23,10 +23,7 @@
 #include <afxwin.h>         // основные и стандартные компоненты MFC
 #include <afxext.h>         // расширения MFC
 
-
 #include <afxdisp.h>        // классы автоматизации MFC
-
-
 
 #ifndef _AFX_NO_OLE_SUPPORT
 #include <afxdtctl.h>           // поддержка MFC для типовых элементов управления Internet Explorer 4
@@ -37,11 +34,9 @@
 
 #include <afxcontrolbars.h>     // поддержка MFC для лент и панелей управления
 
-
-
 using namespace std;
-#include "MyTypes.h"
 
+#include <string>
 
 #ifdef _UNICODE
 #if defined _M_IX86

@@ -156,8 +156,12 @@ HCURSOR CCalcDlg::OnQueryDragIcon()
 
 void CCalcDlg::OnEnChangeEditInput()
 {
-	static TCHAR l_input[1024];
-	GetDlgItemText(IDC_EDIT_INPUT, l_input, 1024);
-	SetDlgItemText(IDC_EDIT_MESSAGE, Analize() ? l_input : L"Успешно");
-	SetDlgItemText(IDC_EDIT_RESULT, l_input);
+	TCHAR l_input[c_string_size];
+	//wstring l_input;
+	wstring l_output;
+
+	SetDlgItemText(IDC_EDIT_MESSAGE,
+		(GetDlgItemText(IDC_EDIT_INPUT, l_input, c_string_size) &&
+		Analize(l_input, l_output)) ? l_input : L"Мессадж гы гы");
+	SetDlgItemText(IDC_EDIT_RESULT, l_output.c_str());
 }
