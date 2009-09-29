@@ -2,11 +2,6 @@ using namespace std;
 
 #include <string>
 
-const static int c_string_size = 4096;
+const static string::size_type c_string_size = 4096;
 
-bool Analize(wstring p_input, wstring& p_output);
-
-//void ReplaceConstant(wstring& p_input, wstring& p_output);
-
-int GetPriorityOnLineExpression(wchar_t a);
-
+bool Analize(wstring p_input, wstring& p_output, wstring& p_ErrorString);

@@ -157,11 +157,11 @@ HCURSOR CCalcDlg::OnQueryDragIcon()
 void CCalcDlg::OnEnChangeEditInput()
 {
 	TCHAR l_input[c_string_size];
-	//wstring l_input;
-	wstring l_output;
+	wstring l_output, l_ErrorString;
 
-	SetDlgItemText(IDC_EDIT_MESSAGE,
-		(GetDlgItemText(IDC_EDIT_INPUT, l_input, c_string_size) &&
-		Analize(l_input, l_output)) ? l_input : L"Ìוססאהז דû דû");
-	SetDlgItemText(IDC_EDIT_RESULT, l_output.c_str());
+	if(GetDlgItemText(IDC_EDIT_INPUT, l_input, c_string_size) && Analize(l_input, l_output, l_ErrorString))
+	{
+		SetDlgItemText(IDC_EDIT_MESSAGE, l_ErrorString.c_str());
+		SetDlgItemText(IDC_EDIT_RESULT, l_output.c_str());
+	}
 }
