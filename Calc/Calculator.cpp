@@ -55,26 +55,24 @@ uint_8 find(const string& inp, const string& st, const string& en) {
 	return c_err_ok;
 }
 
-inline uint ReplaceConstant(string& p_input, string& p_output,
+inline void ReplaceConstant(string& p_input, string& p_output,
 							const string& p_start, const string& p_end)
 {
-	count = 0;
 	while(true)
 	{
 		switch(find(p_input, p_start, p_end))
 		{
 			case c_err_nf: // не найдена
-				return count;
+				return;
 			case c_err_end: // не хватает закр скобки
 				AddFunctionError(p_start, p_end);
-				return 0;
+				return;
 			case c_err_emp: // нет аргументов
 				AddFunctionError(p_start, p_end, true);
-				return 0;
+				return;
 			case c_err_ok:
-				//p_input.erase(start, start + p_start.size());
 				count++;
-				p_input.erase(start, start + (p_start.size()-1) + (m_buf.size()) + (p_end.size()) - count/2);
+				p_input.erase(start, end + p_end.size() - start);
 				
 				p_input.insert(start, m_buf);//, end - start);
 				p_output = p_input;
