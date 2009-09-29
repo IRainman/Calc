@@ -8,8 +8,7 @@
 static string m_buf;
 static string::size_type start, end;
 static uint count;
-static string m_ErrorString;
-static wstring c_ErrorString;
+static wstring m_ErrorString;
 
 static const uint_8 c_err_end =	1;
 static const uint_8 c_err_nf =	2;
@@ -18,21 +17,29 @@ static const uint_8 c_err_ok =	0;
 
 void AddFunctionError(const string& p_function, const string& p_end, bool p_empty = false)
 {
-	char l_buf[100];
-	_itoa_s(start, l_buf, 100, 10);
-	m_ErrorString += (string)"Ошибка: У функции ";
+	char l_char_buf[100];
+	TCHAR l_wchar_buf[100];
+	_itoa_s(start, l_char_buf, 100, 10);
+	wstring l_function = L"", l_end = L"";
+	l_function.assign(p_function.begin(), p_function.end());
+	l_end.assign(p_end.begin(), p_end.end());
+	wsprintf(l_wchar_buf, L"%hs", l_char_buf);
+
+	m_ErrorString += (wstring)L"Ошибка: У функции ";
+
 	if(p_empty)
 	{
-		m_ErrorString += p_function + p_end +
-			(string)" отсутсвуют аргументы";
+		m_ErrorString += l_function + l_end +
+			(wstring)L", начало в " + l_wchar_buf +
+			(wstring)L" отсутсвуют аргументы";
 	}
 	else
 	{
-		m_ErrorString += p_function +
-			(string)", начало в " + (string)l_buf +
-			(string)" нехватает " +  p_end;
+		m_ErrorString += l_function +
+			(wstring)L", начало в " + l_wchar_buf +
+			(wstring)L" нехватает " +  l_end;
 	}
-	m_ErrorString += (string)"!\r\n";
+	m_ErrorString += (wstring)L"!\r\n";
 }
 
 uint_8 find(const string& inp, const string& st, const string& en) {
@@ -44,18 +51,14 @@ uint_8 find(const string& inp, const string& st, const string& en) {
 	if(end == string::npos)
 		return c_err_end;
 
-	if(start == end)
+	m_buf = inp.substr(start + st.size(), end - (start + st.size()));//+ (start + st.size()));// - en.size());
+	if(m_buf.empty())
 		return c_err_emp;
 
-	m_buf = inp.substr(start + st.size(), end - (start + st.size()));//+ (start + st.size()));// - en.size());
-	/*
-	memset(m_buf, 0, sizeof(m_buf));
-	memcpy(m_buf, inp.c_str() + start + st.size(), (end - (start + st.size())) * sizeof(char));
-	*/
 	return c_err_ok;
 }
 
-inline void ProcessingFunction(string& p_input, string& p_output,
+inline bool ProcessingFunction(string& p_input, string& p_output,
 							const string& p_start, const string& p_end)
 {
 	while(true)
@@ -63,15 +66,15 @@ inline void ProcessingFunction(string& p_input, string& p_output,
 		switch(find(p_input, p_start, p_end))
 		{
 			case c_err_nf: // не найдена
-				return;
+				return true;
 			case c_err_end: // не хватает закр скобки
 				AddFunctionError(p_start, p_end);
 				p_output = "";
-				return;
+				return false;
 			case c_err_emp: // нет аргументов
 				AddFunctionError(p_start, p_end, true);
 				p_output = "";
-				return;
+				return false;
 			case c_err_ok:
 				count++;
 				p_input.erase(start, end + p_end.size() - start);
@@ -84,19 +87,27 @@ inline void ProcessingFunction(string& p_input, string& p_output,
 
 bool Analize(wstring p_input, wstring& p_output, wstring& p_ErrorString)
 {
-	c_ErrorString.empty();
+	m_ErrorString = L"";
+	bool l_No_Error = true;
 	
 	string l_input_str, l_output_str;
 	l_input_str.assign(p_input.begin(), p_input.end());
-	l_output_str.empty();
+	l_output_str = "";
 
-	ProcessingFunction(l_input_str, l_output_str, "sin(", ")");
+	l_No_Error &= ProcessingFunction(l_input_str, l_output_str, "sin(", ")");
 
 	p_output.empty();
 	p_output.assign(l_output_str.begin(), l_output_str.end());
 
-	p_ErrorString.empty();
-	p_ErrorString.assign(c_ErrorString.begin(), c_ErrorString.end());
+	if(l_No_Error)
+	{
+		p_ErrorString = L"Преобразование успешно выполнено";
+	}
+	else
+	{
+		p_ErrorString = L"";
+		p_ErrorString.assign(m_ErrorString.begin(), m_ErrorString.end());
+	}
 
 	return true;
 }
