@@ -4,4 +4,4 @@ using namespace std;
 
 const static string::size_type c_string_size = 4096;
 
-bool Analize(wstring p_input, wstring& p_output, wstring& p_ErrorString);
+void Analize(wstring p_input, wstring& p_output, wstring& p_ErrorString);

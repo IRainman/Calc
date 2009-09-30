@@ -7,13 +7,17 @@
 //static char m_buf[c_string_size];
 static string m_buf;
 static string::size_type start, end;
-static uint count;
 static wstring m_ErrorString;
 
 static const uint_8 c_err_end =	1;
 static const uint_8 c_err_nf =	2;
 static const uint_8 c_err_emp =	4;
 static const uint_8 c_err_ok =	0;
+
+bool ValidateInputString(const string& p_input_str)
+{
+	return true;
+}
 
 void AddFunctionError(const string& p_function, const string& p_end, bool p_empty = false)
 {
@@ -42,7 +46,7 @@ void AddFunctionError(const string& p_function, const string& p_end, bool p_empt
 	m_ErrorString += (wstring)L"!\r\n";
 }
 
-uint_8 find(const string& inp, const string& st, const string& en) {
+inline uint_8 find(const string& inp, const string& st, const string& en) {
 	start = inp.find(st);
 	if(start == string::npos)
 		return c_err_nf;
@@ -51,14 +55,14 @@ uint_8 find(const string& inp, const string& st, const string& en) {
 	if(end == string::npos)
 		return c_err_end;
 
-	m_buf = inp.substr(start + st.size(), end - (start + st.size()));//+ (start + st.size()));// - en.size());
+	m_buf = inp.substr(start + st.size(), end - (start + st.size()));
 	if(m_buf.empty())
 		return c_err_emp;
 
 	return c_err_ok;
 }
 
-inline bool ProcessingFunction(string& p_input, string& p_output,
+bool ProcessingFunction(string& p_input, string& p_output,
 							const string& p_start, const string& p_end)
 {
 	while(true)
@@ -66,6 +70,7 @@ inline bool ProcessingFunction(string& p_input, string& p_output,
 		switch(find(p_input, p_start, p_end))
 		{
 			case c_err_nf: // не найдена
+				p_output = p_input;
 				return true;
 			case c_err_end: // не хватает закр скобки
 				AddFunctionError(p_start, p_end);
@@ -76,16 +81,14 @@ inline bool ProcessingFunction(string& p_input, string& p_output,
 				p_output = "";
 				return false;
 			case c_err_ok:
-				count++;
 				p_input.erase(start, end + p_end.size() - start);
-				
 				p_input.insert(start, m_buf);//, end - start);
 				p_output = p_input;
 		}
 	}
 }
 
-bool Analize(wstring p_input, wstring& p_output, wstring& p_ErrorString)
+void Analize(wstring p_input, wstring& p_output, wstring& p_ErrorString)
 {
 	m_ErrorString = L"";
 	bool l_No_Error = true;
@@ -94,9 +97,15 @@ bool Analize(wstring p_input, wstring& p_output, wstring& p_ErrorString)
 	l_input_str.assign(p_input.begin(), p_input.end());
 	l_output_str = "";
 
-	l_No_Error &= ProcessingFunction(l_input_str, l_output_str, "sin(", ")");
+	l_No_Error &= ValidateInputString(l_input_str);
 
-	p_output.empty();
+	if(l_No_Error)
+	{
+		l_No_Error &= ProcessingFunction(l_input_str, l_output_str, "sin(", ")");
+		l_No_Error &= ProcessingFunction(l_input_str, l_output_str, "cos(", ")");
+	}
+
+	p_output = L"";
 	p_output.assign(l_output_str.begin(), l_output_str.end());
 
 	if(l_No_Error)
@@ -108,8 +117,6 @@ bool Analize(wstring p_input, wstring& p_output, wstring& p_ErrorString)
 		p_ErrorString = L"";
 		p_ErrorString.assign(m_ErrorString.begin(), m_ErrorString.end());
 	}
-
-	return true;
 }
 /*
 int GetPriorityOnLineExpression(char p_sym)

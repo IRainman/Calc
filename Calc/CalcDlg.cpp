@@ -159,9 +159,15 @@ void CCalcDlg::OnEnChangeEditInput()
 	TCHAR l_input[c_string_size];
 	wstring l_output, l_ErrorString;
 
-	if(GetDlgItemText(IDC_EDIT_INPUT, l_input, c_string_size) && Analize(l_input, l_output, l_ErrorString))
+	if(GetDlgItemText(IDC_EDIT_INPUT, l_input, c_string_size))
 	{
+		Analize(l_input, l_output, l_ErrorString);
 		SetDlgItemText(IDC_EDIT_MESSAGE, l_ErrorString.c_str());
 		SetDlgItemText(IDC_EDIT_RESULT, l_output.c_str());
+	}
+	else
+	{
+		SetDlgItemText(IDC_EDIT_MESSAGE, L"");
+		SetDlgItemText(IDC_EDIT_RESULT, L"");
 	}
 }
