@@ -148,8 +148,9 @@ bool ProcessingFunction(string& p_input, const string& p_start, const string& p_
 				AddFunctionError(p_start, p_end, true);
 				return false;
 			case c_err_ok:
-				p_input.erase(start, end + p_end.size() - start);
-				p_input.insert(start, m_buf);
+				// вызвать разборщик аргументов!
+				p_input.erase(start, end + p_end.size() - start); // снести
+				p_input.insert(start, m_buf); // снести 
 		}
 	}
 }
@@ -157,18 +158,9 @@ bool ProcessingFunction(string& p_input, const string& p_start, const string& p_
 bool CalculateLineExpression(const string& p_input_str, string& p_output_str)
 {
 	uint_8 l_current_prioritet;
-	stack <char> c_operations;// [!]
+	stack <char> c_operations;
 	for(string::size_type l_count = 0; l_count < p_input_str.size(); l_count++)
 	{
-		if(p_input_str.c_str()[l_count] == '=')
-		{
-			while(!c_operations.empty())
-			{
-				p_output_str += c_operations.top();
-				c_operations.pop();
-			}
-			return true;
-		}
 		l_current_prioritet = GetPriority(p_input_str.c_str()[l_count]);
 		if(l_current_prioritet)
 		{
@@ -193,6 +185,12 @@ bool CalculateLineExpression(const string& p_input_str, string& p_output_str)
 							*/
 							p_output_str += c_operations.top();
 							c_operations.pop();
+							if(c_operations.empty())
+							{
+								c_operations.push(p_input_str.c_str()[l_count]);
+								p_output_str += " ";
+								break;
+							}
 						}
 						else
 						{
@@ -228,7 +226,6 @@ bool CalculateLineExpression(const string& p_input_str, string& p_output_str)
 							}
 							else
 							{
-								p_output_str += " ";
 								p_output_str += c_operations.top();
 								c_operations.pop();
 								p_output_str += " ";
@@ -240,10 +237,22 @@ bool CalculateLineExpression(const string& p_input_str, string& p_output_str)
 		}
 		else
 		{
-			p_output_str += p_input_str.c_str()[l_count]; // [!]
+			if(p_input_str.c_str()[l_count] == '=')
+			{
+				while(!c_operations.empty())
+				{
+					p_output_str += c_operations.top();
+					c_operations.pop();
+				}
+				return true;
+			}
+			else
+			{
+				p_output_str += p_input_str.c_str()[l_count];
+			}
 		}
 	}
-	return true;
+	return false;
 }
 void Calculate(string& p_to_process_str)
 {
@@ -256,6 +265,7 @@ void Analize(wstring p_input, wstring& p_output, wstring& p_ErrorString)
 {
 	m_ErrorString = L"";
 	bool l_No_Error = true;
+	bool l_Rezult;
 	
 	static string l_input_str, l_output_str, l_ErrorString;
 	l_input_str.assign(p_input.begin(), p_input.end());
@@ -267,18 +277,18 @@ void Analize(wstring p_input, wstring& p_output, wstring& p_ErrorString)
 	l_No_Error &= ProcessingFunction(l_input_str, "cos(", ")");
 
 	if(l_No_Error)
-		l_ErrorString = l_input_str + "\r\n";
+		l_ErrorString = "\tFunction:\r\n" + l_input_str + "\r\n";
 
 	if(l_No_Error)
 	{
 		l_No_Error &= ValidateAndPrepareInputString(l_input_str);
 		if(l_No_Error)
 		{
-			l_ErrorString += l_input_str + "\r\n";
-			l_No_Error &= CalculateLineExpression(l_input_str, l_output_str);
+			l_ErrorString += "\tNormalization:\r\n" + l_input_str + "\r\n";
+			l_Rezult = CalculateLineExpression(l_input_str, l_output_str);
 			if(l_No_Error)
 			{
-				l_ErrorString += l_output_str + "\r\n";
+				l_ErrorString += "\tRPN:\r\n" + l_output_str + "\r\n";
 				Calculate(l_output_str);
 			}
 		}
@@ -287,11 +297,11 @@ void Analize(wstring p_input, wstring& p_output, wstring& p_ErrorString)
 	if(l_No_Error)
 	{
 		p_ErrorString.assign(l_ErrorString.begin(), l_ErrorString.end());
-		p_ErrorString += L"\r\n\r\nПреобразование выполнено успешно";
-		/*if(l_output_str.empty())
-			l_output_str = l_input_str;
-*/
+		p_ErrorString += L"\r\nПреобразование выполнено успешно";
+
 		p_output = L"";
+/* TODO добавить поддержку галочки
+		if(l_Rezult)*/
 		p_output.assign(l_output_str.begin(), l_output_str.end());
 	}
 	else

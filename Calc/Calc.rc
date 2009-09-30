@@ -108,8 +108,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,12
- PRODUCTVERSION 1,0,0,12
+ FILEVERSION 1,0,0,14
+ PRODUCTVERSION 1,0,0,14
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -126,12 +126,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "МИЭТ"
             VALUE "FileDescription", "Калькулятор для Windows"
-            VALUE "FileVersion", "1.0.0.12"
+            VALUE "FileVersion", "1.0.0.14"
             VALUE "InternalName", "Calc.exe"
             VALUE "LegalCopyright", "(c) МИЭТ Соломин А.Л. группа МПВ-51. Все права защищены."
             VALUE "OriginalFilename", "Calc.exe"
             VALUE "ProductName", "Calc"
-            VALUE "ProductVersion", "1.0.0.12"
+            VALUE "ProductVersion", "1.0.0.14"
         END
     END
     BLOCK "VarFileInfo"
