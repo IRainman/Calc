@@ -1,10 +1,10 @@
 #include "stdafx.h"
 #include "Calculator.h"
-//#define _USE_MATH_DEFINES // TODO 
+//TODO #define _USE_MATH_DEFINES
 #include <math.h>
+#include <stack>
 #include "MyTypes.h"
 
-//static char m_buf[c_string_size];
 static string m_buf;
 static string::size_type start, end;
 static wstring m_ErrorString;
@@ -14,8 +14,40 @@ static const uint_8 c_err_nf =	2;
 static const uint_8 c_err_emp =	4;
 static const uint_8 c_err_ok =	0;
 
-bool ValidateInputString(const string& p_input_str)
+inline bool ValidateInputString(const string& p_input_str)
 {
+	uint count_inp = 0, count_outp = 0;
+	for(string::size_type l_count = 0; l_count < p_input_str.size(); l_count++)
+	{
+		if(p_input_str.c_str()[l_count] == '(')
+		{
+			count_inp++;
+			continue;
+		}
+		if(p_input_str.c_str()[l_count] == ')')
+		{
+			count_outp++;
+			continue;
+		}
+	}
+	if(count_inp != count_outp)
+	{
+		char l_char_buf[100];
+		TCHAR l_wchar_buf[100];
+
+		_itoa_s(count_inp, l_char_buf, 100, 10);
+		wsprintf(l_wchar_buf, L"%hs", l_char_buf);
+
+		m_ErrorString += (wstring)L"Ошибка: Во входной строке количество открывающих (" +
+			l_wchar_buf + (wstring)L")";
+
+		_itoa_s(count_outp, l_char_buf, 100, 10);
+		wsprintf(l_wchar_buf, L"%hs", l_char_buf);
+
+		m_ErrorString += (wstring)L" не совпадает с количеством закрывающих скобок (" +
+			l_wchar_buf + (wstring)L")";
+		return false;
+	}
 	return true;
 }
 
@@ -69,20 +101,20 @@ bool ProcessingFunction(string& p_input, string& p_output,
 	{
 		switch(find(p_input, p_start, p_end))
 		{
-			case c_err_nf: // не найдена
+			case c_err_nf:
 				p_output = p_input;
 				return true;
-			case c_err_end: // не хватает закр скобки
+			case c_err_end:
 				AddFunctionError(p_start, p_end);
 				p_output = "";
 				return false;
-			case c_err_emp: // нет аргументов
+			case c_err_emp:
 				AddFunctionError(p_start, p_end, true);
 				p_output = "";
 				return false;
 			case c_err_ok:
 				p_input.erase(start, end + p_end.size() - start);
-				p_input.insert(start, m_buf);//, end - start);
+				p_input.insert(start, m_buf);
 				p_output = p_input;
 		}
 	}
@@ -97,12 +129,14 @@ void Analize(wstring p_input, wstring& p_output, wstring& p_ErrorString)
 	l_input_str.assign(p_input.begin(), p_input.end());
 	l_output_str = "";
 
-	l_No_Error &= ValidateInputString(l_input_str);
+//TODO processing constant
+//	l_No_Error &= ProcessingFunction(l_input_str, l_output_str, "sin(", ")");
+//	l_No_Error &= ProcessingFunction(l_input_str, l_output_str, "cos(", ")");
 
 	if(l_No_Error)
 	{
-		l_No_Error &= ProcessingFunction(l_input_str, l_output_str, "sin(", ")");
-		l_No_Error &= ProcessingFunction(l_input_str, l_output_str, "cos(", ")");
+		l_No_Error &= ValidateInputString(l_input_str);
+//TODO		l_No_Error &= …(l_input_str);
 	}
 
 	p_output = L"";
