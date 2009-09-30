@@ -5,6 +5,8 @@
 #include <stack>
 #include "MyTypes.h"
 
+stack <char> c_operations;
+
 static string m_buf;
 static string::size_type start, end;
 static wstring m_ErrorString;
@@ -14,9 +16,18 @@ static const uint_8 c_err_nf =	2;
 static const uint_8 c_err_emp =	4;
 static const uint_8 c_err_ok =	0;
 
-inline bool ValidateInputString(const string& p_input_str)
+inline bool ValidateInputString(string& p_input_str)
 {
 	uint count_inp = 0, count_outp = 0;
+	string::size_type c;
+	while(true)
+	{
+		c = p_input_str.find(" ");
+		if(c != string::npos)
+			p_input_str.erase(c, 1);
+		else
+			break;
+	}
 	for(string::size_type l_count = 0; l_count < p_input_str.size(); l_count++)
 	{
 		if(p_input_str.c_str()[l_count] == '(')
@@ -130,8 +141,8 @@ void Analize(wstring p_input, wstring& p_output, wstring& p_ErrorString)
 	l_output_str = "";
 
 //TODO processing constant
-//	l_No_Error &= ProcessingFunction(l_input_str, l_output_str, "sin(", ")");
-//	l_No_Error &= ProcessingFunction(l_input_str, l_output_str, "cos(", ")");
+	l_No_Error &= ProcessingFunction(l_input_str, l_output_str, "sin(", ")");
+	l_No_Error &= ProcessingFunction(l_input_str, l_output_str, "cos(", ")");
 
 	if(l_No_Error)
 	{
@@ -139,12 +150,14 @@ void Analize(wstring p_input, wstring& p_output, wstring& p_ErrorString)
 //TODO		l_No_Error &= …(l_input_str);
 	}
 
-	p_output = L"";
-	p_output.assign(l_output_str.begin(), l_output_str.end());
-
 	if(l_No_Error)
 	{
 		p_ErrorString = L"Преобразование успешно выполнено";
+		if(l_output_str.empty())
+			l_output_str = l_input_str;
+
+		p_output = L"";
+		p_output.assign(l_output_str.begin(), l_output_str.end());
 	}
 	else
 	{
