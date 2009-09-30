@@ -36,6 +36,7 @@ uint_8 GetPriority(char p_sym)
 			return priority_addition;
 
 		case '(':
+		case ')':
 			return priority_bracket;
 
 		default:
@@ -181,53 +182,58 @@ bool CalculateLineExpression(const string& p_input_str, string& p_output_str)
 			}
 			else
 			{
-				do
+				if(l_current_prioritet != priority_bracket)
 				{
-					if(GetPriority(c_operations.top()) <= l_current_prioritet)
+					do
 					{
-						/*
-						b)	опеpация выталкивает из стека все опеpации с большим или pавным пpиоpитетом в выходную стpоку;
-						*/
-						p_output_str += c_operations.top();
-						c_operations.pop();
-					}
-					else
-					{
-						p_output_str += p_input_str.c_str()[l_count]; // [!] от болды
-						break;
-					}
-				}
-				while(!c_operations.empty());
-
-				if(l_current_prioritet == priority_bracket)
-				{
-					/*
-					c)	если очеpедной символ из исходной стpоки есть откpывающая скобка, то он пpоталкивается в стек;
-					*/
-					c_operations.push(p_input_str.c_str()[l_count]);
-					p_output_str += " ";
-				}
-
-				if(p_input_str.c_str()[l_count] == ')')
-				{
-					while(!c_operations.empty())
-					{
-						/*
-						d)	закpывающая кpуглая скобка выталкивает все опеpации из стека до ближайшей откpывающей скобки,
-						сами скобки в выходную стpоку не пеpеписываются, а уничтожают дpуг дpуга. 
-						*/
-						if(GetPriority(c_operations.top()) == priority_bracket)
+						if(GetPriority(c_operations.top()) >= l_current_prioritet)
 						{
-							c_operations.pop();
-							break;
-						}
-						else
-						{
-							p_output_str += " ";
+							/*
+							b)	опеpация выталкивает из стека все опеpации с большим или pавным пpиоpитетом в выходную стpоку;
+							*/
 							p_output_str += c_operations.top();
 							c_operations.pop();
 						}
-						
+						else
+						{
+							c_operations.push(p_input_str.c_str()[l_count]);
+							p_output_str += " ";
+							break;
+						}
+					}
+					while(!c_operations.empty());
+				}
+				else
+				{
+					if(p_input_str.c_str()[l_count] != ')')
+					{
+						/*
+						c)	если очеpедной символ из исходной стpоки есть откpывающая скобка, то он пpоталкивается в стек;
+						*/
+						c_operations.push(p_input_str.c_str()[l_count]);
+						p_output_str += " ";
+					}
+					else
+					{
+						while(!c_operations.empty())
+						{
+							/*
+							d)	закpывающая кpуглая скобка выталкивает все опеpации из стека до ближайшей откpывающей скобки,
+							сами скобки в выходную стpоку не пеpеписываются, а уничтожают дpуг дpуга. 
+							*/
+							if(GetPriority(c_operations.top()) == priority_bracket && c_operations.top() != ')')
+							{
+								c_operations.pop();
+								break;
+							}
+							else
+							{
+								p_output_str += " ";
+								p_output_str += c_operations.top();
+								c_operations.pop();
+								p_output_str += " ";
+							}
+						}
 					}
 				}
 			}
@@ -251,28 +257,36 @@ void Analize(wstring p_input, wstring& p_output, wstring& p_ErrorString)
 	m_ErrorString = L"";
 	bool l_No_Error = true;
 	
-	static string l_input_str, l_output_str;
+	static string l_input_str, l_output_str, l_ErrorString;
 	l_input_str.assign(p_input.begin(), p_input.end());
 	l_output_str = "";
 
-//TODO processing constant
+	//TODO processing constant
+
 	l_No_Error &= ProcessingFunction(l_input_str, "sin(", ")");
 	l_No_Error &= ProcessingFunction(l_input_str, "cos(", ")");
 
 	if(l_No_Error)
-		p_ErrorString.assign(l_input_str.begin(), l_input_str.end());
+		l_ErrorString = l_input_str + "\r\n";
 
 	if(l_No_Error)
 	{
 		l_No_Error &= ValidateAndPrepareInputString(l_input_str);
-		l_No_Error &= CalculateLineExpression(l_input_str, l_output_str);
 		if(l_No_Error)
-			Calculate(l_output_str);
+		{
+			l_ErrorString += l_input_str + "\r\n";
+			l_No_Error &= CalculateLineExpression(l_input_str, l_output_str);
+			if(l_No_Error)
+			{
+				l_ErrorString += l_output_str + "\r\n";
+				Calculate(l_output_str);
+			}
+		}
 	}
 
 	if(l_No_Error)
 	{
-		p_ErrorString.assign(l_input_str.begin(), l_input_str.end());
+		p_ErrorString.assign(l_ErrorString.begin(), l_ErrorString.end());
 		p_ErrorString += L"\r\n\r\nПреобразование выполнено успешно";
 		/*if(l_output_str.empty())
 			l_output_str = l_input_str;
