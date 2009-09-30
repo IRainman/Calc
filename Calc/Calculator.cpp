@@ -5,18 +5,45 @@
 #include <stack>
 #include "MyTypes.h"
 
-stack <char> c_operations;
-
 static string m_buf;
 static string::size_type start, end;
 static wstring m_ErrorString;
 
+static const uint_8 c_err_ok =	0;
 static const uint_8 c_err_end =	1;
 static const uint_8 c_err_nf =	2;
 static const uint_8 c_err_emp =	4;
-static const uint_8 c_err_ok =	0;
 
-inline bool ValidateInputString(string& p_input_str)
+static const uint_8 priority_power =	8;
+static const uint_8 priority_multiply =	4;
+static const uint_8 priority_addition =	2;
+static const uint_8 priority_bracket =	1;
+static const uint_8 priority_default =	0;
+
+uint_8 GetPriority(char p_sym)
+{
+	switch(p_sym)
+	{
+		case '^':
+			return priority_power;
+
+		case '*':
+		case '/':
+			return priority_multiply;
+
+		case '+':
+		case '-':
+			return priority_addition;
+
+		case '(':
+			return priority_bracket;
+
+		default:
+			return priority_default;
+	}
+}
+
+bool ValidateAndPrepareInputString(string& p_input_str)
 {
 	uint count_inp = 0, count_outp = 0;
 	string::size_type c;
@@ -105,29 +132,117 @@ inline uint_8 find(const string& inp, const string& st, const string& en) {
 	return c_err_ok;
 }
 
-bool ProcessingFunction(string& p_input, string& p_output,
-							const string& p_start, const string& p_end)
+bool ProcessingFunction(string& p_input, const string& p_start, const string& p_end)
 {
 	while(true)
 	{
 		switch(find(p_input, p_start, p_end))
 		{
 			case c_err_nf:
-				p_output = p_input;
 				return true;
 			case c_err_end:
 				AddFunctionError(p_start, p_end);
-				p_output = "";
 				return false;
 			case c_err_emp:
 				AddFunctionError(p_start, p_end, true);
-				p_output = "";
 				return false;
 			case c_err_ok:
 				p_input.erase(start, end + p_end.size() - start);
 				p_input.insert(start, m_buf);
-				p_output = p_input;
 		}
+	}
+}
+
+bool CalculateLineExpression(const string& p_input_str, string& p_output_str)
+{
+	uint_8 l_current_prioritet;
+	stack <char> c_operations;// [!]
+	for(string::size_type l_count = 0; l_count < p_input_str.size(); l_count++)
+	{
+		if(p_input_str.c_str()[l_count] == '=')
+		{
+			while(!c_operations.empty())
+			{
+				p_output_str += c_operations.top();
+				c_operations.pop();
+			}
+			return true;
+		}
+		l_current_prioritet = GetPriority(p_input_str.c_str()[l_count]);
+		if(l_current_prioritet)
+		{
+			if(c_operations.empty())
+			{
+				/*
+				a)	если стек пуст, то опеpация из входной стpоки пеpеписывается в стек;
+				*/
+				c_operations.push(p_input_str.c_str()[l_count]);
+				p_output_str += " ";
+			}
+			else
+			{
+				do
+				{
+					if(GetPriority(c_operations.top()) <= l_current_prioritet)
+					{
+						/*
+						b)	опеpация выталкивает из стека все опеpации с большим или pавным пpиоpитетом в выходную стpоку;
+						*/
+						p_output_str += c_operations.top();
+						c_operations.pop();
+					}
+					else
+					{
+						p_output_str += p_input_str.c_str()[l_count]; // [!] от болды
+						break;
+					}
+				}
+				while(!c_operations.empty());
+
+				if(l_current_prioritet == priority_bracket)
+				{
+					/*
+					c)	если очеpедной символ из исходной стpоки есть откpывающая скобка, то он пpоталкивается в стек;
+					*/
+					c_operations.push(p_input_str.c_str()[l_count]);
+					p_output_str += " ";
+				}
+
+				if(p_input_str.c_str()[l_count] == ')')
+				{
+					while(!c_operations.empty())
+					{
+						/*
+						d)	закpывающая кpуглая скобка выталкивает все опеpации из стека до ближайшей откpывающей скобки,
+						сами скобки в выходную стpоку не пеpеписываются, а уничтожают дpуг дpуга. 
+						*/
+						if(GetPriority(c_operations.top()) == priority_bracket)
+						{
+							c_operations.pop();
+							break;
+						}
+						else
+						{
+							p_output_str += " ";
+							p_output_str += c_operations.top();
+							c_operations.pop();
+						}
+						
+					}
+				}
+			}
+		}
+		else
+		{
+			p_output_str += p_input_str.c_str()[l_count]; // [!]
+		}
+	}
+	return true;
+}
+void Calculate(string& p_to_process_str)
+{
+	for(string::size_type l_count = 0; l_count < p_to_process_str.size(); l_count++)
+	{
 	}
 }
 
@@ -136,26 +251,32 @@ void Analize(wstring p_input, wstring& p_output, wstring& p_ErrorString)
 	m_ErrorString = L"";
 	bool l_No_Error = true;
 	
-	string l_input_str, l_output_str;
+	static string l_input_str, l_output_str;
 	l_input_str.assign(p_input.begin(), p_input.end());
 	l_output_str = "";
 
 //TODO processing constant
-	l_No_Error &= ProcessingFunction(l_input_str, l_output_str, "sin(", ")");
-	l_No_Error &= ProcessingFunction(l_input_str, l_output_str, "cos(", ")");
+	l_No_Error &= ProcessingFunction(l_input_str, "sin(", ")");
+	l_No_Error &= ProcessingFunction(l_input_str, "cos(", ")");
+
+	if(l_No_Error)
+		p_ErrorString.assign(l_input_str.begin(), l_input_str.end());
 
 	if(l_No_Error)
 	{
-		l_No_Error &= ValidateInputString(l_input_str);
-//TODO		l_No_Error &= …(l_input_str);
+		l_No_Error &= ValidateAndPrepareInputString(l_input_str);
+		l_No_Error &= CalculateLineExpression(l_input_str, l_output_str);
+		if(l_No_Error)
+			Calculate(l_output_str);
 	}
 
 	if(l_No_Error)
 	{
-		p_ErrorString = L"Преобразование успешно выполнено";
-		if(l_output_str.empty())
+		p_ErrorString.assign(l_input_str.begin(), l_input_str.end());
+		p_ErrorString += L"\r\n\r\nПреобразование выполнено успешно";
+		/*if(l_output_str.empty())
 			l_output_str = l_input_str;
-
+*/
 		p_output = L"";
 		p_output.assign(l_output_str.begin(), l_output_str.end());
 	}
@@ -165,32 +286,3 @@ void Analize(wstring p_input, wstring& p_output, wstring& p_ErrorString)
 		p_ErrorString.assign(m_ErrorString.begin(), m_ErrorString.end());
 	}
 }
-/*
-int GetPriorityOnLineExpression(char p_sym)
-{
-	switch(p_sym)
-	{
-		case '^':
-			return 4;
-
-		case '*':
-		case '/':
-			return 3;
-
-		case '-':
-		case '+':
-			return 2;
-
-		case '(':
-			return 1;
-
-		default:
-			return 0;
-	}
-}
-*/
-/*
-int GetPriority()
-{
-
-}*/
