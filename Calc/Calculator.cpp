@@ -27,6 +27,45 @@ static const uint_8 priority_bracket =	1;
 static const uint_8 priority_default =	0;
 static const uint_8 priority_error =	-1;
 
+void AddError(uint_8 p_message, string::size_type p_count = -1, string::size_type p_1 = 0, string::size_type p_2 = 0)
+{
+	wstring l_error;
+	wchar_t l_1[6];
+	_itow_s(p_1, l_1, 10);
+	wchar_t l_2[6];
+	_itow_s(p_2, l_2, 10);
+	switch(p_message)
+	{
+		case 0:
+			l_error = L"Недопустимый символ";
+			break;
+		case 1:
+			l_error = (wstring)L"Количество открывающих " + (wstring)l_1 +
+				(wstring)L" и закрывающих " + (wstring)l_2 +
+				(wstring)L" скобок не совпадает";
+			break;
+		case 2:
+			l_error = L"Недопустимый символ";
+			break;
+		case 3:
+			l_error = L"Недопустимый символ";
+			break;
+		case 4:
+			l_error = L"Недопустимый символ";
+			break;
+	}
+	TCHAR l_wchar_buf[1024];
+	if(p_count == -1)
+	{
+		swprintf_s(l_wchar_buf, L"Ошибка: %s\r\n", l_error.c_str());
+	}
+	else
+	{
+		swprintf_s(l_wchar_buf, L"В позиции %d ошибка: %s\r\n", p_count, l_error.c_str());
+	}
+	m_ErrorString += l_wchar_buf;
+}
+
 uint_8 GetPriority(char p_sym)
 {
 	switch(p_sym)
@@ -60,6 +99,8 @@ uint_8 GetPriority(char p_sym)
 		case '8':
 		case '9':
 		case '=':
+		case '.':
+		case ' ':
 			return priority_default;
 
 		default:
@@ -124,7 +165,6 @@ void replace(string& p_input_str, string p_in, string p_out)
 */
 bool ValidateAndPrepareInputString(string& p_input_str)
 {
-	bool ok = true;
 	uint count_inp = 0, count_outp = 0;
 	string::size_type c;
 	while(true)
@@ -154,67 +194,21 @@ bool ValidateAndPrepareInputString(string& p_input_str)
 		}
 		else
 		{
-			char l_char_buf[100];
-			TCHAR l_wchar_buf[100];
-
-			_itoa_s(l_count, l_char_buf, 100, 10);
-			wsprintf(l_wchar_buf, L"%hs", l_char_buf);
-			m_ErrorString += (wstring)L"В позиции " + l_wchar_buf +
-				(wstring)L" обнаружен неизвестный символ\r\n";
-
-			ok = false;
+			AddError(0, l_count);
+			return false;
 		}
 	}
 	if(count_inp != count_outp)
 	{
-		char l_char_buf[100];
-		TCHAR l_wchar_buf[100];
-
-		_itoa_s(count_inp, l_char_buf, 100, 10);
-		wsprintf(l_wchar_buf, L"%hs", l_char_buf);
-
-		m_ErrorString += (wstring)L"Ошибка: Во входной строке количество открывающих (" +
-			l_wchar_buf + (wstring)L")";
-
-		_itoa_s(count_outp, l_char_buf, 100, 10);
-		wsprintf(l_wchar_buf, L"%hs", l_char_buf);
-
-		m_ErrorString += (wstring)L" не совпадает с количеством закрывающих скобок (" +
-			l_wchar_buf + (wstring)L")";
+		AddError(1, -1, count_inp, count_outp);
 		return false;
 	}
 
 	replace(p_input_str, "pow", 'P');
 
-	return ok;
+	return true;
 }
-/*
-void AddFunctionError(const string& p_function, uint_8 p_error)
-{
-	char l_char_buf[100];
-	TCHAR l_wchar_buf[100];
-	_itoa_s(start, l_char_buf, 100, 10);
-	wstring l_function = L"";
-	l_function.assign(p_function.begin(), p_function.end());
-	wsprintf(l_wchar_buf, L"%hs", l_char_buf);
 
-	m_ErrorString += (wstring)L"Ошибка: У функции ";
-
-	if(p_error == c_err_emp)
-	{
-		m_ErrorString += l_function +
-			(wstring)L"), начало в " + l_wchar_buf +
-			(wstring)L" отсутсвуют аргументы";
-	}
-	else
-	{
-		m_ErrorString += l_function +
-			(wstring)L", начало в " + l_wchar_buf +
-			(wstring)L" нехватает )";
-	}
-	m_ErrorString += (wstring)L"!\r\n";
-}
-*/
 /*
 uint_8 find(const string& inp, const string& st, const string& en) {
 	start = inp.find(st);
@@ -234,7 +228,7 @@ uint_8 find(const string& inp, const string& st, const string& en) {
 */
 bool CalculateLineExpression(const string& p_input_str, string& p_output_str)
 {
-	uint_8 l_current_prioritet;
+	uint_8 l_current_prioritet, l_old_prioritet = priority_error;
 	stack <char> c_operations;
 	if(!c_coordinate.empty())
 	{
@@ -245,10 +239,16 @@ bool CalculateLineExpression(const string& p_input_str, string& p_output_str)
 		l_current_prioritet = GetPriority(p_input_str.c_str()[l_count]);
 		if(l_current_prioritet == priority_error)
 		{
+			AddError(l_count, 0);
 			return false;
 		}
 		if(l_current_prioritet)
 		{
+			if(l_current_prioritet == l_old_prioritet)
+			{
+				AddError(l_count, 1);
+				return false;
+			}
 			if(c_operations.empty())
 			{
 				/*
@@ -324,23 +324,16 @@ bool CalculateLineExpression(const string& p_input_str, string& p_output_str)
 		}
 		else
 		{
-			if(p_input_str.c_str()[l_count] == '=')
-			{
-				while(!c_operations.empty())
-				{
-					p_output_str += c_operations.top();
-					c_coordinate.push_back(p_output_str.size());
-					c_operations.pop();
-				}
-				return true;
-			}
-			else
-			{
-				p_output_str += p_input_str.c_str()[l_count];
-			}
+			p_output_str += p_input_str.c_str()[l_count];
 		}
 	}
-	return false;
+	while(!c_operations.empty())
+	{
+		p_output_str += c_operations.top();
+		c_coordinate.push_back(p_output_str.size());
+		c_operations.pop();
+	}
+	return true;
 }
 void Calculate(string& p_to_process_str)
 {
@@ -422,6 +415,7 @@ void Analize(wstring p_input, wstring& p_output, wstring& p_ErrorString)
 			if(l_No_Error)
 			{
 				l_ErrorString += "\tRPN:\r\n" + l_output_str + "\r\n";
+				string temp = l_output_str;
 				Calculate(l_output_str);
 			}
 		}
