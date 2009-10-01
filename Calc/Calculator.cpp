@@ -25,6 +25,7 @@ static const uint_8 priority_multiply =	4;
 static const uint_8 priority_addition =	2;
 static const uint_8 priority_bracket =	1;
 static const uint_8 priority_default =	0;
+static const uint_8 priority_error =	-1;
 
 uint_8 GetPriority(char p_sym)
 {
@@ -48,8 +49,21 @@ uint_8 GetPriority(char p_sym)
 		case ')':
 			return priority_bracket;
 
-		default:
+		case '0':
+		case '1':
+		case '2':
+		case '3':
+		case '4':
+		case '5':
+		case '6':
+		case '7':
+		case '8':
+		case '9':
+		case '=':
 			return priority_default;
+
+		default:
+			return priority_error;
 	}
 }
 
@@ -229,6 +243,10 @@ bool CalculateLineExpression(const string& p_input_str, string& p_output_str)
 	for(string::size_type l_count = 0; l_count < p_input_str.size(); l_count++)
 	{
 		l_current_prioritet = GetPriority(p_input_str.c_str()[l_count]);
+		if(l_current_prioritet == priority_error)
+		{
+			return false;
+		}
 		if(l_current_prioritet)
 		{
 			if(c_operations.empty())
@@ -394,7 +412,7 @@ void Analize(wstring p_input, wstring& p_output, wstring& p_ErrorString)
 		l_No_Error &= ValidateAndPrepareInputString(l_input_str);
 		if(l_No_Error)
 		{
-			l_ErrorString += "\tNormalization:\r\n" + l_input_str + "\r\n";
+			l_ErrorString += "\tPreparing:\r\n" + l_input_str + "\r\n";
 			CalculateLineExpression(l_input_str, l_output_str);
 			if(l_No_Error)
 			{
