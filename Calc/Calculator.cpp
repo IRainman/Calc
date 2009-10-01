@@ -3,8 +3,10 @@
 //TODO #define _USE_MATH_DEFINES
 #include <math.h>
 #include <stack>
+//#include <map>
 #include "MyTypes.h"
 
+//map <string::size_type, uint_8> c_coordinate;
 //static string m_buf;
 static string::size_type start;//, end/*, point*/;
 static wstring m_ErrorString;
@@ -28,7 +30,7 @@ uint_8 GetPriority(char p_sym)
 {
 	switch(p_sym)
 	{
-		case 'L':
+		case 'P':
 			return priority_function;
 
 		case '^':
@@ -151,7 +153,7 @@ bool ValidateAndPrepareInputString(string& p_input_str)
 		return false;
 	}
 
-	replace(p_input_str, "log", 'L');
+	replace(p_input_str, "pow", 'P');
 
 	return true;
 }
@@ -269,6 +271,7 @@ bool CalculateLineExpression(const string& p_input_str, string& p_output_str)
 							b)	опеpация выталкивает из стека все опеpации с большим или pавным пpиоpитетом в выходную стpоку;
 							*/
 							p_output_str += c_operations.top();
+//							c_coordinate.insert(p_output_str.size()/*+1*/, GetPriority(c_operations.top()));
 							c_operations.pop();
 							if(c_operations.empty())
 							{
@@ -312,6 +315,7 @@ bool CalculateLineExpression(const string& p_input_str, string& p_output_str)
 							else
 							{
 								p_output_str += c_operations.top();
+//								c_coordinate.insert(p_output_str.size()/*+1*/, GetPriority(c_operations.top()));
 								c_operations.pop();
 								p_output_str += " ";
 							}
@@ -327,6 +331,7 @@ bool CalculateLineExpression(const string& p_input_str, string& p_output_str)
 				while(!c_operations.empty())
 				{
 					p_output_str += c_operations.top();
+//					c_coordinate.insert(p_output_str.size()/*+1*/, GetPriority(c_operations.top()));
 					c_operations.pop();
 				}
 				return true;
@@ -341,14 +346,49 @@ bool CalculateLineExpression(const string& p_input_str, string& p_output_str)
 }
 void Calculate(string& p_to_process_str)
 {
-/*	for(string::size_type l_count = 0; l_count < p_to_process_str.size(); l_count++)
+	string input = p_to_process_str;
+	p_to_process_str = "";
+	char l_char_buf[200];
+	float a, b;
+	string::size_type l_count = 0;
+	while(l_count < input.size())
 	{
-		switch(p_to_process_str.c_str()[l_count])
+		sscanf_s(input.c_str(), "%f,%f", &a, &b);
+		
+		input.erase(l_count, l_count + 1);
+		//p_input_str.insert(l_start, l_char_buf);
+
+// вынуть циферки
+		for(l_count = 0; l_count < input.size(); l_count++)
 		{
-			default:
-				break;
+			switch(input.c_str()[l_count])
+			{
+				case 'P':
+					sprintf_s(l_char_buf, " %f ", pow(a,b));
+					p_to_process_str += l_char_buf;
+					break;
+				case '^':
+					sprintf_s(l_char_buf, " %f ", (int)a^(int)b);
+					p_to_process_str += l_char_buf;
+					break;
+				case '*':
+					sprintf_s(l_char_buf, " %f ", a*b);
+					p_to_process_str += l_char_buf;
+				case '/':
+					sprintf_s(l_char_buf, " %f ", a/b);
+					p_to_process_str += l_char_buf;
+				case '+':
+					sprintf_s(l_char_buf, " %f ", a+b);
+					p_to_process_str += l_char_buf;
+				case '-':
+					sprintf_s(l_char_buf, " %f ", a-b);
+					p_to_process_str += l_char_buf;
+
+				default:
+					break;
+			}
 		}
-	}*/
+	}
 }
 
 void Analize(wstring p_input, wstring& p_output, wstring& p_ErrorString)
