@@ -5,15 +5,19 @@
 #include <stack>
 #include "MyTypes.h"
 
-static string m_buf;
-static string::size_type start, end;
+//static string m_buf;
+static string::size_type start;//, end/*, point*/;
 static wstring m_ErrorString;
+
+//static double a, b;
 
 static const uint_8 c_err_ok =	0;
 static const uint_8 c_err_end =	1;
-static const uint_8 c_err_nf =	2;
+//static const uint_8 c_err_nf =	2;
 static const uint_8 c_err_emp =	4;
+//static const uint_8 c_err_arg =	8;
 
+static const uint_8 priority_function =	16;
 static const uint_8 priority_power =	8;
 static const uint_8 priority_multiply =	4;
 static const uint_8 priority_addition =	2;
@@ -24,6 +28,9 @@ uint_8 GetPriority(char p_sym)
 {
 	switch(p_sym)
 	{
+		case 'L':
+			return priority_function;
+
 		case '^':
 			return priority_power;
 
@@ -44,8 +51,64 @@ uint_8 GetPriority(char p_sym)
 	}
 }
 
+uint_8 replace(string& p_input_str, string p_in, char p_out)
+{
+	string::size_type l_start, l_end;
+	string l_buf;
+	char l_char_buf[200];
+	float l_a, l_b;
+	while(true)
+	{
+		l_start = p_input_str.find(p_in);
+		if(l_start == string::npos)
+			return c_err_ok;
+
+		l_buf = p_input_str;
+		l_buf.erase(0, l_start);
+
+		l_end = l_buf.find(")");
+		if(l_end == string::npos)
+		{
+			start = l_start;
+			return c_err_end;
+		}
+
+		l_buf = l_buf.substr(p_in.size() + 1, l_end - p_in.size() - 1);
+		if(l_buf.empty())
+		{
+			start = l_start;
+			return c_err_emp;
+		}
+
+		sscanf_s(l_buf.c_str(), "%f,%f", &l_a, &l_b);
+		sprintf_s(l_char_buf, " %f%c%f ", l_a, p_out, l_b);
+		p_input_str.erase(l_start, l_start + l_end + 1);
+		p_input_str.insert(l_start, l_char_buf);
+	}
+}
+/*
+void replace(string& p_input_str, string p_in, string p_out)
+{
+	string::size_type l_start;
+	while(true)
+	{
+		l_start = p_input_str.find(p_in);
+
+		if(l_start == string::npos)
+		{
+			break;
+		}
+		else
+		{
+			p_input_str.erase(l_start, p_in.size() - l_start);
+			p_input_str.insert(l_start, p_out);
+		}
+	}
+}
+*/
 bool ValidateAndPrepareInputString(string& p_input_str)
 {
+	//bool ok = true;
 	uint count_inp = 0, count_outp = 0;
 	string::size_type c;
 	while(true)
@@ -87,37 +150,40 @@ bool ValidateAndPrepareInputString(string& p_input_str)
 			l_wchar_buf + (wstring)L")";
 		return false;
 	}
+
+	replace(p_input_str, "log", 'L');
+
 	return true;
 }
-
-void AddFunctionError(const string& p_function, const string& p_end, bool p_empty = false)
+/*
+void AddFunctionError(const string& p_function, uint_8 p_error)
 {
 	char l_char_buf[100];
 	TCHAR l_wchar_buf[100];
 	_itoa_s(start, l_char_buf, 100, 10);
-	wstring l_function = L"", l_end = L"";
+	wstring l_function = L"";
 	l_function.assign(p_function.begin(), p_function.end());
-	l_end.assign(p_end.begin(), p_end.end());
 	wsprintf(l_wchar_buf, L"%hs", l_char_buf);
 
 	m_ErrorString += (wstring)L"Ошибка: У функции ";
 
-	if(p_empty)
+	if(p_error == c_err_emp)
 	{
-		m_ErrorString += l_function + l_end +
-			(wstring)L", начало в " + l_wchar_buf +
+		m_ErrorString += l_function +
+			(wstring)L"), начало в " + l_wchar_buf +
 			(wstring)L" отсутсвуют аргументы";
 	}
 	else
 	{
 		m_ErrorString += l_function +
 			(wstring)L", начало в " + l_wchar_buf +
-			(wstring)L" нехватает " +  l_end;
+			(wstring)L" нехватает )";
 	}
 	m_ErrorString += (wstring)L"!\r\n";
 }
-
-inline uint_8 find(const string& inp, const string& st, const string& en) {
+*/
+/*
+uint_8 find(const string& inp, const string& st, const string& en) {
 	start = inp.find(st);
 	if(start == string::npos)
 		return c_err_nf;
@@ -132,8 +198,8 @@ inline uint_8 find(const string& inp, const string& st, const string& en) {
 
 	return c_err_ok;
 }
-
-bool ProcessingFunction(string& p_input, const string& p_start, const string& p_end)
+*/
+/*bool ProcessingFunction(string& p_input, const string& p_start, const string& p_end, bool p_two_arguments = false)
 {
 	while(true)
 	{
@@ -148,13 +214,32 @@ bool ProcessingFunction(string& p_input, const string& p_start, const string& p_
 				AddFunctionError(p_start, p_end, true);
 				return false;
 			case c_err_ok:
-				// вызвать разборщик аргументов!
-				p_input.erase(start, end + p_end.size() - start); // снести
-				p_input.insert(start, m_buf); // снести 
+				p_input.erase(start, end + p_end.size() - start);
+
+				string::size_type l_separator = m_buf.find(',');
+				if(p_two_arguments)
+				{
+					if(l_separator == string::npos)
+					{
+					//	AddArgumentError(p_start, p_end);
+						return false;
+					}
+
+				}
+				else
+				{
+					if(l_separator != string::npos)
+					{
+					//	AddArgumentError(p_start, p_end);
+						return false;
+					}
+					a = atof(m_buf.c_str());
+					point = start;
+				}
 		}
 	}
 }
-
+*/
 bool CalculateLineExpression(const string& p_input_str, string& p_output_str)
 {
 	uint_8 l_current_prioritet;
@@ -256,25 +341,24 @@ bool CalculateLineExpression(const string& p_input_str, string& p_output_str)
 }
 void Calculate(string& p_to_process_str)
 {
-	for(string::size_type l_count = 0; l_count < p_to_process_str.size(); l_count++)
+/*	for(string::size_type l_count = 0; l_count < p_to_process_str.size(); l_count++)
 	{
-	}
+		switch(p_to_process_str.c_str()[l_count])
+		{
+			default:
+				break;
+		}
+	}*/
 }
 
 void Analize(wstring p_input, wstring& p_output, wstring& p_ErrorString)
 {
 	m_ErrorString = L"";
 	bool l_No_Error = true;
-	bool l_Rezult;
-	
+
 	static string l_input_str, l_output_str, l_ErrorString;
 	l_input_str.assign(p_input.begin(), p_input.end());
 	l_output_str = "";
-
-	//TODO processing constant
-
-	l_No_Error &= ProcessingFunction(l_input_str, "sin(", ")");
-	l_No_Error &= ProcessingFunction(l_input_str, "cos(", ")");
 
 	if(l_No_Error)
 		l_ErrorString = "\tFunction:\r\n" + l_input_str + "\r\n";
@@ -285,7 +369,7 @@ void Analize(wstring p_input, wstring& p_output, wstring& p_ErrorString)
 		if(l_No_Error)
 		{
 			l_ErrorString += "\tNormalization:\r\n" + l_input_str + "\r\n";
-			l_Rezult = CalculateLineExpression(l_input_str, l_output_str);
+			CalculateLineExpression(l_input_str, l_output_str);
 			if(l_No_Error)
 			{
 				l_ErrorString += "\tRPN:\r\n" + l_output_str + "\r\n";
@@ -300,8 +384,6 @@ void Analize(wstring p_input, wstring& p_output, wstring& p_ErrorString)
 		p_ErrorString += L"\r\nПреобразование выполнено успешно";
 
 		p_output = L"";
-/* TODO добавить поддержку галочки
-		if(l_Rezult)*/
 		p_output.assign(l_output_str.begin(), l_output_str.end());
 	}
 	else
