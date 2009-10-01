@@ -7,17 +7,8 @@
 #include "MyTypes.h"
 
 list <string::size_type> c_coordinate;
-//static string m_buf;
-static string::size_type start;//, end/*, point*/;
+
 static wstring m_ErrorString;
-
-//static double a, b;
-
-static const uint_8 c_err_ok =	0;
-static const uint_8 c_err_end =	1;
-//static const uint_8 c_err_nf =	2;
-static const uint_8 c_err_emp =	4;
-//static const uint_8 c_err_arg =	8;
 
 static const uint_8 priority_function =	16;
 static const uint_8 priority_power =	8;
@@ -26,6 +17,17 @@ static const uint_8 priority_addition =	2;
 static const uint_8 priority_bracket =	1;
 static const uint_8 priority_default =	0;
 static const uint_8 priority_error =	-1;
+
+void AddWarning(uint_8 p_message)
+{
+	switch(p_message)
+	{
+		case 0:
+			m_ErrorString += L"Внимание: аргументы операции x^y будут приведены к целочисленному типу. Для вещественных типов используйте функцию pow(x,y)";
+			break;
+	}
+	m_ErrorString += L"\r\n";
+}
 
 void AddError(uint_8 p_message, string::size_type p_count = -1, string::size_type p_1 = 0, string::size_type p_2 = 0)
 {
@@ -45,13 +47,22 @@ void AddError(uint_8 p_message, string::size_type p_count = -1, string::size_typ
 				(wstring)L" скобок не совпадает";
 			break;
 		case 2:
-			l_error = L"Недопустимый символ";
+			l_error = L"Недопустимый символ после проверки на функции, проверьте правильность их написания";
 			break;
 		case 3:
-			l_error = L"Недопустимый символ";
+			l_error = L"Недопустимый символ во время преобразования в обратную польскую запись";
 			break;
 		case 4:
-			l_error = L"Недопустимый символ";
+			l_error = L"Последовательная запись нескольких операций не подерживается";
+			break;
+		case 5:
+			l_error = L"На ноль делить нельзя";
+			break;
+		case 6:
+			l_error = L"закр скобка";
+			break;
+		case 7:
+			l_error = L"аргументы";
 			break;
 	}
 	TCHAR l_wchar_buf[1024];
@@ -108,7 +119,7 @@ uint_8 GetPriority(char p_sym)
 	}
 }
 
-uint_8 replace(string& p_input_str, string p_in, char p_out)
+bool replace(string& p_input_str, string p_in, char p_out)
 {
 	string::size_type l_start, l_end;
 	string l_buf;
@@ -118,7 +129,7 @@ uint_8 replace(string& p_input_str, string p_in, char p_out)
 	{
 		l_start = p_input_str.find(p_in);
 		if(l_start == string::npos)
-			return c_err_ok;
+			return true;
 
 		l_buf = p_input_str;
 		l_buf.erase(0, l_start);
@@ -126,15 +137,15 @@ uint_8 replace(string& p_input_str, string p_in, char p_out)
 		l_end = l_buf.find(")");
 		if(l_end == string::npos)
 		{
-			start = l_start;
-			return c_err_end;
+			AddError(6, l_start);
+			return false;
 		}
 
 		l_buf = l_buf.substr(p_in.size() + 1, l_end - p_in.size() - 1);
 		if(l_buf.empty())
 		{
-			start = l_start;
-			return c_err_emp;
+			AddError(7, l_start);
+			return false;
 		}
 
 		sscanf_s(l_buf.c_str(), "%f,%f", &l_a, &l_b);
@@ -177,20 +188,12 @@ bool ValidateAndPrepareInputString(string& p_input_str)
 	}
 	for(string::size_type l_count = 0; l_count < p_input_str.size(); l_count++)
 	{
+		p_input_str[l_count] = tolower(p_input_str.c_str()[l_count]);
 		if( (p_input_str.c_str()[l_count] >= '(' && p_input_str.c_str()[l_count] <= '9') ||
 			(p_input_str.c_str()[l_count] >= 'a' && p_input_str.c_str()[l_count] <= 'z') ||
-			p_input_str.c_str()[l_count] == '=' || p_input_str.c_str()[l_count] == '^' )
+			 p_input_str.c_str()[l_count] == '^' )
 		{
-			if(p_input_str.c_str()[l_count] == '(')
-			{
-				count_inp++;
-				continue;
-			}
-			if(p_input_str.c_str()[l_count] == ')')
-			{
-				count_outp++;
-				continue;
-			}
+
 		}
 		else
 		{
@@ -198,15 +201,33 @@ bool ValidateAndPrepareInputString(string& p_input_str)
 			return false;
 		}
 	}
+
+	bool l_function_ok = true;
+	l_function_ok &= replace(p_input_str, "pow", 'P');
+
+	for(string::size_type l_count = 0; l_count < p_input_str.size(); l_count++)
+	{
+		if(p_input_str.c_str()[l_count] == '(')
+		{
+			count_inp++;
+			continue;
+		}
+		if(p_input_str.c_str()[l_count] == ')')
+		{
+			count_outp++;
+			continue;
+		}
+		/* TODO
+		if(p_input_str.c_str()[l_count] >= 'a' && p_input_str.c_str()[l_count] <= 'z')
+			AddError(2, l_count);
+			return false;*/
+	}
 	if(count_inp != count_outp)
 	{
 		AddError(1, -1, count_inp, count_outp);
 		return false;
 	}
-
-	replace(p_input_str, "pow", 'P');
-
-	return true;
+	return l_function_ok;
 }
 
 /*
@@ -239,14 +260,14 @@ bool CalculateLineExpression(const string& p_input_str, string& p_output_str)
 		l_current_prioritet = GetPriority(p_input_str.c_str()[l_count]);
 		if(l_current_prioritet == priority_error)
 		{
-			AddError(l_count, 0);
+			AddError(3, l_count);
 			return false;
 		}
 		if(l_current_prioritet)
 		{
-			if(l_current_prioritet == l_old_prioritet)
+			if(l_current_prioritet == l_old_prioritet && p_input_str.c_str()[l_count] != '-')
 			{
-				AddError(l_count, 1);
+				AddError(4, l_count - 1);
 				return false;
 			}
 			if(c_operations.empty())
@@ -335,7 +356,7 @@ bool CalculateLineExpression(const string& p_input_str, string& p_output_str)
 	}
 	return true;
 }
-void Calculate(string& p_to_process_str)
+bool Calculate(string& p_to_process_str)
 {
 	string input = p_to_process_str;
 	p_to_process_str = "";
@@ -359,7 +380,11 @@ void Calculate(string& p_to_process_str)
 					p_to_process_str += l_char_buf;
 					break;
 				case '^':
-					sprintf_s(l_char_buf, " %f ", (int)a^(int)b);
+					if((int)a != a || (int)b != b)
+					{
+						AddWarning(0);
+					}
+					sprintf_s(l_char_buf, " %d ", (int)a^(int)b);
 					p_to_process_str += l_char_buf;
 					break;
 				case '*':
@@ -369,8 +394,8 @@ void Calculate(string& p_to_process_str)
 				case '/':
 					if(!b)
 					{
-						p_to_process_str = "Нельзя делить на ноль";
-						return;
+						AddError(5);
+						return false;
 					}
 					sprintf_s(l_char_buf, " %f ", a/b);
 					p_to_process_str += l_char_buf;
@@ -383,6 +408,9 @@ void Calculate(string& p_to_process_str)
 					sprintf_s(l_char_buf, " %f ", a-b);
 					p_to_process_str += l_char_buf;
 					break;
+				case ' ':
+				case '.':
+					break;
 #ifdef _DEBUG
 				default:
 					p_to_process_str = "Otput processing error!";
@@ -391,6 +419,7 @@ void Calculate(string& p_to_process_str)
 			}
 		}
 	}
+	return true;
 }
 
 void Analize(wstring p_input, wstring& p_output, wstring& p_ErrorString)
@@ -403,20 +432,17 @@ void Analize(wstring p_input, wstring& p_output, wstring& p_ErrorString)
 	l_output_str = "";
 
 	if(l_No_Error)
-		l_ErrorString = "\tFunction:\r\n" + l_input_str + "\r\n";
-
-	if(l_No_Error)
 	{
 		l_No_Error &= ValidateAndPrepareInputString(l_input_str);
 		if(l_No_Error)
 		{
-			l_ErrorString += "\tPreparing:\r\n" + l_input_str + "\r\n";
+			l_ErrorString = "\tPreparing:\r\n" + l_input_str + "\r\n";
 			CalculateLineExpression(l_input_str, l_output_str);
 			if(l_No_Error)
 			{
 				l_ErrorString += "\tRPN:\r\n" + l_output_str + "\r\n";
 				string temp = l_output_str;
-				Calculate(l_output_str);
+				l_No_Error &= Calculate(l_output_str);
 			}
 		}
 	}
