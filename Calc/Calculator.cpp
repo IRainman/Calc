@@ -374,6 +374,11 @@ void Calculate(string& p_to_process_str)
 					p_to_process_str += l_char_buf;
 					break;
 				case '/':
+					if(!b)
+					{
+						p_to_process_str = "Нельзя делить на ноль";
+						return;
+					}
 					sprintf_s(l_char_buf, " %f ", a/b);
 					p_to_process_str += l_char_buf;
 					break;
