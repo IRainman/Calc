@@ -110,7 +110,7 @@ void replace(string& p_input_str, string p_in, string p_out)
 */
 bool ValidateAndPrepareInputString(string& p_input_str)
 {
-	//bool ok = true;
+	bool ok = true;
 	uint count_inp = 0, count_outp = 0;
 	string::size_type c;
 	while(true)
@@ -123,15 +123,32 @@ bool ValidateAndPrepareInputString(string& p_input_str)
 	}
 	for(string::size_type l_count = 0; l_count < p_input_str.size(); l_count++)
 	{
-		if(p_input_str.c_str()[l_count] == '(')
+		if( (p_input_str.c_str()[l_count] >= '(' && p_input_str.c_str()[l_count] <= '9') ||
+			(p_input_str.c_str()[l_count] >= 'a' && p_input_str.c_str()[l_count] <= 'z') ||
+			p_input_str.c_str()[l_count] == '=' || p_input_str.c_str()[l_count] == '^' )
 		{
-			count_inp++;
-			continue;
+			if(p_input_str.c_str()[l_count] == '(')
+			{
+				count_inp++;
+				continue;
+			}
+			if(p_input_str.c_str()[l_count] == ')')
+			{
+				count_outp++;
+				continue;
+			}
 		}
-		if(p_input_str.c_str()[l_count] == ')')
+		else
 		{
-			count_outp++;
-			continue;
+			char l_char_buf[100];
+			TCHAR l_wchar_buf[100];
+
+			_itoa_s(l_count, l_char_buf, 100, 10);
+			wsprintf(l_wchar_buf, L"%hs", l_char_buf);
+			m_ErrorString += (wstring)L"В позиции " + l_wchar_buf +
+				(wstring)L" обнаружен неизвестный символ\r\n";
+
+			ok = false;
 		}
 	}
 	if(count_inp != count_outp)
@@ -155,7 +172,7 @@ bool ValidateAndPrepareInputString(string& p_input_str)
 
 	replace(p_input_str, "pow", 'P');
 
-	return true;
+	return ok;
 }
 /*
 void AddFunctionError(const string& p_function, uint_8 p_error)
@@ -350,10 +367,11 @@ void Calculate(string& p_to_process_str)
 					sprintf_s(l_char_buf, " %f ", a-b);
 					p_to_process_str += l_char_buf;
 					break;
-
+#ifdef _DEBUG
 				default:
-					p_to_process_str = "Otput processing error! =)";
+					p_to_process_str = "Otput processing error!";
 					break;
+#endif
 			}
 		}
 	}
