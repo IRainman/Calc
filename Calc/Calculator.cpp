@@ -251,7 +251,7 @@ bool CalculateLineExpression(const string& p_input_str, string& p_output_str)
 							b)	опеpация выталкивает из стека все опеpации с большим или pавным пpиоpитетом в выходную стpоку;
 							*/
 							p_output_str += c_operations.top();
-							c_coordinate.push_back(p_output_str.size()/*+1*/);
+							c_coordinate.push_back(p_output_str.size());
 							c_operations.pop();
 							if(c_operations.empty())
 							{
@@ -295,7 +295,7 @@ bool CalculateLineExpression(const string& p_input_str, string& p_output_str)
 							else
 							{
 								p_output_str += c_operations.top();
-								c_coordinate.push_back(p_output_str.size()/*+1*/);
+								c_coordinate.push_back(p_output_str.size());
 								c_operations.pop();
 								p_output_str += " ";
 							}
@@ -311,7 +311,7 @@ bool CalculateLineExpression(const string& p_input_str, string& p_output_str)
 				while(!c_operations.empty())
 				{
 					p_output_str += c_operations.top();
-					c_coordinate.push_back(p_output_str.size()/*+1*/);
+					c_coordinate.push_back(p_output_str.size());
 					c_operations.pop();
 				}
 				return true;
