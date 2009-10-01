@@ -3,10 +3,10 @@
 //TODO #define _USE_MATH_DEFINES
 #include <math.h>
 #include <stack>
-//#include <map>
+#include <list>
 #include "MyTypes.h"
 
-//map <string::size_type, uint_8> c_coordinate;
+list <string::size_type> c_coordinate;
 //static string m_buf;
 static string::size_type start;//, end/*, point*/;
 static wstring m_ErrorString;
@@ -201,51 +201,14 @@ uint_8 find(const string& inp, const string& st, const string& en) {
 	return c_err_ok;
 }
 */
-/*bool ProcessingFunction(string& p_input, const string& p_start, const string& p_end, bool p_two_arguments = false)
-{
-	while(true)
-	{
-		switch(find(p_input, p_start, p_end))
-		{
-			case c_err_nf:
-				return true;
-			case c_err_end:
-				AddFunctionError(p_start, p_end);
-				return false;
-			case c_err_emp:
-				AddFunctionError(p_start, p_end, true);
-				return false;
-			case c_err_ok:
-				p_input.erase(start, end + p_end.size() - start);
-
-				string::size_type l_separator = m_buf.find(',');
-				if(p_two_arguments)
-				{
-					if(l_separator == string::npos)
-					{
-					//	AddArgumentError(p_start, p_end);
-						return false;
-					}
-
-				}
-				else
-				{
-					if(l_separator != string::npos)
-					{
-					//	AddArgumentError(p_start, p_end);
-						return false;
-					}
-					a = atof(m_buf.c_str());
-					point = start;
-				}
-		}
-	}
-}
-*/
 bool CalculateLineExpression(const string& p_input_str, string& p_output_str)
 {
 	uint_8 l_current_prioritet;
 	stack <char> c_operations;
+	if(!c_coordinate.empty())
+	{
+		c_coordinate.erase(c_coordinate.begin());
+	}
 	for(string::size_type l_count = 0; l_count < p_input_str.size(); l_count++)
 	{
 		l_current_prioritet = GetPriority(p_input_str.c_str()[l_count]);
@@ -271,7 +234,7 @@ bool CalculateLineExpression(const string& p_input_str, string& p_output_str)
 							b)	опеpация выталкивает из стека все опеpации с большим или pавным пpиоpитетом в выходную стpоку;
 							*/
 							p_output_str += c_operations.top();
-//							c_coordinate.insert(p_output_str.size()/*+1*/, GetPriority(c_operations.top()));
+							c_coordinate.push_back(p_output_str.size()/*+1*/);
 							c_operations.pop();
 							if(c_operations.empty())
 							{
@@ -315,7 +278,7 @@ bool CalculateLineExpression(const string& p_input_str, string& p_output_str)
 							else
 							{
 								p_output_str += c_operations.top();
-//								c_coordinate.insert(p_output_str.size()/*+1*/, GetPriority(c_operations.top()));
+								c_coordinate.push_back(p_output_str.size()/*+1*/);
 								c_operations.pop();
 								p_output_str += " ";
 							}
@@ -331,7 +294,7 @@ bool CalculateLineExpression(const string& p_input_str, string& p_output_str)
 				while(!c_operations.empty())
 				{
 					p_output_str += c_operations.top();
-//					c_coordinate.insert(p_output_str.size()/*+1*/, GetPriority(c_operations.top()));
+					c_coordinate.push_back(p_output_str.size()/*+1*/);
 					c_operations.pop();
 				}
 				return true;
@@ -353,12 +316,12 @@ void Calculate(string& p_to_process_str)
 	string::size_type l_count = 0;
 	while(l_count < input.size())
 	{
-		sscanf_s(input.c_str(), "%f,%f", &a, &b);
-		
-		input.erase(l_count, l_count + 1);
-		//p_input_str.insert(l_start, l_char_buf);
-
-// вынуть циферки
+		sscanf_s(input.c_str(), "%f %f", &a, &b);
+		if(!c_coordinate.empty())
+		{
+			input.erase(l_count, c_coordinate.front() - 1);
+			c_coordinate.pop_front();
+		}
 		for(l_count = 0; l_count < input.size(); l_count++)
 		{
 			switch(input.c_str()[l_count])
@@ -374,17 +337,22 @@ void Calculate(string& p_to_process_str)
 				case '*':
 					sprintf_s(l_char_buf, " %f ", a*b);
 					p_to_process_str += l_char_buf;
+					break;
 				case '/':
 					sprintf_s(l_char_buf, " %f ", a/b);
 					p_to_process_str += l_char_buf;
+					break;
 				case '+':
 					sprintf_s(l_char_buf, " %f ", a+b);
 					p_to_process_str += l_char_buf;
+					break;
 				case '-':
 					sprintf_s(l_char_buf, " %f ", a-b);
 					p_to_process_str += l_char_buf;
+					break;
 
 				default:
+					p_to_process_str = "Otput processing error! =)";
 					break;
 			}
 		}
