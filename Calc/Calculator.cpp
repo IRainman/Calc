@@ -1,15 +1,26 @@
-#include "stdafx.h"
+
+#ifdef _MSC_VER
+	#include "stdafx.h"
+/*#elif __INTEL_COMPILER
+	// TODO */
+
+// #endif // The comment is used in a silly Visual Studio :)
+//---------------------------------------------------------------------------
+#ifndef _CALCULATOR_CPP
+#define _CALCULATOR_CPP
+//---------------------------------------------------------------------------
 #include "Calculator.h"
+#include <string>
 //TODO #define _USE_MATH_DEFINES
 #include <math.h>
 #include <stack>
 #include <list>
 #include "MyTypes.h"
-
-list <string::size_type> c_coordinate;
-
+//---------------------------------------------------------------------------
+static list <string::size_type> c_coordinate;
+//---------------------------------------------------------------------------
 static wstring m_ErrorString;
-
+//---------------------------------------------------------------------------
 static const uint_8 priority_function =	16;
 static const uint_8 priority_power =	8;
 static const uint_8 priority_multiply =	4;
@@ -17,7 +28,31 @@ static const uint_8 priority_addition =	2;
 static const uint_8 priority_bracket =	1;
 static const uint_8 priority_default =	0;
 static const uint_8 priority_error =	-1;
-
+//---------------------------------------------------------------------------
+void AddMessage(uint_8 p_message, const string& p_string_message)
+{
+	switch(p_message)
+	{
+		case 0:
+			m_ErrorString += L"\tПодготовка:\r\n";
+			break;
+		case 1:
+			m_ErrorString += L"\tСоздание RPN:\r\n";
+		case 2:
+			break;
+#ifdef _DEBUG
+		default:
+			m_ErrorString += L" DEBUG: Unknown Message!";
+			break;
+#endif
+	}
+	wstring l_message;
+	l_message.assign(p_string_message.begin(), p_string_message.end());
+	static wchar_t l_wchar_buf[1024];
+	swprintf_s(l_wchar_buf, L"%s", l_wchar_buf);
+	m_ErrorString += l_wchar_buf;
+}
+//---------------------------------------------------------------------------
 void AddWarning(uint_8 p_message)
 {
 	switch(p_message)
@@ -25,16 +60,21 @@ void AddWarning(uint_8 p_message)
 		case 0:
 			m_ErrorString += L"Внимание: аргументы операции x^y будут приведены к целочисленному типу. Для вещественных типов используйте функцию pow(x,y)";
 			break;
+#ifdef _DEBUG
+		default:
+			m_ErrorString += L"DEBUG: Unknown Warning!";
+			break;
+#endif
 	}
 	m_ErrorString += L"\r\n";
 }
-
+//---------------------------------------------------------------------------
 void AddError(uint_8 p_message, string::size_type p_count = -1, string::size_type p_1 = 0, string::size_type p_2 = 0)
 {
-	wstring l_error;
-	wchar_t l_1[6];
+	static wstring l_error;
+	static wchar_t l_1[6];
 	_itow_s(p_1, l_1, 10);
-	wchar_t l_2[6];
+	static wchar_t l_2[6];
 	_itow_s(p_2, l_2, 10);
 	switch(p_message)
 	{
@@ -42,9 +82,9 @@ void AddError(uint_8 p_message, string::size_type p_count = -1, string::size_typ
 			l_error = L"Недопустимый символ";
 			break;
 		case 1:
-			l_error = (wstring)L"Количество открывающих " + (wstring)l_1 +
-				(wstring)L" и закрывающих " + (wstring)l_2 +
-				(wstring)L" скобок не совпадает";
+			l_error = L"Количество открывающих " + (wstring)l_1 +
+				L" и закрывающих " + (wstring)l_2 +
+				L" скобок не совпадает";
 			break;
 		case 2:
 			l_error = L"Недопустимый символ после проверки на функции, проверьте правильность их написания";
@@ -59,16 +99,30 @@ void AddError(uint_8 p_message, string::size_type p_count = -1, string::size_typ
 			l_error = L"На ноль делить нельзя";
 			break;
 		case 6:
-			l_error = L"закр скобка";
+			l_error = L"У функции нехватает закрывающей скобки";
 			break;
 		case 7:
-			l_error = L"аргументы";
+			l_error = L"У функции отсутсвуют аргументы";
 			break;
 		case 8:
 			l_error = L"Недостаточно операндов для получения результата";
 			break;
+		case 9:
+			l_error = L"Выражение не может начинатся со знака операции";
+			break;
+		case 10:
+			l_error = L"У функции неверное число аргументов необходимо " + (wstring)l_1 + L", обнаружено " + (wstring)l_2;
+			break;
+#ifdef _DEBUG
+		case 255:
+			l_error = L"DEBUG: number of arguments passed to the function \"replace\" is not defined in the function of \"replace\", it is impossible to calculate the expression";
+			break;
+		default:
+			l_error = L"DEBUG: Unknown Error!";
+			break;
+#endif
 	}
-	TCHAR l_wchar_buf[1024];
+	static wchar_t l_wchar_buf[1024];
 	if(p_count == -1)
 	{
 		swprintf_s(l_wchar_buf, L"Ошибка: %s\r\n", l_error.c_str());
@@ -79,7 +133,7 @@ void AddError(uint_8 p_message, string::size_type p_count = -1, string::size_typ
 	}
 	m_ErrorString += l_wchar_buf;
 }
-
+//---------------------------------------------------------------------------
 uint_8 GetPriority(char p_sym)
 {
 	switch(p_sym)
@@ -121,12 +175,12 @@ uint_8 GetPriority(char p_sym)
 			return priority_error;
 	}
 }
-
-bool replace(string& p_input_str, string p_in, char p_out)
+//---------------------------------------------------------------------------
+bool replace(string& p_input_str, string p_in, char p_out, uint_8 p_number_of_param)
 {
 	string::size_type l_start, l_end;
 	string l_buf;
-	char l_char_buf[200];
+	static char l_char_buf[200];
 	float l_a, l_b;
 	while(true)
 	{
@@ -150,14 +204,43 @@ bool replace(string& p_input_str, string p_in, char p_out)
 			AddError(7, l_start);
 			return false;
 		}
-
-		sscanf_s(l_buf.c_str(), "%f,%f", &l_a, &l_b);
-		sprintf_s(l_char_buf, " %f%c%f ", l_a, p_out, l_b);
+		string::size_type c;
+		uint_8 count = 0;
+		while(true)
+		{
+			c = l_buf.find(",");
+			if(c != string::npos)
+			{
+				l_buf.erase(c, 1);
+				l_buf.insert(c, " ");
+				count++;
+			}
+			else
+				break;
+		}
+		if(count != p_number_of_param - 1)
+		{
+			AddError(10, l_start, p_number_of_param, count + 1);
+			return false;
+		}
+		switch(p_number_of_param)
+		{
+			case 2:
+				sscanf_s(l_buf.c_str(), "%f %f", &l_a, &l_b);
+				sprintf_s(l_char_buf, " %f%c%f ", l_a, p_out, l_b);
+				break;
+#ifdef _DEBUG
+			default:
+				AddError(10, l_start, p_number_of_param, count + 1);
+				return false;
+#endif
+		}
 		p_input_str.erase(l_start, l_start + l_end + 1);
 		p_input_str.insert(l_start, l_char_buf);
 	}
 }
-/*
+//---------------------------------------------------------------------------
+/* TODO
 void replace(string& p_input_str, string p_in, string p_out)
 {
 	string::size_type l_start;
@@ -177,6 +260,7 @@ void replace(string& p_input_str, string p_in, string p_out)
 	}
 }
 */
+//---------------------------------------------------------------------------
 bool ValidateAndPrepareInputString(string& p_input_str)
 {
 	uint count_inp = 0, count_outp = 0;
@@ -206,7 +290,8 @@ bool ValidateAndPrepareInputString(string& p_input_str)
 	}
 
 	bool l_function_ok = true;
-	l_function_ok &= replace(p_input_str, "pow", 'P');
+
+	l_function_ok &= replace(p_input_str, "pow", 'P', 2);
 
 	for(string::size_type l_count = 0; l_count < p_input_str.size(); l_count++)
 	{
@@ -220,10 +305,11 @@ bool ValidateAndPrepareInputString(string& p_input_str)
 			count_outp++;
 			continue;
 		}
-		/* TODO
 		if(p_input_str.c_str()[l_count] >= 'a' && p_input_str.c_str()[l_count] <= 'z')
+		{
 			AddError(2, l_count);
-			return false;*/
+			return false;
+		}
 	}
 	if(count_inp != count_outp)
 	{
@@ -232,24 +318,7 @@ bool ValidateAndPrepareInputString(string& p_input_str)
 	}
 	return l_function_ok;
 }
-
-/*
-uint_8 find(const string& inp, const string& st, const string& en) {
-	start = inp.find(st);
-	if(start == string::npos)
-		return c_err_nf;
-
-	end = inp.find(en);
-	if(end == string::npos)
-		return c_err_end;
-
-	m_buf = inp.substr(start + st.size(), end - (start + st.size()));
-	if(m_buf.empty())
-		return c_err_emp;
-
-	return c_err_ok;
-}
-*/
+//---------------------------------------------------------------------------
 bool CalculateLineExpression(const string& p_input_str, string& p_output_str)
 {
 	uint_8 l_current_prioritet = priority_error, l_old_prioritet = priority_error;
@@ -259,16 +328,21 @@ bool CalculateLineExpression(const string& p_input_str, string& p_output_str)
 		c_coordinate.erase(c_coordinate.begin());
 	}
 	string::size_type l_count = 0;
+	if(GetPriority(p_input_str.c_str()[l_count]) > priority_bracket && p_input_str.c_str()[l_count] != '-')
+	{
+		AddError(9);
+		return false;
+	}
 	for(; l_count < p_input_str.size(); l_count++)
 	{
 		l_current_prioritet = GetPriority(p_input_str.c_str()[l_count]);
-		if(l_current_prioritet == priority_error)
-		{
-			AddError(3, l_count);
-			return false;
-		}
 		if(l_current_prioritet)
 		{
+			if(l_current_prioritet == priority_error)
+			{
+				AddError(3, l_count);
+				return false;
+			}
 			if(l_current_prioritet == l_old_prioritet && p_input_str.c_str()[l_count] != '-')
 			{
 				AddError(4, l_count - 1);
@@ -365,12 +439,12 @@ bool CalculateLineExpression(const string& p_input_str, string& p_output_str)
 	}
 	return true;
 }
-bool Calculate(string& p_to_process_str)
+//---------------------------------------------------------------------------
+bool TranslateToOutputString(string& p_to_process_str)
 {
 	string input = p_to_process_str;
 	p_to_process_str = "";
-	bool ret_ok = true;
-	char l_char_buf[200];
+	static char l_char_buf[200];
 	float a, b, c;
 	uint_8 count;
 	string::size_type l_count = 0;
@@ -379,9 +453,8 @@ bool Calculate(string& p_to_process_str)
 	switch(count)
 	{
 		case 255:
-			AddError(8);;
-			ret_ok = false;
-			break;
+			AddError(8);
+			return false;
 		case 1:
 			if(!c_coordinate.empty())
 			{
@@ -394,8 +467,6 @@ bool Calculate(string& p_to_process_str)
 			}
 			p_to_process_str = l_char_buf;
 			return true;
-/*		case 2:
-			break;*/
 		case 3:
 			a=b;
 			b=c;
@@ -446,57 +517,54 @@ bool Calculate(string& p_to_process_str)
 			break;
 #ifdef _DEBUG
 		default:
-			p_to_process_str += "}|{OPE!";
+			p_to_process_str += "DEBUG: Internal Processing Error!";
 			break;
 #endif
 	}
-	return ret_ok;
+	return true;
 }
-
-void Analize(wstring p_input, wstring& p_output, wstring& p_ErrorString)
+//---------------------------------------------------------------------------
+wstring& Calculate(wstring p_input, wstring& p_output)
 {
 	m_ErrorString = L"";
 	bool l_No_Error = true;
 
-	static string l_input_str, l_output_str, l_ErrorString;
+	static string l_input_str, l_output_str;
 	l_input_str.assign(p_input.begin(), p_input.end());
-	l_output_str = "";
+	//l_output_str = "";
 
 	if(l_No_Error)
 	{
 		l_No_Error &= ValidateAndPrepareInputString(l_input_str);
 		if(l_No_Error)
 		{
-			l_ErrorString = "\tPreparing:\r\n" + l_input_str + "\r\n";
-			CalculateLineExpression(l_input_str, l_output_str);
+			AddMessage(0, l_input_str);
+			l_No_Error &= CalculateLineExpression(l_input_str, l_output_str);
 			if(l_No_Error)
 			{
-				l_ErrorString += "\tRPN:\r\n" + l_output_str + "\r\n";
-				l_No_Error &= Calculate(l_output_str);
-				string::size_type c;
-				while(l_No_Error)
+				AddMessage(1, l_output_str);
+				l_No_Error &= TranslateToOutputString(l_output_str);
+				if(l_No_Error)
 				{
-					c = l_output_str.find(" ");
-					if(c != string::npos)
-						l_output_str.erase(c, 1);
-					else
-						break;
+					//AddMessage();
+					string::size_type c;
+					while(l_No_Error)
+					{
+						c = l_output_str.find(" ");
+						if(c != string::npos)
+							l_output_str.erase(c, 1);
+						else
+							break;
+					}
 				}
 			}
 		}
 	}
-
 	if(l_No_Error)
 	{
-		p_ErrorString.assign(l_ErrorString.begin(), l_ErrorString.end());
-		p_ErrorString += L"\r\nПреобразование выполнено успешно";
-
-		p_output = L"";
 		p_output.assign(l_output_str.begin(), l_output_str.end());
 	}
-	else
-	{
-		p_ErrorString = L"";
-		p_ErrorString.assign(m_ErrorString.begin(), m_ErrorString.end());
-	}
+	return m_ErrorString;
 }
+//---------------------------------------------------------------------------
+#endif // _CALCULATOR_CPP

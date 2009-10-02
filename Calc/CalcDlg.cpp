@@ -156,12 +156,12 @@ HCURSOR CCalcDlg::OnQueryDragIcon()
 
 void CCalcDlg::OnEnChangeEditInput()
 {
-	TCHAR l_input[c_string_size];
-	wstring l_output, l_ErrorString;
+	static wchar_t l_input[4096];
+	std::wstring l_output;
 
-	if(GetDlgItemText(IDC_EDIT_INPUT, l_input, c_string_size))
+	if(GetDlgItemText(IDC_EDIT_INPUT, l_input, 4096))
 	{
-		Analize(l_input, l_output, l_ErrorString);
+		std::wstring& l_ErrorString = Calculate(l_input, l_output);
 		SetDlgItemText(IDC_EDIT_MESSAGE, l_ErrorString.c_str());
 		SetDlgItemText(IDC_EDIT_RESULT, l_output.c_str());
 	}

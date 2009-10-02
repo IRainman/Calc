@@ -237,6 +237,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\MyTypes.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Resource.h"
 				>
 			</File>
