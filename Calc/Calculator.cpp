@@ -294,7 +294,7 @@ bool CalculateLineExpression(const string& p_input_str, string& p_output_str)
 							b)	опеpация выталкивает из стека все опеpации с большим или pавным пpиоpитетом в выходную стpоку;
 							*/
 							p_output_str += c_operations.top();
-							c_coordinate.push_back(p_output_str.size());
+							c_coordinate.push_back(p_output_str.size() - 1);
 							c_operations.pop();
 							if(c_operations.empty())
 							{
@@ -338,7 +338,7 @@ bool CalculateLineExpression(const string& p_input_str, string& p_output_str)
 							else
 							{
 								p_output_str += c_operations.top();
-								c_coordinate.push_back(p_output_str.size());
+								c_coordinate.push_back(p_output_str.size() - 1);
 								c_operations.pop();
 								p_output_str += " ";
 							}
@@ -360,7 +360,7 @@ bool CalculateLineExpression(const string& p_input_str, string& p_output_str)
 	while(!c_operations.empty())
 	{
 		p_output_str += c_operations.top();
-		c_coordinate.push_back(p_output_str.size() + c_operations.size() - 2); // [!] убрать size или перенести обавление в др. место
+		c_coordinate.push_back(p_output_str.size() + c_operations.size() - 2);
 		c_operations.pop();
 	}
 	return true;
@@ -404,7 +404,7 @@ bool Calculate(string& p_to_process_str)
 		}
 		if(!c_coordinate.empty())
 		{
-			input.erase(l_count, c_coordinate.front() - 1);
+			input.erase(l_count, c_coordinate.front());
 			c_coordinate.pop_front();
 		}
 		for(l_count = 0; l_count < input.size(); l_count++)
