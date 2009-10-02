@@ -64,6 +64,9 @@ void AddError(uint_8 p_message, string::size_type p_count = -1, string::size_typ
 		case 7:
 			l_error = L"аргументы";
 			break;
+		case 8:
+			l_error = L"Недостаточно операндов для получения результата";
+			break;
 	}
 	TCHAR l_wchar_buf[1024];
 	if(p_count == -1)
@@ -255,7 +258,8 @@ bool CalculateLineExpression(const string& p_input_str, string& p_output_str)
 	{
 		c_coordinate.erase(c_coordinate.begin());
 	}
-	for(string::size_type l_count = 0; l_count < p_input_str.size(); l_count++)
+	string::size_type l_count = 0;
+	for(; l_count < p_input_str.size(); l_count++)
 	{
 		l_current_prioritet = GetPriority(p_input_str.c_str()[l_count]);
 		if(l_current_prioritet == priority_error)
@@ -348,10 +352,15 @@ bool CalculateLineExpression(const string& p_input_str, string& p_output_str)
 			p_output_str += p_input_str.c_str()[l_count];
 		}
 	}
+	if(l_current_prioritet > priority_bracket)
+	{
+		AddError(8, l_count);
+		return false;
+	}
 	while(!c_operations.empty())
 	{
 		p_output_str += c_operations.top();
-		c_coordinate.push_back(p_output_str.size());
+		c_coordinate.push_back(p_output_str.size() + c_operations.size() - 2); // [!] убрать size или перенести обавление в др. место
 		c_operations.pop();
 	}
 	return true;
@@ -360,12 +369,39 @@ bool Calculate(string& p_to_process_str)
 {
 	string input = p_to_process_str;
 	p_to_process_str = "";
+	bool ret_ok = true;
 	char l_char_buf[200];
-	float a, b;
+	float a, b, c;
+	uint_8 count;
 	string::size_type l_count = 0;
 	while(l_count < input.size())
 	{
-		sscanf_s(input.c_str(), "%f %f", &a, &b);
+		count = sscanf_s(input.c_str(), "%f %f %f", &a, &b, &c);
+		switch(count)
+		{
+			case 255:
+				AddError(8);;
+				ret_ok = false;
+				break;
+			case 1:
+				if(!c_coordinate.empty())
+				{
+					sprintf_s(l_char_buf, "%c%f", input.c_str()[c_coordinate.front()], a);
+					c_coordinate.pop_front();
+				}
+				else
+				{
+					sprintf_s(l_char_buf, "%f", a);
+				}
+				p_to_process_str = l_char_buf;
+				return true;
+			case 2:
+				break;
+			case 3:
+				a=b;
+				b=c;
+				break;
+		}
 		if(!c_coordinate.empty())
 		{
 			input.erase(l_count, c_coordinate.front() - 1);
@@ -413,13 +449,13 @@ bool Calculate(string& p_to_process_str)
 					break;
 #ifdef _DEBUG
 				default:
-					p_to_process_str = "Otput processing error!";
+					p_to_process_str += "}|{OPE!";
 					break;
 #endif
 			}
 		}
 	}
-	return true;
+	return ret_ok;
 }
 
 void Analize(wstring p_input, wstring& p_output, wstring& p_ErrorString)
@@ -441,7 +477,6 @@ void Analize(wstring p_input, wstring& p_output, wstring& p_ErrorString)
 			if(l_No_Error)
 			{
 				l_ErrorString += "\tRPN:\r\n" + l_output_str + "\r\n";
-				string temp = l_output_str;
 				l_No_Error &= Calculate(l_output_str);
 			}
 		}
