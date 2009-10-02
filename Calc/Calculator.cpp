@@ -196,7 +196,7 @@ bool ValidateAndPrepareInputString(string& p_input_str)
 			(p_input_str.c_str()[l_count] >= 'a' && p_input_str.c_str()[l_count] <= 'z') ||
 			 p_input_str.c_str()[l_count] == '^' )
 		{
-
+			// TODO переписать :) 
 		}
 		else
 		{
@@ -252,7 +252,7 @@ uint_8 find(const string& inp, const string& st, const string& en) {
 */
 bool CalculateLineExpression(const string& p_input_str, string& p_output_str)
 {
-	uint_8 l_current_prioritet, l_old_prioritet = priority_error;
+	uint_8 l_current_prioritet = priority_error, l_old_prioritet = priority_error;
 	stack <char> c_operations;
 	if(!c_coordinate.empty())
 	{
@@ -374,86 +374,81 @@ bool Calculate(string& p_to_process_str)
 	float a, b, c;
 	uint_8 count;
 	string::size_type l_count = 0;
-	while(l_count < input.size())
+
+	count = sscanf_s(input.c_str(), "%f %f %f", &a, &b, &c);
+	switch(count)
 	{
-		count = sscanf_s(input.c_str(), "%f %f %f", &a, &b, &c);
-		switch(count)
-		{
-			case 255:
-				AddError(8);;
-				ret_ok = false;
-				break;
-			case 1:
-				if(!c_coordinate.empty())
-				{
-					sprintf_s(l_char_buf, "%c%f", input.c_str()[c_coordinate.front()], a);
-					c_coordinate.pop_front();
-				}
-				else
-				{
-					sprintf_s(l_char_buf, "%f", a);
-				}
-				p_to_process_str = l_char_buf;
-				return true;
-			case 2:
-				break;
-			case 3:
-				a=b;
-				b=c;
-				break;
-		}
-		if(!c_coordinate.empty())
-		{
-			input.erase(l_count, c_coordinate.front());
-			c_coordinate.pop_front();
-		}
-		for(l_count = 0; l_count < input.size(); l_count++)
-		{
-			switch(input.c_str()[l_count])
+		case 255:
+			AddError(8);;
+			ret_ok = false;
+			break;
+		case 1:
+			if(!c_coordinate.empty())
 			{
-				case 'P':
-					sprintf_s(l_char_buf, " %f ", pow(a,b));
-					p_to_process_str += l_char_buf;
-					break;
-				case '^':
-					if((int)a != a || (int)b != b)
-					{
-						AddWarning(0);
-					}
-					sprintf_s(l_char_buf, " %d ", (int)a^(int)b);
-					p_to_process_str += l_char_buf;
-					break;
-				case '*':
-					sprintf_s(l_char_buf, " %f ", a*b);
-					p_to_process_str += l_char_buf;
-					break;
-				case '/':
-					if(!b)
-					{
-						AddError(5);
-						return false;
-					}
-					sprintf_s(l_char_buf, " %f ", a/b);
-					p_to_process_str += l_char_buf;
-					break;
-				case '+':
-					sprintf_s(l_char_buf, " %f ", a+b);
-					p_to_process_str += l_char_buf;
-					break;
-				case '-':
-					sprintf_s(l_char_buf, " %f ", a-b);
-					p_to_process_str += l_char_buf;
-					break;
-				case ' ':
-				case '.':
-					break;
-#ifdef _DEBUG
-				default:
-					p_to_process_str += "}|{OPE!";
-					break;
-#endif
+				sprintf_s(l_char_buf, "%c%f", input.c_str()[c_coordinate.front()], a);
+				c_coordinate.pop_front();
 			}
-		}
+			else
+			{
+				sprintf_s(l_char_buf, "%f", a);
+			}
+			p_to_process_str = l_char_buf;
+			return true;
+/*		case 2:
+			break;*/
+		case 3:
+			a=b;
+			b=c;
+			break;
+	}
+	if(!c_coordinate.empty())
+	{
+		input.erase(l_count, c_coordinate.front());
+		c_coordinate.pop_front();
+	}
+	switch(input.c_str()[l_count])
+	{
+		case 'P':
+			sprintf_s(l_char_buf, " %f ", pow(a,b));
+			p_to_process_str += l_char_buf;
+			break;
+		case '^':
+			if((int)a != a || (int)b != b)
+			{
+				AddWarning(0);
+			}
+			sprintf_s(l_char_buf, " %d ", (int)a^(int)b);
+			p_to_process_str += l_char_buf;
+			break;
+		case '*':
+			sprintf_s(l_char_buf, " %f ", a*b);
+			p_to_process_str += l_char_buf;
+			break;
+		case '/':
+			if(!b)
+			{
+				AddError(5);
+				return false;
+			}
+			sprintf_s(l_char_buf, " %f ", a/b);
+			p_to_process_str += l_char_buf;
+			break;
+		case '+':
+			sprintf_s(l_char_buf, " %f ", a+b);
+			p_to_process_str += l_char_buf;
+			break;
+		case '-':
+			sprintf_s(l_char_buf, " %f ", a-b);
+			p_to_process_str += l_char_buf;
+			break;
+		case ' ':
+		case '.':
+			break;
+#ifdef _DEBUG
+		default:
+			p_to_process_str += "}|{OPE!";
+			break;
+#endif
 	}
 	return ret_ok;
 }
@@ -478,6 +473,15 @@ void Analize(wstring p_input, wstring& p_output, wstring& p_ErrorString)
 			{
 				l_ErrorString += "\tRPN:\r\n" + l_output_str + "\r\n";
 				l_No_Error &= Calculate(l_output_str);
+				string::size_type c;
+				while(l_No_Error)
+				{
+					c = l_output_str.find(" ");
+					if(c != string::npos)
+						l_output_str.erase(c, 1);
+					else
+						break;
+				}
 			}
 		}
 	}
