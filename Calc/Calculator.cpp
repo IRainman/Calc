@@ -48,9 +48,7 @@ void AddMessage(uint_8 p_message, const string& p_string_message)
 	}
 	wstring l_message;
 	l_message.assign(p_string_message.begin(), p_string_message.end());
-	static wchar_t l_wchar_buf[1024];
-	swprintf_s(l_wchar_buf, L"%s", l_wchar_buf);
-	m_ErrorString += l_wchar_buf;
+	m_ErrorString += l_message + L"\r\n";
 }
 //---------------------------------------------------------------------------
 void AddWarning(uint_8 p_message)
@@ -343,7 +341,7 @@ bool CalculateLineExpression(const string& p_input_str, string& p_output_str)
 				AddError(3, l_count);
 				return false;
 			}
-			if(l_current_prioritet == l_old_prioritet && p_input_str.c_str()[l_count] != '-')
+			if(l_old_prioritet && l_current_prioritet >= l_old_prioritet && p_input_str.c_str()[l_count] != '-')
 			{
 				AddError(4, l_count - 1);
 				return false;
@@ -425,6 +423,7 @@ bool CalculateLineExpression(const string& p_input_str, string& p_output_str)
 		{
 			p_output_str += p_input_str.c_str()[l_count];
 		}
+		l_old_prioritet = l_current_prioritet;
 	}
 	if(l_current_prioritet > priority_bracket)
 	{
@@ -529,33 +528,29 @@ wstring& Calculate(wstring p_input, wstring& p_output)
 	m_ErrorString = L"";
 	bool l_No_Error = true;
 
-	static string l_input_str, l_output_str;
+	string l_input_str, l_output_str;
 	l_input_str.assign(p_input.begin(), p_input.end());
-	//l_output_str = "";
 
+	l_No_Error &= ValidateAndPrepareInputString(l_input_str);
 	if(l_No_Error)
 	{
-		l_No_Error &= ValidateAndPrepareInputString(l_input_str);
+		AddMessage(0, l_input_str);
+		l_No_Error &= CalculateLineExpression(l_input_str, l_output_str);
 		if(l_No_Error)
 		{
-			AddMessage(0, l_input_str);
-			l_No_Error &= CalculateLineExpression(l_input_str, l_output_str);
+			AddMessage(1, l_output_str);
+			l_No_Error &= TranslateToOutputString(l_output_str);
 			if(l_No_Error)
 			{
-				AddMessage(1, l_output_str);
-				l_No_Error &= TranslateToOutputString(l_output_str);
-				if(l_No_Error)
+				//AddMessage();
+				string::size_type c;
+				while(l_No_Error)
 				{
-					//AddMessage();
-					string::size_type c;
-					while(l_No_Error)
-					{
-						c = l_output_str.find(" ");
-						if(c != string::npos)
-							l_output_str.erase(c, 1);
-						else
-							break;
-					}
+					c = l_output_str.find(" ");
+					if(c != string::npos)
+						l_output_str.erase(c, 1);
+					else
+						break;
 				}
 			}
 		}
