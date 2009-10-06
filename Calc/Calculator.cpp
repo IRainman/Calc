@@ -16,8 +16,7 @@
 #include <stack>
 #include <list>
 #include "MyTypes.h"
-//---------------------------------------------------------------------------
-static list <string::size_type> c_coordinate;
+
 //---------------------------------------------------------------------------
 static wstring m_ErrorString;
 //---------------------------------------------------------------------------
@@ -164,7 +163,6 @@ uint_8 GetPriority(char p_sym)
 		case '7':
 		case '8':
 		case '9':
-		case '=':
 		case '.':
 		case ' ':
 			return priority_default;
@@ -179,7 +177,7 @@ bool replace(string& p_input_str, string p_in, char p_out, uint_8 p_number_of_pa
 	string::size_type l_start, l_end;
 	string l_buf;
 	static char l_char_buf[200];
-	float l_a, l_b;
+	double l_a, l_b;
 	while(true)
 	{
 		l_start = p_input_str.find(p_in);
@@ -224,8 +222,8 @@ bool replace(string& p_input_str, string p_in, char p_out, uint_8 p_number_of_pa
 		switch(p_number_of_param)
 		{
 			case 2:
-				sscanf_s(l_buf.c_str(), "%f %f", &l_a, &l_b);
-				sprintf_s(l_char_buf, " %f%c%f ", l_a, p_out, l_b);
+				sscanf_s(l_buf.c_str(), "%lf %lf", &l_a, &l_b);
+				sprintf_s(l_char_buf, " %lf%c%lf ", l_a, p_out, l_b);
 				break;
 #ifdef _DEBUG
 			default:
@@ -238,8 +236,7 @@ bool replace(string& p_input_str, string p_in, char p_out, uint_8 p_number_of_pa
 	}
 }
 //---------------------------------------------------------------------------
-/* TODO
-void replace(string& p_input_str, string p_in, string p_out)
+void replace(string& p_input_str, string p_in, string p_out, string::size_type p_count_end)
 {
 	string::size_type l_start;
 	while(true)
@@ -252,17 +249,17 @@ void replace(string& p_input_str, string p_in, string p_out)
 		}
 		else
 		{
-			p_input_str.erase(l_start, p_in.size() - l_start);
-			p_input_str.insert(l_start, p_out);
+			p_input_str.erase(l_start + 1, p_count_end - l_start);
+			p_input_str.insert(l_start + 1, p_out);
 		}
 	}
 }
-*/
 //---------------------------------------------------------------------------
 bool ValidateAndPrepareInputString(string& p_input_str)
 {
 	uint count_inp = 0, count_outp = 0;
 	string::size_type c;
+
 	while(true)
 	{
 		c = p_input_str.find(" ");
@@ -271,6 +268,7 @@ bool ValidateAndPrepareInputString(string& p_input_str)
 		else
 			break;
 	}
+
 	for(string::size_type l_count = 0; l_count < p_input_str.size(); l_count++)
 	{
 		p_input_str[l_count] = tolower(p_input_str.c_str()[l_count]);
@@ -278,7 +276,24 @@ bool ValidateAndPrepareInputString(string& p_input_str)
 			(p_input_str.c_str()[l_count] >= 'a' && p_input_str.c_str()[l_count] <= 'z') ||
 			 p_input_str.c_str()[l_count] == '^' )
 		{
-			// TODO переписать :) 
+			// TODO переписать :)
+			if(p_input_str.c_str()[l_count] == '-' && GetPriority(p_input_str.c_str()[l_count - 1]) > priority_bracket)
+			{
+				string l_to_replace = "";
+				for(string::size_type l_rep_c = l_count; l_rep_c < p_input_str.size(); l_rep_c++)
+				{
+					if(GetPriority(p_input_str.c_str()[l_rep_c]) > priority_default)
+					{
+						replace(p_input_str, p_input_str.substr(l_count - 1, l_count),
+							"(-" + l_to_replace + ")", l_rep_c);
+						break;
+					}
+					else
+					{
+						l_to_replace += p_input_str.c_str()[l_rep_c];
+					}
+				}
+			}
 		}
 		else
 		{
@@ -309,6 +324,7 @@ bool ValidateAndPrepareInputString(string& p_input_str)
 			return false;
 		}
 	}
+
 	if(count_inp != count_outp)
 	{
 		AddError(1, -1, count_inp, count_outp);
@@ -321,10 +337,6 @@ bool CalculateLineExpression(const string& p_input_str, string& p_output_str)
 {
 	uint_8 l_current_prioritet = priority_error, l_old_prioritet = priority_error;
 	stack <char> c_operations;
-	if(!c_coordinate.empty())
-	{
-		c_coordinate.erase(c_coordinate.begin());
-	}
 	string::size_type l_count = 0;
 	if(GetPriority(p_input_str.c_str()[l_count]) > priority_bracket && p_input_str.c_str()[l_count] != '-')
 	{
@@ -366,7 +378,6 @@ bool CalculateLineExpression(const string& p_input_str, string& p_output_str)
 							b)	опеpация выталкивает из стека все опеpации с большим или pавным пpиоpитетом в выходную стpоку;
 							*/
 							p_output_str += c_operations.top();
-							c_coordinate.push_back(p_output_str.size() - 1);
 							c_operations.pop();
 							if(c_operations.empty())
 							{
@@ -410,7 +421,6 @@ bool CalculateLineExpression(const string& p_input_str, string& p_output_str)
 							else
 							{
 								p_output_str += c_operations.top();
-								c_coordinate.push_back(p_output_str.size() - 1);
 								c_operations.pop();
 								p_output_str += " ";
 							}
@@ -433,7 +443,6 @@ bool CalculateLineExpression(const string& p_input_str, string& p_output_str)
 	while(!c_operations.empty())
 	{
 		p_output_str += c_operations.top();
-		c_coordinate.push_back(p_output_str.size() + c_operations.size() - 2);
 		c_operations.pop();
 	}
 	return true;
@@ -441,84 +450,101 @@ bool CalculateLineExpression(const string& p_input_str, string& p_output_str)
 //---------------------------------------------------------------------------
 bool TranslateToOutputString(string& p_to_process_str)
 {
+	/*
+	Автоматизация вычисления выражений в обратной польской нотации основана на использовании стека. Алгоритм вычисления для стековой машины элементарен:
+	Обработка входного символа:
+	 1)Если на вход подан операнд, он помещается на вершину стека.
+	 2)Если на вход подан знак операции, то соответствующая операция выполняется над требуемым количеством значений, извлечённых из стека, взятых в порядке добавления. Результат выполненной операции кладётся на вершину стека.
+	 3)Если входной набор символов обработан не полностью, перейти к шагу 1.
+	После полной обработки входного набора символов результат вычисления выражения лежит на вершине стека.
+	*/
+	stack <double> c_operations;
 	string input = p_to_process_str;
 	p_to_process_str = "";
-	static char l_char_buf[200];
-	float a, b, c;
-	uint_8 count;
-	string::size_type l_count = 0;
-
-	count = sscanf_s(input.c_str(), "%f %f %f", &a, &b, &c);
-	switch(count)
+	double a, b;
+	uint_8 l_current_priority;
+	
+	for(string::size_type l_count = 0; l_count < input.size(); l_count++)
 	{
-		case 255:
-			AddError(8);
-			return false;
-		case 1:
-			if(!c_coordinate.empty())
+		l_current_priority = GetPriority(input.c_str()[l_count]);
+		if(l_current_priority == priority_default)
+		{
+			string l_operand_string = "";
+			for(; l_count < input.size() && GetPriority(input.c_str()[l_count]) == priority_default; l_count++)
 			{
-				sprintf_s(l_char_buf, "%c%f", input.c_str()[c_coordinate.front()], a);
-				c_coordinate.pop_front();
+				l_operand_string += input.c_str()[l_count];
+				if(input.c_str()[l_count] == ' ' && l_count)
+				{
+					l_count++;
+					break;
+				}
 			}
-			else
+			c_operations.push(atof(l_operand_string.c_str()));
+			input.erase(0, l_count);
+			l_count = -1;
+		}
+		else
+		{
+			if(l_current_priority != priority_error)
 			{
-				sprintf_s(l_char_buf, "%f", a);
-			}
-			p_to_process_str = l_char_buf;
-			return true;
-		case 3:
-			a=b;
-			b=c;
-			break;
-	}
-	if(!c_coordinate.empty())
-	{
-		input.erase(l_count, c_coordinate.front());
-		c_coordinate.pop_front();
-	}
-	switch(input.c_str()[l_count])
-	{
-		case 'P':
-			sprintf_s(l_char_buf, " %f ", pow(a,b));
-			p_to_process_str += l_char_buf;
-			break;
-		case '^':
-			if((int)a != a || (int)b != b)
-			{
-				AddWarning(0);
-			}
-			sprintf_s(l_char_buf, " %d ", (int)a^(int)b);
-			p_to_process_str += l_char_buf;
-			break;
-		case '*':
-			sprintf_s(l_char_buf, " %f ", a*b);
-			p_to_process_str += l_char_buf;
-			break;
-		case '/':
-			if(!b)
-			{
-				AddError(5);
-				return false;
-			}
-			sprintf_s(l_char_buf, " %f ", a/b);
-			p_to_process_str += l_char_buf;
-			break;
-		case '+':
-			sprintf_s(l_char_buf, " %f ", a+b);
-			p_to_process_str += l_char_buf;
-			break;
-		case '-':
-			sprintf_s(l_char_buf, " %f ", a-b);
-			p_to_process_str += l_char_buf;
-			break;
-		case ' ':
-		case '.':
-			break;
+				bool set_a = false, set_b = false;
+				if(!c_operations.empty())
+				{
+					set_b = true;
+					b = c_operations.top();
+					c_operations.pop();
+				}
+				if(!c_operations.empty())
+				{
+					set_a = true;
+					a = c_operations.top();
+					c_operations.pop();
+				}
+				if(set_a && set_b) switch(input.c_str()[l_count])
+				{
+					case 'P':
+						c_operations.push(pow(a,b));
+						break;
+					case '^':
+						if((int)a != a || (int)b != b)
+						{
+							AddWarning(0);
+						}
+						c_operations.push((int)a^(int)b);
+						break;
+					case '*':
+						c_operations.push(a*b);
+						break;
+					case '/':
+						if(!b)
+						{
+							AddError(5);
+							return false;
+						}
+						c_operations.push(a/b);
+						break;
+					case '+':
+						c_operations.push(a+b);
+						break;
+					case '-':
+						c_operations.push(a-b);
+						break;
 #ifdef _DEBUG
-		default:
-			p_to_process_str += "DEBUG: Internal Processing Error!";
-			break;
+					default:
+						p_to_process_str += "DEBUG: Internal Processing Error!" + input.c_str()[l_count];
+						break;
 #endif
+				}
+				input.erase(l_count, l_count + 1);
+				l_count = -1;
+			}
+		}
+	}
+	if(!c_operations.empty())
+	{
+		char l_char_buf[100];
+		sprintf_s(l_char_buf, " %lf ", c_operations.top());
+		p_to_process_str = l_char_buf;
 	}
 	return true;
 }
