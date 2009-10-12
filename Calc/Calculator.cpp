@@ -34,16 +34,20 @@ enum {
 	priority_error =	255
 };
 //---------------------------------------------------------------------------
-void AddMessage(uint_8 p_message, const string& p_string_message)
+void AddMessage(uint_8 p_message, const string& p_string_message = "")
 {
 	switch(p_message)
 	{
 		case 0:
 			m_ErrorString += L"\tПодготовка:\r\n";
 			break;
-		case 1:
+		/*case 1:
 			m_ErrorString += L"\tRPN:\r\n";
+			break;*/
 		case 2:
+			break;
+		case 3:
+			m_ErrorString += L"\tRPN:\r\n";
 			break;
 #ifdef _DEBUG
 		default:
@@ -116,7 +120,16 @@ void AddError(uint_8 p_message, string::size_type p_count = -1, string::size_typ
 		case 10:
 			l_error = L"У функции неверное число аргументов необходимо " + (wstring)l_1 + L", обнаружено " + (wstring)l_2;
 			break;
+		case 11:
+			l_error = L"Вложенные функции не поддерживаются, позиция внутри функции " + (wstring)l_1;
+			break;
+		case 12:
+			l_error = L"Выражение не может заканчиваться скобкой";
+			break;
 #ifdef _DEBUG
+		case 254:
+			l_error = L"DEBUG: Internal Processing Error: \"bool CalculateOnLineExpression()\"";
+			break;
 		case 255:
 			l_error = L"DEBUG: number of arguments passed to the function \"replace\" is not defined in the function of \"replace\", it is impossible to calculate the expression";
 			break;
@@ -180,7 +193,7 @@ uint_8 GetPriority(char p_sym)
 //---------------------------------------------------------------------------
 bool replace(string& p_input_str, string p_in, char p_out, uint_8 p_number_of_param)
 {
-	string::size_type l_start, l_end;
+	string::size_type l_start, l_end, l_br_start;
 	string l_buf;
 	static char l_char_buf[200];
 	double l_a, l_b;
@@ -194,6 +207,12 @@ bool replace(string& p_input_str, string p_in, char p_out, uint_8 p_number_of_pa
 		l_buf.erase(0, l_start);
 
 		l_end = l_buf.find(")");
+		l_br_start = l_buf.find("(");
+		if(l_br_start > l_end)
+		{
+			AddError(11, l_start, l_br_start);
+			return false;
+		}
 		if(l_end == string::npos)
 		{
 			AddError(6, l_start);
@@ -267,6 +286,7 @@ bool ValidateAndPrepareInputString(string& p_input_str)
 {
 	uint count_inp = 0, count_outp = 0;
 	string::size_type c;
+	bool l_function_ok = true;
 
 	while(true)
 	{
@@ -277,17 +297,28 @@ bool ValidateAndPrepareInputString(string& p_input_str)
 			break;
 	}
 
-	for(string::size_type l_count = 0; l_count < p_input_str.size(); l_count++)
+	string::size_type l_count = 0;
+	for(; l_count < p_input_str.size(); l_count++)
 	{
 		p_input_str[l_count] = tolower(p_input_str.c_str()[l_count]);
 		if( (p_input_str.c_str()[l_count] >= '(' && p_input_str.c_str()[l_count] <= '9') ||
 			(p_input_str.c_str()[l_count] >= 'a' && p_input_str.c_str()[l_count] <= 'z') ||
 			 p_input_str.c_str()[l_count] == '^' )
 		{
-			// TODO переписать :)
-			if(p_input_str.c_str()[l_count] == '-' && GetPriority(p_input_str.c_str()[l_count - 1]) > priority_bracket)
+			if(p_input_str.c_str()[l_count] == '(')
 			{
-/*
+				count_inp++;
+				continue;
+			}
+			if(p_input_str.c_str()[l_count] == ')')
+			{
+				count_outp++;
+				continue;
+			}
+			// TODO переписать :)
+/*			if(p_input_str.c_str()[l_count] == '-' && GetPriority(p_input_str.c_str()[l_count - 1]) > priority_bracket)
+			{
+
 				string l_to_replace = "";
 				for(string::size_type l_rep_c = l_count; l_rep_c < p_input_str.size(); l_rep_c++)
 				{
@@ -302,48 +333,41 @@ bool ValidateAndPrepareInputString(string& p_input_str)
 						l_to_replace += p_input_str.c_str()[l_rep_c];
 					}
 				}
-*/
-			}
+
+			}*/
 		}
 		else
 		{
 			AddError(0, l_count);
-			return false;
+			l_function_ok = false;
 		}
 	}
-
-	bool l_function_ok = true;
-
-	l_function_ok &= replace(p_input_str, "pow", 'P', 2);
-
-	for(string::size_type l_count = 0; l_count < p_input_str.size(); l_count++)
-	{
-		if(p_input_str.c_str()[l_count] == '(')
-		{
-			count_inp++;
-			continue;
-		}
-		if(p_input_str.c_str()[l_count] == ')')
-		{
-			count_outp++;
-			continue;
-		}
-		if(p_input_str.c_str()[l_count] >= 'a' && p_input_str.c_str()[l_count] <= 'z')
-		{
-			AddError(2, l_count);
-			return false;
-		}
-	}
-
 	if(count_inp != count_outp)
 	{
 		AddError(1, -1, count_inp, count_outp);
-		return false;
+		l_function_ok = false;
 	}
+
+	l_function_ok &= replace(p_input_str, "pow", 'P', 2);
+
+	for(l_count = 0; l_count < p_input_str.size(); l_count++)
+	{
+		if(p_input_str.c_str()[l_count] >= 'a' && p_input_str.c_str()[l_count] <= 'z')
+		{
+			AddError(2, l_count);
+			l_function_ok = false;
+		}
+	}
+	if(GetPriority(p_input_str.c_str()[--l_count]) == priority_bracket)
+	{
+		AddError(12);
+		l_function_ok = false;
+	}
+
 	return l_function_ok;
 }
 //---------------------------------------------------------------------------
-bool CalculateOnLineExpression(string& p_input_str)
+bool CalculateOnLineExpression()
 {
 				bool set_a = false, set_b = false;
 				if(!c_operands.empty())
@@ -393,16 +417,14 @@ bool CalculateOnLineExpression(string& p_input_str)
 								break;
 #ifdef _DEBUG
 							default:
-								m_ErrorString += L"DEBUG: Internal Processing Error!" + p_input_str.c_str()[p_count];
+								AddError(254);
 								break;
 #endif
 						}
-						p_input_str.erase(p_count, p_count + 1); // !
-						p_count = -1;// !
 					}
 					else
 					{
-						switch(p_input_str.c_str()[p_count])
+						switch(c_operations.top())
 						{
 							case '-':
 								c_operands.push(-b);
@@ -462,7 +484,6 @@ bool CalculateOnLineExpression(string& p_input_str)
 							*/ 
 								break;
 						}
-						p_count = -1;
 					}
 				}
 				c_operations.pop();
@@ -510,7 +531,6 @@ bool CalculateLineExpression(string p_input_str, string& p_output_str)
 				c_operations.push(p_input_str.c_str()[p_count]);
 				p_input_str.erase(0,1);
 				p_count = -1;
-				//p_output_str += " ";
 			}
 			else
 			{
@@ -523,18 +543,20 @@ bool CalculateLineExpression(string p_input_str, string& p_output_str)
 							/*
 							b)	опеpация выталкивает из стека все опеpации с большим или pавным пpиоpитетом в выходную стpоку;
 							*/
-							is_ok &= CalculateOnLineExpression(p_input_str);
+							is_ok &= CalculateOnLineExpression();
 							if(c_operations.empty())
 							{
 								c_operations.push(p_input_str.c_str()[p_count]);
-								//p_output_str += " ";
+								p_input_str.erase(0,1);
+								p_count = -1;
 								break;
 							}
 						}
 						else
 						{
 							c_operations.push(p_input_str.c_str()[p_count]);
-							//p_output_str += " ";
+							p_input_str.erase(0,1);
+							p_count = -1;
 							break;
 						}
 					}
@@ -589,18 +611,17 @@ bool CalculateLineExpression(string p_input_str, string& p_output_str)
 			c_operands.push(atof(l_operand_string.c_str()));
 			p_input_str.erase(0, p_count);
 			p_count = -1;
-			//p_output_str += p_input_str.c_str()[p_count];
 		}
 		l_old_prioritet = l_current_prioritet;
 	}
 	if(l_current_prioritet > priority_bracket)
 	{
 		AddError(8, p_count);
-		//return false;
+		is_ok = false;
 	}
 	while(!c_operations.empty())
 	{
-		is_ok &= CalculateOnLineExpression(p_input_str);
+		is_ok &= CalculateOnLineExpression();
 	}
 	if(!c_operands.empty())
 	{
@@ -722,6 +743,8 @@ bool TranslateToOutputString(string& p_to_process_str)
 								break;
 
 							default:
+								AddError(8);
+								return false;
 								/*char l_op = input.c_str()[l_count++];
 								string temp = "";
 								for(; l_count < input.size(); l_count++)
@@ -773,7 +796,6 @@ bool TranslateToOutputString(string& p_to_process_str)
 #endif
 							}
 							*/ 
-								break;
 						}
 						l_count = -1;
 					}
@@ -798,6 +820,7 @@ wstring& Calculate(wstring p_input, wstring& p_output)
 	string l_input_str, l_output_str;
 	l_input_str.assign(p_input.begin(), p_input.end());
 
+	AddMessage(0);
 	l_No_Error &= ValidateAndPrepareInputString(l_input_str);
 	if(l_No_Error)
 	{
@@ -805,8 +828,10 @@ wstring& Calculate(wstring p_input, wstring& p_output)
 		l_No_Error &= CalculateLineExpression(l_input_str, l_output_str);
 		if(l_No_Error)
 		{
+			/*TODO
 			AddMessage(1, l_output_str);
 			l_No_Error &= TranslateToOutputString(l_output_str);
+			*/
 			if(l_No_Error)
 			{
 				//AddMessage();
