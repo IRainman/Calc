@@ -494,6 +494,7 @@ bool CalculateLineExpression(string p_input_str, string& p_output_str)
 {
 	uint_8 l_current_prioritet = priority_error, l_old_prioritet = priority_error;
 	p_count = 0;
+	string::size_type l_count = 0;
 	bool is_ok = true;
 	while(!c_operations.empty())
 	{
@@ -506,22 +507,22 @@ bool CalculateLineExpression(string p_input_str, string& p_output_str)
 	if(GetPriority(p_input_str.c_str()[p_count]) > priority_bracket && p_input_str.c_str()[p_count] != '-')
 	{
 		AddError(9);
-		return false;
+		is_ok = false;
 	}
-	for(; p_count < p_input_str.size(); p_count++)
+	for(; p_count < p_input_str.size(); p_count++, l_count++)
 	{
 		l_current_prioritet = GetPriority(p_input_str.c_str()[p_count]);
 		if(l_current_prioritet)
 		{
 			if(l_current_prioritet == priority_error)
 			{
-				AddError(3, p_count);
-				return false;
+				AddError(3, l_count);
+				is_ok = false;
 			}
-			if(l_old_prioritet && l_current_prioritet >= l_old_prioritet && p_input_str.c_str()[p_count] != '-')
+			if(l_old_prioritet > priority_bracket && l_current_prioritet >= l_old_prioritet && p_input_str.c_str()[p_count] != '-')
 			{
-				AddError(4, p_count - 1);
-				//return false;
+				AddError(4, l_count - 1);
+				is_ok = false;
 			}
 			if(c_operations.empty())
 			{
@@ -599,7 +600,7 @@ bool CalculateLineExpression(string p_input_str, string& p_output_str)
 		else
 		{
 			string l_operand_string = "";
-			for(; p_count < p_input_str.size() && GetPriority(p_input_str.c_str()[p_count]) == priority_default; p_count++)
+			for(; p_count < p_input_str.size() && GetPriority(p_input_str.c_str()[p_count]) == priority_default; p_count++, l_count++)
 			{
 				l_operand_string += p_input_str.c_str()[p_count];
 				/*if(p_input_str.c_str()[p_count] == ' ' && p_count)
@@ -616,7 +617,7 @@ bool CalculateLineExpression(string p_input_str, string& p_output_str)
 	}
 	if(l_current_prioritet > priority_bracket)
 	{
-		AddError(8, p_count);
+		AddError(8, l_count);
 		is_ok = false;
 	}
 	while(!c_operations.empty())
@@ -832,18 +833,13 @@ wstring& Calculate(wstring p_input, wstring& p_output)
 			AddMessage(1, l_output_str);
 			l_No_Error &= TranslateToOutputString(l_output_str);
 			*/
-			if(l_No_Error)
+			while(l_No_Error)
 			{
-				//AddMessage();
-				string::size_type c;
-				while(l_No_Error)
-				{
-					c = l_output_str.find(" ");
-					if(c != string::npos)
-						l_output_str.erase(c, 1);
-					else
-						break;
-				}
+				string::size_type c = l_output_str.find(" ");
+				if(c != string::npos)
+				l_output_str.erase(c, 1);
+				else
+					break;
 			}
 		}
 	}
