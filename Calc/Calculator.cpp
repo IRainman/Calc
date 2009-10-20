@@ -369,125 +369,124 @@ bool ValidateAndPrepareInputString(string& p_input_str)
 //---------------------------------------------------------------------------
 bool CalculateOnLineExpression()
 {
-				bool set_a = false, set_b = false;
-				if(!c_operands.empty())
-				{
-					set_b = true;
-					b = c_operands.top();
-					c_operands.pop();
-				}
-				if(!c_operands.empty())
-				{
-					set_a = true;
-					a = c_operands.top();
-					c_operands.pop();
-				}
-				if(set_b)
-				{
-					if(set_a)
+	bool set_a = false, set_b = false;
+	if(!c_operands.empty())
+	{
+		set_b = true;
+		b = c_operands.top();
+		c_operands.pop();
+	}
+	if(!c_operands.empty())
+	{
+		set_a = true;
+		a = c_operands.top();
+		c_operands.pop();
+	}
+	if(set_b)
+	{
+		if(set_a)
+		{
+			switch(c_operations.top())
+			{
+				case 'P':
+					c_operands.push(pow(a,b));
+					break;
+				case '^':
+					if((int)a != a || (int)b != b)
 					{
-						switch(c_operations.top())
-						{
-							case 'P':
-								c_operands.push(pow(a,b));
-								break;
-							case '^':
-								if((int)a != a || (int)b != b)
-								{
-									AddWarning(0);
-								}
-								c_operands.push((int)a^(int)b);
-								break;
-							case '*':
-								c_operands.push(a*b);
-								break;
-							case '/':
-								if(!b)
-								{
-									AddError(5);
-									return false;
-								}
-								c_operands.push(a/b);
-								break;
-							case '+':
-								c_operands.push(a+b);
-								break;
-							case '-':
-								c_operands.push(a-b);
-								break;
+						AddWarning(0);
+					}
+					c_operands.push((int)a^(int)b);
+					break;
+				case '*':
+					c_operands.push(a*b);
+					break;
+				case '/':
+					if(!b)
+					{
+						AddError(5);
+						return false;
+					}
+					c_operands.push(a/b);
+					break;
+				case '+':
+					c_operands.push(a+b);
+					break;
+				case '-':
+					c_operands.push(a-b);
+					break;
 #ifdef _DEBUG
-							default:
-								AddError(254);
-								break;
+				default:
+					AddError(254);
+					break;
 #endif
+			}
+		}
+		else
+		{
+			switch(c_operations.top())
+			{
+				case '-':
+					c_operands.push(-b);
+					break;
+				default:
+					/*char l_op = input.c_str()[p_count++];
+					string temp = "";
+					for(; p_count < input.size(); p_count++)
+					{
+						temp += input.c_str()[p_count];
+						if(GetPriority(input.c_str()[p_count]) > priority_default)
+						{
+							break;
 						}
 					}
-					else
-					{
-						switch(c_operations.top())
-						{
-							case '-':
-								c_operands.push(-b);
-								break;
 
-							default:
-								/*char l_op = input.c_str()[p_count++];
-								string temp = "";
-								for(; p_count < input.size(); p_count++)
-								{
-									temp += input.c_str()[p_count];
-									if(GetPriority(input.c_str()[p_count]) > priority_default)
-									{
-										break;
-									}
-								}
-								
-								double temp_operand = atof(temp.c_str());
-								a = b;
-								b = temp_operand;*/
-							/* 
-							switch(input.c_str()[p_count])
-							{
-								case 'P':
-									c_operations.push(pow(a,b));
-									break;
-								case '^':
-									if((int)a != a || (int)b != b)
-									{
-										AddWarning(0);
-									}
-									c_operations.push((int)a^(int)b);
-									break;
-								case '*':
-									c_operations.push(a*b);
-									break;
-								case '/':
-									if(!b)
-									{
-										AddError(5);
-										return false;
-									}
-									c_operations.push(a/b);
-									break;
-								case '+':
-									c_operations.push(a+b);
-									break;
-								case '-':
-									c_operations.push(a-b);
-									break;
-#ifdef _DEBUG
-								default:
-									p_to_process_str += "DEBUG: Internal Processing Error!" + input.c_str()[p_count];
-									break;
-#endif
-							}
-							*/ 
-								break;
+					double temp_operand = atof(temp.c_str());
+					a = b;
+					b = temp_operand;*/
+				/* 
+				switch(input.c_str()[p_count])
+				{
+					case 'P':
+						c_operations.push(pow(a,b));
+						break;
+					case '^':
+						if((int)a != a || (int)b != b)
+						{
+							AddWarning(0);
 						}
-					}
+						c_operations.push((int)a^(int)b);
+						break;
+					case '*':
+						c_operations.push(a*b);
+						break;
+					case '/':
+						if(!b)
+						{
+							AddError(5);
+							return false;
+						}
+						c_operations.push(a/b);
+						break;
+					case '+':
+						c_operations.push(a+b);
+						break;
+					case '-':
+						c_operations.push(a-b);
+						break;
+#ifdef _DEBUG
+					default:
+						p_to_process_str += "DEBUG: Internal Processing Error!" + input.c_str()[p_count];
+						break;
+#endif
 				}
-				c_operations.pop();
-				return true;
+				*/ 
+					break;
+			}
+		}
+	}
+	c_operations.pop();
+	return true;
 }
 //---------------------------------------------------------------------------
 bool CalculateLineExpression(string p_input_str, string& p_output_str)
@@ -571,7 +570,6 @@ bool CalculateLineExpression(string p_input_str, string& p_output_str)
 						c)	если очеpедной символ из исходной стpоки есть откpывающая скобка, то он пpоталкивается в стек;
 						*/
 						c_operations.push(p_input_str.c_str()[p_count]);
-						p_output_str += " ";
 					}
 					else
 					{
@@ -584,13 +582,13 @@ bool CalculateLineExpression(string p_input_str, string& p_output_str)
 							if(GetPriority(c_operations.top()) == priority_bracket && c_operations.top() != ')')
 							{
 								c_operations.pop();
+								p_input_str.erase(0,1);
+								p_count = -1;
 								break;
 							}
 							else
 							{
-								p_output_str += c_operations.top();
-								c_operations.pop();
-								p_output_str += " ";
+								is_ok &= CalculateOnLineExpression();
 							}
 						}
 					}
@@ -603,11 +601,6 @@ bool CalculateLineExpression(string p_input_str, string& p_output_str)
 			for(; p_count < p_input_str.size() && GetPriority(p_input_str.c_str()[p_count]) == priority_default; p_count++, l_count++)
 			{
 				l_operand_string += p_input_str.c_str()[p_count];
-				/*if(p_input_str.c_str()[p_count] == ' ' && p_count)
-				{
-					p_count++;
-					break;
-				}*/
 			}
 			c_operands.push(atof(l_operand_string.c_str()));
 			p_input_str.erase(0, p_count);
@@ -627,7 +620,7 @@ bool CalculateLineExpression(string p_input_str, string& p_output_str)
 	if(!c_operands.empty())
 	{
 		char l_char_buf[100];
-		sprintf_s(l_char_buf, " %lf ", c_operands.top());
+		sprintf_s(l_char_buf, "%lf", c_operands.top());
 		p_output_str = l_char_buf;
 	}
 	return is_ok;
@@ -829,18 +822,10 @@ wstring& Calculate(wstring p_input, wstring& p_output)
 		l_No_Error &= CalculateLineExpression(l_input_str, l_output_str);
 		if(l_No_Error)
 		{
-			/*TODO
+			/*TODO Calculate on RPN string
 			AddMessage(1, l_output_str);
 			l_No_Error &= TranslateToOutputString(l_output_str);
 			*/
-			while(l_No_Error)
-			{
-				string::size_type c = l_output_str.find(" ");
-				if(c != string::npos)
-				l_output_str.erase(c, 1);
-				else
-					break;
-			}
 		}
 	}
 	if(l_No_Error)
