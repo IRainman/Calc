@@ -124,7 +124,7 @@ void AddError(uint_8 p_message, string::size_type p_count = -1, string::size_typ
 			l_error = L"Вложенные функции не поддерживаются, позиция внутри функции " + (wstring)l_1;
 			break;
 		case 12:
-			l_error = L"Выражение не может заканчиваться скобкой";
+			l_error = L"Выражение не может начинаться и заканчиваться скобкой";
 			break;
 #ifdef _DEBUG
 		case 254:
@@ -358,11 +358,11 @@ bool ValidateAndPrepareInputString(string& p_input_str)
 			l_function_ok = false;
 		}
 	}
-	if(GetPriority(p_input_str.c_str()[--l_count]) == priority_bracket)
+	/* TODO if(GetPriority(p_input_str.c_str()[--l_count]) == priority_bracket && GetPriority(p_input_str.c_str()[0]) == priority_bracket)
 	{
 		AddError(12);
 		l_function_ok = false;
-	}
+	}*/
 
 	return l_function_ok;
 }
@@ -422,14 +422,15 @@ bool CalculateOnLineExpression()
 #endif
 			}
 		}
-		else
+		else //TODO убрать весь блок
 		{
-			switch(c_operations.top())
-			{
-				case '-':
-					c_operands.push(-b);
-					break;
-				default:
+			AddError(254);
+		//	switch(c_operations.top())
+		//	{
+		//		case '-':
+		//			c_operands.push(-b);
+		//			break;
+		//		default:
 					/*char l_op = input.c_str()[p_count++];
 					string temp = "";
 					for(; p_count < input.size(); p_count++)
@@ -481,8 +482,8 @@ bool CalculateOnLineExpression()
 #endif
 				}
 				*/ 
-					break;
-			}
+				//	break;
+			//}
 		}
 	}
 	c_operations.pop();
@@ -511,7 +512,7 @@ bool CalculateLineExpression(string p_input_str, string& p_output_str)
 	for(; p_count < p_input_str.size(); p_count++, l_count++)
 	{
 		l_current_prioritet = GetPriority(p_input_str.c_str()[p_count]);
-		if(l_current_prioritet)
+		if(l_current_prioritet)// TODO добавить проверку что это не минус как знак числа, идущий после знака операции
 		{
 			if(l_current_prioritet == priority_error)
 			{
@@ -598,6 +599,7 @@ bool CalculateLineExpression(string p_input_str, string& p_output_str)
 		else
 		{
 			string l_operand_string = "";
+			// TODO подправить условие что-бы пропускало "-" перед числом )
 			for(; p_count < p_input_str.size() && GetPriority(p_input_str.c_str()[p_count]) == priority_default; p_count++, l_count++)
 			{
 				l_operand_string += p_input_str.c_str()[p_count];
@@ -820,17 +822,16 @@ wstring& Calculate(wstring p_input, wstring& p_output)
 	{
 		AddMessage(0, l_input_str);
 		l_No_Error &= CalculateLineExpression(l_input_str, l_output_str);
-		if(l_No_Error)
+		/*if(l_No_Error) //TODO: Calculate on RPN string
 		{
-			/*TODO Calculate on RPN string
 			AddMessage(1, l_output_str);
 			l_No_Error &= TranslateToOutputString(l_output_str);
-			*/
+			
+		}*/
+		if(l_No_Error)
+		{
+			p_output.assign(l_output_str.begin(), l_output_str.end());
 		}
-	}
-	if(l_No_Error)
-	{
-		p_output.assign(l_output_str.begin(), l_output_str.end());
 	}
 	return m_ErrorString;
 }
