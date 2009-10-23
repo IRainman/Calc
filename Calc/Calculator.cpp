@@ -34,7 +34,14 @@ enum {
 	priority_error		= 255
 };
 //---------------------------------------------------------------------------
-void AddMessage(uint_8 p_message/*, const string& p_string_message = ""*/)
+void AddMessage(const string& p_string_message)
+{
+	wstring l_message;
+	l_message.assign(p_string_message.begin(), p_string_message.end());
+	m_ErrorString += l_message + L"\r\n";
+}
+//---------------------------------------------------------------------------
+void AddMessage(uint_8 p_message)
 {
 	switch(p_message)
 	{
@@ -56,12 +63,6 @@ void AddMessage(uint_8 p_message/*, const string& p_string_message = ""*/)
 			break;
 #endif
 	}
-/*	if(p_string_message != "")
-	{
-		wstring l_message;
-		l_message.assign(p_string_message.begin(), p_string_message.end());
-		m_ErrorString += l_message + L"\r\n";
-	}*/
 }
 //---------------------------------------------------------------------------
 void AddWarning(uint_8 p_message)
@@ -97,10 +98,10 @@ void AddError(uint_8 p_message, string::size_type p_count = -1, string::size_typ
 				L" и закрывающих " + (wstring)l_2 +
 				L" скобок не совпадает";
 			break;
-		case 2:
+/*		case 2:
 			l_error = L"Недопустимый символ после проверки на функции, проверьте правильность их написания";
 			break;
-		case 3:
+		case 3:*/
 			l_error = L"Недопустимый символ во время преобразования в обратную польскую запись";
 			break;
 		case 4:
@@ -109,24 +110,24 @@ void AddError(uint_8 p_message, string::size_type p_count = -1, string::size_typ
 		case 5:
 			l_error = L"На ноль делить нельзя";
 			break;
-		case 6:
+/*		case 6:
 			l_error = L"У функции нехватает закрывающей скобки";
 			break;
 		case 7:
 			l_error = L"У функции отсутсвуют аргументы";
-			break;
+			break;*/
 		case 8:
 			l_error = L"Недостаточно операндов для получения результата";
 			break;
 		case 9:
 			l_error = L"Выражение не может начинатся со знака операции";
 			break;
-		case 10:
+/*		case 10:
 			l_error = L"У функции неверное число аргументов необходимо " + (wstring)l_1 + L", обнаружено " + (wstring)l_2;
 			break;
 		case 11:
 			l_error = L"Вложенные функции не поддерживаются, позиция внутри функции " + (wstring)l_1;
-			break;
+			break;*/
 		case 12:
 			l_error = L"Выражение не может начинаться и заканчиваться скобкой";
 			break;
@@ -158,9 +159,9 @@ uint_8 GetPriority(char p_sym)
 {
 	switch(p_sym)
 	{
-		case 'P':
+/*		case 'P':
 			return priority_function;
-
+*/
 		case '^':
 			return priority_power;
 
@@ -195,6 +196,7 @@ uint_8 GetPriority(char p_sym)
 	}
 }
 //---------------------------------------------------------------------------
+/*
 bool replace(string& p_input_str, string p_in, char p_out, uint_8 p_number_of_param)
 {
 	string::size_type l_start, l_end, l_br_start;
@@ -264,6 +266,7 @@ bool replace(string& p_input_str, string p_in, char p_out, uint_8 p_number_of_pa
 		p_input_str.insert(l_start, l_char_buf);
 	}
 }
+*/
 //---------------------------------------------------------------------------
 /*
 void replace(string& p_input_str, string p_in, string p_out, string::size_type p_count_end)
@@ -331,7 +334,7 @@ bool ValidateAndPrepareInputString(string& p_input_str)
 		AddError(1, -1, count_inp, count_outp);
 		l_function_ok = false;
 	}
-
+/*
 	l_function_ok &= replace(p_input_str, "pow", 'P', 2);
 
 	for(l_count = 0; l_count < p_input_str.size(); l_count++)
@@ -341,7 +344,7 @@ bool ValidateAndPrepareInputString(string& p_input_str)
 			AddError(2, l_count);
 			l_function_ok = false;
 		}
-	}
+	}*/
 	/* TODO проверка ну пустые скобки 
 	if(GetPriority(p_input_str.c_str()[--l_count]) == priority_bracket && GetPriority(p_input_str.c_str()[0]) == priority_bracket && count_inp < 2)
 	{
@@ -755,6 +758,7 @@ wstring& Calculate(wstring p_input, wstring& p_output)
 	l_No_Error &= ValidateAndPrepareInputString(l_input_str);
 	if(l_No_Error)
 	{
+		AddMessage(l_input_str);
 		l_No_Error &= CalculateLineExpression(l_input_str, l_output_str);
 		/*if(l_No_Error) //TODO: Calculate on RPN string
 		{
