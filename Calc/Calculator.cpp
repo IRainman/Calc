@@ -25,39 +25,43 @@ static double a, b;
 static string::size_type p_count;
 //---------------------------------------------------------------------------
 enum {
-	priority_function =	16,
-	priority_power =	8,
-	priority_multiply =	4,
-	priority_addition =	2,
-	priority_bracket =	1,
-	priority_default =	0,
-	priority_error =	255
+	priority_function	= 16,
+	priority_power		= 8,
+	priority_multiply	= 4,
+	priority_addition	= 2,
+	priority_bracket	= 1,
+	priority_default	= 0,
+	priority_error		= 255
 };
 //---------------------------------------------------------------------------
-void AddMessage(uint_8 p_message, const string& p_string_message = "")
+void AddMessage(uint_8 p_message/*, const string& p_string_message = ""*/)
 {
 	switch(p_message)
 	{
 		case 0:
 			m_ErrorString += L"\tПодготовка:\r\n";
 			break;
-		/*case 1:
+		case 1:
+			m_ErrorString += L"\tРазбор строки:\r\n";
+			break;
+		case 2:
+			m_ErrorString += L"\tВычисление:\r\n";
+			break;
+		/*case 3:
 			m_ErrorString += L"\tRPN:\r\n";
 			break;*/
-		case 2:
-			break;
-		case 3:
-			m_ErrorString += L"\tRPN:\r\n";
-			break;
 #ifdef _DEBUG
 		default:
 			m_ErrorString += L" DEBUG: Unknown Message!";
 			break;
 #endif
 	}
-	wstring l_message;
-	l_message.assign(p_string_message.begin(), p_string_message.end());
-	m_ErrorString += l_message + L"\r\n";
+/*	if(p_string_message != "")
+	{
+		wstring l_message;
+		l_message.assign(p_string_message.begin(), p_string_message.end());
+		m_ErrorString += l_message + L"\r\n";
+	}*/
 }
 //---------------------------------------------------------------------------
 void AddWarning(uint_8 p_message)
@@ -315,26 +319,6 @@ bool ValidateAndPrepareInputString(string& p_input_str)
 				count_outp++;
 				continue;
 			}
-			// TODO переписать :)
-/*			if(p_input_str.c_str()[l_count] == '-' && GetPriority(p_input_str.c_str()[l_count - 1]) > priority_bracket)
-			{
-
-				string l_to_replace = "";
-				for(string::size_type l_rep_c = l_count; l_rep_c < p_input_str.size(); l_rep_c++)
-				{
-					if(GetPriority(p_input_str.c_str()[l_rep_c]) > priority_default)
-					{
-						replace(p_input_str, p_input_str.substr(l_count - 1, l_count),
-							"(-" + l_to_replace + ")", l_rep_c);
-						break;
-					}
-					else
-					{
-						l_to_replace += p_input_str.c_str()[l_rep_c];
-					}
-				}
-
-			}*/
 		}
 		else
 		{
@@ -358,7 +342,8 @@ bool ValidateAndPrepareInputString(string& p_input_str)
 			l_function_ok = false;
 		}
 	}
-	/* TODO if(GetPriority(p_input_str.c_str()[--l_count]) == priority_bracket && GetPriority(p_input_str.c_str()[0]) == priority_bracket)
+	/* TODO проверка ну пустые скобки 
+	if(GetPriority(p_input_str.c_str()[--l_count]) == priority_bracket && GetPriority(p_input_str.c_str()[0]) == priority_bracket && count_inp < 2)
 	{
 		AddError(12);
 		l_function_ok = false;
@@ -421,69 +406,6 @@ bool CalculateOnLineExpression()
 					break;
 #endif
 			}
-		}
-		else //TODO убрать весь блок
-		{
-			AddError(254);
-		//	switch(c_operations.top())
-		//	{
-		//		case '-':
-		//			c_operands.push(-b);
-		//			break;
-		//		default:
-					/*char l_op = input.c_str()[p_count++];
-					string temp = "";
-					for(; p_count < input.size(); p_count++)
-					{
-						temp += input.c_str()[p_count];
-						if(GetPriority(input.c_str()[p_count]) > priority_default)
-						{
-							break;
-						}
-					}
-
-					double temp_operand = atof(temp.c_str());
-					a = b;
-					b = temp_operand;*/
-				/* 
-				switch(input.c_str()[p_count])
-				{
-					case 'P':
-						c_operations.push(pow(a,b));
-						break;
-					case '^':
-						if((int)a != a || (int)b != b)
-						{
-							AddWarning(0);
-						}
-						c_operations.push((int)a^(int)b);
-						break;
-					case '*':
-						c_operations.push(a*b);
-						break;
-					case '/':
-						if(!b)
-						{
-							AddError(5);
-							return false;
-						}
-						c_operations.push(a/b);
-						break;
-					case '+':
-						c_operations.push(a+b);
-						break;
-					case '-':
-						c_operations.push(a-b);
-						break;
-#ifdef _DEBUG
-					default:
-						p_to_process_str += "DEBUG: Internal Processing Error!" + input.c_str()[p_count];
-						break;
-#endif
-				}
-				*/ 
-				//	break;
-			//}
 		}
 	}
 	c_operations.pop();
@@ -627,6 +549,7 @@ bool CalculateLineExpression(string p_input_str, string& p_output_str)
 		AddError(8, l_count);
 		is_ok = false;
 	}
+	AddMessage(1);
 	while(!c_operations.empty())
 	{
 		is_ok &= CalculateOnLineExpression();
@@ -832,7 +755,6 @@ wstring& Calculate(wstring p_input, wstring& p_output)
 	l_No_Error &= ValidateAndPrepareInputString(l_input_str);
 	if(l_No_Error)
 	{
-		AddMessage(0, l_input_str);
 		l_No_Error &= CalculateLineExpression(l_input_str, l_output_str);
 		/*if(l_No_Error) //TODO: Calculate on RPN string
 		{
