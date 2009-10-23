@@ -496,10 +496,6 @@ bool CalculateLineExpression(string p_input_str, string& p_output_str)
 	p_count = 0;
 	string::size_type l_count = 0;
 	bool is_ok = true;
-	while(!c_operations.empty())
-	{
-		c_operations.pop();
-	}
 	while(!c_operands.empty())
 	{
 		c_operands.pop();
@@ -509,10 +505,12 @@ bool CalculateLineExpression(string p_input_str, string& p_output_str)
 		AddError(9);
 		is_ok = false;
 	}
+	bool l_negative_number;
 	for(; p_count < p_input_str.size(); p_count++, l_count++)
 	{
 		l_current_prioritet = GetPriority(p_input_str.c_str()[p_count]);
-		if(l_current_prioritet)// TODO добавить проверку что это не минус как знак числа, идущий после знака операции
+		l_negative_number = l_old_prioritet && p_input_str.c_str()[p_count] == '-';
+		if(l_current_prioritet && !l_negative_number)
 		{
 			if(l_current_prioritet == priority_error)
 			{
@@ -599,18 +597,32 @@ bool CalculateLineExpression(string p_input_str, string& p_output_str)
 		else
 		{
 			string l_operand_string = "";
-			// TODO подправить условие что-бы пропускало "-" перед числом )
+			if(l_negative_number)
+			{
+				l_operand_string += p_input_str.c_str()[p_count];
+				p_count++;
+				l_count++;
+			}
 			for(; p_count < p_input_str.size() && GetPriority(p_input_str.c_str()[p_count]) == priority_default; p_count++, l_count++)
 			{
 				l_operand_string += p_input_str.c_str()[p_count];
 			}
-			c_operands.push(atof(l_operand_string.c_str()));
+			if(!l_negative_number || (l_negative_number && p_count > 1))
+			{
+				c_operands.push(atof(l_operand_string.c_str()));
+				l_current_prioritet = priority_default;
+			}
+			else
+			{
+				AddError(4, l_count);
+				is_ok = false;
+			}
 			p_input_str.erase(0, p_count);
 			p_count = -1;
 		}
 		l_old_prioritet = l_current_prioritet;
 	}
-	if(l_current_prioritet > priority_bracket)
+	if(l_current_prioritet > priority_bracket && !l_negative_number)
 	{
 		AddError(8, l_count);
 		is_ok = false;
@@ -831,6 +843,10 @@ wstring& Calculate(wstring p_input, wstring& p_output)
 		if(l_No_Error)
 		{
 			p_output.assign(l_output_str.begin(), l_output_str.end());
+		}
+		else
+		{
+			p_output = L"";
 		}
 	}
 	return m_ErrorString;
