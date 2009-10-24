@@ -473,12 +473,12 @@ bool CalculateLineExpression(string p_input_str, string& p_output_str)
 			if(l_old_prioritet >= priority_bracket)
 			{
 				// TODO Refactoring this blok
-				if(l_current_prioritet == priority_bracket && l_old_prioritet == priority_bracket)
+				/*if(l_current_prioritet == priority_bracket && l_old_prioritet == priority_bracket)
 				{
 					AddError(13, l_count - 1);
 					is_ok = false;
 					break;
-				}
+				}*/
 				if(l_current_prioritet > l_old_prioritet && p_input_str.c_str()[0] != '-')
 				{
 					AddError(4, l_count - 1);
