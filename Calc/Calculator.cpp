@@ -22,7 +22,6 @@ static wstring m_ErrorString;
 static stack <char> c_operations;
 static stack <double> c_operands;
 static double a, b;
-static string::size_type p_count;
 //---------------------------------------------------------------------------
 enum {
 	priority_function	= 16,
@@ -130,6 +129,9 @@ void AddError(uint_8 p_message, string::size_type p_count = -1, string::size_typ
 			break;*/
 		case 12:
 			l_error = L"Выражение не может начинаться и заканчиваться скобкой";
+			break;
+		case 13:
+			l_error = L"Пустые скобки или выражение в скобках заканчивается знаком операции";
 			break;
 #ifdef _DEBUG
 		case 254:
@@ -418,43 +420,45 @@ bool CalculateOnLineExpression()
 bool CalculateLineExpression(string p_input_str, string& p_output_str)
 {
 	uint_8 l_current_prioritet = priority_error, l_old_prioritet = priority_error;
-	p_count = 0;
-	string::size_type l_count = 0;
 	bool is_ok = true;
 	while(!c_operands.empty())
 	{
 		c_operands.pop();
 	}
-	if(GetPriority(p_input_str.c_str()[p_count]) > priority_bracket && p_input_str.c_str()[p_count] != '-')
+	if(GetPriority(p_input_str.c_str()[0]) > priority_bracket && p_input_str.c_str()[0] != '-')
 	{
 		AddError(9);
 		is_ok = false;
 	}
 	bool l_negative_number;
-	for(; p_count < p_input_str.size(); p_count++, l_count++)
+	string::size_type l_count = 0;
+	for(; p_input_str.size(); l_count++)
 	{
-		l_current_prioritet = GetPriority(p_input_str.c_str()[p_count]);
-		l_negative_number = l_old_prioritet && p_input_str.c_str()[p_count] == '-';
+		l_current_prioritet = GetPriority(p_input_str.c_str()[0]);
+		l_negative_number = l_old_prioritet && p_input_str.c_str()[0] == '-';
 		if(l_current_prioritet && !l_negative_number)
 		{
-			if(l_current_prioritet == priority_error)
+			if(l_old_prioritet >= priority_bracket)
 			{
-				AddError(3, l_count);
-				is_ok = false;
-			}
-			if(l_old_prioritet > priority_bracket && l_current_prioritet >= l_old_prioritet && p_input_str.c_str()[p_count] != '-')
-			{
-				AddError(4, l_count - 1);
-				is_ok = false;
+				if(l_current_prioritet == priority_bracket && l_old_prioritet == priority_bracket)
+				{
+					AddError(13, l_count - 1);
+					is_ok = false;
+					break;
+				}
+				if(l_current_prioritet > l_old_prioritet && p_input_str.c_str()[0] != '-')
+				{
+					AddError(4, l_count - 1);
+					is_ok = false;
+				}
 			}
 			if(c_operations.empty())
 			{
 				/*
 				a)	если стек пуст, то опеpация из входной стpоки пеpеписывается в стек;
 				*/
-				c_operations.push(p_input_str.c_str()[p_count]);
+				c_operations.push(p_input_str.c_str()[0]);
 				p_input_str.erase(0,1);
-				p_count = -1;
 			}
 			else
 			{
@@ -470,17 +474,15 @@ bool CalculateLineExpression(string p_input_str, string& p_output_str)
 							is_ok &= CalculateOnLineExpression();
 							if(c_operations.empty())
 							{
-								c_operations.push(p_input_str.c_str()[p_count]);
+								c_operations.push(p_input_str.c_str()[0]);
 								p_input_str.erase(0,1);
-								p_count = -1;
 								break;
 							}
 						}
 						else
 						{
-							c_operations.push(p_input_str.c_str()[p_count]);
+							c_operations.push(p_input_str.c_str()[0]);
 							p_input_str.erase(0,1);
-							p_count = -1;
 							break;
 						}
 					}
@@ -488,12 +490,13 @@ bool CalculateLineExpression(string p_input_str, string& p_output_str)
 				}
 				else
 				{
-					if(p_input_str.c_str()[p_count] != ')')
+					if(p_input_str.c_str()[0] != ')')
 					{
 						/*
 						c)	если очеpедной символ из исходной стpоки есть откpывающая скобка, то он пpоталкивается в стек;
 						*/
-						c_operations.push(p_input_str.c_str()[p_count]);
+						c_operations.push(p_input_str.c_str()[0]);
+						p_input_str.erase(0,1);
 					}
 					else
 					{
@@ -507,7 +510,6 @@ bool CalculateLineExpression(string p_input_str, string& p_output_str)
 							{
 								c_operations.pop();
 								p_input_str.erase(0,1);
-								p_count = -1;
 								break;
 							}
 							else
@@ -522,17 +524,18 @@ bool CalculateLineExpression(string p_input_str, string& p_output_str)
 		else
 		{
 			string l_operand_string = "";
+			string::size_type l_count_of_num = 0;
 			if(l_negative_number)
 			{
-				l_operand_string += p_input_str.c_str()[p_count];
-				p_count++;
+				l_operand_string = p_input_str.c_str()[0];
+				l_count_of_num++;
 				l_count++;
 			}
-			for(; p_count < p_input_str.size() && GetPriority(p_input_str.c_str()[p_count]) == priority_default; p_count++, l_count++)
+			for(; l_count_of_num < p_input_str.size() && GetPriority(p_input_str.c_str()[l_count_of_num]) == priority_default; l_count_of_num++, l_count++)
 			{
-				l_operand_string += p_input_str.c_str()[p_count];
+				l_operand_string += p_input_str.c_str()[l_count_of_num];
 			}
-			if(!l_negative_number || (l_negative_number && p_count > 1))
+			if(!l_negative_number || (l_negative_number && l_count_of_num > 1))
 			{
 				c_operands.push(atof(l_operand_string.c_str()));
 				l_current_prioritet = priority_default;
@@ -542,8 +545,7 @@ bool CalculateLineExpression(string p_input_str, string& p_output_str)
 				AddError(4, l_count);
 				is_ok = false;
 			}
-			p_input_str.erase(0, p_count);
-			p_count = -1;
+			p_input_str.erase(0, l_count_of_num);
 		}
 		l_old_prioritet = l_current_prioritet;
 	}
@@ -562,7 +564,7 @@ bool CalculateLineExpression(string p_input_str, string& p_output_str)
 		char l_char_buf[320];
 		try
 		{
-			sprintf_s(l_char_buf, "%lf", c_operands.top());
+			sprintf_s(l_char_buf, "%.20lf", c_operands.top()); // TODO: add variable precision
 			p_output_str = l_char_buf;
 		}
 		catch(...)
