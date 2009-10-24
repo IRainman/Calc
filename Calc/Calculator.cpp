@@ -560,8 +560,16 @@ bool CalculateLineExpression(string p_input_str, string& p_output_str)
 	if(!c_operands.empty())
 	{
 		char l_char_buf[100];
-		sprintf_s(l_char_buf, "%lf", c_operands.top());
-		p_output_str = l_char_buf;
+		try
+		{
+			sprintf_s(l_char_buf, "%lf", c_operands.top());
+			p_output_str = l_char_buf;
+		}
+		catch(...)
+		{
+			is_ok = false;
+			m_ErrorString += L"Суслик, ты балбес!!! число слишком большое\r\n";
+		}
 	}
 	return is_ok;
 }
