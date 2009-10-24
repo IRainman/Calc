@@ -336,23 +336,21 @@ bool ValidateAndPrepareInputString(string& p_input_str)
 		AddError(1, -1, count_inp, count_outp);
 		l_function_ok = false;
 	}
-/*
-	l_function_ok &= replace(p_input_str, "pow", 'P', 2);
+
+//	l_function_ok &= replace(p_input_str, "pow", 'P', 2);
 
 	for(l_count = 0; l_count < p_input_str.size(); l_count++)
 	{
-		if(p_input_str.c_str()[l_count] >= 'a' && p_input_str.c_str()[l_count] <= 'z')
+		if((p_input_str.c_str()[l_count] >= 'a' && p_input_str.c_str()[l_count] <= 'z')
+#ifdef _DEBUG
+			|| p_input_str.c_str()[l_count] == ','
+#endif
+			)
 		{
 			AddError(2, l_count);
 			l_function_ok = false;
 		}
-	}*/
-	/* TODO проверка ну пустые скобки 
-	if(GetPriority(p_input_str.c_str()[--l_count]) == priority_bracket && GetPriority(p_input_str.c_str()[0]) == priority_bracket && count_inp < 2)
-	{
-		AddError(12);
-		l_function_ok = false;
-	}*/
+	}
 
 	return l_function_ok;
 }
@@ -417,6 +415,40 @@ bool CalculateOnLineExpression()
 	return true;
 }
 //---------------------------------------------------------------------------
+/* Трезвый взгляд нашёл ошибки 
+ 24.10.2009 21:23:33, m/\dne<<
+(2-3)1
+ Разбор строки:
+1.00000000000000000000
+считает!!!)))
+ 24.10.2009 21:24:14, m/\dne<<
+(2-3)(1)
+В позиции 6 ошибка: Пустые скобки или выражение в скобках заканчивается знаком операции
+
+непральную ошибку выдаёт
+ 24.10.2009 21:24:35, m/\dne<<
+-(1)
+В позиции 1 ошибка: Последовательная запись нескольких операций не подерживается
+косяк!
+ 24.10.2009 21:26:22, m/\dne<<
+-(1)/0
+В позиции 1 ошибка: Последовательная запись нескольких операций не подерживается
+В позиции 5 ошибка: Последовательная запись нескольких операций не подерживается
+ Разбор строки:
+Ошибка: На ноль делить нельзя
+ 24.10.2009 21:30:12, m/\dne<<
+,
+Ошибка: Выражение не может начинатся со знака операции
+ 24.10.2009 21:32:16, m/\dne<<
+ Подготовка:
+)2+5(
+ Разбор строки:
+ 24.10.2009 21:33:39, m/\dne<<
+ Подготовка:
+((3))
+В позиции 0 ошибка: Пустые скобки или выражение в скобках заканчивается знаком операции
+
+*/
 bool CalculateLineExpression(string p_input_str, string& p_output_str)
 {
 	uint_8 l_current_prioritet = priority_error, l_old_prioritet = priority_error;
@@ -440,6 +472,7 @@ bool CalculateLineExpression(string p_input_str, string& p_output_str)
 		{
 			if(l_old_prioritet >= priority_bracket)
 			{
+				// TODO Refactoring this blok
 				if(l_current_prioritet == priority_bracket && l_old_prioritet == priority_bracket)
 				{
 					AddError(13, l_count - 1);
