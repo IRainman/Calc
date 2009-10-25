@@ -19,6 +19,7 @@
 
 //---------------------------------------------------------------------------
 static wstring m_ErrorString;
+static bool m_NoError;
 static stack <char> c_operations;
 static stack <double> c_operands;
 static double a, b;
@@ -66,10 +67,14 @@ void AddMessage(uint_8 p_message)
 //---------------------------------------------------------------------------
 void AddWarning(uint_8 p_message)
 {
+	m_ErrorString += L"Внимание: ";
 	switch(p_message)
 	{
 		case 0:
-			m_ErrorString += L"Внимание: аргументы операции x^y будут приведены к целочисленному типу. Для вещественных типов используйте функцию pow(x,y)";
+			m_ErrorString += L"аргументы операции x^y будут приведены к целочисленному типу. Для вещественных типов используйте функцию pow(x,y)";
+			break;
+		case 1:
+			m_ErrorString += L"число слишком большое, вычисление может быть выполнено с ошибками";
 			break;
 #ifdef _DEBUG
 		default:
@@ -82,6 +87,7 @@ void AddWarning(uint_8 p_message)
 //---------------------------------------------------------------------------
 void AddError(uint_8 p_message, string::size_type p_count = -1, string::size_type p_1 = 0, string::size_type p_2 = 0)
 {
+	m_NoError = false;
 	static wstring l_error;
 	static wchar_t l_1[6];
 	_itow_s(p_1, l_1, 10);
@@ -97,12 +103,12 @@ void AddError(uint_8 p_message, string::size_type p_count = -1, string::size_typ
 				L" и закрывающих " + (wstring)l_2 +
 				L" скобок не совпадает";
 			break;
-/*		case 2:
+		case 2:
 			l_error = L"Недопустимый символ после проверки на функции, проверьте правильность их написания";
 			break;
-		case 3:*/
+/*		case 3:
 			l_error = L"Недопустимый символ во время преобразования в обратную польскую запись";
-			break;
+			break;*/
 		case 4:
 			l_error = L"Последовательная запись нескольких операций не подерживается";
 			break;
@@ -191,6 +197,7 @@ uint_8 GetPriority(char p_sym)
 		case '9':
 		case '.':
 		case ' ':
+//		case 'E': TODO add power
 			return priority_default;
 
 		default:
@@ -291,11 +298,10 @@ void replace(string& p_input_str, string p_in, string p_out, string::size_type p
 }
 */
 //---------------------------------------------------------------------------
-bool ValidateAndPrepareInputString(string& p_input_str)
+void ValidateAndPrepareInputString(string& p_input_str)
 {
 	uint count_inp = 0, count_outp = 0;
 	string::size_type c;
-	bool l_function_ok = true;
 
 	while(true)
 	{
@@ -305,39 +311,34 @@ bool ValidateAndPrepareInputString(string& p_input_str)
 		else
 			break;
 	}
-
 	string::size_type l_count = 0;
 	for(; l_count < p_input_str.size(); l_count++)
 	{
-		p_input_str[l_count] = tolower(p_input_str.c_str()[l_count]);
+		/*p_input_str[l_count] = tolower(p_input_str.c_str()[l_count]);
 		if( (p_input_str.c_str()[l_count] >= '(' && p_input_str.c_str()[l_count] <= '9') ||
 			(p_input_str.c_str()[l_count] >= 'a' && p_input_str.c_str()[l_count] <= 'z') ||
 			 p_input_str.c_str()[l_count] == '^' )
-		{
+		{*/
 			if(p_input_str.c_str()[l_count] == '(')
 			{
 				count_inp++;
-				continue;
 			}
-			if(p_input_str.c_str()[l_count] == ')')
+			else if(p_input_str.c_str()[l_count] == ')')
 			{
 				count_outp++;
-				continue;
 			}
-		}
+		/*}
 		else
 		{
 			AddError(0, l_count);
-			l_function_ok = false;
-		}
+		}*/
 	}
 	if(count_inp != count_outp)
 	{
 		AddError(1, -1, count_inp, count_outp);
-		l_function_ok = false;
 	}
 
-//	l_function_ok &= replace(p_input_str, "pow", 'P', 2);
+//TODO	replace(p_input_str, "pow", 'P', 2);
 
 	for(l_count = 0; l_count < p_input_str.size(); l_count++)
 	{
@@ -348,14 +349,11 @@ bool ValidateAndPrepareInputString(string& p_input_str)
 			)
 		{
 			AddError(2, l_count);
-			l_function_ok = false;
 		}
 	}
-
-	return l_function_ok;
 }
 //---------------------------------------------------------------------------
-bool CalculateOnLineExpression()
+void CalculateOnLineExpression()
 {
 	bool set_a = false, set_b = false;
 	if(!c_operands.empty())
@@ -393,7 +391,6 @@ bool CalculateOnLineExpression()
 					if(!b)
 					{
 						AddError(5);
-						return false;
 					}
 					c_operands.push(a/b);
 					break;
@@ -412,7 +409,6 @@ bool CalculateOnLineExpression()
 		}
 	}
 	c_operations.pop();
-	return true;
 }
 //---------------------------------------------------------------------------
 /* Трезвый взгляд нашёл ошибки 
@@ -449,10 +445,9 @@ bool CalculateOnLineExpression()
 В позиции 0 ошибка: Пустые скобки или выражение в скобках заканчивается знаком операции
 
 */
-bool CalculateLineExpression(string p_input_str, string& p_output_str)
+void CalculateLineExpression(string p_input_str, string& p_output_str)
 {
 	uint_8 l_current_prioritet = priority_error, l_old_prioritet = priority_error;
-	bool is_ok = true;
 	while(!c_operands.empty())
 	{
 		c_operands.pop();
@@ -460,7 +455,6 @@ bool CalculateLineExpression(string p_input_str, string& p_output_str)
 	if(GetPriority(p_input_str.c_str()[0]) > priority_bracket && p_input_str.c_str()[0] != '-')
 	{
 		AddError(9);
-		is_ok = false;
 	}
 	bool l_negative_number;
 	string::size_type l_count = 0;
@@ -476,13 +470,11 @@ bool CalculateLineExpression(string p_input_str, string& p_output_str)
 				/*if(l_current_prioritet == priority_bracket && l_old_prioritet == priority_bracket)
 				{
 					AddError(13, l_count - 1);
-					is_ok = false;
 					break;
 				}*/
 				if(l_current_prioritet > l_old_prioritet && p_input_str.c_str()[0] != '-')
 				{
 					AddError(4, l_count - 1);
-					is_ok = false;
 				}
 			}
 			if(c_operations.empty())
@@ -504,7 +496,7 @@ bool CalculateLineExpression(string p_input_str, string& p_output_str)
 							/*
 							b)	опеpация выталкивает из стека все опеpации с большим или pавным пpиоpитетом в выходную стpоку;
 							*/
-							is_ok &= CalculateOnLineExpression();
+							CalculateOnLineExpression();
 							if(c_operations.empty())
 							{
 								c_operations.push(p_input_str.c_str()[0]);
@@ -547,7 +539,7 @@ bool CalculateLineExpression(string p_input_str, string& p_output_str)
 							}
 							else
 							{
-								is_ok &= CalculateOnLineExpression();
+								CalculateOnLineExpression();
 							}
 						}
 					}
@@ -576,7 +568,6 @@ bool CalculateLineExpression(string p_input_str, string& p_output_str)
 			else
 			{
 				AddError(4, l_count);
-				is_ok = false;
 			}
 			p_input_str.erase(0, l_count_of_num);
 		}
@@ -585,30 +576,21 @@ bool CalculateLineExpression(string p_input_str, string& p_output_str)
 	if(l_current_prioritet > priority_bracket && !l_negative_number)
 	{
 		AddError(8, l_count);
-		is_ok = false;
 	}
 	AddMessage(1);
 	while(!c_operations.empty())
 	{
-		is_ok &= CalculateOnLineExpression();
+		CalculateOnLineExpression();
 	}
 	if(!c_operands.empty())
 	{
 		char l_char_buf[320];
-		try
-		{
-			sprintf_s(l_char_buf, "%.20lf", c_operands.top()); // TODO: add variable precision
-			p_output_str = l_char_buf;
-		}
-		catch(...)
-		{
-			is_ok = false;
-		}
+		sprintf_s(l_char_buf, "%.20lf", c_operands.top()); // TODO: add variable precision
+		p_output_str = l_char_buf;
 	}
-	return is_ok;
 }
 //---------------------------------------------------------------------------
-bool TranslateToOutputString(string& p_to_process_str)
+void TranslateToOutputString(string& p_to_process_str)
 {
 	/*
 	Автоматизация вычисления выражений в обратной польской нотации основана на использовании стека. Алгоритм вычисления для стековой машины элементарен:
@@ -691,7 +673,6 @@ bool TranslateToOutputString(string& p_to_process_str)
 								if(!b)
 								{
 									AddError(5);
-									return false;
 								}
 								c_operands.push(a/b);
 								break;
@@ -720,7 +701,6 @@ bool TranslateToOutputString(string& p_to_process_str)
 
 							default:
 								AddError(8);
-								return false;
 								/*char l_op = input.c_str()[l_count++];
 								string temp = "";
 								for(; l_count < input.size(); l_count++)
@@ -785,30 +765,45 @@ bool TranslateToOutputString(string& p_to_process_str)
 		sprintf_s(l_char_buf, " %lf ", c_operands.top());
 		p_to_process_str = l_char_buf;
 	}
-	return true;
 }
 //---------------------------------------------------------------------------
 wstring& Calculate(wstring p_input, wstring& p_output)
 {
 	m_ErrorString = L"";
-	bool l_No_Error = true;
+	m_NoError = true;
 
 	string l_input_str, l_output_str;
+// TODO убрать сей костыль :)
+	
+	for(string::size_type l_count = 0; l_count < p_input.size(); l_count++)
+	{
+		p_input[l_count] = tolower(p_input.c_str()[l_count]);
+		if( (p_input.c_str()[l_count] >= '(' && p_input.c_str()[l_count] <= '9') ||
+			(p_input.c_str()[l_count] >= 'a' && p_input.c_str()[l_count] <= 'z') ||
+			 p_input.c_str()[l_count] == '^')
+		{
+		}
+		else
+		{
+			AddError(0, l_count);
+		}
+	}
+//  ----- 
 	l_input_str.assign(p_input.begin(), p_input.end());
 
 	AddMessage(0);
-	l_No_Error &= ValidateAndPrepareInputString(l_input_str);
-	if(l_No_Error)
+	ValidateAndPrepareInputString(l_input_str);
+	if(m_NoError)
 	{
 		AddMessage(l_input_str);
-		l_No_Error &= CalculateLineExpression(l_input_str, l_output_str);
-		/*if(l_No_Error) //TODO: Calculate on RPN string
+		CalculateLineExpression(l_input_str, l_output_str);
+		/*if(m_NoError) //TODO: Calculate on RPN string
 		{
 			AddMessage(1, l_output_str);
 			l_No_Error &= TranslateToOutputString(l_output_str);
 			
 		}*/
-		if(l_No_Error)
+		if(m_NoError)
 		{
 			p_output.assign(l_output_str.begin(), l_output_str.end());
 		}
