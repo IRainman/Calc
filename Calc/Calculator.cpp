@@ -437,9 +437,11 @@ void CalculateOnLineExpression()
 				case '-':
 					c_operands.push(a-b);
 					break;
+#ifdef _DEBUG
 				default:
-					AddError(14);
+					AddError(254);
 					break;
+#endif
 			}
 		}
 		else
@@ -449,9 +451,11 @@ void CalculateOnLineExpression()
 				case '-':
 					c_operands.push(-b);
 					break;
+#ifdef _DEBUG
 				default:
-					AddError(14);
+					AddError(254);
 					break;
+#endif
 			}
 		}
 	}
