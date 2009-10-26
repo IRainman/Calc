@@ -25,13 +25,13 @@ static stack <double> c_operands;
 static double a, b;
 //---------------------------------------------------------------------------
 enum {
-	priority_function	= 16,
-	priority_power		= 8,
-	priority_multiply	= 4,
-	priority_addition	= 2,
-	priority_bracket	= 1,
-	priority_default	= 0,
-	priority_error		= 255
+	priority_function		= 16,
+	priority_power			= 8,
+	priority_multiply		= 4,
+	priority_addition		= 2,
+	priority_bracket		= 1,
+	priority_default		= 0,
+	priority_error			= -64
 };
 //---------------------------------------------------------------------------
 void AddMessage(const string& p_string_message)
@@ -67,13 +67,15 @@ void AddMessage(uint_8 p_message)
 //---------------------------------------------------------------------------
 void AddWarning(uint_8 p_message)
 {
+#ifdef _DEBUG
+	wchar_t l_temp_buf[1024];
+	swprintf_s(l_temp_buf, L"AddWarning(%d... ", p_message);
+	m_ErrorString += l_temp_buf;
+#endif
 	m_ErrorString += L"Внимание: ";
 	switch(p_message)
 	{
 		case 0:
-			m_ErrorString += L"аргументы операции x^y будут приведены к целочисленному типу. Для вещественных типов используйте функцию pow(x,y)";
-			break;
-		case 1:
 			m_ErrorString += L"число слишком большое, вычисление может быть выполнено с ошибками";
 			break;
 #ifdef _DEBUG
@@ -137,7 +139,19 @@ void AddError(uint_8 p_message, string::size_type p_count = -1, string::size_typ
 			l_error = L"Выражение не может начинаться и заканчиваться скобкой";
 			break;
 		case 13:
-			l_error = L"Пустые скобки или выражение в скобках заканчивается знаком операции";
+			l_error = L"Пустые скобки";
+			break;
+		case 14:
+			l_error = L"Открывающая скобка идёт сразу после закрывающей";
+			break;
+		case 15:
+			l_error = L"Запись числа после закрывающей скобки недопустима";
+			break;
+		case 16:
+			l_error = L"Выражение в скобках заканчивается знаком операции";
+			break;
+		case 17:
+			l_error = L"Выражение в скобках начинается со знака операции";
 			break;
 #ifdef _DEBUG
 		case 254:
@@ -151,7 +165,7 @@ void AddError(uint_8 p_message, string::size_type p_count = -1, string::size_typ
 			break;
 #endif
 	}
-	static wchar_t l_wchar_buf[1024];
+	wchar_t l_wchar_buf[1024];
 	if(p_count == -1)
 	{
 		swprintf_s(l_wchar_buf, L"Ошибка: %s\r\n", l_error.c_str());
@@ -160,10 +174,16 @@ void AddError(uint_8 p_message, string::size_type p_count = -1, string::size_typ
 	{
 		swprintf_s(l_wchar_buf, L"В позиции %d ошибка: %s\r\n", p_count, l_error.c_str());
 	}
+#ifdef _DEBUG
+	wchar_t l_temp_buf[1024];
+	swprintf_s(l_temp_buf, L"AddError(%d... %s", p_message, l_wchar_buf);
+	m_ErrorString += l_temp_buf;
+#else
 	m_ErrorString += l_wchar_buf;
+#endif
 }
 //---------------------------------------------------------------------------
-uint_8 GetPriority(char p_sym)
+int_8 GetPriority(char p_sym)
 {
 	switch(p_sym)
 	{
@@ -321,10 +341,31 @@ void ValidateAndPrepareInputString(string& p_input_str)
 		{*/
 			if(p_input_str.c_str()[l_count] == '(')
 			{
+				if(p_input_str.c_str()[l_count - 1] == ')')
+				{
+					AddError(14, l_count - 1);
+				}
+				else if(GetPriority(p_input_str.c_str()[l_count + 1]) > priority_bracket &&
+					p_input_str.c_str()[l_count + 1] != '-')
+				{
+					AddError(17, l_count + 1);
+				}
 				count_inp++;
 			}
 			else if(p_input_str.c_str()[l_count] == ')')
 			{
+				if(p_input_str.c_str()[l_count - 1] == '(')
+				{
+					AddError(13, l_count - 1);
+				}
+				else if(GetPriority(p_input_str.c_str()[l_count - 1]) > priority_bracket)
+				{
+					AddError(16, l_count - 1);
+				}
+				else if(GetPriority(p_input_str.c_str()[l_count + 1]) == priority_default)
+				{
+					AddError(15, l_count + 1);
+				}
 				count_outp++;
 			}
 		/*}
@@ -378,11 +419,7 @@ void CalculateOnLineExpression()
 					c_operands.push(pow(a,b));
 					break;
 				case '^':
-					if((int)a != a || (int)b != b)
-					{
-						AddWarning(0);
-					}
-					c_operands.push((int)a^(int)b);
+					c_operands.push(pow(a,b));
 					break;
 				case '*':
 					c_operands.push(a*b);
@@ -400,54 +437,30 @@ void CalculateOnLineExpression()
 				case '-':
 					c_operands.push(a-b);
 					break;
-#ifdef _DEBUG
 				default:
-					AddError(254);
+					AddError(14);
 					break;
-#endif
+			}
+		}
+		else
+		{
+			switch(c_operations.top())
+			{
+				case '-':
+					c_operands.push(-b);
+					break;
+				default:
+					AddError(14);
+					break;
 			}
 		}
 	}
 	c_operations.pop();
 }
 //---------------------------------------------------------------------------
-/* Трезвый взгляд нашёл ошибки 
- 24.10.2009 21:23:33, m/\dne<<
-(2-3)1
- Разбор строки:
-1.00000000000000000000
-считает!!!)))
- 24.10.2009 21:24:14, m/\dne<<
-(2-3)(1)
-В позиции 6 ошибка: Пустые скобки или выражение в скобках заканчивается знаком операции
-
-непральную ошибку выдаёт
- 24.10.2009 21:24:35, m/\dne<<
--(1)
-В позиции 1 ошибка: Последовательная запись нескольких операций не подерживается
-косяк!
- 24.10.2009 21:26:22, m/\dne<<
--(1)/0
-В позиции 1 ошибка: Последовательная запись нескольких операций не подерживается
-В позиции 5 ошибка: Последовательная запись нескольких операций не подерживается
- Разбор строки:
-Ошибка: На ноль делить нельзя
- 24.10.2009 21:30:12, m/\dne<<
-,
-Ошибка: Выражение не может начинатся со знака операции
- 24.10.2009 21:32:16, m/\dne<<
- Подготовка:
-)2+5(
- Разбор строки:
- 24.10.2009 21:33:39, m/\dne<<
- Подготовка:
-((3))
-В позиции 0 ошибка: Пустые скобки или выражение в скобках заканчивается знаком операции
-
-*/
 void CalculateLineExpression(string p_input_str, string& p_output_str)
 {
-	uint_8 l_current_prioritet = priority_error, l_old_prioritet = priority_error;
+	int_8 l_current_prioritet = priority_error, l_old_prioritet = priority_error;
 	while(!c_operands.empty())
 	{
 		c_operands.pop();
@@ -461,21 +474,12 @@ void CalculateLineExpression(string p_input_str, string& p_output_str)
 	for(; p_input_str.size(); l_count++)
 	{
 		l_current_prioritet = GetPriority(p_input_str.c_str()[0]);
-		l_negative_number = l_old_prioritet && p_input_str.c_str()[0] == '-';
+		l_negative_number = l_old_prioritet > 0 && p_input_str.c_str()[0] == '-';
 		if(l_current_prioritet && !l_negative_number)
 		{
-			if(l_old_prioritet >= priority_bracket)
+			if(l_current_prioritet > l_old_prioritet && l_old_prioritet > priority_bracket && p_input_str.c_str()[0] != '-')
 			{
-				// TODO Refactoring this blok
-				/*if(l_current_prioritet == priority_bracket && l_old_prioritet == priority_bracket)
-				{
-					AddError(13, l_count - 1);
-					break;
-				}*/
-				if(l_current_prioritet > l_old_prioritet && p_input_str.c_str()[0] != '-')
-				{
-					AddError(4, l_count - 1);
-				}
+				AddError(4, l_count - 1);
 			}
 			if(c_operations.empty())
 			{
@@ -515,7 +519,7 @@ void CalculateLineExpression(string p_input_str, string& p_output_str)
 				}
 				else
 				{
-					if(p_input_str.c_str()[0] != ')')
+					if(p_input_str.c_str()[0] == '(')
 					{
 						/*
 						c)	если очеpедной символ из исходной стpоки есть откpывающая скобка, то он пpоталкивается в стек;
@@ -563,6 +567,10 @@ void CalculateLineExpression(string p_input_str, string& p_output_str)
 			if(!l_negative_number || (l_negative_number && l_count_of_num > 1))
 			{
 				c_operands.push(atof(l_operand_string.c_str()));
+				if(c_operands.top() > 999999999999999 || c_operands.top() < -999999999999999) // TODO add normal terms
+				{
+					AddWarning(0);
+				}
 				l_current_prioritet = priority_default;
 			}
 			else
@@ -585,7 +593,7 @@ void CalculateLineExpression(string p_input_str, string& p_output_str)
 	if(!c_operands.empty())
 	{
 		char l_char_buf[320];
-		sprintf_s(l_char_buf, "%.20lf", c_operands.top()); // TODO: add variable precision
+		sprintf_s(l_char_buf, "%lf", c_operands.top()); // TODO: add variable precision
 		p_output_str = l_char_buf;
 	}
 }
@@ -603,7 +611,7 @@ void TranslateToOutputString(string& p_to_process_str)
 	string input = p_to_process_str;
 	p_to_process_str = "";
 	double a, b;
-	uint_8 l_current_priority;
+	int_8 l_current_priority;
 	
 	for(string::size_type l_count = 0; l_count < input.size(); l_count++)
 	{
@@ -780,15 +788,16 @@ wstring& Calculate(wstring p_input, wstring& p_output)
 		p_input[l_count] = tolower(p_input.c_str()[l_count]);
 		if( (p_input.c_str()[l_count] >= '(' && p_input.c_str()[l_count] <= '9') ||
 			(p_input.c_str()[l_count] >= 'a' && p_input.c_str()[l_count] <= 'z') ||
-			 p_input.c_str()[l_count] == '^')
+			 p_input.c_str()[l_count] == '^' || p_input.c_str()[l_count] == ' '/* при переносе проверку на пробел убрать*/)
 		{
+			// void :)
 		}
 		else
 		{
 			AddError(0, l_count);
 		}
 	}
-//  ----- 
+//  ----- end of костыль
 	l_input_str.assign(p_input.begin(), p_input.end());
 
 	AddMessage(0);
