@@ -14,9 +14,8 @@
 //TODO #define _USE_MATH_DEFINES
 #include <math.h>
 #include <stack>
-#include <list>
+//#include <list>
 #include "MyTypes.h"
-
 //---------------------------------------------------------------------------
 static wstring m_ErrorString;
 static bool m_NoError;
@@ -117,24 +116,24 @@ void AddError(uint_8 p_message, string::size_type p_count = -1, string::size_typ
 		case 5:
 			l_error = L"На ноль делить нельзя";
 			break;
-/*		case 6:
+		case 6:
 			l_error = L"У функции нехватает закрывающей скобки";
 			break;
 		case 7:
 			l_error = L"У функции отсутсвуют аргументы";
-			break;*/
+			break;
 		case 8:
 			l_error = L"Недостаточно операндов для получения результата";
 			break;
 		case 9:
 			l_error = L"Выражение не может начинатся со знака операции";
 			break;
-/*		case 10:
+		case 10:
 			l_error = L"У функции неверное число аргументов необходимо " + (wstring)l_1 + L", обнаружено " + (wstring)l_2;
 			break;
 		case 11:
 			l_error = L"Вложенные функции не поддерживаются, позиция внутри функции " + (wstring)l_1;
-			break;*/
+			break;
 		case 12:
 			l_error = L"Выражение не может начинаться и заканчиваться скобкой";
 			break;
@@ -429,7 +428,10 @@ void CalculateOnLineExpression()
 					{
 						AddError(5);
 					}
-					c_operands.push(a/b);
+					else
+					{
+						c_operands.push(a/b);
+					}
 					break;
 				case '+':
 					c_operands.push(a+b);
@@ -571,7 +573,7 @@ void CalculateLineExpression(string p_input_str, string& p_output_str)
 			if(!l_negative_number || (l_negative_number && l_count_of_num > 1))
 			{
 				c_operands.push(atof(l_operand_string.c_str()));
-				if(c_operands.top() > 999999999999999 || c_operands.top() < -999999999999999) // TODO add normal terms
+				if(c_operands.top() > 999999999999999 || c_operands.top() < -999999999999999) // TODO add normal terms ;)
 				{
 					AddWarning(0);
 				}
@@ -602,7 +604,7 @@ void CalculateLineExpression(string p_input_str, string& p_output_str)
 	}
 }
 //---------------------------------------------------------------------------
-void TranslateToOutputString(string& p_to_process_str)
+void CalculateRPN(string& p_to_process_str)
 {
 	/*
 	Автоматизация вычисления выражений в обратной польской нотации основана на использовании стека. Алгоритм вычисления для стековой машины элементарен:
@@ -813,7 +815,7 @@ wstring& Calculate(wstring p_input, wstring& p_output)
 		/*if(m_NoError) //TODO: Calculate on RPN string
 		{
 			AddMessage(1, l_output_str);
-			l_No_Error &= TranslateToOutputString(l_output_str);
+			CalculateRPN(l_output_str);
 			
 		}*/
 		if(m_NoError)
