@@ -11,10 +11,11 @@
 //---------------------------------------------------------------------------
 #include "Calculator.h"
 #include <string>
-//TODO #define _USE_MATH_DEFINES
+//#define _USE_RPN //TODO: Calculate on RPN string
+//#define _USE_Function //TODO: Add function support
+//#define _USE_MATH_DEFINES //TODO: Add constant support
 #include <math.h>
 #include <stack>
-//#include <list>
 #include "MyTypes.h"
 //---------------------------------------------------------------------------
 static wstring m_ErrorString;
@@ -53,9 +54,11 @@ void AddMessage(uint_8 p_message)
 		case 2:
 			m_ErrorString += L"\tВычисление:\r\n";
 			break;
-		/*case 3:
+#ifdef _USE_RPN
+		case 3:
 			m_ErrorString += L"\tRPN:\r\n";
-			break;*/
+			break;
+#endif // _USE_RPN
 #ifdef _DEBUG
 		default:
 			m_ErrorString += L" DEBUG: Unknown Message!";
@@ -107,32 +110,36 @@ void AddError(uint_8 p_message, string::size_type p_count = -1, string::size_typ
 		case 2:
 			l_error = L"Недопустимый символ после проверки на функции, проверьте правильность их написания";
 			break;
-/*		case 3:
+#ifdef _USE_RPN
+		case 3:
 			l_error = L"Недопустимый символ во время преобразования в обратную польскую запись";
-			break;*/
+			break;
+#endif // _USE_RPN
 		case 4:
 			l_error = L"Последовательная запись нескольких операций не подерживается";
 			break;
 		case 5:
 			l_error = L"На ноль делить нельзя";
 			break;
+#ifdef _USE_Function
 		case 6:
 			l_error = L"У функции нехватает закрывающей скобки";
 			break;
 		case 7:
 			l_error = L"У функции отсутсвуют аргументы";
 			break;
-		case 8:
-			l_error = L"Недостаточно операндов для получения результата";
-			break;
-		case 9:
-			l_error = L"Выражение не может начинатся со знака операции";
-			break;
 		case 10:
 			l_error = L"У функции неверное число аргументов необходимо " + (wstring)l_1 + L", обнаружено " + (wstring)l_2;
 			break;
 		case 11:
 			l_error = L"Вложенные функции не поддерживаются, позиция внутри функции " + (wstring)l_1;
+			break;
+#endif // _USE_Function
+		case 8:
+			l_error = L"Недостаточно операндов для получения результата";
+			break;
+		case 9:
+			l_error = L"Выражение не может начинатся со знака операции";
 			break;
 		case 12:
 			l_error = L"Выражение не может начинаться и заканчиваться скобкой";
@@ -224,7 +231,7 @@ int_8 GetPriority(char p_sym)
 	}
 }
 //---------------------------------------------------------------------------
-/*
+#ifdef _USE_Function
 bool replace(string& p_input_str, string p_in, char p_out, uint_8 p_number_of_param)
 {
 	string::size_type l_start, l_end, l_br_start;
@@ -294,9 +301,7 @@ bool replace(string& p_input_str, string p_in, char p_out, uint_8 p_number_of_pa
 		p_input_str.insert(l_start, l_char_buf);
 	}
 }
-*/
 //---------------------------------------------------------------------------
-/*
 void replace(string& p_input_str, string p_in, string p_out, string::size_type p_count_end)
 {
 	string::size_type l_start;
@@ -315,7 +320,7 @@ void replace(string& p_input_str, string p_in, string p_out, string::size_type p
 		}
 	}
 }
-*/
+#endif // _USE_Function
 //---------------------------------------------------------------------------
 void ValidateAndPrepareInputString(string& p_input_str)
 {
@@ -599,11 +604,12 @@ void CalculateLineExpression(string p_input_str, string& p_output_str)
 	if(!c_operands.empty())
 	{
 		char l_char_buf[320];
-		sprintf_s(l_char_buf, "%lf", c_operands.top()); // TODO: add variable precision
+		sprintf_s(l_char_buf, "%.16lf", c_operands.top()); // TODO: Add variable precision
 		p_output_str = l_char_buf;
 	}
 }
 //---------------------------------------------------------------------------
+#ifdef _USE_RPN
 void CalculateRPN(string& p_to_process_str)
 {
 	/*
@@ -780,6 +786,7 @@ void CalculateRPN(string& p_to_process_str)
 		p_to_process_str = l_char_buf;
 	}
 }
+#endif //_USE_RPN
 //---------------------------------------------------------------------------
 wstring& Calculate(wstring p_input, wstring& p_output)
 {
@@ -812,12 +819,14 @@ wstring& Calculate(wstring p_input, wstring& p_output)
 	{
 		AddMessage(l_input_str);
 		CalculateLineExpression(l_input_str, l_output_str);
-		/*if(m_NoError) //TODO: Calculate on RPN string
+		#ifdef _USE_RPN
+		if(m_NoError)
 		{
 			AddMessage(1, l_output_str);
 			CalculateRPN(l_output_str);
 			
-		}*/
+		}
+		#endif //_USE_RPN
 		if(m_NoError)
 		{
 			p_output.assign(l_output_str.begin(), l_output_str.end());
