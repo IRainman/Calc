@@ -19,6 +19,9 @@
 #include <list>
 #include "MyTypes.h"
 //---------------------------------------------------------------------------
+void ValidateAndPrepareInputString(string& p_input_str);
+void CalculateLineExpression(string p_input_str, string& p_output_str);
+//---------------------------------------------------------------------------
 static wstring m_ErrorString;
 static bool m_NoError;
 static stack <char> c_operations;
@@ -150,9 +153,6 @@ void AddError(uint_8 p_message, string::size_type p_count = -1, string::size_typ
 		case 10:
 			l_error = L"У функции неверное число аргументов необходимо " + (wstring)l_1 + L", обнаружено " + (wstring)l_2;
 			break;
-		case 11:
-			l_error = L"Выражения как параметры функции не поддерживаются, позиция внутри функции " + (wstring)l_1;
-			break;
 #endif // _USE_Function
 		case 12:
 			l_error = L"Выражение не может начинаться и заканчиваться скобкой";
@@ -253,19 +253,6 @@ int_8 GetPriority(char p_sym)
 }
 //---------------------------------------------------------------------------
 #ifdef _USE_Function
-/*void CalculateFunction(string& p_input_str)
-{
-	string::size_type c;
-	for(uint i = 0; i < c_function2count; i++)
-	{
-		c = p_input_str.find(c_function2[i]);
-		if(c != string::npos)
-		{
-			//add(c);
-		}
-	}
-}*/
-//---------------------------------------------------------------------------
 void CalculateFunction(string& p_input_str, string p_in, uint p_count, uint_8 p_number_of_param)
 {
 	string::size_type l_start, l_end, l_br_start;
@@ -288,11 +275,6 @@ void CalculateFunction(string& p_input_str, string p_in, uint p_count, uint_8 p_
 			return;
 		}
 		l_br_start = l_buf.find("(");
-		if(l_br_start != string::npos && l_br_start < l_end)
-		{
-			AddError(11, l_start, l_br_start);
-			return;
-		}
 		l_buf = l_buf.substr(0, l_end);
 		if(l_buf.empty())
 		{
@@ -300,38 +282,49 @@ void CalculateFunction(string& p_input_str, string p_in, uint p_count, uint_8 p_
 			return;
 		}
 		string::size_type c;
-		string::size_type old_c = 0;
 		uint_8 l_count = 0;
+		string::size_type l_scanf_count;
 		while(true)
 		{
 			c = l_buf.find(",");
 			if(c != string::npos)
 			{
-				sscanf_s(l_buf.c_str(), "%lf", &l_params[l_count]);
-				if(c - old_c == 0 || (l_buf[c-1] == '-' && c - old_c == 1))
+				l_scanf_count = sscanf_s(l_buf.c_str(), "%lf", &l_params[l_count]);
+				if(!l_scanf_count)
 				{
 					AddError(18, l_start, l_count + 1, c + 1);
+				}
+				if(l_scanf_count != c)
+				{
+					string l_inp = l_buf.substr(0, c);
+					string l_outp;
+					ValidateAndPrepareInputString(l_inp);
+					CalculateLineExpression(l_inp, l_outp); 
+					sscanf_s(l_outp.c_str(), "%lf", &l_params[l_count]);
+				}
+				else
+				{
+					sscanf_s(l_buf.c_str(), "%lf", &l_params[l_count]);
 				}
 				l_buf.erase(0, c + 1);
 				l_count++;
 			}
 			else
-			{
-				if(!l_buf.size())
-				{
-					AddError(18, l_start, l_count + 1, c + 1);
-				}
 				break;
-			}
-			old_c = c;
 		}
-		sscanf_s(l_buf.c_str(), "%lf", &l_params[l_count]);
+		l_scanf_count = sscanf_s(l_buf.c_str(), "%lf", &l_params[l_count]);
+		// TODO добавить рекурсив :) 
+		if(!l_buf.size() || !l_scanf_count)
+		{
+			AddError(18, l_start, l_count + 1, c + 1);
+		}
 		if(l_count != p_number_of_param - 1)
 		{
 			AddError(10, l_start, p_number_of_param, l_count + 1);
 			return;
 		}
 		double result;
+		string::size_type l_c;
 		switch(p_number_of_param)
 		{
 			case 2:
@@ -343,7 +336,7 @@ void CalculateFunction(string& p_input_str, string p_in, uint p_count, uint_8 p_
 				}
 				try
 				{
-					sprintf_s(l_char_buf, "%.20lf", result);
+					l_c = sprintf_s(l_char_buf, "%lf", result);
 				}
 				catch(...)
 				{
@@ -360,32 +353,13 @@ void CalculateFunction(string& p_input_str, string p_in, uint p_count, uint_8 p_
 #endif
 		}
 		p_input_str.erase(l_start, l_start + l_end + 1 + p_in.size());
-		p_input_str.insert(l_start, l_char_buf);
+		string l_temp = l_char_buf;
+		l_temp = l_temp.substr(0, l_c);
+		p_input_str.insert(l_start, l_temp);
 	}
 }
 //---------------------------------------------------------------------------
-/*
-void replace(string& p_input_str, string p_in, string p_out, string::size_type p_count_end)
-{
-	string::size_type l_start;
-	while(true)
-	{
-		l_start = p_input_str.find(p_in);
-
-		if(l_start == string::npos)
-		{
-			break;
-		}
-		else
-		{
-			p_input_str.erase(l_start + 1, p_count_end - l_start);
-			p_input_str.insert(l_start + 1, p_out);
-		}
-	}
-}
-*/
 #endif // _USE_Function
-//---------------------------------------------------------------------------
 void ValidateAndPrepareInputString(string& p_input_str)
 {
 	uint count_inp = 0, count_outp = 0;
@@ -402,11 +376,11 @@ void ValidateAndPrepareInputString(string& p_input_str)
 	string::size_type l_count = 0;
 	for(; l_count < p_input_str.size(); l_count++)
 	{
-		/*p_input_str[l_count] = tolower(p_input_str.c_str()[l_count]);
+		p_input_str[l_count] = tolower(p_input_str.c_str()[l_count]);
 		if( (p_input_str.c_str()[l_count] >= '(' && p_input_str.c_str()[l_count] <= '9') ||
 			(p_input_str.c_str()[l_count] >= 'a' && p_input_str.c_str()[l_count] <= 'z') ||
 			 p_input_str.c_str()[l_count] == '^' )
-		{*/
+		{
 			if(p_input_str.c_str()[l_count] == '(')
 			{
 				if(p_input_str.c_str()[l_count - 1] == ')')
@@ -436,11 +410,11 @@ void ValidateAndPrepareInputString(string& p_input_str)
 				}
 				count_outp++;
 			}
-		/*}
+		}
 		else
 		{
 			AddError(0, l_count);
-		}*/
+		}
 	}
 	if(count_inp != count_outp)
 	{
@@ -496,9 +470,9 @@ void CalculateOnLineExpression()
 			switch(c_operations.top())
 			{
 				#ifdef _USE_Function
-				case 'P':
+				/*case 'P': // RPN?
 					c_operands.push(pow(a,b));
-					break;
+					break;*/
 				#endif // _USE_Function
 				case '^':
 					c_operands.push(pow(a,b));
@@ -682,8 +656,10 @@ void CalculateLineExpression(string p_input_str, string& p_output_str)
 	if(!c_operands.empty())
 	{
 		char l_char_buf[320];
-		sprintf_s(l_char_buf, "%.16lf", c_operands.top()); // TODO: Add variable precision
+		string::size_type l_c;
+		l_c = sprintf_s(l_char_buf, "%lf", c_operands.top()); // TODO: Add variable precision
 		p_output_str = l_char_buf;
+		p_output_str.substr(0, l_c);
 	}
 }
 //---------------------------------------------------------------------------
