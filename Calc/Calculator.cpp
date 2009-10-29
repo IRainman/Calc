@@ -57,9 +57,9 @@ void AddMessage(uint_8 p_message)
 	{
 		case 0:
 #ifdef _USE_Function
-			m_ErrorString += L"\tÏîäãîòîâêà:\r\n";
-#else
 			m_ErrorString += L"\tÏîäãîòîâêà è âû÷èñëåíèå ôóíêöèé:\r\n";
+#else
+			m_ErrorString += L"\tÏîäãîòîâêà:\r\n";
 #endif // _USE_Function
 			break;
 		case 1:
@@ -73,6 +73,14 @@ void AddMessage(uint_8 p_message)
 			m_ErrorString += L"\tRPN:\r\n";
 			break;
 #endif // _USE_RPN
+#ifdef _USE_Function
+		case 4:
+			m_ErrorString += L"Îáíàğóæåíî âëîæåííîå âûğàæåíèå:\r\n";
+			break;
+		case 5:
+			m_ErrorString += L"Êîíåö âëîæåííîãî âûğàæåíèÿ.\r\n";
+			break;
+#endif // _USE_Function
 #ifdef _DEBUG
 		default:
 			m_ErrorString += L" DEBUG: Unknown Message!";
@@ -176,6 +184,9 @@ void AddError(uint_8 p_message, string::size_type p_count = -1, string::size_typ
 		case 18:
 			l_error = L"Ó ôóíêöèè îòñóòñâóåò " + (wstring)l_1 + L" àğãóìåíò, ïîçèöèÿ âíóòğè ñêîáîê ôóíêöèè " + (wstring)l_2;
 			break;
+		case 19:
+			l_error = L"Çàïèñü ôóíêöèè ïîñëå çàêğûâàşùåé ñêîáêè íåäîïóñòèìà";
+			break;
 #endif // _USE_Function
 #ifdef _DEBUG
 		case 253:
@@ -265,15 +276,14 @@ void CalculateFunction(string& p_input_str, string p_in, uint p_count, uint_8 p_
 		if(l_start == string::npos)
 			return;
 
-		l_buf = p_input_str;
-		l_buf.erase(0, l_start + p_in.size());
+		l_buf = p_input_str.substr(l_start + p_in.size());
 
 		l_end = l_buf.find(")");
-		if(l_end == string::npos)
+		/*if(l_end == string::npos) !!! Uncoment this after refactoring function
 		{
 			AddError(6, l_start);
 			return;
-		}
+		}*/
 		l_br_start = l_buf.find("(");
 		l_buf = l_buf.substr(0, l_end);
 		if(l_buf.empty())
@@ -290,21 +300,23 @@ void CalculateFunction(string& p_input_str, string p_in, uint p_count, uint_8 p_
 			if(c != string::npos)
 			{
 				l_scanf_count = sscanf_s(l_buf.c_str(), "%lf", &l_params[l_count]);
-				if(!l_scanf_count)
-				{
-					AddError(18, l_start, l_count + 1, c + 1);
-				}
 				if(l_scanf_count != c)
 				{
+					AddMessage(4);
 					string l_inp = l_buf.substr(0, c);
 					string l_outp;
 					ValidateAndPrepareInputString(l_inp);
 					CalculateLineExpression(l_inp, l_outp); 
 					sscanf_s(l_outp.c_str(), "%lf", &l_params[l_count]);
+					AddMessage(5);
 				}
 				else
 				{
-					sscanf_s(l_buf.c_str(), "%lf", &l_params[l_count]);
+					l_scanf_count = sscanf_s(l_buf.c_str(), "%lf", &l_params[l_count]);
+					if(!l_scanf_count)
+					{
+						AddError(18, l_start, l_count + 1, c + 1);
+					}
 				}
 				l_buf.erase(0, c + 1);
 				l_count++;
@@ -408,6 +420,10 @@ void ValidateAndPrepareInputString(string& p_input_str)
 				{
 					AddError(15, l_count + 1);
 				}
+				else if(p_input_str.c_str()[l_count + 1] >= 'a' && p_input_str.c_str()[l_count + 1] <= 'z')
+				{
+					AddError(19, l_count + 1);
+				}
 				count_outp++;
 			}
 		}
@@ -510,11 +526,15 @@ void CalculateOnLineExpression()
 				case '-':
 					c_operands.push(-b);
 					break;
-#ifdef _DEBUG
+/*#ifdef _DEBUG
 				default:
 					AddError(254);
 					break;
-#endif
+#endif // i dont now... */
+				default:
+					AddError(4);
+					break;
+
 			}
 		}
 	}
