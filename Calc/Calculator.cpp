@@ -325,7 +325,16 @@ void CalculateFunction(string& p_input_str, string p_in, uint p_count, uint_8 p_
 				break;
 		}
 		l_scanf_count = sscanf_s(l_buf.c_str(), "%lf", &l_params[l_count]);
-		// TODO добавить рекурсив :) 
+		if(l_scanf_count != l_buf.size())
+		{
+			AddMessage(4);
+			string l_inp = l_buf.substr(0, c);
+			string l_outp;
+			ValidateAndPrepareInputString(l_inp);
+			CalculateLineExpression(l_inp, l_outp); 
+			sscanf_s(l_outp.c_str(), "%lf", &l_params[l_count]);
+			AddMessage(5);
+		}
 		if(!l_buf.size() || !l_scanf_count)
 		{
 			AddError(18, l_start, l_count + 1, c + 1);
