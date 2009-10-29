@@ -16,8 +16,7 @@
 //#define _USE_MATH_DEFINES //TODO: Add constant support
 #include <math.h>
 #include <stack>
-//#include <list>
-//#include <map>
+#include <list>
 #include "MyTypes.h"
 //---------------------------------------------------------------------------
 static wstring m_ErrorString;
@@ -37,12 +36,9 @@ enum
 	priority_error			= -64
 };
 #ifdef _USE_Function
-const char* c_function1[] = {"sin", "cos"};
-const uint c_function1count = _countof(c_function1);
-//map <string, map <string::size_type,... c_function1coordinate
-const char* c_function2[] = {"pow"};
-const uint c_function2count = _countof(c_function2);
-//c_function2coordinate
+//list <string> c_function1; // TODO
+list <string> c_function2;
+#define c_max_argument_of_function 2
 #endif //_USE_Function
 //---------------------------------------------------------------------------
 void AddMessage(const string& p_string_message)
@@ -57,7 +53,11 @@ void AddMessage(uint_8 p_message)
 	switch(p_message)
 	{
 		case 0:
+#ifdef _USE_Function
 			m_ErrorString += L"\tПодготовка:\r\n";
+#else
+			m_ErrorString += L"\tПодготовка и вычисление функций:\r\n";
+#endif // _USE_Function
 			break;
 		case 1:
 			m_ErrorString += L"\tРазбор строки:\r\n";
@@ -139,12 +139,6 @@ void AddError(uint_8 p_message, string::size_type p_count = -1, string::size_typ
 		case 7:
 			l_error = L"У функции отсутсвуют аргументы";
 			break;
-		case 10:
-			l_error = L"У функции неверное число аргументов необходимо " + (wstring)l_1 + L", обнаружено " + (wstring)l_2;
-			break;
-		case 11:
-			l_error = L"Выражения как параметры функции не поддерживаются, позиция внутри функции " + (wstring)l_1;
-			break;
 #endif // _USE_Function
 		case 8:
 			l_error = L"Недостаточно операндов для получения результата";
@@ -152,6 +146,14 @@ void AddError(uint_8 p_message, string::size_type p_count = -1, string::size_typ
 		case 9:
 			l_error = L"Выражение не может начинатся со знака операции";
 			break;
+#ifdef _USE_Function
+		case 10:
+			l_error = L"У функции неверное число аргументов необходимо " + (wstring)l_1 + L", обнаружено " + (wstring)l_2;
+			break;
+		case 11:
+			l_error = L"Выражения как параметры функции не поддерживаются, позиция внутри функции " + (wstring)l_1;
+			break;
+#endif // _USE_Function
 		case 12:
 			l_error = L"Выражение не может начинаться и заканчиваться скобкой";
 			break;
@@ -170,7 +172,15 @@ void AddError(uint_8 p_message, string::size_type p_count = -1, string::size_typ
 		case 17:
 			l_error = L"Выражение в скобках начинается со знака операции";
 			break;
+#ifdef _USE_Function
+		case 18:
+			l_error = L"У функции отсутсвует " + (wstring)l_1 + L" аргумент, позиция внутри скобок функции " + (wstring)l_2;
+			break;
+#endif // _USE_Function
 #ifdef _DEBUG
+		case 253:
+			l_error = L"DEBUG: Internal Processing Error: \"void CalculateFunction(...)\"";
+			break;
 		case 254:
 			l_error = L"DEBUG: Internal Processing Error: \"bool CalculateOnLineExpression()\"";
 			break;
@@ -256,17 +266,17 @@ int_8 GetPriority(char p_sym)
 	}
 }*/
 //---------------------------------------------------------------------------
-bool CalculateFunction(string& p_input_str, string p_in, char p_out, uint_8 p_number_of_param)
+void CalculateFunction(string& p_input_str, string p_in, uint p_count, uint_8 p_number_of_param)
 {
 	string::size_type l_start, l_end, l_br_start;
 	string l_buf;
 	char l_char_buf[320];
-	double l_a, l_b;
+	double l_params[c_max_argument_of_function];
 	while(true)
 	{
 		l_start = p_input_str.find(p_in);
 		if(l_start == string::npos)
-			return true;
+			return;
 
 		l_buf = p_input_str;
 		l_buf.erase(0, l_start + p_in.size());
@@ -275,49 +285,78 @@ bool CalculateFunction(string& p_input_str, string p_in, char p_out, uint_8 p_nu
 		if(l_end == string::npos)
 		{
 			AddError(6, l_start);
-			return false;
+			return;
 		}
 		l_br_start = l_buf.find("(");
 		if(l_br_start != string::npos && l_br_start < l_end)
 		{
 			AddError(11, l_start, l_br_start);
-			return false;
+			return;
 		}
 		l_buf = l_buf.substr(0, l_end);
 		if(l_buf.empty())
 		{
 			AddError(7, l_start);
-			return false;
+			return;
 		}
 		string::size_type c;
-		uint_8 count = 0;
+		string::size_type old_c = 0;
+		uint_8 l_count = 0;
 		while(true)
 		{
 			c = l_buf.find(",");
 			if(c != string::npos)
 			{
-				l_buf.erase(c, 1);
-				l_buf.insert(c, " ");
-				count++;
+				sscanf_s(l_buf.c_str(), "%lf", &l_params[l_count]);
+				if(c - old_c == 0 || (l_buf[c-1] == '-' && c - old_c == 1))
+				{
+					AddError(18, l_start, l_count + 1, c + 1);
+				}
+				l_buf.erase(0, c + 1);
+				l_count++;
 			}
 			else
+			{
+				if(!l_buf.size())
+				{
+					AddError(18, l_start, l_count + 1, c + 1);
+				}
 				break;
+			}
+			old_c = c;
 		}
-		if(count != p_number_of_param - 1)
+		sscanf_s(l_buf.c_str(), "%lf", &l_params[l_count]);
+		if(l_count != p_number_of_param - 1)
 		{
-			AddError(10, l_start, p_number_of_param, count + 1);
-			return false;
+			AddError(10, l_start, p_number_of_param, l_count + 1);
+			return;
 		}
+		double result;
 		switch(p_number_of_param)
 		{
 			case 2:
-				sscanf_s(l_buf.c_str(), "%lf %lf", &l_a, &l_b);
-				sprintf_s(l_char_buf, "(%lf%c%lf)", l_a, p_out, l_b);
+				switch(p_count)
+				{
+					case 0:
+							result = pow(l_params[0], l_params[1]);
+						break;
+				}
+				try
+				{
+					sprintf_s(l_char_buf, "%.20lf", result);
+				}
+				catch(...)
+				{
+#ifdef _DEBUG
+				AddError(253);
+				return;
+#endif
+				}
 				break;
 #ifdef _DEBUG
 			default:
-				AddError(10, l_start, p_number_of_param, count + 1);
-				return false;
+				AddError(10, l_start, p_number_of_param, l_count + 1);
+				return;
 #endif
 		}
 		p_input_str.erase(l_start, l_start + l_end + 1 + p_in.size());
@@ -410,7 +449,13 @@ void ValidateAndPrepareInputString(string& p_input_str)
 #ifdef _USE_Function
 	if(m_NoError)
 	{
-		CalculateFunction(p_input_str, "pow(", 'P', 2);
+		uint j = 0;
+/*		for(list <string>::iterator i = c_function1.begin(); i != c_function1.end(); i++, j++) // TODO
+			CalculateFunction(p_input_str, i->c_str(), j, 1);
+*/
+		j = 0;
+		for(list <string>::iterator i = c_function2.begin(); i != c_function2.end(); i++, j++)
+			CalculateFunction(p_input_str, i->c_str(), j, 2);
 	}
 #endif // _USE_Function
 	if(m_NoError)
@@ -823,6 +868,15 @@ void CalculateRPN(string& p_to_process_str)
 //---------------------------------------------------------------------------
 wstring& Calculate(wstring p_input, wstring& p_output)
 {
+	/*if(c_function1.empty())// TODO
+	{
+		c_function1.push_back("sin(");
+		c_function1.push_back("cos(");
+	}*/
+	if(c_function2.empty())
+	{
+		c_function2.push_back("pow(");
+	}
 	m_ErrorString = L"";
 	m_NoError = true;
 
