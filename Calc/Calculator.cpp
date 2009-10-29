@@ -346,22 +346,22 @@ void CalculateFunction(string& p_input_str, string p_in, uint p_count, uint_8 p_
 							result = pow(l_params[0], l_params[1]);
 						break;
 				}
-				try
-				{
-					l_c = sprintf_s(l_char_buf, "%lf", result);
-				}
-				catch(...)
-				{
-#ifdef _DEBUG
-				AddError(253);
-				return;
-#endif
-				}
 				break;
 #ifdef _DEBUG
 			default:
 				AddError(10, l_start, p_number_of_param, l_count + 1);
 				return;
+#endif
+		}
+		try
+		{
+			l_c = sprintf_s(l_char_buf, "%lf", result);
+		}
+		catch(...)
+		{
+#ifdef _DEBUG
+			AddError(253);
+			return;
 #endif
 		}
 		p_input_str.erase(l_start, l_start + l_end + 1 + p_in.size());
