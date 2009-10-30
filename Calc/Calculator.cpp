@@ -24,9 +24,6 @@ void CalculateLineExpression(string p_input_str, string& p_output_str);
 //---------------------------------------------------------------------------
 static wstring m_ErrorString;
 static bool m_NoError;
-static stack <char> c_operations;
-static stack <double> c_operands;
-static double a, b;
 //---------------------------------------------------------------------------
 enum
 {
@@ -264,10 +261,22 @@ int_8 GetPriority(char p_sym)
 }
 //---------------------------------------------------------------------------
 #ifdef _USE_Function
+inline void Recursive(string& l_buf, string::size_type c, double l_params[], uint_8 l_count)
+{
+	AddMessage(4);
+	string l_inp = l_buf.substr(0, c);
+	string l_outp;
+	ValidateAndPrepareInputString(l_inp);
+	CalculateLineExpression(l_inp, l_outp); 
+	sscanf_s(l_outp.c_str(), "%lf", &l_params[l_count]);
+	AddMessage(5);
+}
+//---------------------------------------------------------------------------
 void CalculateFunction(string& p_input_str, string p_in, uint p_count, uint_8 p_number_of_param)
 {
 	string::size_type l_start, l_end, l_br_start;
 	string l_buf;
+	string l_temp;
 	char l_char_buf[320];
 	double l_params[c_max_argument_of_function];
 	while(true)
@@ -277,14 +286,43 @@ void CalculateFunction(string& p_input_str, string p_in, uint p_count, uint_8 p_
 			return;
 
 		l_buf = p_input_str.substr(l_start + p_in.size());
-
-		l_end = l_buf.find(")");
-		/*if(l_end == string::npos) !!! Uncoment this after refactoring function
+		l_temp = l_buf;
+		//string::size_type l_correct_comma = 0; ???????????
+		for(string::size_type l_nesting_level = 0, l_correct_end = 0;;)
+		{
+			l_br_start = l_temp.find("(");
+			l_end = l_temp.find(")");
+			//l_correct_comma += ??????
+			if(l_br_start != string::npos)
+			{
+				l_correct_end += l_br_start;
+				l_temp = l_temp.substr(l_br_start + 1);
+				if(l_br_start < l_end)
+				{
+					l_nesting_level++;
+				}
+			}
+			if(!l_nesting_level)
+			{
+				l_end += l_correct_end;
+				break;
+			}
+			if(l_end != string::npos)
+			{
+				l_nesting_level--;
+				l_correct_end += l_end;
+				l_temp = l_temp.substr(l_end - l_br_start + 1);
+			}
+			else
+			{
+				//AddError(
+			}
+		}
+		if(l_end == string::npos) // !!! Uncoment this after refactoring function
 		{
 			AddError(6, l_start);
 			return;
-		}*/
-		l_br_start = l_buf.find("(");
+		}
 		l_buf = l_buf.substr(0, l_end);
 		if(l_buf.empty())
 		{
@@ -296,19 +334,13 @@ void CalculateFunction(string& p_input_str, string p_in, uint p_count, uint_8 p_
 		string::size_type l_scanf_count;
 		while(true)
 		{
-			c = l_buf.find(",");
+			c = l_buf.find(","); // косяк !!!!!!!!!!!!!!!!!!1
 			if(c != string::npos)
 			{
 				l_scanf_count = sscanf_s(l_buf.c_str(), "%lf", &l_params[l_count]);
 				if(l_scanf_count != c)
 				{
-					AddMessage(4);
-					string l_inp = l_buf.substr(0, c);
-					string l_outp;
-					ValidateAndPrepareInputString(l_inp);
-					CalculateLineExpression(l_inp, l_outp); 
-					sscanf_s(l_outp.c_str(), "%lf", &l_params[l_count]);
-					AddMessage(5);
+					Recursive(l_buf, c, l_params, l_count);
 				}
 				else
 				{
@@ -327,13 +359,7 @@ void CalculateFunction(string& p_input_str, string p_in, uint p_count, uint_8 p_
 		l_scanf_count = sscanf_s(l_buf.c_str(), "%lf", &l_params[l_count]);
 		if(l_scanf_count != l_buf.size())
 		{
-			AddMessage(4);
-			string l_inp = l_buf.substr(0, c);
-			string l_outp;
-			ValidateAndPrepareInputString(l_inp);
-			CalculateLineExpression(l_inp, l_outp); 
-			sscanf_s(l_outp.c_str(), "%lf", &l_params[l_count]);
-			AddMessage(5);
+			Recursive(l_buf, c, l_params, l_count);
 		}
 		if(!l_buf.size() || !l_scanf_count)
 		{
@@ -345,7 +371,7 @@ void CalculateFunction(string& p_input_str, string p_in, uint p_count, uint_8 p_
 			return;
 		}
 		double result;
-		string::size_type l_c;
+		//string::size_type l_c; todo
 		switch(p_number_of_param)
 		{
 			case 2:
@@ -364,7 +390,7 @@ void CalculateFunction(string& p_input_str, string p_in, uint p_count, uint_8 p_
 		}
 		try
 		{
-			l_c = sprintf_s(l_char_buf, "%lf", result);
+			/*l_c =*/ sprintf_s(l_char_buf, "%lf", result);
 		}
 		catch(...)
 		{
@@ -374,8 +400,8 @@ void CalculateFunction(string& p_input_str, string p_in, uint p_count, uint_8 p_
 #endif
 		}
 		p_input_str.erase(l_start, l_start + l_end + 1 + p_in.size());
-		string l_temp = l_char_buf;
-		l_temp = l_temp.substr(0, l_c);
+		l_temp = l_char_buf;
+		//l_temp = l_temp.substr(0, l_c);
 		p_input_str.insert(l_start, l_temp);
 	}
 }
@@ -473,9 +499,10 @@ void ValidateAndPrepareInputString(string& p_input_str)
 	}
 }
 //---------------------------------------------------------------------------
-void CalculateOnLineExpression()
+void CalculateOnLineExpression(stack <char>& c_operations, stack <double>& c_operands)
 {
 	bool set_a = false, set_b = false;
+	double a, b;
 	if(!c_operands.empty())
 	{
 		set_b = true;
@@ -553,10 +580,8 @@ void CalculateOnLineExpression()
 void CalculateLineExpression(string p_input_str, string& p_output_str)
 {
 	int_8 l_current_prioritet = priority_error, l_old_prioritet = priority_error;
-	while(!c_operands.empty())
-	{
-		c_operands.pop();
-	}
+	stack <char> c_operations;
+	stack <double> c_operands;
 	if(GetPriority(p_input_str.c_str()[0]) > priority_bracket && p_input_str.c_str()[0] != '-')
 	{
 		AddError(9);
@@ -592,7 +617,7 @@ void CalculateLineExpression(string p_input_str, string& p_output_str)
 							/*
 							b)	опеpация выталкивает из стека все опеpации с большим или pавным пpиоpитетом в выходную стpоку;
 							*/
-							CalculateOnLineExpression();
+							CalculateOnLineExpression(c_operations, c_operands);
 							if(c_operations.empty())
 							{
 								c_operations.push(p_input_str.c_str()[0]);
@@ -635,7 +660,7 @@ void CalculateLineExpression(string p_input_str, string& p_output_str)
 							}
 							else
 							{
-								CalculateOnLineExpression();
+								CalculateOnLineExpression(c_operations, c_operands);
 							}
 						}
 					}
@@ -680,15 +705,15 @@ void CalculateLineExpression(string p_input_str, string& p_output_str)
 	AddMessage(1);
 	while(!c_operations.empty())
 	{
-		CalculateOnLineExpression();
+		CalculateOnLineExpression(c_operations, c_operands);
 	}
 	if(!c_operands.empty())
 	{
 		char l_char_buf[320];
-		string::size_type l_c;
-		l_c = sprintf_s(l_char_buf, "%lf", c_operands.top()); // TODO: Add variable precision
+		/*string::size_type l_c; todo
+		l_c = */sprintf_s(l_char_buf, "%lf", c_operands.top()); // TODO: Add variable precision
 		p_output_str = l_char_buf;
-		p_output_str.substr(0, l_c);
+		//p_output_str.substr(0, l_c);
 	}
 }
 //---------------------------------------------------------------------------
