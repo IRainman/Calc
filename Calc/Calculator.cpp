@@ -9,8 +9,8 @@
 #ifndef _CALCULATOR_CPP
 #define _CALCULATOR_CPP
 //---------------------------------------------------------------------------
-#include "Calculator.h"
 #include "Flags.h"
+#include "Calculator.h"
 #include "Message.h"
 #include "RPN.h"
 #include <list>
@@ -78,7 +78,7 @@ void CalculateFunction(string& p_input_str, string p_in, uint p_count, uint_8 p_
 			}
 			else
 			{
-				//AddError(
+				AddError(6, l_start);
 			}
 		}
 		if(l_end == string::npos) // !!! Uncoment this after refactoring function

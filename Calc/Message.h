@@ -6,8 +6,8 @@ using namespace std;
 #include "MyTypes.h"
 //---------------------------------------------------------------------------
 extern wstring m_ErrorString;
-static bool m_NoError;
-static string::size_type m_Correct_count;
+extern bool m_NoError;
+extern string::size_type m_Correct_count;
 //---------------------------------------------------------------------------
 extern void AddMessage(const string& p_string_message);
 extern void AddMessage(uint_8 p_message);
