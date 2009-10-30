@@ -202,6 +202,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Message.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\RPN.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\stdafx.cpp"
 				>
 				<FileConfiguration
@@ -240,11 +248,23 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Flags.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Message.h"
+				>
+			</File>
+			<File
 				RelativePath=".\MyTypes.h"
 				>
 			</File>
 			<File
 				RelativePath=".\Resource.h"
+				>
+			</File>
+			<File
+				RelativePath=".\RPN.h"
 				>
 			</File>
 			<File
