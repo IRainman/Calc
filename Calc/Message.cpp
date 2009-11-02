@@ -25,6 +25,11 @@ void AddMessage(const string& p_string_message)
 //---------------------------------------------------------------------------
 void AddMessage(uint_8 p_message)
 {
+#ifdef _DEBUG
+	wchar_t l_temp_buf[1024];
+	swprintf_s(l_temp_buf, L"AddMessage(%d... ", p_message);
+	m_ErrorString += l_temp_buf;
+#endif
 	switch(p_message)
 	{
 		case 0:

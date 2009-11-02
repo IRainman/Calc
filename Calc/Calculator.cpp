@@ -50,18 +50,18 @@ void CalculateFunction(string& p_input_str, string p_in, uint p_count, const uin
 			return;
 
 		l_buf = p_input_str.substr(l_start + p_in.size());
-		string::size_type l_comma[c_max_argument_of_function - 1], l_current_comma;
-		uint_8 l_comma_count = 0, l_nesting_level = 0;
+		string::size_type l_comma[c_max_argument_of_function - 1], l_current_comma, l_comma_count = 0;
+		uint l_nesting_level = 0;
 		for(string::size_type l_correct_end = 0, l_correct_comma = 0;;)
 		{
 			l_br_start = l_buf.find("(");
 			l_end = l_buf.find(")");
 			l_current_comma = l_buf.find(",");
-			if(l_br_start != string::npos && l_br_start < l_end)
+			if(l_br_start != string::npos && l_br_start < l_end && l_current_comma > l_br_start)
 			{
-				l_correct_end += l_br_start - 1;
+				l_correct_end += l_br_start + 1;
 				l_correct_comma += l_br_start + 1;
-				l_buf = l_buf.substr(l_br_start + 1);
+				l_buf = l_buf.substr(l_end + 1);
 				l_nesting_level++;
 			}
 			else if(l_current_comma != string::npos)
@@ -69,7 +69,7 @@ void CalculateFunction(string& p_input_str, string p_in, uint p_count, const uin
 				l_comma[l_comma_count] = l_current_comma;
 				if(l_correct_comma)
 				{
-					l_comma[l_comma_count] = l_comma[l_comma_count] + l_correct_comma - p_in.size();
+					l_comma[l_comma_count] = l_comma[l_comma_count] + l_correct_comma - p_in.size() + 1;
 				}
 				l_comma_count++;
 			}
@@ -81,9 +81,8 @@ void CalculateFunction(string& p_input_str, string p_in, uint p_count, const uin
 			if(l_end != string::npos)
 			{
 				l_nesting_level--;
-				l_correct_end += l_end - 1;
+				l_correct_end += l_end + 1;
 				l_correct_comma += l_end + 1;
-				l_buf = l_buf.substr(l_end - l_br_start);
 			}
 			else
 			{
@@ -100,7 +99,7 @@ void CalculateFunction(string& p_input_str, string p_in, uint p_count, const uin
 			AddError(6, l_start);
 			return;
 		}
-		l_buf = p_input_str.substr(l_start + p_in.size(), l_end);
+		l_buf = p_input_str.substr(l_start + p_in.size(), l_end); // не трогать строку!!! если здесь не сходится, ошибка в алгоритме выше :) 
 		if(l_buf.empty())
 		{
 			AddError(7, l_start);
@@ -118,19 +117,19 @@ void CalculateFunction(string& p_input_str, string p_in, uint p_count, const uin
 				{
 					l_buf.erase(0, l_comma[l_current_comma] + 1);
 				}
-				if(!l_scanf_count)
+				if(!l_scanf_count || l_buf.c_str()[0] == ',')
 				{
-					AddError(18, l_start, l_current_comma, l_comma[l_current_comma]);
+					AddError(18, l_start, l_current_comma + 1, l_comma[l_current_comma]);
 				}
 		}
 		l_scanf_count = sscanf_s(l_buf.c_str(), "%lf", &l_params[l_comma_count]);
-		if(l_scanf_count != l_buf.size())
+		if(l_scanf_count != l_buf.size() && !l_buf.empty())
 		{
 			l_scanf_count = Recursive(l_buf, l_comma[l_comma_count], l_params, l_comma_count);
 		}
-		if(!l_scanf_count)
+		if(!l_scanf_count || l_buf.empty())
 		{
-			AddError(18, l_start, l_comma_count, l_comma[l_comma_count] + 1);
+			AddError(18, l_start, l_comma_count + 1, l_comma[--l_current_comma]);
 		}
 		double result;
 		//string::size_type l_c; todo
@@ -161,7 +160,7 @@ void CalculateFunction(string& p_input_str, string p_in, uint p_count, const uin
 			return;
 #endif
 		}
-		p_input_str.erase(l_start, l_start + l_end + 1 + p_in.size());
+		p_input_str.erase(l_start, p_in.size() + l_end + 1);
 		//string l_temp = l_char_buf;
 		//l_temp = l_temp.substr(0, l_c);
 		p_input_str.insert(l_start, l_char_buf/*l_temp*/);
