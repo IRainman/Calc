@@ -4,6 +4,7 @@
 using namespace std;
 //#define _USE_MATH_DEFINES //TODO: Add constant support
 #include <math.h>
+#include <limits>
 #include <string>
 #include <stack>
 #include "Flags.h"

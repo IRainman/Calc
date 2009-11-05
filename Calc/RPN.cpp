@@ -16,9 +16,10 @@ int_8 GetPriority(char p_sym)
 {
 	switch(p_sym)
 	{
-/*		case 'P':
+		/* RPN ????
+		case 'P':
 			return priority_function;
-*/
+		*/
 		case '^':
 			return priority_power;
 
@@ -46,7 +47,7 @@ int_8 GetPriority(char p_sym)
 		case '9':
 		case '.':
 		case ' ':
-//		case 'E': TODO add power
+//		case 'E': TODO add power support
 			return priority_default;
 
 		default:
@@ -76,11 +77,13 @@ void CalculateOnLineExpression(stack<char>& c_operations, stack<double>& c_opera
 		{
 			switch(c_operations.top())
 			{
+				/*
 				#ifdef _USE_Function
-				/*case 'P': // RPN?
+				case 'P': // RPN?
 					c_operands.push(pow(a,b));
-					break;*/
+					break;
 				#endif // _USE_Function
+				*/
 				case '^':
 					c_operands.push(pow(a,b));
 					break;
@@ -117,15 +120,15 @@ void CalculateOnLineExpression(stack<char>& c_operations, stack<double>& c_opera
 				case '-':
 					c_operands.push(-b);
 					break;
-/*#ifdef _DEBUG
+#ifdef _DEBUG
 				default:
 					AddError(254);
 					break;
-#endif // i dont now... */
-				default:
+#endif // i dont now...
+/*				default:
 					AddError(4);
 					break;
-
+*/
 			}
 		}
 	}
@@ -239,6 +242,7 @@ void CalculateLineExpression(string p_input_str, string& p_output_str)
 			if(!l_negative_number || (l_negative_number && l_count_of_num > 1))
 			{
 				c_operands.push(atof(l_operand_string.c_str()));
+			//	if(c_operands.top() > std::numeric_limits<double>::max() || c_operands.top() < std::numeric_limits<double>::min()) // TODO add normal terms ;)
 				if(c_operands.top() > 999999999999999 || c_operands.top() < -999999999999999) // TODO add normal terms ;)
 				{
 					AddWarning(0);
@@ -265,10 +269,8 @@ void CalculateLineExpression(string p_input_str, string& p_output_str)
 	if(!c_operands.empty())
 	{
 		char l_char_buf[320];
-		/*string::size_type l_c; todo
-		l_c = */sprintf_s(l_char_buf, "%lf", c_operands.top()); // TODO: Add variable precision
+ 		sprintf_s(l_char_buf, "%.0lf", c_operands.top()); // TODO: Add variable precision
 		p_output_str = l_char_buf;
-		//p_output_str.substr(0, l_c);
 	}
 }
 //---------------------------------------------------------------------------

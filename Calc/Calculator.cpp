@@ -19,13 +19,14 @@ void ValidateAndPrepareInputString(string& p_input_str);
 //---------------------------------------------------------------------------
 #ifdef _USE_Function
 string::size_type c_correct_for_error_count; // TODO add correct count variable for warnings and errors on nesting expression
-//list <string> c_function1; // TODO
+list <string> c_function1;
 list <string> c_function2;
-#define c_max_argument_of_function 2
+list <string> c_function3;
+#define c_max_argument_of_function 3
 #endif //_USE_Function
 //---------------------------------------------------------------------------
 #ifdef _USE_Function
-inline string::size_type Recursive(string& l_buf, string::size_type c, double l_params[], uint_8 l_count)
+inline uint Recursive(string& l_buf, string::size_type c, double l_params[], uint_8 l_count)
 {
 	AddMessage(4);
 	string l_inp = l_buf.substr(0, c);
@@ -34,7 +35,7 @@ inline string::size_type Recursive(string& l_buf, string::size_type c, double l_
 	CalculateLineExpression(l_inp, l_outp); 
 	l_buf.erase(0, c + 1);
 	AddMessage(5);
-	return sscanf_s(l_outp.c_str(), "%lf", &l_params[l_count]);
+	return sscanf_s(l_outp.c_str(), "%lf,", &l_params[l_count]);
 }
 //---------------------------------------------------------------------------
 void CalculateFunction(string& p_input_str, string p_in, uint p_count, const uint_8 p_number_of_param)
@@ -50,9 +51,9 @@ void CalculateFunction(string& p_input_str, string p_in, uint p_count, const uin
 			return;
 
 		l_buf = p_input_str.substr(l_start + p_in.size());
-		string::size_type l_comma[c_max_argument_of_function - 1], l_current_comma, l_comma_count = 0;
+		string::size_type l_comma[c_max_argument_of_function], l_current_comma, l_comma_count = 0;
 		uint l_nesting_level = 0;
-		for(string::size_type l_correct_end = 0, l_correct_comma = 0;;)
+		for(string::size_type l_correct_end = 0;;)
 		{
 			l_br_start = l_buf.find("(");
 			l_end = l_buf.find(")");
@@ -60,56 +61,71 @@ void CalculateFunction(string& p_input_str, string p_in, uint p_count, const uin
 			if(l_br_start != string::npos && l_br_start < l_end && l_current_comma > l_br_start)
 			{
 				l_correct_end += l_br_start + 1;
-				l_correct_comma += l_br_start + 1;
 				l_buf = l_buf.substr(l_end + 1);
 				l_nesting_level++;
 			}
-			else if(l_current_comma != string::npos)
+			else if(l_current_comma != string::npos && l_current_comma < l_end)
 			{
 				l_comma[l_comma_count] = l_current_comma;
-				if(l_correct_comma)
+				/*if(l_correct_position)
 				{
-					l_comma[l_comma_count] = l_comma[l_comma_count] + l_correct_comma - p_in.size() + 1;
-				}
+					l_comma[l_comma_count] = l_comma[l_comma_count] + l_correct_position - p_in.size() + 1;
+				}*/
+				l_correct_end += l_current_comma + 1;
+				l_buf = l_buf.substr(l_current_comma + 1);
 				l_comma_count++;
 			}
-			if(!l_nesting_level)
+			if(l_current_comma == string::npos || l_current_comma > l_end)
 			{
-				l_end += l_correct_end;
-				break;
+				if(!l_nesting_level)
+				{
+					l_end += l_correct_end;
+					break;
+				}
+				if(l_end != string::npos)
+				{
+					l_nesting_level--;
+					l_correct_end += l_end + 1;
+				}
 			}
-			if(l_end != string::npos)
+			/*if(l_end != string::npos)
 			{
 				l_nesting_level--;
-				l_correct_end += l_end + 1;
-				l_correct_comma += l_end + 1;
+				l_correct_position += l_end + 1;
 			}
 			else
 			{
 				AddError(6, l_start);
-			}
-		}
-		if(l_comma_count != p_number_of_param - 1)
-		{
-			AddError(10, l_start, p_number_of_param, l_comma_count + 1);
-			return;
+			}*/
 		}
 		if(l_end == string::npos)
 		{
 			AddError(6, l_start);
 			return;
 		}
-		l_buf = p_input_str.substr(l_start + p_in.size(), l_end); // не трогать строку!!! если здесь не сходится, ошибка в алгоритме выше :) 
+		l_buf = p_input_str.substr(l_start + p_in.size(), l_end); // не трогать строку!!! если здесь не сходится, ошибка в алгоритме выше :)
 		if(l_buf.empty())
 		{
 			AddError(7, l_start);
 			return;
 		}
-		string::size_type l_scanf_count;
-		for(l_current_comma = 0; l_current_comma < l_comma_count; l_current_comma++)
+		l_comma[l_comma_count++] = l_buf.size();
+		l_buf += ",";
+		if(l_comma_count != p_number_of_param)
 		{
-				l_scanf_count = sscanf_s(l_buf.c_str(), "%lf", &l_params[l_current_comma]);
-				if(l_scanf_count != l_comma[l_current_comma])
+			AddError(10, l_start, p_number_of_param, l_comma_count);
+			return;
+		}
+		l_current_comma = 0;
+		for(uint l_scanf_count; l_current_comma < l_comma_count; l_current_comma++)
+		{
+				l_scanf_count = sscanf_s(l_buf.c_str(), "%lf,", &l_params[l_current_comma]);
+				if(l_buf.c_str()[0] == ',')
+				{
+					AddError(18, l_start, l_current_comma + 1, l_comma[l_current_comma]);
+					return;
+				}
+				if(!l_scanf_count)
 				{
 					l_scanf_count = Recursive(l_buf, l_comma[l_current_comma], l_params, l_current_comma);
 				}
@@ -117,29 +133,39 @@ void CalculateFunction(string& p_input_str, string p_in, uint p_count, const uin
 				{
 					l_buf.erase(0, l_comma[l_current_comma] + 1);
 				}
-				if(!l_scanf_count || l_buf.c_str()[0] == ',')
+				if(!l_scanf_count)
 				{
 					AddError(18, l_start, l_current_comma + 1, l_comma[l_current_comma]);
+					return;
 				}
 		}
-		l_scanf_count = sscanf_s(l_buf.c_str(), "%lf", &l_params[l_comma_count]);
-		if(l_scanf_count != l_buf.size() && !l_buf.empty())
-		{
-			l_scanf_count = Recursive(l_buf, l_comma[l_comma_count], l_params, l_comma_count);
-		}
-		if(!l_scanf_count || l_buf.empty())
-		{
-			AddError(18, l_start, l_comma_count + 1, l_comma[--l_current_comma]);
-		}
 		double result;
-		//string::size_type l_c; todo
 		switch(p_number_of_param)
 		{
+			case 1:
+				switch(p_count)
+				{
+					case 0:
+						result = sin(l_params[0]);
+						break;
+					case 1:
+						result = cos(l_params[0]);
+						break;
+				}
+				break;
 			case 2:
 				switch(p_count)
 				{
 					case 0:
 							result = pow(l_params[0], l_params[1]);
+						break;
+				}
+				break;
+			case 3:
+				switch(p_count)
+				{
+					case 0:
+							result = l_params[0] + l_params[1] + l_params[2];
 						break;
 				}
 				break;
@@ -149,9 +175,10 @@ void CalculateFunction(string& p_input_str, string p_in, uint p_count, const uin
 				return;
 #endif
 		}
+		//string::size_type l_c; todo
 		try
 		{
-			/*l_c =*/ sprintf_s(l_char_buf, "%lf", result);
+			/*l_c = */sprintf_s(l_char_buf, "%lf", result);
 		}
 		catch(...)
 		{
@@ -160,9 +187,9 @@ void CalculateFunction(string& p_input_str, string p_in, uint p_count, const uin
 			return;
 #endif
 		}
-		p_input_str.erase(l_start, p_in.size() + l_end + 1);
 		//string l_temp = l_char_buf;
 		//l_temp = l_temp.substr(0, l_c);
+		p_input_str.erase(l_start, p_in.size() + l_end + 1);
 		p_input_str.insert(l_start, l_char_buf/*l_temp*/);
 	}
 }
@@ -217,12 +244,16 @@ void ValidateAndPrepareInputString(string& p_input_str)
 	if(m_NoError)
 	{
 		uint j = 0;
-/*		for(list <string>::iterator i = c_function1.begin(); i != c_function1.end(); i++, j++) // TODO
+		for(list <string>::iterator i = c_function1.begin(); i != c_function1.end(); i++, j++)
 			CalculateFunction(p_input_str, i->c_str(), j, 1);
-*/
+
 		j = 0;
 		for(list <string>::iterator i = c_function2.begin(); i != c_function2.end(); i++, j++)
 			CalculateFunction(p_input_str, i->c_str(), j, 2);
+
+		j = 0;
+		for(list <string>::iterator i = c_function3.begin(); i != c_function3.end(); i++, j++)
+			CalculateFunction(p_input_str, i->c_str(), j, 3);
 	}
 #endif // _USE_Function
 	if(m_NoError)
@@ -244,14 +275,18 @@ void ValidateAndPrepareInputString(string& p_input_str)
 wstring& Calculate(wstring p_input, wstring& p_output)
 {
 #ifdef _USE_Function
-	/*if(c_function1.empty())// TODO
+	if(c_function1.empty())
 	{
 		c_function1.push_back("sin(");
 		c_function1.push_back("cos(");
-	}*/
+	}
 	if(c_function2.empty())
 	{
 		c_function2.push_back("pow(");
+	}
+	if(c_function3.empty())
+	{
+		c_function3.push_back("plus(");
 	}
 	m_Correct_count = 0;
 #endif // _USE_Function
