@@ -64,7 +64,7 @@ void CalculateFunction(string& p_input_str, string p_in, uint p_count, const uin
 				l_buf = l_buf.substr(l_br_start + 1);
 				l_nesting_level++;
 			}
-			else if(l_current_comma != string::npos && l_current_comma < l_end)
+			else if(l_current_comma != string::npos && l_current_comma < l_end && !l_nesting_level)
 			{
 				l_comma[l_comma_count] = l_current_comma;
 				l_correct_end += l_current_comma + 1;
@@ -78,12 +78,12 @@ void CalculateFunction(string& p_input_str, string p_in, uint p_count, const uin
 					l_end += l_correct_end;
 					break;
 				}
-				if(l_end != string::npos)
-				{
-					l_correct_end += l_end + 1;
-					l_buf = l_buf.substr(l_end + 1);
-					l_nesting_level--;
-				}
+			}
+			if(l_end != string::npos && l_nesting_level)
+			{
+				l_correct_end += l_end + 1;
+				l_buf = l_buf.substr(l_end + 1);
+				l_nesting_level--;
 			}
 			/*if(l_end != string::npos)
 			{
