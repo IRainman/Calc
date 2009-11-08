@@ -165,6 +165,15 @@ void AddError(uint_8 p_message, string::size_type p_count/* = -1*/, string::size
 			l_error = L"Запись функции после закрывающей скобки недопустима";
 			break;
 #endif // _USE_Function
+		case 20:
+			l_error = L"Последовательная запись нескольких точек недопустима";
+			break;
+		case 21:
+			l_error = L"Последним символом в выражении не может быть знак операции";
+			break;
+		case 22:
+			l_error = L"Последовательная запись нескольких символов \"e\" недопустима";
+			break;
 #ifdef _DEBUG
 		case 253:
 			l_error = L"DEBUG: Internal Processing Error: \"void CalculateFunction(...)\"";

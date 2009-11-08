@@ -16,10 +16,6 @@ int_8 GetPriority(char p_sym)
 {
 	switch(p_sym)
 	{
-		/* RPN ????
-		case 'P':
-			return priority_function;
-		*/
 		case '^':
 			return priority_power;
 
@@ -46,8 +42,7 @@ int_8 GetPriority(char p_sym)
 		case '8':
 		case '9':
 		case '.':
-		case ' ':
-//		case 'E': TODO add power support
+		case 'e':
 			return priority_default;
 
 		default:
@@ -77,13 +72,6 @@ void CalculateOnLineExpression(stack<char>& c_operations, stack<double>& c_opera
 		{
 			switch(c_operations.top())
 			{
-				/*
-				#ifdef _USE_Function
-				case 'P': // RPN?
-					c_operands.push(pow(a,b));
-					break;
-				#endif // _USE_Function
-				*/
 				case '^':
 					c_operands.push(pow(a,b));
 					break;
@@ -124,11 +112,7 @@ void CalculateOnLineExpression(stack<char>& c_operations, stack<double>& c_opera
 				default:
 					AddError(254);
 					break;
-#endif // i dont now...
-/*				default:
-					AddError(4);
-					break;
-*/
+#endif
 			}
 		}
 	}
@@ -137,7 +121,7 @@ void CalculateOnLineExpression(stack<char>& c_operations, stack<double>& c_opera
 //---------------------------------------------------------------------------
 void CalculateLineExpression(string p_input_str, string& p_output_str)
 {
-	int_8 l_current_prioritet = priority_error, l_old_prioritet = priority_error;
+	int_8 l_current_prioritet = priority_error;
 	stack <char> c_operations;
 	stack <double> c_operands;
 	if(GetPriority(p_input_str.c_str()[0]) > priority_bracket && p_input_str.c_str()[0] != '-')
@@ -148,14 +132,10 @@ void CalculateLineExpression(string p_input_str, string& p_output_str)
 	string::size_type l_count = 0;
 	for(; p_input_str.size(); l_count++)
 	{
+		l_negative_number = l_current_prioritet > 0 && p_input_str.c_str()[0] == '-';
 		l_current_prioritet = GetPriority(p_input_str.c_str()[0]);
-		l_negative_number = l_old_prioritet > 0 && p_input_str.c_str()[0] == '-';
 		if(l_current_prioritet && !l_negative_number)
 		{
-			if(l_current_prioritet > l_old_prioritet && l_old_prioritet > priority_bracket && p_input_str.c_str()[0] != '-')
-			{
-				AddError(4, l_count - 1);
-			}
 			if(c_operations.empty())
 			{
 				/*
@@ -235,14 +215,23 @@ void CalculateLineExpression(string p_input_str, string& p_output_str)
 				l_count_of_num++;
 				l_count++;
 			}
-			for(; l_count_of_num < p_input_str.size() && GetPriority(p_input_str.c_str()[l_count_of_num]) == priority_default; l_count_of_num++, l_count++)
+			for(; l_count_of_num < p_input_str.size(); l_count_of_num++, l_count++)
 			{
-				l_operand_string += p_input_str.c_str()[l_count_of_num];
+				if(GetPriority(p_input_str.c_str()[l_count_of_num]) == priority_default
+					|| (p_input_str.c_str()[l_count_of_num - 1] == 'e'
+					&& (p_input_str.c_str()[l_count_of_num] == '+' || p_input_str.c_str()[l_count_of_num] == '-')))
+				{
+					l_operand_string += p_input_str.c_str()[l_count_of_num];
+				}
+				else
+				{
+					break;
+				}
 			}
 			if(!l_negative_number || (l_negative_number && l_count_of_num > 1))
 			{
 				c_operands.push(atof(l_operand_string.c_str()));
-			//	if(c_operands.top() > std::numeric_limits<double>::max() || c_operands.top() < std::numeric_limits<double>::min()) // TODO add normal terms ;)
+			//	if(c_operands.top() >= std::numeric_limits<double>::max() || c_operands.top() <= std::numeric_limits<double>::min()) // TODO add normal terms ;)
 				if(c_operands.top() > 999999999999999 || c_operands.top() < -999999999999999) // TODO add normal terms ;)
 				{
 					AddWarning(0);
@@ -255,7 +244,6 @@ void CalculateLineExpression(string p_input_str, string& p_output_str)
 			}
 			p_input_str.erase(0, l_count_of_num);
 		}
-		l_old_prioritet = l_current_prioritet;
 	}
 	if(l_current_prioritet > priority_bracket && !l_negative_number)
 	{

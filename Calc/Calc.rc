@@ -96,8 +96,7 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     EDITTEXT        IDC_EDIT_INPUT,7,7,203,30,ES_MULTILINE | ES_AUTOVSCROLL
     EDITTEXT        IDC_EDIT_RESULT,7,155,203,14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT_MESSAGE,7,38,203,90,ES_MULTILINE | ES_READONLY | WS_VSCROLL
-    CONTROL         "",IDC_SLIDER1,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | TBS_ENABLESELRANGE | TBS_TOOLTIPS | NOT WS_VISIBLE | WS_TABSTOP,7,130,203,24
+    EDITTEXT        IDC_EDIT_MESSAGE,7,38,203,116,ES_MULTILINE | ES_READONLY | WS_VSCROLL
 END
 
 
@@ -107,8 +106,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,48
- PRODUCTVERSION 1,0,0,48
+ FILEVERSION 1,0,0,66
+ PRODUCTVERSION 1,0,0,66
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -125,12 +124,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "МИЭТ"
             VALUE "FileDescription", "Калькулятор для Windows"
-            VALUE "FileVersion", "1.0.0.48"
+            VALUE "FileVersion", "1.0.0.66"
             VALUE "InternalName", "Calc.exe"
             VALUE "LegalCopyright", "(c) МИЭТ Соломин А.Л. группа МПВ-51. Все права защищены."
             VALUE "OriginalFilename", "Calc.exe"
             VALUE "ProductName", "Calc"
-            VALUE "ProductVersion", "1.0.0.48"
+            VALUE "ProductVersion", "1.0.0.66"
         END
     END
     BLOCK "VarFileInfo"

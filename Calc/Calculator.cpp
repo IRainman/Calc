@@ -194,7 +194,7 @@ void CalculateFunction(string& p_input_str, string p_in, uint p_count, const uin
 #endif // _USE_Function
 void ValidateAndPrepareInputString(string& p_input_str)
 {
-	uint count_inp = 0, count_outp = 0;
+	string::size_type count_inp = 0, count_outp = 0;
 	string::size_type l_count = 0;
 	for(; l_count < p_input_str.size(); l_count++)
 	{
@@ -232,10 +232,33 @@ void ValidateAndPrepareInputString(string& p_input_str)
 			}
 			count_outp++;
 		}
+		else if(p_input_str.c_str()[l_count] == '.' && p_input_str.c_str()[l_count + 1] == '.')
+		{
+			AddError(20, l_count + 1);
+		}
+		else if(p_input_str.c_str()[l_count] == 'e' && p_input_str.c_str()[l_count + 1] == 'e')
+		{
+			AddError(22, l_count + 1);
+		}
+		else if((p_input_str.c_str()[l_count] == '+' || p_input_str.c_str()[l_count] == '-'
+			|| p_input_str.c_str()[l_count] == '/' || p_input_str.c_str()[l_count] == '*'
+			|| p_input_str.c_str()[l_count] == '^')
+
+			&& (p_input_str.c_str()[l_count + 1] == '+' || p_input_str.c_str()[l_count + 1] == '*'
+			|| p_input_str.c_str()[l_count + 1] == '/' || p_input_str.c_str()[l_count + 1] == '^'))
+		{
+			AddError(4, l_count + 1);
+		}
 	}
 	if(count_inp != count_outp)
 	{
 		AddError(1, -1, count_inp, count_outp);
+	}
+	if(p_input_str[p_input_str.length() - 1] == '-' || p_input_str[p_input_str.length() - 1] == '+'
+		|| p_input_str[p_input_str.length() - 1] == '*' || p_input_str[p_input_str.length() - 1] == '/'
+		|| p_input_str[p_input_str.length() - 1] == '^')
+	{
+		AddError(21, p_input_str.length());
 	}
 #ifdef _USE_Function
 	if(m_NoError)
@@ -255,16 +278,10 @@ void ValidateAndPrepareInputString(string& p_input_str)
 #endif // _USE_Function
 	if(m_NoError)
 	{
-		for(l_count = 0; l_count < p_input_str.size(); l_count++)
+		l_count = p_input_str.find_first_not_of("0123456789+-*/^.e()", 0);
+		if(l_count != string::npos)
 		{
-			if((p_input_str.c_str()[l_count] >= 'a' && p_input_str.c_str()[l_count] <= 'z')
-#ifdef _DEBUG
-				|| p_input_str.c_str()[l_count] == ','
-#endif
-				)
-			{
-				AddError(2, l_count);
-			}
+			AddError(2, l_count);
 		}
 	}
 }
@@ -301,20 +318,16 @@ wstring& Calculate(wstring p_input, wstring& p_output)
 		else
 			break;
 	}
-
+	string::size_type l_count = 0;
 	for(string::size_type l_count = 0; l_count < p_input.size(); l_count++)
 	{
 		p_input[l_count] = tolower(p_input.c_str()[l_count]);
-		if( (p_input.c_str()[l_count] >= '(' && p_input.c_str()[l_count] <= '9') ||
-			(p_input.c_str()[l_count] >= 'a' && p_input.c_str()[l_count] <= 'z') ||
-			 p_input.c_str()[l_count] == '^')
-		{
-			// void :) refactoring this...
-		}
-		else
-		{
-			AddError(0, l_count);
-		}
+	}
+
+	l_count = p_input.find_first_not_of(L"0123456789+-*/^.e(),powsincosplus", 0);
+	if(l_count != string::npos)
+	{
+		AddError(0, l_count);
 	}
 
 	l_input_str.assign(p_input.begin(), p_input.end());
