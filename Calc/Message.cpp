@@ -14,7 +14,7 @@
 //---------------------------------------------------------------------------
 wstring m_ErrorString;
 bool m_NoError;
-string::size_type m_Correct_count;
+string::size_type m_Correct_count; // TODO add correct count variable for warnings and errors on nesting expression
 //---------------------------------------------------------------------------
 void AddMessage(const string& p_string_message)
 {
@@ -33,11 +33,7 @@ void AddMessage(uint_8 p_message)
 	switch(p_message)
 	{
 		case 0:
-#ifdef _USE_Function
-			m_ErrorString += L"\tПодготовка и вычисление функций:\r\n";
-#else
 			m_ErrorString += L"\tПодготовка:\r\n";
-#endif // _USE_Function
 			break;
 		case 1:
 			m_ErrorString += L"\tРазбор строки:\r\n";
@@ -50,14 +46,18 @@ void AddMessage(uint_8 p_message)
 			m_ErrorString += L"\tRPN:\r\n";
 			break;
 #endif // _USE_RPN
-#ifdef _USE_Function
 		case 4:
 			m_ErrorString += L"Обнаружено вложенное выражение:\r\n";
 			break;
 		case 5:
 			m_ErrorString += L"Конец вложенного выражения.\r\n";
 			break;
-#endif // _USE_Function
+		case 6:
+			m_ErrorString += L"\tЗамена констант:\r\n";
+			break;
+		case 7:
+			m_ErrorString += L"\tВычисление функций:\r\n";
+			break;
 #ifdef _DEBUG
 		default:
 			m_ErrorString += L" DEBUG: Unknown Message!";
@@ -91,11 +91,19 @@ void AddWarning(uint_8 p_message)
 void AddError(uint_8 p_message, string::size_type p_count/* = -1*/, string::size_type p_1/* = 0*/, string::size_type p_2/* = 0*/)
 {
 	m_NoError = false;
-	static wstring l_error;
-	static wchar_t l_1[6];
-	_itow_s(p_1, l_1, 10);
+	wstring l_error;
+	wchar_t l_1[6];
+#ifdef _WIN64
+	_ui64tow_s(p_1, l_1, 6, 10);
+#else
+	_itow_s(p_1, l_1, 6, 10);
+#endif
 	static wchar_t l_2[6];
-	_itow_s(p_2, l_2, 10);
+#ifdef _WIN64
+	_ui64tow_s(p_2, l_2, 6, 10);
+#else
+	_itow_s(p_2, l_2, 6, 10);
+#endif
 	switch(p_message)
 	{
 		case 0:
@@ -107,7 +115,7 @@ void AddError(uint_8 p_message, string::size_type p_count/* = -1*/, string::size
 				L" скобок не совпадает";
 			break;
 		case 2:
-			l_error = L"Недопустимый символ после проверки на функции, проверьте правильность их написания";
+			l_error = L"Недопустимый символ после замены переменных и проверки на функции, проверьте правильность их написания";
 			break;
 #ifdef _USE_RPN
 		case 3:
@@ -120,25 +128,21 @@ void AddError(uint_8 p_message, string::size_type p_count/* = -1*/, string::size
 		case 5:
 			l_error = L"На ноль делить нельзя";
 			break;
-#ifdef _USE_Function
 		case 6:
 			l_error = L"У функции нехватает закрывающей скобки";
 			break;
 		case 7:
 			l_error = L"У функции отсутсвуют аргументы";
 			break;
-#endif // _USE_Function
 		case 8:
 			l_error = L"Недостаточно операндов для получения результата";
 			break;
 		case 9:
 			l_error = L"Выражение не может начинатся со знака операции";
 			break;
-#ifdef _USE_Function
 		case 10:
 			l_error = L"У функции неверное число аргументов необходимо " + (wstring)l_1 + L", обнаружено " + (wstring)l_2;
 			break;
-#endif // _USE_Function
 		case 12:
 			l_error = L"Выражение не может начинаться и заканчиваться скобкой";
 			break;
@@ -157,14 +161,12 @@ void AddError(uint_8 p_message, string::size_type p_count/* = -1*/, string::size
 		case 17:
 			l_error = L"Выражение в скобках начинается со знака операции";
 			break;
-#ifdef _USE_Function
 		case 18:
 			l_error = L"У функции отсутсвует " + (wstring)l_1 + L" аргумент, позиция внутри скобок функции " + (wstring)l_2;
 			break;
 		case 19:
 			l_error = L"Запись функции после закрывающей скобки недопустима";
 			break;
-#endif // _USE_Function
 		case 20:
 			l_error = L"Последовательная запись нескольких точек недопустима";
 			break;
@@ -174,7 +176,13 @@ void AddError(uint_8 p_message, string::size_type p_count/* = -1*/, string::size
 		case 22:
 			l_error = L"Последовательная запись нескольких символов \"e\" недопустима";
 			break;
+		case 23:
+			l_error = L"Перед символом \"e\" обнаружен знак операции";
+			break;
 #ifdef _DEBUG
+		case 252:
+			l_error = L"DEBUG: Internal Processing Error: \"void ReplaceConstant(...)\"";
+			break;
 		case 253:
 			l_error = L"DEBUG: Internal Processing Error: \"void CalculateFunction(...)\"";
 			break;
@@ -196,7 +204,7 @@ void AddError(uint_8 p_message, string::size_type p_count/* = -1*/, string::size
 	}
 	else
 	{
-		swprintf_s(l_wchar_buf, L"В позиции %d ошибка: %s\r\n", p_count, l_error.c_str());
+		swprintf_s(l_wchar_buf, L"В позиции %d ошибка: %s\r\n", p_count + m_Correct_count, l_error.c_str());
 	}
 #ifdef _DEBUG
 	wchar_t l_temp_buf[1024];

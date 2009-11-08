@@ -124,10 +124,6 @@ void CalculateLineExpression(string p_input_str, string& p_output_str)
 	int_8 l_current_prioritet = priority_error;
 	stack <char> c_operations;
 	stack <double> c_operands;
-	if(GetPriority(p_input_str.c_str()[0]) > priority_bracket && p_input_str.c_str()[0] != '-')
-	{
-		AddError(9);
-	}
 	bool l_negative_number;
 	string::size_type l_count = 0;
 	for(; p_input_str.size(); l_count++)
@@ -240,7 +236,7 @@ void CalculateLineExpression(string p_input_str, string& p_output_str)
 			}
 			else
 			{
-				AddError(4, l_count);
+				AddError(4, l_count);// ??? 
 			}
 			p_input_str.erase(0, l_count_of_num);
 		}
@@ -257,7 +253,7 @@ void CalculateLineExpression(string p_input_str, string& p_output_str)
 	if(!c_operands.empty())
 	{
 		char l_char_buf[320];
- 		sprintf_s(l_char_buf, "%lf", c_operands.top()); // TODO: Add variable precision
+		sprintf_s(l_char_buf, "%.25lf", c_operands.top()); // TODO: Add variable precision
 		p_output_str = l_char_buf;
 	}
 }
@@ -435,7 +431,7 @@ void CalculateRPN(string& p_to_process_str)
 	if(!c_operands.empty())
 	{
 		char l_char_buf[100];
-		sprintf_s(l_char_buf, " %lf ", c_operands.top());
+		sprintf_s(l_char_buf, " %.25lf ", c_operands.top());
 		p_to_process_str = l_char_buf;
 	}
 }

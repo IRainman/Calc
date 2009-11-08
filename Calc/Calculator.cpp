@@ -17,16 +17,14 @@
 //---------------------------------------------------------------------------
 void ValidateAndPrepareInputString(string& p_input_str);
 //---------------------------------------------------------------------------
-#ifdef _USE_Function
-string::size_type c_correct_for_error_count; // TODO add correct count variable for warnings and errors on nesting expression
-list <string> c_function1;
-list <string> c_function2;
-list <string> c_function3;
 #define c_max_argument_of_function 3
-#endif //_USE_Function
+list <const string> c_function1;
+list <const string> c_function2;
+list <const string> c_function3;
 //---------------------------------------------------------------------------
-#ifdef _USE_Function
-inline uint Recursive(string& l_buf, string::size_type c, double l_params[], uint_8 l_count)
+list <const string> c_constant;
+//---------------------------------------------------------------------------
+inline int Recursive(string& l_buf, const string::size_type c, double l_params[], const string::size_type l_count)
 {
 	AddMessage(4);
 	string l_inp = l_buf.substr(0, c);
@@ -38,18 +36,76 @@ inline uint Recursive(string& l_buf, string::size_type c, double l_params[], uin
 	return sscanf_s(l_outp.c_str(), "%lf,", &l_params[l_count]);
 }
 //---------------------------------------------------------------------------
-void CalculateFunction(string& p_input_str, string p_in, uint p_count, const uint_8 p_number_of_param)
+inline double CalculateParametrs(const uint_8 p_number_of_param, const uint p_count, double p_params[])
 {
-	string::size_type l_start, l_end, l_br_start;
+	switch(p_number_of_param)
+	{
+		case 1:
+			switch(p_count)
+			{
+				case 0:
+					return sin(p_params[0]);
+				case 1:
+					return cos(p_params[0]);
+				case 2:
+					return exp(p_params[0]);
+#ifdef _DEBUG
+				default:
+					AddError(253);
+					return 0;
+#endif
+			}
+			break;
+		case 2:
+			switch(p_count)
+			{
+				case 0:
+					return pow(p_params[0], p_params[1]);
+#ifdef _DEBUG
+				default:
+					AddError(253);
+					return 0;
+#endif
+			}
+			break;
+		case 3:
+			switch(p_count)
+			{
+				case 0:
+					return p_params[0] + p_params[1] + p_params[2];
+#ifdef _DEBUG
+				default:
+					AddError(253);
+					return 0;
+#endif
+			}
+			break;
+#ifdef _DEBUG
+		default:
+			AddError(253);
+			return 0;
+#endif
+	}
+
+	{// TODO delete this block after full function support
+		m_NoError = false;
+		return 0;
+	}
+}
+//---------------------------------------------------------------------------
+void CalculateFunction(string& p_input_str, const string p_in, const uint p_count, const uint_8 p_number_of_param)
+{
+	string::size_type l_start;
+	l_start = p_input_str.find(p_in);
+	if(l_start == string::npos)
+		return;
+
+	string::size_type l_end, l_br_start;
 	string l_buf;
 	char l_char_buf[320];
 	double l_params[c_max_argument_of_function];
-	while(true)
+	do
 	{
-		l_start = p_input_str.find(p_in);
-		if(l_start == string::npos)
-			return;
-
 		l_buf = p_input_str.substr(l_start + p_in.size());
 		string::size_type l_comma[c_max_argument_of_function], l_current_comma, l_comma_count = 0;
 		uint l_nesting_level = 0;
@@ -114,7 +170,7 @@ void CalculateFunction(string& p_input_str, string p_in, uint p_count, const uin
 			return;
 		}
 		l_current_comma = 0;
-		for(uint l_scanf_count; l_current_comma < l_comma_count; l_current_comma++)
+		for(int l_scanf_count; l_current_comma < l_comma_count; l_current_comma++)
 		{
 				l_scanf_count = sscanf_s(l_buf.c_str(), "%lf,", &l_params[l_current_comma]);
 				if(l_buf.c_str()[0] == ',')
@@ -136,46 +192,11 @@ void CalculateFunction(string& p_input_str, string p_in, uint p_count, const uin
 					return;
 				}
 		}
-		double result;
-		switch(p_number_of_param)
-		{
-			case 1:
-				switch(p_count)
-				{
-					case 0:
-						result = sin(l_params[0]);
-						break;
-					case 1:
-						result = cos(l_params[0]);
-						break;
-				}
-				break;
-			case 2:
-				switch(p_count)
-				{
-					case 0:
-							result = pow(l_params[0], l_params[1]);
-						break;
-				}
-				break;
-			case 3:
-				switch(p_count)
-				{
-					case 0:
-							result = l_params[0] + l_params[1] + l_params[2];
-						break;
-				}
-				break;
-#ifdef _DEBUG
-			default:
-				AddError(253);
-				return;
-#endif
-		}
-		//string::size_type l_c; todo
+		double result = CalculateParametrs(p_number_of_param, p_count, l_params);
+		string::size_type l_c;
 		try
 		{
-			/*l_c = */sprintf_s(l_char_buf, "%lf", result);
+			l_c = sprintf_s(l_char_buf, "%.25lf", result);
 		}
 		catch(...)
 		{
@@ -184,18 +205,69 @@ void CalculateFunction(string& p_input_str, string p_in, uint p_count, const uin
 			return;
 #endif
 		}
-		//string l_temp = l_char_buf;
-		//l_temp = l_temp.substr(0, l_c);
+		string l_temp = l_char_buf;
+		l_temp = l_temp.substr(0, l_c);
+		m_Correct_count += (p_in.size() + l_end + 1 - l_start) - l_c;
 		p_input_str.erase(l_start, p_in.size() + l_end + 1);
-		p_input_str.insert(l_start, l_char_buf/*l_temp*/);
+		p_input_str.insert(l_start, l_temp);
+
+		l_start = p_input_str.find(p_in);
+		if(l_start == string::npos)
+			return;
 	}
+	while(true);
 }
 //---------------------------------------------------------------------------
-#endif // _USE_Function
+inline void ReplaceConstant(string& p_input_str, const string p_in, const uint_8 p_number_of_constant)
+{
+	string::size_type c = p_input_str.find(p_in);
+	if(c == string::npos
+		//|| (GetPriority(p_input_str.c_str()[c - 1]) < priority_bracket || GetPriority(p_input_str.c_str()[c - 1]) == priority_error)
+		//|| (GetPriority(p_input_str.c_str()[c + 1]) < priority_bracket || GetPriority(p_input_str.c_str()[c + 1]) == priority_error)
+		)
+		return;
+
+	char l_char_buf[100];
+	double l_constant;
+	string l_const;
+	switch(p_number_of_constant)
+	{
+		case 0:
+			l_constant = M_PI;
+			break;
+#ifdef _DEBUG
+		default:
+			AddError(252);
+			return;
+#endif
+	}
+	sprintf_s(l_char_buf, "%.25lf", l_constant);
+	l_const = l_char_buf;
+	do
+	{
+		p_input_str.erase(c, p_in.length());
+		p_input_str.insert(c, l_const);
+		m_Correct_count += l_const.length() - p_in.length();
+
+		c = p_input_str.find(p_in);
+		if(c == string::npos
+			//|| (GetPriority(p_input_str.c_str()[c - 1]) < priority_bracket || GetPriority(p_input_str.c_str()[c - 1]) == priority_error)
+			//|| (GetPriority(p_input_str.c_str()[c + 1]) < priority_bracket || GetPriority(p_input_str.c_str()[c + 1]) == priority_error)
+			)
+			return;
+	}
+	while(true);
+}
+//---------------------------------------------------------------------------
 void ValidateAndPrepareInputString(string& p_input_str)
 {
+	AddMessage(0);
 	string::size_type count_inp = 0, count_outp = 0;
 	string::size_type l_count = 0;
+	if(GetPriority(p_input_str.c_str()[0]) > priority_bracket && p_input_str.c_str()[0] != '-')
+	{
+		AddError(9);
+	}
 	for(; l_count < p_input_str.size(); l_count++)
 	{
 		p_input_str[l_count] = tolower(p_input_str.c_str()[l_count]);
@@ -236,9 +308,16 @@ void ValidateAndPrepareInputString(string& p_input_str)
 		{
 			AddError(20, l_count + 1);
 		}
-		else if(p_input_str.c_str()[l_count] == 'e' && p_input_str.c_str()[l_count + 1] == 'e')
+		else if(p_input_str.c_str()[l_count] == 'e')
 		{
-			AddError(22, l_count + 1);
+			if(p_input_str.c_str()[l_count + 1] == 'e')
+			{
+				AddError(22, l_count + 1);
+			}
+			if(GetPriority(p_input_str.c_str()[l_count - 1]) > priority_default)
+			{
+				AddError(23, l_count - 1);
+			}
 		}
 		else if((p_input_str.c_str()[l_count] == '+' || p_input_str.c_str()[l_count] == '-'
 			|| p_input_str.c_str()[l_count] == '/' || p_input_str.c_str()[l_count] == '*'
@@ -260,22 +339,28 @@ void ValidateAndPrepareInputString(string& p_input_str)
 	{
 		AddError(21, p_input_str.length());
 	}
-#ifdef _USE_Function
 	if(m_NoError)
 	{
+		AddMessage(6);
 		uint j = 0;
-		for(list <string>::iterator i = c_function1.begin(); i != c_function1.end(); i++, j++)
+		for(list <const string>::iterator i = c_constant.begin(); i != c_constant.end(); i++, j++)
+			ReplaceConstant(p_input_str, i->c_str(), j);
+		AddMessage(p_input_str.c_str());
+
+		AddMessage(7);
+		j = 0;
+		for(list <const string>::iterator i = c_function1.begin(); i != c_function1.end(); i++, j++)
 			CalculateFunction(p_input_str, i->c_str(), j, 1);
 
 		j = 0;
-		for(list <string>::iterator i = c_function2.begin(); i != c_function2.end(); i++, j++)
+		for(list <const string>::iterator i = c_function2.begin(); i != c_function2.end(); i++, j++)
 			CalculateFunction(p_input_str, i->c_str(), j, 2);
 
 		j = 0;
-		for(list <string>::iterator i = c_function3.begin(); i != c_function3.end(); i++, j++)
+		for(list <const string>::iterator i = c_function3.begin(); i != c_function3.end(); i++, j++)
 			CalculateFunction(p_input_str, i->c_str(), j, 3);
+		AddMessage(p_input_str.c_str());
 	}
-#endif // _USE_Function
 	if(m_NoError)
 	{
 		l_count = p_input_str.find_first_not_of("0123456789+-*/^.e()", 0);
@@ -288,43 +373,47 @@ void ValidateAndPrepareInputString(string& p_input_str)
 //---------------------------------------------------------------------------
 wstring& Calculate(wstring p_input, wstring& p_output)
 {
-#ifdef _USE_Function
+	if(c_constant.empty())
+	{
+		c_constant.push_back("pi");
+	}
 	if(c_function1.empty())
 	{
 		c_function1.push_back("sin(");
 		c_function1.push_back("cos(");
+		c_function1.push_back("exp(");
 	}
 	if(c_function2.empty())
 	{
 		c_function2.push_back("pow(");
 	}
-	if(c_function3.empty())
+	if(c_function3.empty()) // FOR TESTS ONLY!!!
 	{
 		c_function3.push_back("plus(");
+		c_function3.push_back("spin(");
 	}
 	m_Correct_count = 0;
-#endif // _USE_Function
 	m_ErrorString = L"";
 	m_NoError = true;
 
 	string l_input_str, l_output_str;
-
-	wstring::size_type c;
+/* Not allowed spaces on this expression
 	while(true)
 	{
-		c = p_input.find(L" ");
+		wstring::size_type c = p_input.find(L" ");
 		if(c != wstring::npos)
 			p_input.erase(c, 1);
 		else
 			break;
 	}
+*/
 	string::size_type l_count = 0;
 	for(string::size_type l_count = 0; l_count < p_input.size(); l_count++)
 	{
 		p_input[l_count] = tolower(p_input.c_str()[l_count]);
 	}
 
-	l_count = p_input.find_first_not_of(L"0123456789+-*/^.e(),powsincosplus", 0);
+	l_count = p_input.find_first_not_of(L"0123456789+-*/^.e(),powsincosplusexp", 0);
 	if(l_count != string::npos)
 	{
 		AddError(0, l_count);
@@ -332,11 +421,9 @@ wstring& Calculate(wstring p_input, wstring& p_output)
 
 	l_input_str.assign(p_input.begin(), p_input.end());
 
-	AddMessage(0);
 	ValidateAndPrepareInputString(l_input_str);
 	if(m_NoError)
 	{
-		AddMessage(l_input_str);
 		CalculateLineExpression(l_input_str, l_output_str);
 		#ifdef _USE_RPN
 		if(m_NoError)
