@@ -24,18 +24,6 @@ list <const string> c_function3;
 //---------------------------------------------------------------------------
 list <const string> c_constant;
 //---------------------------------------------------------------------------
-inline int Recursive(string& l_buf, const string::size_type c, double l_params[], const string::size_type l_count)
-{
-	AddMessage(4);
-	string l_inp = l_buf.substr(0, c);
-	string l_outp;
-	ValidateAndPrepareInputString(l_inp);
-	CalculateLineExpression(l_inp, l_outp); 
-	l_buf.erase(0, c + 1);
-	AddMessage(5);
-	return sscanf_s(l_outp.c_str(), "%lf,", &l_params[l_count]);
-}
-//---------------------------------------------------------------------------
 inline double CalculateParametrs(const uint_8 p_number_of_param, const uint p_count, double p_params[])
 {
 	switch(p_number_of_param)
@@ -87,10 +75,38 @@ inline double CalculateParametrs(const uint_8 p_number_of_param, const uint p_co
 #endif
 	}
 
-	{// TODO delete this block after full function support
+	// TODO delete this block after full function support
 		m_NoError = false;
 		return 0;
+}
+//---------------------------------------------------------------------------
+void GetParametrs(string& l_buf, const string::size_type l_start, const uint_8 p_number_of_param, double l_params[], string::size_type l_comma_count, const string::size_type l_correct_end)
+{
+	if(l_comma_count >= p_number_of_param)
+	{
+		AddError(10, l_start, p_number_of_param, l_comma_count);
+		return;
 	}
+	string::size_type l_count = l_buf.find_first_not_of("0123456789.e", 0);
+	if(l_count != string::npos)
+	{
+		AddMessage(4);
+		string l_outp;
+		ValidateAndPrepareInputString(l_buf);
+		CalculateLineExpression(l_buf, l_outp); 
+		l_buf = "";
+		AddMessage(5);
+		l_count = l_outp.find_first_not_of("0123456789.e", 0);
+		if(l_count != string::npos || l_outp.empty())
+		{
+			AddError(18, l_start, l_comma_count, l_correct_end);
+			return;
+		}
+		sscanf_s(l_outp.c_str(), "%lf", &l_params[l_comma_count]);
+		return;
+	}
+	sscanf_s(l_buf.c_str(), "%lf", &l_params[l_comma_count]);
+	l_buf = "";
 }
 //---------------------------------------------------------------------------
 void CalculateFunction(string& p_input_str, const string p_in, const uint p_count, const uint_8 p_number_of_param)
@@ -101,13 +117,13 @@ void CalculateFunction(string& p_input_str, const string p_in, const uint p_coun
 		return;
 
 	string::size_type l_end, l_br_start;
-	string l_buf;
 	char l_char_buf[320];
 	double l_params[c_max_argument_of_function];
 	do
 	{
-		l_buf = p_input_str.substr(l_start + p_in.size());
-		string::size_type l_comma[c_max_argument_of_function], l_current_comma, l_comma_count = 0;
+		string l_temp;
+		string l_buf = p_input_str.substr(l_start + p_in.size());
+		string::size_type l_current_comma, l_comma_count = 0;
 		uint l_nesting_level = 0;
 		for(string::size_type l_correct_end = 0;;)
 		{
@@ -117,80 +133,56 @@ void CalculateFunction(string& p_input_str, const string p_in, const uint p_coun
 			if(l_br_start != string::npos && l_br_start < l_end && l_current_comma > l_br_start)
 			{
 				l_correct_end += l_br_start + 1;
+				l_temp += l_buf.substr(0, l_br_start + 1);
 				l_buf = l_buf.substr(l_br_start + 1);
 				l_nesting_level++;
 			}
 			else if(l_current_comma != string::npos && l_current_comma < l_end && !l_nesting_level)
 			{
-				l_comma[l_comma_count] = l_current_comma;
+				l_temp += l_buf.substr(0, l_current_comma);
 				l_correct_end += l_current_comma + 1;
 				l_buf = l_buf.substr(l_current_comma + 1);
+				if(l_temp.empty())
+				{
+					AddError(18, l_start, l_comma_count + 1, l_correct_end);
+					return;
+				}
+				GetParametrs(l_temp, l_start, p_number_of_param, l_params, l_comma_count, l_correct_end);
 				l_comma_count++;
 			}
 			else if(l_current_comma == string::npos || l_current_comma > l_end)
 			{
 				if(!l_nesting_level)
 				{
+					l_temp += l_buf.substr(0, l_end);
+					if(l_temp.empty())
+					{
+						AddError(18, l_start, l_comma_count + 1, l_correct_end);
+						return;
+					}
 					l_end += l_correct_end;
+					GetParametrs(l_temp, l_start, p_number_of_param, l_params, l_comma_count, l_correct_end);
 					break;
 				}
 			}
 			if(l_end != string::npos && l_nesting_level)
 			{
 				l_correct_end += l_end + 1;
+				l_temp += l_buf.substr(0, l_end + 1);
 				l_buf = l_buf.substr(l_end + 1);
 				l_nesting_level--;
 			}
-			/*if(l_end != string::npos)
-			{
-				l_nesting_level--;
-				l_correct_position += l_end + 1;
-			}
-			else
-			{
-				AddError(6, l_start);
-			}*/
 		}
-		if(l_end == string::npos)
+		if(l_end == string::npos)// WTF ?
 		{
-			AddError(6, l_start);
-			return;
+			AddError(6, l_start); // todo убрать если не будет появлятся
+			m_NoError = true; // !!!!! 
+		//	return; ?????? 
 		}
-		l_buf = p_input_str.substr(l_start + p_in.size(), l_end); // не трогать строку!!! если здесь не сходится, ошибка в алгоритме выше :)
-		if(l_buf.empty())
-		{
-			AddError(7, l_start);
-			return;
-		}
-		l_comma[l_comma_count++] = l_buf.size();
-		l_buf += ",";
-		if(l_comma_count != p_number_of_param)
+		if(l_comma_count != p_number_of_param - 1)
 		{
 			AddError(10, l_start, p_number_of_param, l_comma_count);
 			return;
-		}
-		l_current_comma = 0;
-		for(int l_scanf_count; l_current_comma < l_comma_count; l_current_comma++)
-		{
-				l_scanf_count = sscanf_s(l_buf.c_str(), "%lf,", &l_params[l_current_comma]);
-				if(l_buf.c_str()[0] == ',')
-				{
-					AddError(18, l_start, l_current_comma + 1, l_comma[l_current_comma]);
-					return;
-				}
-				if(!l_scanf_count)
-				{
-					l_scanf_count = Recursive(l_buf, l_comma[l_current_comma], l_params, l_current_comma);
-				}
-				else
-				{
-					l_buf.erase(0, l_comma[l_current_comma] + 1);
-				}
-				if(!l_scanf_count)
-				{
-					AddError(18, l_start, l_current_comma + 1, l_comma[l_current_comma]);
-					return;
-				}
 		}
 		double result = CalculateParametrs(p_number_of_param, p_count, l_params);
 		string::size_type l_c;
@@ -205,8 +197,8 @@ void CalculateFunction(string& p_input_str, const string p_in, const uint p_coun
 			return;
 #endif
 		}
-		string l_temp = l_char_buf;
-		l_temp = l_temp.substr(0, l_c);
+		l_temp = l_char_buf;
+//		l_temp = l_temp.substr(0, l_c); WTF??? 
 		m_Correct_count += (p_in.size() + l_end + 1 - l_start) - l_c;
 		p_input_str.erase(l_start, p_in.size() + l_end + 1);
 		p_input_str.insert(l_start, l_temp);
@@ -221,7 +213,7 @@ void CalculateFunction(string& p_input_str, const string p_in, const uint p_coun
 inline void ReplaceConstant(string& p_input_str, const string p_in, const uint_8 p_number_of_constant)
 {
 	string::size_type c = p_input_str.find(p_in);
-	if(c == string::npos
+	if(c == string::npos // TODO !!!! допилить условие
 		//|| (GetPriority(p_input_str.c_str()[c - 1]) < priority_bracket || GetPriority(p_input_str.c_str()[c - 1]) == priority_error)
 		//|| (GetPriority(p_input_str.c_str()[c + 1]) < priority_bracket || GetPriority(p_input_str.c_str()[c + 1]) == priority_error)
 		)
@@ -250,7 +242,7 @@ inline void ReplaceConstant(string& p_input_str, const string p_in, const uint_8
 		m_Correct_count += l_const.length() - p_in.length();
 
 		c = p_input_str.find(p_in);
-		if(c == string::npos
+		if(c == string::npos // TODO !!!! допилить условие
 			//|| (GetPriority(p_input_str.c_str()[c - 1]) < priority_bracket || GetPriority(p_input_str.c_str()[c - 1]) == priority_error)
 			//|| (GetPriority(p_input_str.c_str()[c + 1]) < priority_bracket || GetPriority(p_input_str.c_str()[c + 1]) == priority_error)
 			)
@@ -339,12 +331,14 @@ void ValidateAndPrepareInputString(string& p_input_str)
 	{
 		AddError(21, p_input_str.length());
 	}
-	if(m_NoError)
+	if(m_NoError) // TODO от сих и ниже унести в отдельную функцию и именно её вызывать в рекурсии для функций
 	{
-		AddMessage(6);
 		uint j = 0;
+		//-------------------- константы ---------------------
+		AddMessage(6); // унести константы от сюда в блок выше
 		for(list <const string>::iterator i = c_constant.begin(); i != c_constant.end(); i++, j++)
 			ReplaceConstant(p_input_str, i->c_str(), j);
+		//-------------------- константы ---------------------
 		AddMessage(p_input_str.c_str());
 
 		AddMessage(7);
@@ -382,10 +376,25 @@ wstring& Calculate(wstring p_input, wstring& p_output)
 		c_function1.push_back("sin(");
 		c_function1.push_back("cos(");
 		c_function1.push_back("exp(");
+		/*c_function1.push_back("tan(");
+		c_function1.push_back("acos(");
+		c_function1.push_back("asin(");
+		c_function1.push_back("atan(");
+		c_function1.push_back("log(");
+		c_function1.push_back("log10(");
+		c_function1.push_back("ceil(");
+		c_function1.push_back("fabs(");
+		c_function1.push_back("floor(");
+		c_function1.push_back("ldexp(");
+		c_function1.push_back("modf(");*/
 	}
 	if(c_function2.empty())
 	{
 		c_function2.push_back("pow(");
+		/*c_function2.push_back("atan2(");
+		c_function2.push_back("modf(");
+		c_function2.push_back("fmod(");
+		c_function2.push_back("frexp(");*/
 	}
 	if(c_function3.empty()) // FOR TESTS ONLY!!!
 	{
