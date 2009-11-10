@@ -147,22 +147,19 @@ void CalculateFunction(string& p_input_str, const string p_in, const uint p_coun
 				GetParametrs(l_temp, l_start, p_number_of_param, l_params, l_comma_count, l_correct_end);
 				l_comma_count++;
 			}
-			else if(l_current_comma == string::npos || l_current_comma > l_end)
+			else if(l_current_comma == string::npos || l_current_comma > l_end && !l_nesting_level)
 			{
-				if(!l_nesting_level)
+				l_temp += l_buf.substr(0, l_end);
+				if(l_temp.empty())
 				{
-					l_temp += l_buf.substr(0, l_end);
-					if(l_temp.empty())
-					{
-						AddError(18, l_start, l_comma_count + 1, l_correct_end);
-						return;
-					}
-					l_end += l_correct_end;
-					GetParametrs(l_temp, l_start, p_number_of_param, l_params, l_comma_count, l_correct_end);
-					break;
+					AddError(18, l_start, l_comma_count + 1, l_correct_end);
+					return;
 				}
+				l_end += l_correct_end;
+				GetParametrs(l_temp, l_start, p_number_of_param, l_params, l_comma_count, l_correct_end);
+				break;
 			}
-			if(l_end != string::npos && l_nesting_level)
+			else
 			{
 				l_correct_end += l_end + 1;
 				l_temp += l_buf.substr(0, l_end + 1);
@@ -195,7 +192,6 @@ void CalculateFunction(string& p_input_str, const string p_in, const uint p_coun
 #endif
 		}
 		l_temp = l_char_buf;
-//		l_temp = l_temp.substr(0, l_c); WTF??? 
 		m_Correct_count += (p_in.size() + l_end + 1 - l_start) - l_c;
 		p_input_str.erase(l_start, p_in.size() + l_end + 1);
 		p_input_str.insert(l_start, l_temp);
