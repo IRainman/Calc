@@ -21,17 +21,17 @@ list <const string> c_constant;
 inline void ReplaceConstant(string& p_input_str, const string p_in, const uint_8 p_number_of_constant)
 {
 	string::size_type c = p_input_str.find(p_in);
-	if(c == string::npos // TODO !!!! допилить условие
+	if(c == string::npos
 		||
 		(c
 		&& (GetPriority(p_input_str.c_str()[c - 1]) < priority_bracket
 		|| GetPriority(p_input_str.c_str()[c - 1]) == priority_error)
 		)
-		/*||
-		(c < p_input_str.length() - 1
-		&& (GetPriority(p_input_str.c_str()[c + 1]) < priority_bracket
-		|| GetPriority(p_input_str.c_str()[c + 1]) == priority_error)
-		)*/
+		||
+		((p_input_str.length() - p_in.length()) > 0
+		&& (GetPriority(p_input_str.c_str()[c + p_in.length()]) < priority_bracket
+		|| GetPriority(p_input_str.c_str()[c + p_in.length()]) == priority_error)
+		)
 		)
 		return;
 
@@ -58,17 +58,17 @@ inline void ReplaceConstant(string& p_input_str, const string p_in, const uint_8
 		m_Correct_count -= l_const.length() + p_in.length();
 
 		c = p_input_str.find(p_in);
-		if(c == string::npos // TODO !!!! допилить условие
+		if(c == string::npos
 			||
 			(c
 			&& (GetPriority(p_input_str.c_str()[c - 1]) < priority_bracket
 			|| GetPriority(p_input_str.c_str()[c - 1]) == priority_error)
 			)
-			/*||
-			(c < p_input_str.length() - 1
-			&& (GetPriority(p_input_str.c_str()[c + 1]) < priority_bracket
-			|| GetPriority(p_input_str.c_str()[c + 1]) == priority_error)
-			)*/
+			||
+			((p_input_str.length() - p_in.length()) > 0
+			&& (GetPriority(p_input_str.c_str()[c + p_in.length()]) < priority_bracket
+			|| GetPriority(p_input_str.c_str()[c + p_in.length()]) == priority_error)
+			)
 			)
 			return;
 	}
