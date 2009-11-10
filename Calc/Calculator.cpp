@@ -22,8 +22,16 @@ inline void ReplaceConstant(string& p_input_str, const string p_in, const uint_8
 {
 	string::size_type c = p_input_str.find(p_in);
 	if(c == string::npos // TODO !!!! допилить условие
-		//|| (GetPriority(p_input_str.c_str()[c - 1]) < priority_bracket || GetPriority(p_input_str.c_str()[c - 1]) == priority_error)
-		//|| (GetPriority(p_input_str.c_str()[c + 1]) < priority_bracket || GetPriority(p_input_str.c_str()[c + 1]) == priority_error)
+		||
+		(c
+		&& (GetPriority(p_input_str.c_str()[c - 1]) < priority_bracket
+		|| GetPriority(p_input_str.c_str()[c - 1]) == priority_error)
+		)
+		/*||
+		(c < p_input_str.length() - 1
+		&& (GetPriority(p_input_str.c_str()[c + 1]) < priority_bracket
+		|| GetPriority(p_input_str.c_str()[c + 1]) == priority_error)
+		)*/
 		)
 		return;
 
@@ -47,12 +55,20 @@ inline void ReplaceConstant(string& p_input_str, const string p_in, const uint_8
 	{
 		p_input_str.erase(c, p_in.length());
 		p_input_str.insert(c, l_const);
-		m_Correct_count += l_const.length() - p_in.length();
+		m_Correct_count -= l_const.length() + p_in.length();
 
 		c = p_input_str.find(p_in);
 		if(c == string::npos // TODO !!!! допилить условие
-			//|| (GetPriority(p_input_str.c_str()[c - 1]) < priority_bracket || GetPriority(p_input_str.c_str()[c - 1]) == priority_error)
-			//|| (GetPriority(p_input_str.c_str()[c + 1]) < priority_bracket || GetPriority(p_input_str.c_str()[c + 1]) == priority_error)
+			||
+			(c
+			&& (GetPriority(p_input_str.c_str()[c - 1]) < priority_bracket
+			|| GetPriority(p_input_str.c_str()[c - 1]) == priority_error)
+			)
+			/*||
+			(c < p_input_str.length() - 1
+			&& (GetPriority(p_input_str.c_str()[c + 1]) < priority_bracket
+			|| GetPriority(p_input_str.c_str()[c + 1]) == priority_error)
+			)*/
 			)
 			return;
 	}
@@ -176,7 +192,7 @@ wstring& Calculate(wstring p_input, wstring& p_output)
 		p_input[l_count] = tolower(p_input.c_str()[l_count]);
 	}
 
-	l_count = p_input.find_first_not_of(L"0123456789+-*/^.e(),powsincosplusexp", 0);
+	l_count = p_input.find_first_not_of(L"0123456789+-*/^.e(),powsincosexptanacosasinatanloglog10", 0);
 	if(l_count != string::npos)
 	{
 		AddError(0, l_count);

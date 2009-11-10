@@ -35,6 +35,22 @@ inline double CalculateParametrs(const uint_8 p_number_of_param, const uint p_co
 					return cos(p_params[0]);
 				case 2:
 					return exp(p_params[0]);
+				case 3:
+					return tan(p_params[0]);
+				case 4:
+					return acos(p_params[0]);
+				case 5:
+					return asin(p_params[0]);
+				case 6:
+					return atan(p_params[0]);
+				case 7:
+					return log(p_params[0]);
+				case 8:
+					return log10(p_params[0]);
+				/*case 9:
+					return xxx(p_params[0]);
+				case 10:
+					return xxx(p_params[0]);*/
 #ifdef _DEBUG
 				default:
 					AddError(253);
@@ -54,10 +70,12 @@ inline double CalculateParametrs(const uint_8 p_number_of_param, const uint p_co
 #endif
 			}
 			break;
-		case 3:
+		case 3:// FOR TESTS ONLY, its not real function
 			switch(p_count)
 			{
 				case 0:
+					return p_params[0] + p_params[1] + p_params[2];
+				case 1:
 					return p_params[0] + p_params[1] + p_params[2];
 #ifdef _DEBUG
 				default:
@@ -99,10 +117,10 @@ void GetParametrs(string& l_buf, const string::size_type l_start, const uint_8 p
 			AddError(18, l_start, l_comma_count, l_correct_end);
 			return;
 		}
-		sscanf_s(l_outp.c_str(), "%lf", &l_params[l_comma_count]);
+		l_params[l_comma_count] = atof(l_outp.c_str());
 		return;
 	}
-	sscanf_s(l_buf.c_str(), "%lf", &l_params[l_comma_count]);
+	l_params[l_comma_count] = atof(l_buf.c_str());
 	l_buf = "";
 }
 //---------------------------------------------------------------------------
@@ -110,7 +128,9 @@ void CalculateFunction(string& p_input_str, const string p_in, const uint p_coun
 {
 	string::size_type l_start;
 	l_start = p_input_str.find(p_in);
-	if(l_start == string::npos)
+	if(l_start == string::npos
+		|| (l_start && (GetPriority(p_input_str.c_str()[l_start - 1]) < priority_bracket
+		|| GetPriority(p_input_str.c_str()[l_start - 1]) == priority_error)))
 		return;
 
 	string::size_type l_end, l_br_start;
@@ -192,7 +212,7 @@ void CalculateFunction(string& p_input_str, const string p_in, const uint p_coun
 #endif
 		}
 		l_temp = l_char_buf;
-		m_Correct_count += (p_in.size() + l_end + 1 - l_start) - l_c;
+		m_Correct_count -= l_c + (p_in.size() + l_end + 1 - l_start);
 		p_input_str.erase(l_start, p_in.size() + l_end + 1);
 		p_input_str.insert(l_start, l_temp);
 
@@ -210,13 +230,13 @@ void PreparingForFunction(string& p_input_str)
 		c_function1.push_back("sin(");
 		c_function1.push_back("cos(");
 		c_function1.push_back("exp(");
-		/*c_function1.push_back("tan(");
+		c_function1.push_back("tan(");
 		c_function1.push_back("acos(");
 		c_function1.push_back("asin(");
 		c_function1.push_back("atan(");
 		c_function1.push_back("log(");
 		c_function1.push_back("log10(");
-		c_function1.push_back("ceil(");
+		/*c_function1.push_back("ceil(");
 		c_function1.push_back("fabs(");
 		c_function1.push_back("floor(");
 		c_function1.push_back("ldexp(");
@@ -230,7 +250,7 @@ void PreparingForFunction(string& p_input_str)
 		c_function2.push_back("fmod(");
 		c_function2.push_back("frexp(");*/
 	}
-	if(c_function3.empty()) // FOR TESTS ONLY!!!
+	if(c_function3.empty()) // FOR TESTS ONLY, its not real function
 	{
 		c_function3.push_back("plus(");
 		c_function3.push_back("spin(");
