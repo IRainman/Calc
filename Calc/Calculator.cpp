@@ -84,6 +84,10 @@ void ValidateInputStringAndConstantReplace(string& p_input_str)
 	{
 		AddError(9);
 	}
+	if(p_input_str.c_str()[0] == 'e')
+	{
+		AddError(23, 0);
+	}
 	for(; l_count < p_input_str.size(); l_count++)
 	{
 		p_input_str[l_count] = tolower(p_input_str.c_str()[l_count]);
@@ -120,19 +124,31 @@ void ValidateInputStringAndConstantReplace(string& p_input_str)
 			}
 			count_outp++;
 		}
-		else if(p_input_str.c_str()[l_count] == '.' && p_input_str.c_str()[l_count + 1] == '.')
+		else if(p_input_str.c_str()[l_count] == '.')
 		{
-			AddError(20, l_count + 1);
+			string::size_type l_nextOperator = p_input_str.find_first_of("-+/*^()", l_count + 1);
+			string::size_type l_nextPt = p_input_str.find(".", l_count + 1);
+			if(l_nextPt != string::npos && (l_nextOperator == string::npos || l_nextPt < l_nextOperator))
+			{
+				AddError(20, l_count, l_nextPt);
+			}
 		}
 		else if(p_input_str.c_str()[l_count] == 'e')
 		{
-			if(p_input_str.c_str()[l_count + 1] == 'e')
+			string::size_type l_nextOperator = p_input_str.find_first_of("-+/*^()", l_count + 1);
+			string::size_type l_nextE = p_input_str.find("e", l_count + 1);
+			if(l_nextE != string::npos && (l_nextOperator == string::npos || l_nextE < l_nextOperator))
 			{
-				AddError(22, l_count + 1);
+				AddError(22, l_count, l_nextE);
 			}
 			if(GetPriority(p_input_str.c_str()[l_count - 1]) > priority_default)
 			{
 				AddError(23, l_count - 1);
+			}
+			if(GetPriority(p_input_str.c_str()[l_count + 1]) != priority_default
+				&& GetPriority(p_input_str.c_str()[l_count + 1]) != priority_addition)
+			{
+				AddError(25, l_count + 1);
 			}
 		}
 		else if((p_input_str.c_str()[l_count] == '+' || p_input_str.c_str()[l_count] == '-'
@@ -154,6 +170,11 @@ void ValidateInputStringAndConstantReplace(string& p_input_str)
 		|| p_input_str[p_input_str.length() - 1] == '^')
 	{
 		AddError(21, p_input_str.length());
+	}
+	l_count = p_input_str.find("e--");
+	if(l_count != string::npos)
+	{
+		AddError(24, l_count + 1);
 	}
 	if(m_NoError)
 	{
