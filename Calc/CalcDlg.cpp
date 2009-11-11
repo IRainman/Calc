@@ -156,8 +156,8 @@ HCURSOR CCalcDlg::OnQueryDragIcon()
 
 void CCalcDlg::OnEnChangeEditInput()
 {
-	static wchar_t l_input[4096];
-	std::wstring l_output;
+	wchar_t l_input[4096];
+	wstring l_output;
 
 	if(GetDlgItemText(IDC_EDIT_INPUT, l_input, 4096))
 	{

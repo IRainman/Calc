@@ -24,7 +24,7 @@
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
-			UseOfMFC="0"
+			UseOfMFC="2"
 			CharacterSet="1"
 			>
 			<Tool
@@ -102,7 +102,7 @@
 			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="1"
-			UseOfMFC="0"
+			UseOfMFC="2"
 			CharacterSet="1"
 			>
 			<Tool
@@ -357,7 +357,7 @@
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
-			UseOfMFC="1"
+			UseOfMFC="2"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
 			>
@@ -390,7 +390,7 @@
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG"
 				StringPooling="true"
 				MinimalRebuild="false"
-				RuntimeLibrary="0"
+				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				EnableEnhancedInstructionSet="2"
 				UsePrecompiledHeader="2"
@@ -445,7 +445,7 @@
 			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="1"
-			UseOfMFC="1"
+			UseOfMFC="2"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
 			>
@@ -478,7 +478,7 @@
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG"
 				StringPooling="true"
 				MinimalRebuild="false"
-				RuntimeLibrary="0"
+				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				EnableEnhancedInstructionSet="2"
 				UsePrecompiledHeader="2"

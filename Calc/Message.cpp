@@ -98,7 +98,7 @@ void AddError(uint_8 p_message, string::size_type p_count/* = -1*/, string::size
 #else
 	_itow_s(p_1, l_1, 6, 10);
 #endif
-	static wchar_t l_2[6];
+	wchar_t l_2[6];
 #ifdef _WIN64
 	_ui64tow_s(p_2, l_2, 6, 10);
 #else
