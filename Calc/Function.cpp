@@ -20,9 +20,9 @@ void PreparingForFunction(string& p_input_str);
 #define c_max_argument_of_function 3
 list <const string> c_function1;
 list <const string> c_function2;
-list <const string> c_function3;
+//list <const string> c_function3;
 //---------------------------------------------------------------------------
-inline double CalculateParametrs(const uint_8 p_number_of_param, const uint p_count, double p_params[])
+inline long double CalculateParametrs(const uint_8 p_number_of_param, const uint p_count, long double p_params[])
 {
 	switch(p_number_of_param)
 	{
@@ -47,10 +47,6 @@ inline double CalculateParametrs(const uint_8 p_number_of_param, const uint p_co
 					return log(p_params[0]);
 				case 8:
 					return log10(p_params[0]);
-				/*case 9:
-					return xxx(p_params[0]);
-				case 10:
-					return xxx(p_params[0]);*/
 #ifdef _DEBUG
 				default:
 					AddError(253);
@@ -70,6 +66,7 @@ inline double CalculateParametrs(const uint_8 p_number_of_param, const uint p_co
 #endif
 			}
 			break;
+/*
 		case 3:// FOR TESTS ONLY, its not real function
 			switch(p_count)
 			{
@@ -84,6 +81,7 @@ inline double CalculateParametrs(const uint_8 p_number_of_param, const uint p_co
 #endif
 			}
 			break;
+*/
 #ifdef _DEBUG
 		default:
 			AddError(253);
@@ -95,7 +93,7 @@ inline double CalculateParametrs(const uint_8 p_number_of_param, const uint p_co
 		return 0;
 }
 //---------------------------------------------------------------------------
-void GetParametrs(string& l_buf, const string::size_type l_start, const uint_8 p_number_of_param, double l_params[], string::size_type l_comma_count, const string::size_type l_correct_end)
+void GetParametrs(string& l_buf, const string::size_type l_start, const uint_8 p_number_of_param, long double l_params[], string::size_type l_comma_count, const string::size_type l_correct_end)
 {
 	if(l_comma_count >= p_number_of_param)
 	{
@@ -135,7 +133,7 @@ void CalculateFunction(string& p_input_str, const string p_in, const uint p_coun
 
 	string::size_type l_end, l_br_start;
 	char l_char_buf[320];
-	double l_params[c_max_argument_of_function];
+	long double l_params[c_max_argument_of_function];
 	do
 	{
 		string l_temp;
@@ -198,7 +196,7 @@ void CalculateFunction(string& p_input_str, const string p_in, const uint p_coun
 			AddError(10, l_start, p_number_of_param, l_comma_count);
 			return;
 		}
-		double result = CalculateParametrs(p_number_of_param, p_count, l_params);
+		long double result = CalculateParametrs(p_number_of_param, p_count, l_params);
 		string::size_type l_c;
 		try
 		{
@@ -227,15 +225,15 @@ void PreparingForFunction(string& p_input_str)
 {
 	if(c_function1.empty())
 	{
-		c_function1.push_back("sin(");
-		c_function1.push_back("cos(");
-		c_function1.push_back("exp(");
-		c_function1.push_back("tan(");
-		c_function1.push_back("acos(");
-		c_function1.push_back("asin(");
-		c_function1.push_back("atan(");
-		c_function1.push_back("log(");
-		c_function1.push_back("log10(");
+		c_function1.push_back("sin(");// sinus
+		c_function1.push_back("cos(");// cosinus
+		c_function1.push_back("exp(");// exponent function, on x=1 return value is e
+		c_function1.push_back("tan(");// tangens
+		c_function1.push_back("acos(");// arccosinus
+		c_function1.push_back("asin(");// arcsinus
+		c_function1.push_back("atan(");// arctangens
+		c_function1.push_back("log(");// natural logarithm
+		c_function1.push_back("log10(");// base-10 logarithm
 		/*c_function1.push_back("ceil(");
 		c_function1.push_back("fabs(");
 		c_function1.push_back("floor(");
@@ -244,17 +242,19 @@ void PreparingForFunction(string& p_input_str)
 	}
 	if(c_function2.empty())
 	{
-		c_function2.push_back("pow(");
+		c_function2.push_back("pow(");// power
 		/*c_function2.push_back("atan2(");
 		c_function2.push_back("modf(");
 		c_function2.push_back("fmod(");
 		c_function2.push_back("frexp(");*/
 	}
-	if(c_function3.empty()) // FOR TESTS ONLY, its not real function
+/*
+	if(c_function3.empty())
 	{
 		c_function3.push_back("plus(");
 		c_function3.push_back("spin(");
 	}
+*/
 	if(m_NoError)
 	{
 		AddMessage(7);
@@ -265,10 +265,11 @@ void PreparingForFunction(string& p_input_str)
 		j = 0;
 		for(list <const string>::iterator i = c_function2.begin(); i != c_function2.end(); i++, j++)
 			CalculateFunction(p_input_str, i->c_str(), j, 2);
-
+/*
 		j = 0;
 		for(list <const string>::iterator i = c_function3.begin(); i != c_function3.end(); i++, j++)
 			CalculateFunction(p_input_str, i->c_str(), j, 3);
+*/
 		AddMessage(p_input_str.c_str());
 	}
 	if(m_NoError)

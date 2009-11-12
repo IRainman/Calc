@@ -50,10 +50,10 @@ int_8 GetPriority(char p_sym)
 	}
 }
 //---------------------------------------------------------------------------
-void CalculateOnLineExpression(stack<char>& c_operations, stack<double>& c_operands)
+void CalculateOnLineExpression(stack<char>& c_operations, stack<long double>& c_operands)
 {
 	bool set_a = false, set_b = false;
-	double a, b;
+	long double a, b;
 	if(!c_operands.empty())
 	{
 		set_b = true;
@@ -123,7 +123,7 @@ void CalculateLineExpression(string p_input_str, string& p_output_str)
 {
 	int_8 l_current_prioritet = priority_error;
 	stack <char> c_operations;
-	stack <double> c_operands;
+	stack <long double> c_operands;
 	bool l_negative_number;
 	string::size_type l_count = 0;
 	for(; p_input_str.size(); l_count++)
@@ -235,7 +235,7 @@ void CalculateLineExpression(string p_input_str, string& p_output_str)
 			if(!l_negative_number || (l_negative_number && l_count_of_num > 1))
 			{
 				c_operands.push(atof(l_operand_string.c_str()));
-			//	if(c_operands.top() >= std::numeric_limits<double>::max() || c_operands.top() <= std::numeric_limits<double>::min()) // TODO add normal terms ;)
+			//	if(c_operands.top() >= std::numeric_limits<long double>::max() || c_operands.top() <= std::numeric_limits<long double>::min()) // TODO add normal terms ;)
 				if(c_operands.top() > 999999999999999 || c_operands.top() < -999999999999999) // TODO add normal terms ;)
 				{
 					AddWarning(0);
@@ -276,10 +276,10 @@ void CalculateRPN(string& p_to_process_str)
 	 3)Если входной набор символов обработан не полностью, перейти к шагу 1.
 	После полной обработки входного набора символов результат вычисления выражения лежит на вершине стека.
 	*/
-	stack <double> c_operands;
+	stack <long double> c_operands;
 	string input = p_to_process_str;
 	p_to_process_str = "";
-	double a, b;
+	long double a, b;
 	int_8 l_current_priority;
 	
 	for(string::size_type l_count = 0; l_count < input.size(); l_count++)
@@ -389,7 +389,7 @@ void CalculateRPN(string& p_to_process_str)
 									}
 								}
 								
-								double temp_operand = atof(temp.c_str());
+								long double temp_operand = atof(temp.c_str());
 								a = b;
 								b = temp_operand;*/
 							/* 
@@ -439,7 +439,7 @@ void CalculateRPN(string& p_to_process_str)
 	if(!c_operands.empty())
 	{
 		char l_char_buf[100];
-		sprintf_s(l_char_buf, " %.25lf ", c_operands.top());
+		sprintf_s(l_char_buf, " %.50lf ", c_operands.top());
 		p_to_process_str = l_char_buf;
 	}
 }

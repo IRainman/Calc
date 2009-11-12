@@ -82,8 +82,8 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSM
 CAPTION "О проекте Calc"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    ICON            IDR_MAINFRAME,IDC_STATIC,104,13,21,20
-    LTEXT           "Calc, версия 1.0",IDC_STATIC,15,15,68,8,SS_NOPREFIX
+    ICON            IDR_MAINFRAME,IDC_STATIC,104,13,20,20
+    LTEXT           "Calc, версия 1.0.1",IDC_STATIC,15,15,68,8,SS_NOPREFIX
     LTEXT           "(C) МИЭТ, Соломин А.Л. группа МПВ-51 2009",IDC_STATIC,15,25,82,19
     DEFPUSHBUTTON   "ОК",IDOK,89,38,50,14,WS_GROUP
 END
@@ -106,8 +106,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,71
- PRODUCTVERSION 1,0,0,71
+ FILEVERSION 1,0,1,77
+ PRODUCTVERSION 1,0,1,77
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -124,12 +124,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "МИЭТ"
             VALUE "FileDescription", "Калькулятор для Windows"
-            VALUE "FileVersion", "1.0.0.71"
+            VALUE "FileVersion", "1.0.1.77"
             VALUE "InternalName", "Calc.exe"
             VALUE "LegalCopyright", "(c) МИЭТ Соломин А.Л. группа МПВ-51. Все права защищены."
             VALUE "OriginalFilename", "Calc.exe"
             VALUE "ProductName", "Calc"
-            VALUE "ProductVersion", "1.0.0.71"
+            VALUE "ProductVersion", "1.0.1.77"
         END
     END
     BLOCK "VarFileInfo"

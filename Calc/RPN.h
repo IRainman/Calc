@@ -22,7 +22,7 @@ enum
 };
 //---------------------------------------------------------------------------
 extern int_8 GetPriority(char p_sym);
-extern void CalculateOnLineExpression(stack<char>& c_operations, stack<double>& c_operands);
+extern void CalculateOnLineExpression(stack<char>& c_operations, stack<long double>& c_operands);
 extern void CalculateLineExpression(string p_input_str, string& p_output_str);
 #ifdef _USE_RPN
 extern void CalculateRPN(string& p_to_process_str);
