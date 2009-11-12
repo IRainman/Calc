@@ -176,6 +176,11 @@ void ValidateInputStringAndConstantReplace(string& p_input_str)
 	{
 		AddError(24, l_count + 1);
 	}
+	l_count = p_input_str.find("e+-");
+	if(l_count != string::npos)
+	{
+		AddError(27, l_count + 1);
+	}
 	if(m_NoError)
 	{
 		uint j = 0;

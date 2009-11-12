@@ -185,6 +185,12 @@ void AddError(uint_8 p_message, string::size_type p_count/* = -1*/, string::size
 		case 25:
 			l_error = L"После символа \"e\" не обнаружн показатель степени";
 			break;
+		case 26:
+			l_error = L"Некорректное использование символа \"e\" сразу после показателя степени в позиции " + (wstring)l_1 + L" следует ещё один символ \"e\"";
+			break;
+		case 27:
+			l_error = L"Запись \"+-\" после степенного символа \"e\" недопостима";
+			break;
 #ifdef _DEBUG
 		case 252:
 			l_error = L"DEBUG: Internal Processing Error: \"void ReplaceConstant(...)\"";

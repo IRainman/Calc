@@ -211,18 +211,26 @@ void CalculateLineExpression(string p_input_str, string& p_output_str)
 				l_count_of_num++;
 				l_count++;
 			}
+			string::size_type l_countE = 0;
 			for(; l_count_of_num < p_input_str.size(); l_count_of_num++, l_count++)
 			{
 				if(GetPriority(p_input_str.c_str()[l_count_of_num]) == priority_default
 					|| (p_input_str.c_str()[l_count_of_num - 1] == 'e'
 					&& (p_input_str.c_str()[l_count_of_num] == '+' || p_input_str.c_str()[l_count_of_num] == '-')))
 				{
+					if(p_input_str.c_str()[l_count_of_num - 1] == 'e')
+						l_countE++;
+
 					l_operand_string += p_input_str.c_str()[l_count_of_num];
 				}
 				else
 				{
 					break;
 				}
+			}
+			if(l_countE > 1)
+			{
+				AddError(26, l_count, l_countE);
 			}
 			if(!l_negative_number || (l_negative_number && l_count_of_num > 1))
 			{
