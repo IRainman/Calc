@@ -50,10 +50,12 @@ int_8 GetPriority(char p_sym)
 	}
 }
 //---------------------------------------------------------------------------
-void CalculateOnLineExpression(stack<char>& c_operations, stack<long double>& c_operands)
+inline void CalculateOnLineExpression(stack<char>& c_operations, stack<long double>& c_operands)
 {
-	bool set_a = false, set_b = false;
+	// TODO: refactoring this function
+	bool set_a = false, set_b = false;// don't use flags
 	long double a, b;
+// 2st!!! get operand's
 	if(!c_operands.empty())
 	{
 		set_b = true;
@@ -70,7 +72,7 @@ void CalculateOnLineExpression(stack<char>& c_operations, stack<long double>& c_
 	{
 		if(set_a)
 		{
-			switch(c_operations.top())
+			switch(c_operations.top())// first get operations
 			{
 				case '^':
 					c_operands.push(pow(a,b));
