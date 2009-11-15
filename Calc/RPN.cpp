@@ -262,7 +262,7 @@ void CalculateLineExpression(string p_input_str, string& p_output_str)
 	}
 	if(!c_operands.empty())
 	{
-		char l_char_buf[320];
+		char l_char_buf[400];
 		sprintf_s(l_char_buf, "%.14lf", c_operands.top()); // TODO: Add variable precision
 		p_output_str = l_char_buf;
 	}
