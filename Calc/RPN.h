@@ -18,7 +18,7 @@ enum
 	priority_addition		= 2,
 	priority_bracket		= 1,
 	priority_default		= 0,
-	priority_error			= -64
+	priority_error			= -1
 };
 //---------------------------------------------------------------------------
 extern int_8 GetPriority(char p_sym);
