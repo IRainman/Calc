@@ -17,10 +17,11 @@
 //---------------------------------------------------------------------------
 void PreparingForFunction(string& p_input_str);
 //---------------------------------------------------------------------------
-#define c_max_argument_of_function 3
+#define c_max_argument_of_function 5
 list <const string> c_function1;
 list <const string> c_function2;
 //list <const string> c_function3;
+list <const string> c_function5;
 //---------------------------------------------------------------------------
 inline long double CalculateParametrs(const uint_8 p_number_of_param, const uint p_count, long double p_params[])
 {
@@ -82,6 +83,20 @@ inline long double CalculateParametrs(const uint_8 p_number_of_param, const uint
 			}
 			break;
 */
+
+		case 5:// FOR TESTS ONLY, its not real function
+			switch(p_count)
+			{
+				case 0:
+					return p_params[0] + p_params[1] + p_params[2] + p_params[3] + p_params[4];
+#ifdef _DEBUG
+				default:
+					AddError(253);
+					return 0;
+#endif
+			}
+			break;
+
 #ifdef _DEBUG
 		default:
 			AddError(253);
@@ -97,7 +112,7 @@ void GetParametrs(string& l_buf, const string::size_type l_start, const uint_8 p
 {
 	if(l_comma_count >= p_number_of_param)
 	{
-		AddError(10, l_start, p_number_of_param, l_comma_count);
+		AddError(10, l_start, p_number_of_param, l_comma_count + 1);
 		return;
 	}
 	string::size_type l_count = l_buf.find_first_not_of("0123456789.e", 0);
@@ -187,13 +202,13 @@ void CalculateFunction(string& p_input_str, const string p_in, const uint p_coun
 		}
 		if(l_end == string::npos)// WTF ?
 		{
-			AddError(6, l_start); // todo убрать если не будет появлятся
+			AddError(6, l_start); // todo delete this block after update to correcting code
 			m_NoError = true; // !!!!! 
 		//	return; ?????? 
 		}
 		if(l_comma_count != p_number_of_param - 1)
 		{
-			AddError(10, l_start, p_number_of_param, l_comma_count);
+			AddError(10, l_start, p_number_of_param, l_comma_count + 1);
 			return;
 		}
 		long double result = CalculateParametrs(p_number_of_param, p_count, l_params);
@@ -251,10 +266,16 @@ void PreparingForFunction(string& p_input_str)
 /*
 	if(c_function3.empty())
 	{
-		c_function3.push_back("plus(");
+		c_function3.push_back("plus3(");
 		c_function3.push_back("spin(");
 	}
 */
+
+	if(c_function5.empty())
+	{
+		c_function5.push_back("plus5(");
+	}
+
 	if(m_NoError)
 	{
 		AddMessage(7);
@@ -270,6 +291,11 @@ void PreparingForFunction(string& p_input_str)
 		for(list <const string>::iterator i = c_function3.begin(); i != c_function3.end(); i++, j++)
 			CalculateFunction(p_input_str, i->c_str(), j, 3);
 */
+
+		j = 0;
+		for(list <const string>::iterator i = c_function5.begin(); i != c_function5.end(); i++, j++)
+			CalculateFunction(p_input_str, i->c_str(), j, 5);
+
 		AddMessage(p_input_str.c_str());
 	}
 	if(m_NoError)

@@ -23,4 +23,3 @@
 #ifndef _WIN32_IE                       // ”казывает, что минимальной требуемой платформой €вл€етс€ Internet Explorer 7.0.
 #define _WIN32_IE 0x0400//0x0700        // ¬ыберите значение, указывающее на другие версии Internet Explorer.
 #endif
-
