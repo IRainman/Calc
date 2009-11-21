@@ -17,11 +17,15 @@
 //---------------------------------------------------------------------------
 void PreparingForFunction(string& p_input_str);
 //---------------------------------------------------------------------------
-#define c_max_argument_of_function 5
 list <const string> c_function1;
 list <const string> c_function2;
-//list <const string> c_function3;
+#ifdef _DEBUG_FUNCTION // TODO: delete this block after add full function support
+list <const string> c_function3;
 list <const string> c_function5;
+#define c_max_argument_of_function 5
+#else
+#define c_max_argument_of_function 2
+#endif
 //---------------------------------------------------------------------------
 inline long double CalculateParametrs(const uint_8 p_number_of_param, const uint p_count, long double p_params[])
 {
@@ -67,7 +71,7 @@ inline long double CalculateParametrs(const uint_8 p_number_of_param, const uint
 #endif
 			}
 			break;
-/*
+#ifdef _DEBUG_FUNCTION // TODO: delete this block after add full function support
 		case 3:// FOR TESTS ONLY, its not real function
 			switch(p_count)
 			{
@@ -82,8 +86,6 @@ inline long double CalculateParametrs(const uint_8 p_number_of_param, const uint
 #endif
 			}
 			break;
-*/
-
 		case 5:// FOR TESTS ONLY, its not real function
 			switch(p_count)
 			{
@@ -96,14 +98,14 @@ inline long double CalculateParametrs(const uint_8 p_number_of_param, const uint
 #endif
 			}
 			break;
-
+#endif
 #ifdef _DEBUG
 		default:
 			AddError(253);
 			return 0;
 #endif
 	}
-	// TODO delete this block after add full function support
+	// TODO: delete this block after add full function support
 		m_NoError = false;
 		return 0;
 }
@@ -127,7 +129,7 @@ void GetParametrs(string& l_buf, const string::size_type l_start, const uint_8 p
 		l_count = l_outp.find_first_not_of("0123456789.e", 0);
 		if(l_count != string::npos || l_outp.empty())
 		{
-			AddError(18, l_start, l_comma_count, l_correct_end);
+			AddError(18, l_start, l_comma_count + 1, l_correct_end);
 			return;
 		}
 		l_params[l_comma_count] = atof(l_outp.c_str());
@@ -167,30 +169,33 @@ void CalculateFunction(string& p_input_str, const string p_in, const uint p_coun
 				l_buf = l_buf.substr(l_br_start + 1);
 				l_nesting_level++;
 			}
-			else if(l_current_comma != string::npos && l_current_comma < l_end && !l_nesting_level)
+			else if(!l_nesting_level)
 			{
-				l_temp += l_buf.substr(0, l_current_comma);
-				l_correct_end += l_current_comma + 1;
-				l_buf = l_buf.substr(l_current_comma + 1);
-				if(l_temp.empty())
+				if(l_current_comma != string::npos && l_current_comma < l_end)
 				{
-					AddError(18, l_start, l_comma_count + 1, l_correct_end);
-					return;
+					l_temp += l_buf.substr(0, l_current_comma);
+					l_correct_end += l_current_comma + 1;
+					l_buf = l_buf.substr(l_current_comma + 1);
+					if(l_temp.empty())
+					{
+						AddError(18, l_start, l_comma_count + 1, l_correct_end);
+						return;
+					}
+					GetParametrs(l_temp, l_start, p_number_of_param, l_params, l_comma_count, l_correct_end);
+					l_comma_count++;
 				}
-				GetParametrs(l_temp, l_start, p_number_of_param, l_params, l_comma_count, l_correct_end);
-				l_comma_count++;
-			}
-			else if(l_current_comma == string::npos || l_current_comma > l_end && !l_nesting_level)
-			{
-				l_temp += l_buf.substr(0, l_end);
-				if(l_temp.empty())
+				else if(l_current_comma == string::npos || l_current_comma > l_end)
 				{
-					AddError(18, l_start, l_comma_count + 1, l_correct_end);
-					return;
+					l_temp += l_buf.substr(0, l_end);
+					if(l_temp.empty())
+					{
+						AddError(18, l_start, l_comma_count + 1, l_correct_end);
+						return;
+					}
+					l_end += l_correct_end;
+					GetParametrs(l_temp, l_start, p_number_of_param, l_params, l_comma_count, l_correct_end);
+					break;
 				}
-				l_end += l_correct_end;
-				GetParametrs(l_temp, l_start, p_number_of_param, l_params, l_comma_count, l_correct_end);
-				break;
 			}
 			else
 			{
@@ -200,12 +205,14 @@ void CalculateFunction(string& p_input_str, const string p_in, const uint p_coun
 				l_nesting_level--;
 			}
 		}
+#ifdef _DEBUG_FUNCTION // TODO: delete this block after add full function support
 		if(l_end == string::npos)// WTF ?
 		{
 			AddError(6, l_start); // todo delete this block after update to correcting code
 			m_NoError = true; // !!!!! 
 		//	return; ?????? 
 		}
+#endif
 		if(l_comma_count != p_number_of_param - 1)
 		{
 			AddError(10, l_start, p_number_of_param, l_comma_count + 1);
@@ -225,7 +232,9 @@ void CalculateFunction(string& p_input_str, const string p_in, const uint p_coun
 #endif
 		}
 		l_temp = l_char_buf;
-		m_Correct_count -= l_c + (p_in.size() + l_end + 1 - l_start);
+		if(m_NoError)
+			m_Correct_count += l_c - (p_in.size() + l_end + 1 - l_start);
+
 		p_input_str.erase(l_start, p_in.size() + l_end + 1);
 		p_input_str.insert(l_start, l_temp);
 
@@ -263,19 +272,17 @@ void PreparingForFunction(string& p_input_str)
 		c_function2.push_back("fmod(");
 		c_function2.push_back("frexp(");*/
 	}
-/*
+#ifdef _DEBUG_FUNCTION // TODO: delete this block after add full function support
 	if(c_function3.empty())
 	{
 		c_function3.push_back("plus3(");
 		c_function3.push_back("spin(");
 	}
-*/
-
 	if(c_function5.empty())
 	{
 		c_function5.push_back("plus5(");
 	}
-
+#endif
 	if(m_NoError)
 	{
 		AddMessage(7);
@@ -286,16 +293,15 @@ void PreparingForFunction(string& p_input_str)
 		j = 0;
 		for(list <const string>::iterator i = c_function2.begin(); i != c_function2.end(); i++, j++)
 			CalculateFunction(p_input_str, i->c_str(), j, 2);
-/*
+#ifdef _DEBUG_FUNCTION // TODO: delete this block after add full function support
 		j = 0;
 		for(list <const string>::iterator i = c_function3.begin(); i != c_function3.end(); i++, j++)
 			CalculateFunction(p_input_str, i->c_str(), j, 3);
-*/
 
 		j = 0;
 		for(list <const string>::iterator i = c_function5.begin(); i != c_function5.end(); i++, j++)
 			CalculateFunction(p_input_str, i->c_str(), j, 5);
-
+#endif
 		AddMessage(p_input_str.c_str());
 	}
 	if(m_NoError)

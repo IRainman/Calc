@@ -83,7 +83,7 @@ CAPTION "О проекте Calc"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,104,13,20,20
-    LTEXT           "Calc, версия 1.0.3",IDC_STATIC,15,15,68,8,SS_NOPREFIX
+    LTEXT           "Calc, версия 1.0.4",IDC_STATIC,15,15,68,8,SS_NOPREFIX
     LTEXT           "(C) МИЭТ, Соломин А.Л. группа МПВ-51 2009",IDC_STATIC,15,25,82,19
     DEFPUSHBUTTON   "ОК",IDOK,89,38,50,14,WS_GROUP
 END
@@ -106,8 +106,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,3,86
- PRODUCTVERSION 1,0,3,86
+ FILEVERSION 1,0,4,88
+ PRODUCTVERSION 1,0,4,88
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -124,12 +124,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "МИЭТ"
             VALUE "FileDescription", "Калькулятор для Windows"
-            VALUE "FileVersion", "1.0.3.86"
+            VALUE "FileVersion", "1.0.4.88"
             VALUE "InternalName", "Calc.exe"
             VALUE "LegalCopyright", "(c) МИЭТ Соломин А.Л. группа МПВ-51. Все права защищены."
             VALUE "OriginalFilename", "Calc.exe"
             VALUE "ProductName", "Calc"
-            VALUE "ProductVersion", "1.0.3.86"
+            VALUE "ProductVersion", "1.0.4.88"
         END
     END
     BLOCK "VarFileInfo"
