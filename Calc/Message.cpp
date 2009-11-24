@@ -14,7 +14,7 @@
 //---------------------------------------------------------------------------
 wstring m_ErrorString;
 bool m_NoError;
-string::size_type m_Correct_count; // TODO add correct count variable for warnings and errors on nesting expression
+string::size_type m_Correct_count;
 //---------------------------------------------------------------------------
 void AddMessage(const string& p_string_message)
 {

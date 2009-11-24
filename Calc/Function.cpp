@@ -13,15 +13,41 @@
 #include "RPN.h"
 #include "Message.h"
 #include "Function.h"
-#include <list>
+#include <stdlib.h>
 //---------------------------------------------------------------------------
 void PreparingForFunction(string& p_input_str);
 //---------------------------------------------------------------------------
-list <const string> c_function1;
-list <const string> c_function2;
+const char* c_function1[] = {
+	"sin(",// sinus
+	"cos(",// cosinus
+	"exp(",// exponent function, on x=1 return value is e
+	"tan(",// tangens
+	"acos(",// arccosinus
+	"asin(",// arcsinus
+	"atan(",// arctangens
+	"log(",// natural logarithm
+	"log10("// base-10 logarithm
+	/*"ceil(",
+	"fabs(",
+	"floor(",
+	"ldexp(",
+	"modf("*/
+};
+const char* c_function2[] = {
+	"pow("// power
+	/*"atan2(",
+	"modf(",
+	"fmod(",
+	"frexp(",*/
+};
 #ifdef _DEBUG_FUNCTION // TODO: delete this block after add full function support
-list <const string> c_function3;
-list <const string> c_function5;
+const string c_function3[] = {
+	"plus3(",// this function performs addition of three arguments
+	"spin3("// this function performs addition of three arguments
+};
+const string c_function5[] = {
+	"plus5("// this function performs addition of five arguments
+};
 #define c_max_argument_of_function 5
 #else
 #define c_max_argument_of_function 2
@@ -76,7 +102,6 @@ inline long double CalculateParametrs(const uint_8 p_number_of_param, const uint
 			switch(p_count)
 			{
 				case 0:
-					return p_params[0] + p_params[1] + p_params[2];
 				case 1:
 					return p_params[0] + p_params[1] + p_params[2];
 #ifdef _DEBUG
@@ -90,6 +115,7 @@ inline long double CalculateParametrs(const uint_8 p_number_of_param, const uint
 			switch(p_count)
 			{
 				case 0:
+				case 1:
 					return p_params[0] + p_params[1] + p_params[2] + p_params[3] + p_params[4];
 #ifdef _DEBUG
 				default:
@@ -145,7 +171,9 @@ void CalculateFunction(string& p_input_str, const string p_in, const uint p_coun
 	l_start = p_input_str.find(p_in);
 	if(l_start == string::npos
 		|| (l_start && (GetPriority(p_input_str.c_str()[l_start - 1]) < priority_bracket
-		|| GetPriority(p_input_str.c_str()[l_start - 1]) == priority_error)))
+		|| GetPriority(p_input_str.c_str()[l_start - 1]) == priority_error))
+		|| p_in.empty()
+		)
 		return;
 
 	string::size_type l_end, l_br_start;
@@ -205,14 +233,6 @@ void CalculateFunction(string& p_input_str, const string p_in, const uint p_coun
 				l_nesting_level--;
 			}
 		}
-#ifdef _DEBUG_FUNCTION // TODO: delete this block after add full function support
-		if(l_end == string::npos)// WTF ?
-		{
-			AddError(6, l_start); // todo delete this block after update to correcting code
-			m_NoError = true; // !!!!! 
-		//	return; ?????? 
-		}
-#endif
 		if(l_comma_count != p_number_of_param - 1)
 		{
 			AddError(10, l_start, p_number_of_param, l_comma_count + 1);
@@ -239,7 +259,11 @@ void CalculateFunction(string& p_input_str, const string p_in, const uint p_coun
 		p_input_str.insert(l_start, l_temp);
 
 		l_start = p_input_str.find(p_in);
-		if(l_start == string::npos)
+		if(l_start == string::npos
+			|| (l_start && (GetPriority(p_input_str.c_str()[l_start - 1]) < priority_bracket
+			|| GetPriority(p_input_str.c_str()[l_start - 1]) == priority_error))
+			|| p_in.empty()
+			)
 			return;
 	}
 	while(true);
@@ -247,60 +271,24 @@ void CalculateFunction(string& p_input_str, const string p_in, const uint p_coun
 //---------------------------------------------------------------------------
 void PreparingForFunction(string& p_input_str)
 {
-	if(c_function1.empty())
-	{
-		c_function1.push_back("sin(");// sinus
-		c_function1.push_back("cos(");// cosinus
-		c_function1.push_back("exp(");// exponent function, on x=1 return value is e
-		c_function1.push_back("tan(");// tangens
-		c_function1.push_back("acos(");// arccosinus
-		c_function1.push_back("asin(");// arcsinus
-		c_function1.push_back("atan(");// arctangens
-		c_function1.push_back("log(");// natural logarithm
-		c_function1.push_back("log10(");// base-10 logarithm
-		/*c_function1.push_back("ceil(");
-		c_function1.push_back("fabs(");
-		c_function1.push_back("floor(");
-		c_function1.push_back("ldexp(");
-		c_function1.push_back("modf(");*/
-	}
-	if(c_function2.empty())
-	{
-		c_function2.push_back("pow(");// power
-		/*c_function2.push_back("atan2(");
-		c_function2.push_back("modf(");
-		c_function2.push_back("fmod(");
-		c_function2.push_back("frexp(");*/
-	}
-#ifdef _DEBUG_FUNCTION // TODO: delete this block after add full function support
-	if(c_function3.empty())
-	{
-		c_function3.push_back("plus3(");
-		c_function3.push_back("spin(");
-	}
-	if(c_function5.empty())
-	{
-		c_function5.push_back("plus5(");
-	}
-#endif
 	if(m_NoError)
 	{
 		AddMessage(7);
-		uint j = 0;
-		for(list <const string>::iterator i = c_function1.begin(); i != c_function1.end(); i++, j++)
-			CalculateFunction(p_input_str, i->c_str(), j, 1);
+		uint i = 0;
+		for(; i < _countof(c_function1); i++)
+			CalculateFunction(p_input_str, c_function1[i], i, 1);
 
-		j = 0;
-		for(list <const string>::iterator i = c_function2.begin(); i != c_function2.end(); i++, j++)
-			CalculateFunction(p_input_str, i->c_str(), j, 2);
+		i = 0;
+		for(; i < _countof(c_function2); i++)
+			CalculateFunction(p_input_str, c_function2[i], i, 2);
 #ifdef _DEBUG_FUNCTION // TODO: delete this block after add full function support
-		j = 0;
-		for(list <const string>::iterator i = c_function3.begin(); i != c_function3.end(); i++, j++)
-			CalculateFunction(p_input_str, i->c_str(), j, 3);
+		i = 0;
+		for(; i < _countof(c_function3); i++)
+			CalculateFunction(p_input_str, c_function3[i], i, 3);
 
-		j = 0;
-		for(list <const string>::iterator i = c_function5.begin(); i != c_function5.end(); i++, j++)
-			CalculateFunction(p_input_str, i->c_str(), j, 5);
+		i = 0;
+		for(; i < _countof(c_function5); i++)
+			CalculateFunction(p_input_str, c_function5[i], i, 5);
 #endif
 		AddMessage(p_input_str.c_str());
 	}
