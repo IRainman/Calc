@@ -194,6 +194,9 @@ void AddError(uint_8 p_message, string::size_type p_count/* = -1*/, string::size
 		case 28:
 			l_error = L"Последним символом в выражении не может быть символ \"e\"";
 			break;
+		case 29:
+			l_error = L"Закрывающая скобка находится раньше открывающей";
+			break;
 #ifdef _DEBUG
 		case 252:
 			l_error = L"DEBUG: Internal Processing Error: \"void ReplaceConstant(...)\"";

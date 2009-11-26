@@ -110,11 +110,13 @@ inline void CalculateOnLineExpression(stack<char>& c_operations, stack<long doub
 				case '-':
 					c_operands.push(-b);
 					break;
-#ifdef _DEBUG
+
 				default:
+					AddError(4); // TODO delete this!
+#ifdef _DEBUG
 					AddError(254);
-					break;
 #endif
+					break;
 			}
 		}
 	}
@@ -130,7 +132,7 @@ void CalculateLineExpression(string p_input_str, string& p_output_str)
 	string::size_type l_count = 0;
 	for(; p_input_str.size(); l_count++)
 	{
-		l_negative_number = l_current_prioritet > 0 && p_input_str.c_str()[0] == '-';
+		l_negative_number = l_current_prioritet > 0 && p_input_str.c_str()[0] == '-' && p_input_str.c_str()[1] != '(';
 		l_current_prioritet = GetPriority(p_input_str.c_str()[0]);
 		if(l_current_prioritet && !l_negative_number)
 		{
@@ -243,10 +245,6 @@ void CalculateLineExpression(string p_input_str, string& p_output_str)
 					AddWarning(0);
 				}
 				l_current_prioritet = priority_default;
-			}
-			else
-			{
-				AddError(4, l_count);// ??? 
 			}
 			p_input_str.erase(0, l_count_of_num);
 		}
