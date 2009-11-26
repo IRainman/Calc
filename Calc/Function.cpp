@@ -144,13 +144,13 @@ void GetParametrs(string& l_buf, const string::size_type l_start, const uint_8 p
 		return;
 	}
 	string::size_type l_count;
-	if(l_outp.c_str()[0] != '-')
+	if(l_buf.c_str()[0] != '-')
 	{
-		l_count = l_outp.find_first_not_of("0123456789.e", 0);
+		l_count = l_buf.find_first_not_of("0123456789.e", 0);
 	}
 	else
 	{
-		l_count = l_outp.find_first_not_of("0123456789.e", 1);
+		l_count = l_buf.find_first_not_of("0123456789.e", 1);
 	}
 	if(l_count != string::npos)
 	{
