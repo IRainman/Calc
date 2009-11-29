@@ -309,7 +309,16 @@ void PreparingForFunction(string& p_input_str)
 	}
 	if(m_NoError)
 	{
-		string::size_type l_count = p_input_str.find_first_not_of("0123456789+-*/^.e()", 0);
+		string::size_type l_count = 0;
+		for(; l_count < p_input_str.size() - 1; l_count++)
+		{
+			if(GetPriority(p_input_str.c_str()[l_count]) == priority_default
+				&& p_input_str.c_str()[l_count + 1] == '(')
+			{
+				AddError(30, l_count - 1);
+			}
+		}
+		l_count = p_input_str.find_first_not_of("0123456789+-*/^.e()", 0);
 		if(l_count != string::npos)
 		{
 			AddError(2, l_count);
