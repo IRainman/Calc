@@ -136,6 +136,26 @@ inline long double CalculateParametrs(const uint_8 p_number_of_param, const uint
 		return 0;
 }
 //---------------------------------------------------------------------------
+inline string::size_type CheckParametrs(string& p_buf)
+{
+	string::size_type l_count;
+	if(p_buf.c_str()[0] != '-')
+	{
+		l_count = p_buf.find_first_not_of("0123456789.e", 0);
+	}
+	else
+	{
+		l_count = p_buf.find_first_not_of("0123456789.e", 1);
+	}
+	if(l_count &&
+		(p_buf.find("e+") == l_count - 1
+		|| p_buf.find("e-") == l_count - 1))
+	{
+		return string::npos;
+	}
+	return l_count;
+}
+//---------------------------------------------------------------------------
 void GetParametrs(string& l_buf, const string::size_type l_start, const uint_8 p_number_of_param, long double l_params[], string::size_type l_comma_count, const string::size_type l_correct_end)
 {
 	if(l_comma_count >= p_number_of_param)
@@ -143,15 +163,7 @@ void GetParametrs(string& l_buf, const string::size_type l_start, const uint_8 p
 		AddError(10, l_start, p_number_of_param, l_comma_count + 1);
 		return;
 	}
-	string::size_type l_count;
-	if(l_buf.c_str()[0] != '-')
-	{
-		l_count = l_buf.find_first_not_of("0123456789.e", 0);
-	}
-	else
-	{
-		l_count = l_buf.find_first_not_of("0123456789.e", 1);
-	}
+	string::size_type l_count = CheckParametrs(l_buf);
 	if(l_count != string::npos)
 	{
 		AddMessage(4);
@@ -160,14 +172,7 @@ void GetParametrs(string& l_buf, const string::size_type l_start, const uint_8 p
 		CalculateLineExpression(l_buf, l_outp); 
 		l_buf = "";
 		AddMessage(5);
-		if(l_outp.c_str()[0] != '-')
-		{
-			l_count = l_outp.find_first_not_of("0123456789.e", 0);
-		}
-		else
-		{
-			l_count = l_outp.find_first_not_of("0123456789.e", 1);
-		}
+		l_count = CheckParametrs(l_outp);
 		if(l_count != string::npos || l_outp.empty())
 		{
 			AddError(18, l_start, l_comma_count + 1, l_correct_end);
@@ -257,7 +262,7 @@ void CalculateFunction(string& p_input_str, const string p_in, const uint p_coun
 		string::size_type l_c;
 		try
 		{
-			l_c = sprintf_s(l_char_buf, "%.25lf", result);
+			l_c = sprintf_s(l_char_buf, "%.14le", result);
 		}
 		catch(...)
 		{
@@ -305,7 +310,9 @@ void PreparingForFunction(string& p_input_str)
 		for(; i < _countof(c_function5); i++)
 			CalculateFunction(p_input_str, c_function5[i], i, 5);
 #endif
+#ifdef _DEBUG
 		AddMessage(p_input_str.c_str());
+#endif
 	}
 	if(m_NoError)
 	{
