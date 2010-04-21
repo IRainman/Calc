@@ -439,7 +439,7 @@ void CalculateRPN(string& p_to_process_str)
 	if(!c_operands.empty())
 	{
 		char l_char_buf[100];
-		sprintf_s(l_char_buf, " %.14le ", c_operands.top());
+		sprintf_s(l_char_buf, " %.14lge ", c_operands.top());
 		p_to_process_str = l_char_buf;
 	}
 }

@@ -169,12 +169,12 @@ void GetParametrs(string& l_buf, const string::size_type l_start, const uint_8 p
 	string::size_type l_count = CheckParametrs(l_buf);
 	if(l_count != string::npos)
 	{
-		AddMessage(4);
+		AddMessage(FOUND_SUBEXPRESSIONS);
 		string l_outp;
 		PreparingForFunction(l_buf);
 		CalculateLineExpression(l_buf, l_outp); 
 		l_buf = "";
-		AddMessage(5);
+		AddMessage(END_OF_THE_SUBEXPRESSION);
 		l_count = CheckParametrs(l_outp);
 		if(l_count != string::npos || l_outp.empty())
 		{
@@ -265,7 +265,7 @@ void CalculateFunction(string& p_input_str, const string p_in, const uint p_coun
 		string::size_type l_c;
 		try
 		{
-			l_c = sprintf_s(l_char_buf, "%.14le", result);
+			l_c = sprintf_s(l_char_buf, "%.14lge", result);
 		}
 		catch(...)
 		{
@@ -296,7 +296,7 @@ void PreparingForFunction(string& p_input_str)
 {
 	if(m_NoError)
 	{
-		AddMessage(7);
+		AddMessage(CALCULATION_FUNCTIONS);
 		uint i = 0;
 		for(; i < _countof(c_function1); i++)
 			CalculateFunction(p_input_str, c_function1[i], i, 1);

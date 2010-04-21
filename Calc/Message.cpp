@@ -23,6 +23,10 @@ const wstring MessageString[] =
 #ifdef _USE_RPN
 	L"\tRPN:\r\n",
 #endif
+	L"Обнаружено вложенное выражение:\r\n",
+	L"Конец вложенного выражения.\r\n",
+	L"\tЗамена констант:\r\n",
+	L"\tВычисление функций:\r\n",
 };
 #define MESSAGE(code) MessageString[code]
 /*
@@ -52,45 +56,44 @@ inline void AddMessage(uint_8 p_message)
 	wchar_t l_temp_buf[1024];
 	swprintf_s(l_temp_buf, L"AddMessage(%d... ", p_message);
 	m_ErrorString += l_temp_buf;
-	// TODO
-	//if(p_message <= MESSAGE_FIRST || p_message <= MESSAGE_LAST)
-	//	m_ErrorString += L" DEBUG: Unknown Message!";
+	if(p_message >= MESSAGE_LAST)
+		m_ErrorString += L" DEBUG: Unknown Message!";
 #endif
-// TODO	m_ErrorString += MESSAGE(p_message);
-	switch(p_message)
-	{
-		case 0:
-			m_ErrorString += L"\tПодготовка:\r\n";
-			break;
-		case 1:
-			m_ErrorString += L"\tРазбор строки:\r\n";
-			break;
-		case 2:
-			m_ErrorString += L"\tВычисление:\r\n";
-			break;
-#ifdef _USE_RPN
-		case 3:
-			m_ErrorString += L"\tRPN:\r\n";
-			break;
-#endif // _USE_RPN
-		case 4:
-			m_ErrorString += L"Обнаружено вложенное выражение:\r\n";
-			break;
-		case 5:
-			m_ErrorString += L"Конец вложенного выражения.\r\n";
-			break;
-		case 6:
-			m_ErrorString += L"\tЗамена констант:\r\n";
-			break;
-		case 7:
-			m_ErrorString += L"\tВычисление функций:\r\n";
-			break;
-#ifdef _DEBUG
-		default:
-			m_ErrorString += L" DEBUG: Unknown Message!";
-			break;
-#endif
-	}
+	m_ErrorString += MESSAGE(p_message);
+//	switch(p_message)
+//	{
+//		case 0:
+//			m_ErrorString += L"\tПодготовка:\r\n";
+//			break;
+//		case 1:
+//			m_ErrorString += L"\tРазбор строки:\r\n";
+//			break;
+//		case 2:
+//			m_ErrorString += L"\tВычисление:\r\n";
+//			break;
+//#ifdef _USE_RPN
+//		case 3:
+//			m_ErrorString += L"\tRPN:\r\n";
+//			break;
+//#endif // _USE_RPN
+//		case 4:
+//			m_ErrorString += L"Обнаружено вложенное выражение:\r\n";
+//			break;
+//		case 5:
+//			m_ErrorString += L"Конец вложенного выражения.\r\n";
+//			break;
+//		case 6:
+//			m_ErrorString += L"\tЗамена констант:\r\n";
+//			break;
+//		case 7:
+//			m_ErrorString += L"\tВычисление функций:\r\n";
+//			break;
+//#ifdef _DEBUG
+//		default:
+//			m_ErrorString += L" DEBUG: Unknown Message!";
+//			break;
+//#endif
+//	}
 }
 //---------------------------------------------------------------------------
 inline void AddWarning(uint_8 p_message)
