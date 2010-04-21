@@ -3,7 +3,7 @@
 //---------------------------------------------------------------------------
 // TODO: Add support for all blocks and delete this header from project
 //---------------------------------------------------------------------------
-//#define _USE_RPN //TODO: Calculate on RPN string
+//#define _ALLOW_INPUT_RPN_STRING //TODO: Calculate on RPN string
 #ifdef _DEBUG
 	#define _DEBUG_FUNCTION // TODO: delete all blocks after add full function support
 #endif

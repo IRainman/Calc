@@ -10,26 +10,53 @@
 #define _MESSAGE_CPP
 //---------------------------------------------------------------------------
 #include "Message.h"
-#include "Flags.h"
 //---------------------------------------------------------------------------
 wstring m_ErrorString;
 bool m_NoError;
 string::size_type m_Correct_count;
 //---------------------------------------------------------------------------
+const wstring MessageString[] =
+{
+	L"\tПодготовка:\r\n",
+	L"\tРазбор строки:\r\n",
+//	L"\tВычисление:\r\n",
+#ifdef _USE_RPN
+	L"\tRPN:\r\n",
+#endif
+};
+#define MESSAGE(code) MessageString[code]
+/*
+#if (sizeof(MessageString) != ERROR_LAST)
+#error "MessageString and MessageEnum sizes do not match ;)"
+#endif
+*/
+//---------------------------------------------------------------------------
+#ifdef _DEBUG
 void AddMessage(const string& p_string_message)
 {
+	// TODO: убрать 
 	wstring l_message;
 	l_message.assign(p_string_message.begin(), p_string_message.end());
 	m_ErrorString += l_message + L"\r\n";
 }
+#endif
 //---------------------------------------------------------------------------
-void AddMessage(uint_8 p_message)
+//inline void AddMessage(const wstring& p_message)
+//{
+//	m_ErrorString += p_message + L"\r\n";
+//}
+//---------------------------------------------------------------------------
+inline void AddMessage(uint_8 p_message)
 {
 #ifdef _DEBUG
 	wchar_t l_temp_buf[1024];
 	swprintf_s(l_temp_buf, L"AddMessage(%d... ", p_message);
 	m_ErrorString += l_temp_buf;
+	// TODO
+	//if(p_message <= MESSAGE_FIRST || p_message <= MESSAGE_LAST)
+	//	m_ErrorString += L" DEBUG: Unknown Message!";
 #endif
+// TODO	m_ErrorString += MESSAGE(p_message);
 	switch(p_message)
 	{
 		case 0:
@@ -66,7 +93,7 @@ void AddMessage(uint_8 p_message)
 	}
 }
 //---------------------------------------------------------------------------
-void AddWarning(uint_8 p_message)
+inline void AddWarning(uint_8 p_message)
 {
 #ifdef _DEBUG
 	wchar_t l_temp_buf[1024];
@@ -88,7 +115,7 @@ void AddWarning(uint_8 p_message)
 	m_ErrorString += L"\r\n";
 }
 //---------------------------------------------------------------------------
-void AddError(uint_8 p_message, string::size_type p_count/* = -1*/, string::size_type p_1/* = 0*/, string::size_type p_2/* = 0*/)
+/* TODO inline */void AddError(uint_8 p_message, string::size_type p_count/* = -1*/, string::size_type p_1/* = 0*/, string::size_type p_2/* = 0*/)
 {
 	m_NoError = false;
 	wstring l_error;

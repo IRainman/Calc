@@ -32,6 +32,12 @@ protected:
 
 CAboutDlg::CAboutDlg() : CDialog(CAboutDlg::IDD)
 {
+	//std::wstring llll;
+	//getCompileDate(llll);
+	//dlg
+	//dlg.PrepareCtrl(IDC_COMPILED_DATE);
+	//SetDlgItemText(IDC_COMPILED_DATE, llll.c_str());
+	//::SetDlgItemText(AfxGetApp()->m_hThread, IDC_COMPILED_DATE, getCompileDate().c_str());	
 }
 
 void CAboutDlg::DoDataExchange(CDataExchange* pDX)
@@ -153,16 +159,16 @@ HCURSOR CCalcDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
-
 void CCalcDlg::OnEnChangeEditInput()
 {
 	wchar_t l_input[4096];
 	wstring l_output;
-
+//	IsDlgButtonChecked(IDC_CHECK_SCIENTIFIC_RESULT)
+//	PRODUCTVERSION
 	if(GetDlgItemText(IDC_EDIT_INPUT, l_input, 4096))
 	{
-		std::wstring& l_ErrorString = Calculate(l_input, l_output);
-		SetDlgItemText(IDC_EDIT_MESSAGE, l_ErrorString.c_str());
+		std::wstring& l_MessageString = Calculate(l_input, l_output, (IsDlgButtonChecked(IDC_CHECK_SCIENTIFIC_RESULT) == BST_CHECKED));
+		SetDlgItemText(IDC_EDIT_MESSAGE, l_MessageString.c_str());
 		SetDlgItemText(IDC_EDIT_RESULT, l_output.c_str());
 	}
 	else

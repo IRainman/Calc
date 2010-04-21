@@ -26,7 +26,8 @@ const char* c_function1[] = {
 	"asin(",// arcsinus
 	"atan(",// arctangens
 	"log(",// natural logarithm
-	"log10("// base-10 logarithm
+	"log10(",// base-10 logarithm
+	"sqrt("// square root
 	/*"ceil(",
 	"fabs(",
 	"floor(",
@@ -78,6 +79,8 @@ inline long double CalculateParametrs(const uint_8 p_number_of_param, const uint
 					return log(p_params[0]);
 				case 8:
 					return log10(p_params[0]);
+				case 9:
+					return sqrt(p_params[0]);
 #ifdef _DEBUG
 				default:
 					AddError(253);
@@ -273,7 +276,7 @@ void CalculateFunction(string& p_input_str, const string p_in, const uint p_coun
 		}
 		l_temp = l_char_buf;
 		if(m_NoError)
-			m_Correct_count += l_c - (p_in.size() + l_end + 1 - l_start);
+			m_Correct_count += l_c - (p_in.size() + l_end + 1);
 
 		p_input_str.erase(l_start, p_in.size() + l_end + 1);
 		p_input_str.insert(l_start, l_temp);

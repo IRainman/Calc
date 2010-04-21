@@ -123,7 +123,7 @@ inline void CalculateOnLineExpression(stack<char>& c_operations, stack<long doub
 	c_operations.pop();
 }
 //---------------------------------------------------------------------------
-void CalculateLineExpression(string p_input_str, string& p_output_str)
+void CalculateLineExpression(string p_input_str, string& p_output_str, bool p_scientific /*= true*/)
 {
 	int_8 l_current_prioritet = priority_error;
 	stack <char> c_operations;
@@ -253,7 +253,7 @@ void CalculateLineExpression(string p_input_str, string& p_output_str)
 	{
 		AddError(8, l_count);
 	}
-	AddMessage(1);
+	AddMessage(PARSING_A_STRING);
 	while(!c_operations.empty())
 	{
 		CalculateOnLineExpression(c_operations, c_operands);
@@ -261,12 +261,12 @@ void CalculateLineExpression(string p_input_str, string& p_output_str)
 	if(!c_operands.empty())
 	{
 		char l_char_buf[400];
-		sprintf_s(l_char_buf, "%.14le", c_operands.top()); // TODO: Add variable precision
+		sprintf_s(l_char_buf, p_scientific ? "%.14lge" : "%.14g", c_operands.top()); // TODO: Add variable accuracy
 		p_output_str = l_char_buf;
 	}
 }
 //---------------------------------------------------------------------------
-#ifdef _USE_RPN
+#ifdef _ALLOW_INPUT_RPN_STRING
 void CalculateRPN(string& p_to_process_str)
 {
 	/*
@@ -443,6 +443,6 @@ void CalculateRPN(string& p_to_process_str)
 		p_to_process_str = l_char_buf;
 	}
 }
-#endif //_USE_RPN
+#endif //_ALLOW_INPUT_RPN_STRING
 //---------------------------------------------------------------------------
 #endif // _RPN_CPP

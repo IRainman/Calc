@@ -82,21 +82,24 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSM
 CAPTION "О проекте Calc"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    ICON            IDR_MAINFRAME,IDC_STATIC,102,19,21,20
-    LTEXT           "Calc, версия 1.0.7",IDC_STATIC,7,7,62,8,SS_NOPREFIX
-    LTEXT           "© STUDIA2000, Rainman (Соломин А.Л.) 2009 г.",IDC_STATIC,7,17,87,16
-    DEFPUSHBUTTON   "ОК",IDOK,44,37,50,14,WS_GROUP
+    ICON            IDR_MAINFRAME,IDC_STATIC,95,14,21,20
+    LTEXT           "Calc, версия 1.0.7",IDC_STATIC,7,7,98,8,SS_NOPREFIX
+    LTEXT           "© STUDIA2000, Rainman (Соломин А.Л.) 2009 г.",IDC_STATIC,7,16,87,16
+    DEFPUSHBUTTON   "ОК",IDOK,80,37,50,14,WS_GROUP
+    EDITTEXT        IDC_COMPILED_DATE,7,37,66,14,ES_AUTOHSCROLL | ES_READONLY
 END
 
-IDD_CALC_DIALOG DIALOGEX 0, 0, 217, 176
+IDD_CALC_DIALOG DIALOGEX 0, 0, 217, 187
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_APPWINDOW
 CAPTION "Calc"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     EDITTEXT        IDC_EDIT_INPUT,7,7,203,30,ES_MULTILINE | ES_AUTOVSCROLL
-    EDITTEXT        IDC_EDIT_RESULT,7,155,203,14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT_MESSAGE,7,38,203,115,ES_MULTILINE | ES_READONLY | WS_VSCROLL
+    EDITTEXT        IDC_EDIT_RESULT,7,49,203,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_MESSAGE,7,65,203,115,ES_MULTILINE | ES_READONLY | WS_VSCROLL
+    CONTROL         "Научный вид результата",IDC_CHECK_SCIENTIFIC_RESULT,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,38,102,10
 END
 
 
@@ -106,8 +109,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,7,99
- PRODUCTVERSION 1,0,7,99
+ FILEVERSION 1,0,8,100
+ PRODUCTVERSION 1,0,8,100
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -124,12 +127,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "МИЭТ"
             VALUE "FileDescription", "Калькулятор для Windows"
-            VALUE "FileVersion", "1.0.7.99"
+            VALUE "FileVersion", "1.0.8.100"
             VALUE "InternalName", "Calc.exe"
             VALUE "LegalCopyright", "(c) МИЭТ Соломин А.Л. группа МПВ-51. Все права защищены."
             VALUE "OriginalFilename", "Calc.exe"
             VALUE "ProductName", "Calc"
-            VALUE "ProductVersion", "1.0.7.99"
+            VALUE "ProductVersion", "1.0.8.100"
         END
     END
     BLOCK "VarFileInfo"
@@ -151,10 +154,11 @@ BEGIN
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 131
-        VERTGUIDE, 69
+        VERTGUIDE, 105
         TOPMARGIN, 7
         BOTTOMMARGIN, 51
-        HORZGUIDE, 29
+        HORZGUIDE, 24
+        HORZGUIDE, 44
     END
 
     IDD_CALC_DIALOG, DIALOG
@@ -162,7 +166,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 210
         TOPMARGIN, 7
-        BOTTOMMARGIN, 169
+        BOTTOMMARGIN, 180
     END
 END
 #endif    // APSTUDIO_INVOKED
