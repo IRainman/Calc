@@ -2,6 +2,7 @@
 // Microsoft Visual C++ generated include file.
 // Used by Calc.rc
 //
+#define ID_SITE                         2
 #define IDM_ABOUTBOX                    0x0010
 #define IDD_ABOUTBOX                    100
 #define IDS_ABOUTBOX                    101
@@ -12,8 +13,6 @@
 #define IDC_EDIT_LOG                    1002
 #define IDC_EDIT_MESSAGE                1002
 #define IDC_CHECK_AUTO_CALCULATE        1003
-#define IDC_COMPILED_DATE               1004
-#define IDC_EDIT1                       1005
 
 // Next default values for new objects
 // 

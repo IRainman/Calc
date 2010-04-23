@@ -28,6 +28,8 @@ public:
 // Реализация
 protected:
 	DECLARE_MESSAGE_MAP()
+public:
+	afx_msg void OnBnClickedSite();
 };
 
 CAboutDlg::CAboutDlg() : CDialog(CAboutDlg::IDD)
@@ -46,13 +48,10 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
+	ON_BN_CLICKED(ID_SITE, &CAboutDlg::OnBnClickedSite)
 END_MESSAGE_MAP()
 
-
 // диалоговое окно CCalcDlg
-
-
-
 
 CCalcDlg::CCalcDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CCalcDlg::IDD, pParent)
@@ -164,8 +163,6 @@ void CCalcDlg::OnEnChangeEditInput()
 {
 	wchar_t l_input[4096];
 	std::wstring l_output;
-//	IsDlgButtonChecked(IDC_CHECK_SCIENTIFIC_RESULT)
-//	PRODUCTVERSION
 	if(GetDlgItemText(IDC_EDIT_INPUT, l_input, _countof(l_input)))
 	{
 		std::wstring l_input_str(l_input);
@@ -188,4 +185,10 @@ void CCalcDlg::OnEnChangeEditInput()
 		SetDlgItemText(IDC_EDIT_MESSAGE, L"");
 		SetDlgItemText(IDC_EDIT_RESULT, L"");
 	}
+}
+
+void CAboutDlg::OnBnClickedSite()
+{
+	const static wstring url(L"http://80.92.102.122/txt/calc.shtml");
+	::ShellExecute(NULL, NULL, url.c_str(), NULL, NULL, SW_SHOWNORMAL);
 }
