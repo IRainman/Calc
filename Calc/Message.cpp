@@ -17,16 +17,21 @@ string::size_type m_Correct_count;
 //---------------------------------------------------------------------------
 const wstring MessageString[] =
 {
-	L"\tПодготовка:\r\n",
-	L"\tРазбор строки:\r\n",
-//	L"\tВычисление:\r\n",
+// Сообщения
+	L"\tПодготовка:",
+	L"\tРазбор строки:",
+//	L"\tВычисление:",
 #ifdef _USE_RPN
-	L"\tRPN:\r\n",
+	L"\tRPN:",
 #endif
-	L"Обнаружено вложенное выражение:\r\n",
-	L"Конец вложенного выражения.\r\n",
-	L"\tЗамена констант:\r\n",
-	L"\tВычисление функций:\r\n",
+	L"Обнаружено вложенное выражение:",
+	L"Конец вложенного выражения.",
+	L"\tЗамена констант:",
+	L"\tВычисление функций:n",
+// Предупреждения
+	L"число слишком большое, вычисление может быть выполнено с ошибками",
+	L"число имеет слишком высокую точность %d максимальная поддерживаемая точность %d, вычисление может быть выполнено с ошибками",
+// Ошибки
 };
 #define MESSAGE(code) MessageString[code]
 /*
@@ -56,44 +61,10 @@ inline void AddMessage(uint_8 p_message)
 	wchar_t l_temp_buf[1024];
 	swprintf_s(l_temp_buf, L"AddMessage(%d... ", p_message);
 	m_ErrorString += l_temp_buf;
-	if(p_message >= MESSAGE_LAST)
+	if(p_message < MESSAGE_FIRST || p_message > MESSAGE_LAST)
 		m_ErrorString += L" DEBUG: Unknown Message!";
 #endif
-	m_ErrorString += MESSAGE(p_message);
-//	switch(p_message)
-//	{
-//		case 0:
-//			m_ErrorString += L"\tПодготовка:\r\n";
-//			break;
-//		case 1:
-//			m_ErrorString += L"\tРазбор строки:\r\n";
-//			break;
-//		case 2:
-//			m_ErrorString += L"\tВычисление:\r\n";
-//			break;
-//#ifdef _USE_RPN
-//		case 3:
-//			m_ErrorString += L"\tRPN:\r\n";
-//			break;
-//#endif // _USE_RPN
-//		case 4:
-//			m_ErrorString += L"Обнаружено вложенное выражение:\r\n";
-//			break;
-//		case 5:
-//			m_ErrorString += L"Конец вложенного выражения.\r\n";
-//			break;
-//		case 6:
-//			m_ErrorString += L"\tЗамена констант:\r\n";
-//			break;
-//		case 7:
-//			m_ErrorString += L"\tВычисление функций:\r\n";
-//			break;
-//#ifdef _DEBUG
-//		default:
-//			m_ErrorString += L" DEBUG: Unknown Message!";
-//			break;
-//#endif
-//	}
+	m_ErrorString += MESSAGE(p_message) + L"\r\n";
 }
 //---------------------------------------------------------------------------
 inline void AddWarning(uint_8 p_message)
@@ -102,20 +73,10 @@ inline void AddWarning(uint_8 p_message)
 	wchar_t l_temp_buf[1024];
 	swprintf_s(l_temp_buf, L"AddWarning(%d... ", p_message);
 	m_ErrorString += l_temp_buf;
+	if(p_message < WARNING_FIRST || p_message > WARNING_LAST)
+		m_ErrorString += L" DEBUG: Unknown Warning!";
 #endif
-	m_ErrorString += L"Внимание: ";
-	switch(p_message)
-	{
-		case 0:
-			m_ErrorString += L"число слишком большое, вычисление может быть выполнено с ошибками";
-			break;
-#ifdef _DEBUG
-		default:
-			m_ErrorString += L"DEBUG: Unknown Warning!";
-			break;
-#endif
-	}
-	m_ErrorString += L"\r\n";
+	m_ErrorString += L"Внимание: " + MESSAGE(p_message) + L"\r\n";
 }
 //---------------------------------------------------------------------------
 /* TODO inline */void AddError(uint_8 p_message, string::size_type p_count/* = -1*/, string::size_type p_1/* = 0*/, string::size_type p_2/* = 0*/)

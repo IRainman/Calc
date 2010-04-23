@@ -20,7 +20,7 @@ extern void AddError(uint_8 p_message, string::size_type p_count = -1, string::s
 enum MessageEnum
 {
 	MESSAGE_FIRST,
-	PREPARING,
+	PREPARING = MESSAGE_FIRST,
 	PARSING_A_STRING,
 //	CALCULATION,
 #ifdef _USE_RPN
@@ -32,10 +32,12 @@ enum MessageEnum
 	CALCULATION_FUNCTIONS,
 	MESSAGE_LAST = CALCULATION_FUNCTIONS,
 
-	WARNING_FIRST = MESSAGE_LAST,
-	WARNING_LAST,
+	WARNING_FIRST,
+	OUT_OF_RANGE = WARNING_FIRST,
+	LOW_ACCURACY, 
+	WARNING_LAST = LOW_ACCURACY,
 
-	ERROR_FIRST = WARNING_LAST,
+	ERROR_FIRST,
 	ERROR_LAST
 };
 //---------------------------------------------------------------------------

@@ -12,6 +12,14 @@
 #include "RPN.h"
 #include "Message.h"
 //---------------------------------------------------------------------------
+#ifdef max
+#undef max
+#endif
+
+#ifdef min
+#undef min
+#endif
+//---------------------------------------------------------------------------
 inline int_8 GetPriority(char p_sym)
 {
 	switch(p_sym)
@@ -239,13 +247,17 @@ void CalculateLineExpression(string p_input_str, string& p_output_str, bool p_sc
 			if(!l_negative_number || (l_negative_number && l_count_of_num > 1))
 			{
 				c_operands.push(atof(l_operand_string.c_str()));
-			//	if(c_operands.top() >= std::numeric_limits<long double>::max() || c_operands.top() <= std::numeric_limits<long double>::min()) // TODO add normal terms ;)
-				if(c_operands.top() > 999999999999999 || c_operands.top() < -999999999999999) // TODO add normal terms ;)
+				if(c_operands.top() >= std::numeric_limits<long double>::max() || c_operands.top() <= std::numeric_limits<long double>::min())
 				{
-					AddWarning(0);
+					AddWarning(OUT_OF_RANGE);
 				}
 				l_current_prioritet = priority_default;
 			}
+			// TODO
+			//if(l_count_of_num > std::numeric_limits<long double>::max_digits10)
+			//{
+			//	AddWarning(LOW_ACCURACY);
+			//}
 			p_input_str.erase(0, l_count_of_num);
 		}
 	}
@@ -339,7 +351,7 @@ void CalculateRPN(string& p_to_process_str)
 							case '^':
 								if((int)a != a || (int)b != b)
 								{
-									AddWarning(0);
+									AddWarning(LOW_ACCURACY);
 								}
 								c_operands.push((int)a^(int)b);
 								break;
@@ -401,7 +413,7 @@ void CalculateRPN(string& p_to_process_str)
 								case '^':
 									if((int)a != a || (int)b != b)
 									{
-										AddWarning(0);
+										AddWarning(LOW_ACCURACY);
 									}
 									c_operations.push((int)a^(int)b);
 									break;
