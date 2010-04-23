@@ -13,7 +13,7 @@
 //---------------------------------------------------------------------------
 wstring m_ErrorString;
 bool m_NoError;
-string::size_type m_Correct_count;
+wstring::size_type m_Correct_count;
 //---------------------------------------------------------------------------
 const wstring MessageString[] =
 {
@@ -40,18 +40,10 @@ const wstring MessageString[] =
 #endif
 */
 //---------------------------------------------------------------------------
-void AddMessage(const string& p_string_message)
+inline void AddMessage(const wstring& p_message)
 {
-	// TODO: убрать 
-	wstring l_message;
-	l_message.assign(p_string_message.begin(), p_string_message.end());
-	m_ErrorString += l_message + L"\r\n";
+	m_ErrorString += p_message + L"\r\n";
 }
-//---------------------------------------------------------------------------
-//inline void AddMessage(const wstring& p_message)
-//{
-//	m_ErrorString += p_message + L"\r\n";
-//}
 //---------------------------------------------------------------------------
 inline void AddMessage(uint_8 p_message)
 {
@@ -77,7 +69,7 @@ inline void AddWarning(uint_8 p_message)
 	m_ErrorString += L"Внимание: " + MESSAGE(p_message) + L"\r\n";
 }
 //---------------------------------------------------------------------------
-/* TODO inline */void AddError(uint_8 p_message, string::size_type p_count/* = -1*/, string::size_type p_1/* = 0*/, string::size_type p_2/* = 0*/)
+/* TODO inline */void AddError(uint_8 p_message, wstring::size_type p_count/* = -1*/, wstring::size_type p_1/* = 0*/, wstring::size_type p_2/* = 0*/)
 {
 	m_NoError = false;
 	wstring l_error;

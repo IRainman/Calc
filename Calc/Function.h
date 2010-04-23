@@ -4,6 +4,6 @@
 using namespace std;
 #include <string>
 //---------------------------------------------------------------------------
-void PreparingForFunction(string& p_input_str);
+void PreparingForFunction(wstring& p_input_str);
 //---------------------------------------------------------------------------
 #endif

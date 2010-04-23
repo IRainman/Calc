@@ -8,12 +8,11 @@ using namespace std;
 //---------------------------------------------------------------------------
 extern wstring m_ErrorString;
 extern bool m_NoError;
-extern string::size_type m_Correct_count;
-extern void AddMessage(const string& p_string_message);// TODO убрать
-//extern void AddMessage(const wstring& p_message);
+extern wstring::size_type m_Correct_count;
+extern void AddMessage(const wstring& p_message);
 extern void AddMessage(uint_8 p_message);
 extern void AddWarning(uint_8 p_message);
-extern void AddError(uint_8 p_message, string::size_type p_count = -1, string::size_type p_1 = 0, string::size_type p_2 = 0);
+extern void AddError(uint_8 p_message, wstring::size_type p_count = -1, wstring::size_type p_1 = 0, wstring::size_type p_2 = 0);
 //---------------------------------------------------------------------------
 enum MessageEnum
 {

@@ -4,7 +4,7 @@
 using namespace std;
 #include <string>
 //---------------------------------------------------------------------------
-wstring& Calculate(wstring p_input, wstring& p_output, bool p_scientific);
+wstring& Calculate(wstring p_input, wstring& p_output);
 //---------------------------------------------------------------------------
 static wstring getCompileDate()
 {

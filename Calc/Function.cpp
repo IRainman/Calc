@@ -15,39 +15,39 @@
 #include "Function.h"
 #include <stdlib.h>
 //---------------------------------------------------------------------------
-void PreparingForFunction(string& p_input_str);
+void PreparingForFunction(wstring& p_input_str);
 //---------------------------------------------------------------------------
-const char* c_function1[] = {
-	"sin(",// sinus
-	"cos(",// cosinus
-	"exp(",// exponent function, on x=1 return value is e
-	"tan(",// tangens
-	"acos(",// arccosinus
-	"asin(",// arcsinus
-	"atan(",// arctangens
-	"log(",// natural logarithm
-	"log10(",// base-10 logarithm
-	"sqrt("// square root
-	/*"ceil(",
-	"fabs(",
-	"floor(",
-	"ldexp(",
-	"modf("*/
+const wchar_t* c_function1[] = {
+	L"sin(",// sinus
+	L"cos(",// cosinus
+	L"exp(",// exponent function, on x=1 return value is e
+	L"tan(",// tangens
+	L"acos(",// arccosinus
+	L"asin(",// arcsinus
+	L"atan(",// arctangens
+	L"log(",// natural logarithm
+	L"log10(",// base-10 logarithm
+	L"sqrt("// square root
+	/*L"ceil(",
+	L"fabs(",
+	L"floor(",
+	L"ldexp(",
+	L"modf("*/
 };
-const char* c_function2[] = {
-	"pow("// power
-	/*"atan2(",
-	"modf(",
-	"fmod(",
-	"frexp(",*/
+const wchar_t* c_function2[] = {
+	L"pow("// power
+	/*L"atan2(",
+	L"modf(",
+	L"fmod(",
+	L"frexp(",*/
 };
 #ifdef _DEBUG_FUNCTION // TODO: delete this block after add full function support
-const string c_function3[] = {
-	"plus3(",// this function performs addition of three arguments
-	"spin3("// this function performs addition of three arguments
+const wstring c_function3[] = {
+	L"plus3(",// this function performs addition of three arguments
+	L"spin3("// this function performs addition of three arguments
 };
-const string c_function5[] = {
-	"plus5("// this function performs addition of five arguments
+const wstring c_function5[] = {
+	L"plus5("// this function performs addition of five arguments
 };
 #define c_max_argument_of_function 5
 #else
@@ -139,81 +139,81 @@ inline long double CalculateParametrs(const uint_8 p_number_of_param, const uint
 		return 0;
 }
 //---------------------------------------------------------------------------
-inline string::size_type CheckParametrs(string& p_buf)
+inline wstring::size_type CheckParametrs(wstring& p_buf)
 {
-	string::size_type l_count;
-	if(p_buf.c_str()[0] != '-')
+	wstring::size_type l_count;
+	if(p_buf.c_str()[0] != L'-')
 	{
-		l_count = p_buf.find_first_not_of("0123456789.e", 0);
+		l_count = p_buf.find_first_not_of(L"0123456789.e", 0);
 	}
 	else
 	{
-		l_count = p_buf.find_first_not_of("0123456789.e", 1);
+		l_count = p_buf.find_first_not_of(L"0123456789.e", 1);
 	}
 	if(l_count &&
-		(p_buf.find("e+") == l_count - 1
-		|| p_buf.find("e-") == l_count - 1))
+		(p_buf.find(L"e+") == l_count - 1
+		|| p_buf.find(L"e-") == l_count - 1))
 	{
-		return string::npos;
+		return wstring::npos;
 	}
 	return l_count;
 }
 //---------------------------------------------------------------------------
-void GetParametrs(string& l_buf, const string::size_type l_start, const uint_8 p_number_of_param, long double l_params[], string::size_type l_comma_count, const string::size_type l_correct_end)
+void GetParametrs(wstring& l_buf, const wstring::size_type l_start, const uint_8 p_number_of_param, long double l_params[], wstring::size_type l_comma_count, const wstring::size_type l_correct_end)
 {
 	if(l_comma_count >= p_number_of_param)
 	{
 		AddError(10, l_start, p_number_of_param, l_comma_count + 1);
 		return;
 	}
-	string::size_type l_count = CheckParametrs(l_buf);
-	if(l_count != string::npos)
+	wstring::size_type l_count = CheckParametrs(l_buf);
+	if(l_count != wstring::npos)
 	{
 		AddMessage(FOUND_SUBEXPRESSIONS);
-		string l_outp;
+		wstring l_outp;
 		PreparingForFunction(l_buf);
 		CalculateLineExpression(l_buf, l_outp); 
-		l_buf = "";
+		l_buf = L"";
 		AddMessage(END_OF_THE_SUBEXPRESSION);
 		l_count = CheckParametrs(l_outp);
-		if(l_count != string::npos || l_outp.empty())
+		if(l_count != wstring::npos || l_outp.empty())
 		{
 			AddError(18, l_start, l_comma_count + 1, l_correct_end);
 			return;
 		}
-		l_params[l_comma_count] = atof(l_outp.c_str());
+		l_params[l_comma_count] = _wtof(l_outp.c_str());
 		return;
 	}
-	l_params[l_comma_count] = atof(l_buf.c_str());
-	l_buf = "";
+	l_params[l_comma_count] = _wtof(l_buf.c_str());
+	l_buf = L"";
 }
 //---------------------------------------------------------------------------
-void CalculateFunction(string& p_input_str, const string p_in, const uint p_count, const uint_8 p_number_of_param)
+void CalculateFunction(wstring& p_input_str, const wstring p_in, const uint p_count, const uint_8 p_number_of_param)
 {
-	string::size_type l_start;
+	wstring::size_type l_start;
 	l_start = p_input_str.find(p_in);
-	if(l_start == string::npos
+	if(l_start == wstring::npos
 		|| (l_start && (GetPriority(p_input_str.c_str()[l_start - 1]) < priority_bracket
 		|| GetPriority(p_input_str.c_str()[l_start - 1]) == priority_error))
 		|| p_in.empty()
 		)
 		return;
 
-	string::size_type l_end, l_br_start;
-	char l_char_buf[320];
+	wstring::size_type l_end, l_br_start;
+	wchar_t l_char_buf[320];
 	long double l_params[c_max_argument_of_function];
 	do
 	{
-		string l_temp;
-		string l_buf = p_input_str.substr(l_start + p_in.size());
-		string::size_type l_current_comma, l_comma_count = 0;
+		wstring l_temp;
+		wstring l_buf = p_input_str.substr(l_start + p_in.size());
+		wstring::size_type l_current_comma, l_comma_count = 0;
 		uint l_nesting_level = 0;
-		for(string::size_type l_correct_end = 0;;)
+		for(wstring::size_type l_correct_end = 0;;)
 		{
-			l_br_start = l_buf.find("(");
-			l_end = l_buf.find(")");
-			l_current_comma = l_buf.find(",");
-			if(l_br_start != string::npos && l_br_start < l_end && l_current_comma > l_br_start)
+			l_br_start = l_buf.find(L"(");
+			l_end = l_buf.find(L")");
+			l_current_comma = l_buf.find(L",");
+			if(l_br_start != wstring::npos && l_br_start < l_end && l_current_comma > l_br_start)
 			{
 				l_correct_end += l_br_start + 1;
 				l_temp += l_buf.substr(0, l_br_start + 1);
@@ -222,7 +222,7 @@ void CalculateFunction(string& p_input_str, const string p_in, const uint p_coun
 			}
 			else if(!l_nesting_level)
 			{
-				if(l_current_comma != string::npos && l_current_comma < l_end)
+				if(l_current_comma != wstring::npos && l_current_comma < l_end)
 				{
 					l_temp += l_buf.substr(0, l_current_comma);
 					l_correct_end += l_current_comma + 1;
@@ -235,7 +235,7 @@ void CalculateFunction(string& p_input_str, const string p_in, const uint p_coun
 					GetParametrs(l_temp, l_start, p_number_of_param, l_params, l_comma_count, l_correct_end);
 					l_comma_count++;
 				}
-				else if(l_current_comma == string::npos || l_current_comma > l_end)
+				else if(l_current_comma == wstring::npos || l_current_comma > l_end)
 				{
 					l_temp += l_buf.substr(0, l_end);
 					if(l_temp.empty())
@@ -262,10 +262,10 @@ void CalculateFunction(string& p_input_str, const string p_in, const uint p_coun
 			return;
 		}
 		long double result = CalculateParametrs(p_number_of_param, p_count, l_params);
-		string::size_type l_c;
+		wstring::size_type l_c;
 		try
 		{
-			l_c = sprintf_s(l_char_buf, "%.25lge", result);
+			l_c = swprintf_s(l_char_buf, L"%.25lge", result);
 		}
 		catch(...)
 		{
@@ -282,7 +282,7 @@ void CalculateFunction(string& p_input_str, const string p_in, const uint p_coun
 		p_input_str.insert(l_start, l_temp);
 
 		l_start = p_input_str.find(p_in);
-		if(l_start == string::npos
+		if(l_start == wstring::npos
 			|| (l_start && (GetPriority(p_input_str.c_str()[l_start - 1]) < priority_bracket
 			|| GetPriority(p_input_str.c_str()[l_start - 1]) == priority_error))
 			|| p_in.empty()
@@ -292,7 +292,7 @@ void CalculateFunction(string& p_input_str, const string p_in, const uint p_coun
 	while(true);
 }
 //---------------------------------------------------------------------------
-void PreparingForFunction(string& p_input_str)
+void PreparingForFunction(wstring& p_input_str)
 {
 	if(m_NoError)
 	{
@@ -317,17 +317,17 @@ void PreparingForFunction(string& p_input_str)
 	}
 	if(m_NoError)
 	{
-		string::size_type l_count = 0;
+		wstring::size_type l_count = 0;
 		for(; l_count < p_input_str.size() - 1; l_count++)
 		{
 			if(GetPriority(p_input_str.c_str()[l_count]) == priority_default
-				&& p_input_str.c_str()[l_count + 1] == '(')
+				&& p_input_str.c_str()[l_count + 1] == L'(')
 			{
 				AddError(30, l_count - 1);
 			}
 		}
-		l_count = p_input_str.find_first_not_of("0123456789+-*/^.e()", 0);
-		if(l_count != string::npos)
+		l_count = p_input_str.find_first_not_of(L"0123456789+-*/^.e()", 0);
+		if(l_count != wstring::npos)
 		{
 			AddError(2, l_count);
 		}

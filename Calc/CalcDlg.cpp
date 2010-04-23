@@ -106,6 +106,7 @@ BOOL CCalcDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Мелкий значок
 
 	// TODO: добавьте дополнительную инициализацию
+	CheckDlgButton(IDC_CHECK_AUTO_CALCULATE, TRUE);
 
 	return TRUE;  // возврат значения TRUE, если фокус не передан элементу управления
 }
@@ -162,14 +163,25 @@ HCURSOR CCalcDlg::OnQueryDragIcon()
 void CCalcDlg::OnEnChangeEditInput()
 {
 	wchar_t l_input[4096];
-	wstring l_output;
+	std::wstring l_output;
 //	IsDlgButtonChecked(IDC_CHECK_SCIENTIFIC_RESULT)
 //	PRODUCTVERSION
-	if(GetDlgItemText(IDC_EDIT_INPUT, l_input, 4096))
+	if(GetDlgItemText(IDC_EDIT_INPUT, l_input, _countof(l_input)))
 	{
-		std::wstring& l_MessageString = Calculate(l_input, l_output, (IsDlgButtonChecked(IDC_CHECK_SCIENTIFIC_RESULT) == BST_CHECKED));
-		SetDlgItemText(IDC_EDIT_MESSAGE, l_MessageString.c_str());
-		SetDlgItemText(IDC_EDIT_RESULT, l_output.c_str());
+		std::wstring l_input_str(l_input);
+		bool isManualcalculate = false;
+		if((IsDlgButtonChecked(IDC_CHECK_AUTO_CALCULATE) == BST_UNCHECKED) &
+			(l_input_str.size() > 1) & (l_input_str[l_input_str.size() - 1] == L'='))
+		{
+			l_input_str.erase(l_input_str.size() - 1);
+			isManualcalculate = true;
+		}
+		if((IsDlgButtonChecked(IDC_CHECK_AUTO_CALCULATE) == BST_CHECKED) || isManualcalculate)
+		{
+			std::wstring& l_MessageString = Calculate(l_input_str, l_output);
+			SetDlgItemText(IDC_EDIT_MESSAGE, l_MessageString.c_str());
+			SetDlgItemText(IDC_EDIT_RESULT, l_output.c_str());
+		}
 	}
 	else
 	{

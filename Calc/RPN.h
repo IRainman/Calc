@@ -21,11 +21,11 @@ enum
 	priority_error			= -1
 };
 //---------------------------------------------------------------------------
-extern int_8 GetPriority(char p_sym);
-extern void CalculateOnLineExpression(stack<char>& c_operations, stack<long double>& c_operands);
-extern void CalculateLineExpression(string p_input_str, string& p_output_str, bool p_scientific = true);
+extern int_8 GetPriority(wchar_t p_sym);
+extern void CalculateOnLineExpression(stack<wchar_t>& c_operations, stack<long double>& c_operands);
+extern void CalculateLineExpression(wstring p_input_str, wstring& p_output_str);
 #ifdef _USE_RPN
-extern void CalculateRPN(string& p_to_process_str);
+extern void CalculateRPN(wstring& p_to_process_str);
 #endif //_USE_RPN
 //---------------------------------------------------------------------------
 #endif

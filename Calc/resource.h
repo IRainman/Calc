@@ -11,7 +11,7 @@
 #define IDC_EDIT_RESULT                 1001
 #define IDC_EDIT_LOG                    1002
 #define IDC_EDIT_MESSAGE                1002
-#define IDC_CHECK_SCIENTIFIC_RESULT     1003
+#define IDC_CHECK_AUTO_CALCULATE        1003
 #define IDC_COMPILED_DATE               1004
 #define IDC_EDIT1                       1005
 
