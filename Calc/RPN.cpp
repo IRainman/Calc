@@ -82,13 +82,13 @@ inline void CalculateOnLineExpression(stack<wchar_t>& c_operations, stack<long d
 		{
 			switch(c_operations.top())// first get operations
 			{
-				case '^':
+				case L'^':
 					c_operands.push(pow(a,b));
 					break;
-				case '*':
+				case L'*':
 					c_operands.push(a*b);
 					break;
-				case '/':
+				case L'/':
 					if(!b)
 					{
 						AddError(5);
@@ -98,10 +98,10 @@ inline void CalculateOnLineExpression(stack<wchar_t>& c_operations, stack<long d
 						c_operands.push(a/b);
 					}
 					break;
-				case '+':
+				case L'+':
 					c_operands.push(a+b);
 					break;
-				case '-':
+				case L'-':
 					c_operands.push(a-b);
 					break;
 #ifdef _DEBUG
@@ -115,7 +115,7 @@ inline void CalculateOnLineExpression(stack<wchar_t>& c_operations, stack<long d
 		{
 			switch(c_operations.top())
 			{
-				case '-':
+				case L'-':
 					c_operands.push(-b);
 					break;
 
@@ -140,9 +140,9 @@ void CalculateLineExpression(wstring p_input_str, wstring& p_output_str)
 	wstring::size_type l_count = 0;
 	for(; p_input_str.size(); l_count++)
 	{
-		l_negative_number = (l_current_prioritet > 0) & (p_input_str.c_str()[0] == L'-') & (p_input_str.c_str()[1] != L'(');
+		l_negative_number = l_current_prioritet > 0 && p_input_str.c_str()[0] == L'-' && p_input_str.c_str()[1] != L'(';
 		l_current_prioritet = GetPriority(p_input_str.c_str()[0]);
-		if(l_current_prioritet & !l_negative_number)
+		if(l_current_prioritet && !l_negative_number)
 		{
 			if(c_operations.empty())
 			{
@@ -198,7 +198,7 @@ void CalculateLineExpression(wstring p_input_str, wstring& p_output_str)
 							d)	закpывающая кpуглая скобка выталкивает все опеpации из стека до ближайшей откpывающей скобки,
 							сами скобки в выходную стpоку не пеpеписываются, а уничтожают дpуг дpуга. 
 							*/
-							if(GetPriority((c_operations.top()) == priority_bracket) & (c_operations.top() != L')'))
+							if(GetPriority((c_operations.top()) == priority_bracket) && c_operations.top() != L')')
 							{
 								c_operations.pop();
 								p_input_str.erase(0,1);
@@ -244,7 +244,7 @@ void CalculateLineExpression(wstring p_input_str, wstring& p_output_str)
 			{
 				AddError(26, l_count, l_countE);
 			}
-			if(!l_negative_number || (l_negative_number & (l_count_of_num > 1)))
+			if(!l_negative_number || (l_negative_number && (l_count_of_num > 1)))
 			{
 				c_operands.push(_wtof(l_operand_string.c_str()));
 				if(c_operands.top() >= std::numeric_limits<long double>::max() || c_operands.top() <= std::numeric_limits<long double>::min())
