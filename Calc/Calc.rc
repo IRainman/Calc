@@ -80,11 +80,11 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSM
 CAPTION "О проекте Calc"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    ICON            IDR_MAINFRAME,IDC_STATIC,95,14,21,20
-    LTEXT           "Calc, версия 1.0.7",IDC_STATIC,7,7,98,8,SS_NOPREFIX
+    ICON            IDR_MAINFRAME,IDC_STATIC,95,14,20,20
+    LTEXT           "Calc, версия 1.0.10",IDC_STATIC,7,7,98,8,SS_NOPREFIX
     LTEXT           "© STUDIA2000, Rainman (Соломин А.Л.) 2009 г.",IDC_STATIC,7,16,87,16
     DEFPUSHBUTTON   "ОК",IDOK,80,37,50,14,WS_GROUP
-    EDITTEXT        IDC_COMPILED_DATE,7,37,66,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_COMPILED_DATE,7,37,66,14,ES_AUTOHSCROLL | ES_READONLY | NOT WS_VISIBLE
 END
 
 IDD_CALC_DIALOG DIALOGEX 0, 0, 217, 187
@@ -107,8 +107,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,9,102
- PRODUCTVERSION 1,0,9,102
+ FILEVERSION 1,0,10,104
+ PRODUCTVERSION 1,0,10,104
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -125,12 +125,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "МИЭТ"
             VALUE "FileDescription", "Калькулятор для Windows"
-            VALUE "FileVersion", "1.0.9.102"
+            VALUE "FileVersion", "1.0.10.104"
             VALUE "InternalName", "Calc.exe"
             VALUE "LegalCopyright", "(c) МИЭТ Соломин А.Л. группа МПВ-51. Все права защищены."
             VALUE "OriginalFilename", "Calc.exe"
             VALUE "ProductName", "Calc"
-            VALUE "ProductVersion", "1.0.9.102"
+            VALUE "ProductVersion", "1.0.10.104"
         END
     END
     BLOCK "VarFileInfo"
