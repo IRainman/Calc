@@ -265,7 +265,7 @@ void CalculateFunction(string& p_input_str, const string p_in, const uint p_coun
 		string::size_type l_c;
 		try
 		{
-			l_c = sprintf_s(l_char_buf, "%.14lge", result);
+			l_c = sprintf_s(l_char_buf, "%.25lge", result);
 		}
 		catch(...)
 		{
@@ -313,9 +313,7 @@ void PreparingForFunction(string& p_input_str)
 		for(; i < _countof(c_function5); i++)
 			CalculateFunction(p_input_str, c_function5[i], i, 5);
 #endif
-#ifdef _DEBUG
 		AddMessage(p_input_str.c_str());
-#endif
 	}
 	if(m_NoError)
 	{

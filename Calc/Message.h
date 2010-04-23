@@ -9,9 +9,7 @@ using namespace std;
 extern wstring m_ErrorString;
 extern bool m_NoError;
 extern string::size_type m_Correct_count;
-#ifdef _DEBUG
 extern void AddMessage(const string& p_string_message);// TODO убрать
-#endif
 //extern void AddMessage(const wstring& p_message);
 extern void AddMessage(uint_8 p_message);
 extern void AddWarning(uint_8 p_message);

@@ -27,7 +27,7 @@ const wstring MessageString[] =
 	L"Обнаружено вложенное выражение:",
 	L"Конец вложенного выражения.",
 	L"\tЗамена констант:",
-	L"\tВычисление функций:n",
+	L"\tВычисление функций:",
 // Предупреждения
 	L"число слишком большое, вычисление может быть выполнено с ошибками",
 	L"число имеет слишком высокую точность %d максимальная поддерживаемая точность %d, вычисление может быть выполнено с ошибками",
@@ -40,7 +40,6 @@ const wstring MessageString[] =
 #endif
 */
 //---------------------------------------------------------------------------
-#ifdef _DEBUG
 void AddMessage(const string& p_string_message)
 {
 	// TODO: убрать 
@@ -48,7 +47,6 @@ void AddMessage(const string& p_string_message)
 	l_message.assign(p_string_message.begin(), p_string_message.end());
 	m_ErrorString += l_message + L"\r\n";
 }
-#endif
 //---------------------------------------------------------------------------
 //inline void AddMessage(const wstring& p_message)
 //{
