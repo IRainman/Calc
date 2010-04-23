@@ -198,7 +198,7 @@ void CalculateLineExpression(wstring p_input_str, wstring& p_output_str)
 							d)	закpывающая кpуглая скобка выталкивает все опеpации из стека до ближайшей откpывающей скобки,
 							сами скобки в выходную стpоку не пеpеписываются, а уничтожают дpуг дpуга. 
 							*/
-							if(GetPriority((c_operations.top()) == priority_bracket) && c_operations.top() != L')')
+							if(GetPriority(c_operations.top()) == priority_bracket && c_operations.top() != L')')
 							{
 								c_operations.pop();
 								p_input_str.erase(0,1);
@@ -244,7 +244,7 @@ void CalculateLineExpression(wstring p_input_str, wstring& p_output_str)
 			{
 				AddError(26, l_count, l_countE);
 			}
-			if(!l_negative_number || (l_negative_number && (l_count_of_num > 1)))
+			if(!l_negative_number || (l_negative_number && l_count_of_num > 1))
 			{
 				c_operands.push(_wtof(l_operand_string.c_str()));
 				if(c_operands.top() >= std::numeric_limits<long double>::max() || c_operands.top() <= std::numeric_limits<long double>::min())
