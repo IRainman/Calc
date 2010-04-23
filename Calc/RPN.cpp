@@ -12,7 +12,7 @@
 #include "RPN.h"
 #include "Message.h"
 //---------------------------------------------------------------------------
-int_8 GetPriority(char p_sym)
+inline int_8 GetPriority(char p_sym)
 {
 	switch(p_sym)
 	{

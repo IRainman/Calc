@@ -16,13 +16,11 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// русский resources
+// Russian (Russia) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_RUS)
-#ifdef _WIN32
 LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
 #pragma code_page(1251)
-#endif //_WIN32
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -109,8 +107,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,8,100
- PRODUCTVERSION 1,0,8,100
+ FILEVERSION 1,0,9,102
+ PRODUCTVERSION 1,0,9,102
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -127,12 +125,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "МИЭТ"
             VALUE "FileDescription", "Калькулятор для Windows"
-            VALUE "FileVersion", "1.0.8.100"
+            VALUE "FileVersion", "1.0.9.102"
             VALUE "InternalName", "Calc.exe"
             VALUE "LegalCopyright", "(c) МИЭТ Соломин А.Л. группа МПВ-51. Все права защищены."
             VALUE "OriginalFilename", "Calc.exe"
             VALUE "ProductName", "Calc"
-            VALUE "ProductVersion", "1.0.8.100"
+            VALUE "ProductVersion", "1.0.9.102"
         END
     END
     BLOCK "VarFileInfo"
@@ -148,7 +146,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO
 BEGIN
     IDD_ABOUTBOX, DIALOG
     BEGIN
@@ -177,12 +175,12 @@ END
 // String Table
 //
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_ABOUTBOX            "&О проекте Calc..."
 END
 
-#endif    // русский resources
+#endif    // Russian (Russia) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
