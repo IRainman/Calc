@@ -6,11 +6,12 @@ using namespace std;
 //---------------------------------------------------------------------------
 wstring& Calculate(wstring p_input, wstring& p_output);
 //---------------------------------------------------------------------------
-static wstring getCompileDate()
-{
-	COleDateTime tCompileDate;
-	tCompileDate.ParseDateTime(_T(__DATE__), LOCALE_NOUSEROVERRIDE, 1033);
-	return tCompileDate.Format(_T("%Y-%m-%d")).GetString();
-}
+//static wstring getCompileDate()
+//{
+//	TODO
+//	COleDateTime tCompileDate;
+//	tCompileDate.ParseDateTime(_T(__DATE__), LOCALE_NOUSEROVERRIDE, 1033);
+//	return tCompileDate.Format(_T("%Y-%m-%d")).GetString();
+//}
 //---------------------------------------------------------------------------
 #endif

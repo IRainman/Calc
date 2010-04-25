@@ -107,8 +107,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,1,1,110
- PRODUCTVERSION 1,1,1,110
+ FILEVERSION 1,1,1,111
+ PRODUCTVERSION 1,1,1,111
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -123,14 +123,14 @@ BEGIN
     BEGIN
         BLOCK "041904e3"
         BEGIN
-            VALUE "CompanyName", "МИЭТ"
+            VALUE "CompanyName", "STUDIA2000"
             VALUE "FileDescription", "Калькулятор для Windows"
-            VALUE "FileVersion", "1.1.1.110"
+            VALUE "FileVersion", "1.1.1.111"
             VALUE "InternalName", "Calc.exe"
             VALUE "LegalCopyright", "© STUDIA2000 Rainman (Соломин А.Л.). Все права защищены."
             VALUE "OriginalFilename", "Calc.exe"
             VALUE "ProductName", "Calc"
-            VALUE "ProductVersion", "1.1.1.110"
+            VALUE "ProductVersion", "1.1.1.111"
         END
     END
     BLOCK "VarFileInfo"

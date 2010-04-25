@@ -25,6 +25,7 @@ inline int_8 GetPriority(wchar_t p_sym)
 	switch(p_sym)
 	{
 		case L'^':
+//		case L'%':
 			return priority_power;
 
 		case L'*':
@@ -82,6 +83,8 @@ inline void CalculateOnLineExpression(stack<wchar_t>& c_operations, stack<long d
 		{
 			switch(c_operations.top())// first get operations
 			{
+				//case L'%':
+				//	c_operands.push((static_cast<int>a)%(static_cast<int>b));
 				case L'^':
 					c_operands.push(pow(a,b));
 					break;
@@ -90,13 +93,9 @@ inline void CalculateOnLineExpression(stack<wchar_t>& c_operations, stack<long d
 					break;
 				case L'/':
 					if(!b)
-					{
 						AddError(5);
-					}
 					else
-					{
 						c_operands.push(a/b);
-					}
 					break;
 				case L'+':
 					c_operands.push(a+b);
@@ -273,7 +272,7 @@ void CalculateLineExpression(wstring p_input_str, wstring& p_output_str)
 	if(!c_operands.empty())
 	{
 		wchar_t l_char_buf[100];
-		swprintf_s(l_char_buf, L"%.14g", c_operands.top()); // TODO: Add variable accuracy
+		swprintf_s(l_char_buf, L"%.16g", c_operands.top()); // TODO: Add variable accuracy
 		p_output_str = l_char_buf;
 	}
 }
@@ -346,14 +345,8 @@ void CalculateRPN(wstring& p_to_process_str)
 						switch(input.c_str()[l_count])
 						{
 							case 'P':
-								c_operands.push(pow(a,b));
-								break;
 							case '^':
-								if((int)a != a || (int)b != b)
-								{
-									AddWarning(LOW_ACCURACY);
-								}
-								c_operands.push((int)a^(int)b);
+								c_operands.push(pow(a,b));
 								break;
 							case '*':
 								c_operands.push(a*b);
