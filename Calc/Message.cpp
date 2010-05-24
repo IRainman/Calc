@@ -50,12 +50,10 @@ const wstring MessageString[] =
 	L"число имеет слишком высокую точность %d максимальная поддерживаемая точность %d, вычисление может быть выполнено с ошибками",
 // Ошибки
 };
+//---------------------------------------------------------------------------
+static_assert(_countof(MessageString) != ERROR_LAST, "MessageString and MessageEnum sizes do not match ;) Check them out!");
+//---------------------------------------------------------------------------
 #define MESSAGE(code) MessageString[code]
-/*
-#if (sizeof(MessageString) != ERROR_LAST)
-#error "MessageString and MessageEnum sizes do not match ;)"
-#endif
-*/
 //---------------------------------------------------------------------------
 inline void AddMessage(const wstring& p_message)
 {
