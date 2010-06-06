@@ -66,7 +66,7 @@ inline void AddMessage(uint_8 p_message)
 	wchar_t l_temp_buf[1024];
 	swprintf_s(l_temp_buf, L"AddMessage(%d... ", p_message);
 	m_ErrorString += l_temp_buf;
-	if(p_message < MESSAGE_FIRST || p_message > MESSAGE_LAST)
+	if(p_message < MESSAGE_FIRST) | (p_message > MESSAGE_LAST)
 		m_ErrorString += L" DEBUG: Unknown Message!";
 #endif
 	m_ErrorString += MESSAGE(p_message) + L"\r\n";
@@ -78,7 +78,7 @@ inline void AddWarning(uint_8 p_message)
 	wchar_t l_temp_buf[1024];
 	swprintf_s(l_temp_buf, L"AddWarning(%d... ", p_message);
 	m_ErrorString += l_temp_buf;
-	if(p_message < WARNING_FIRST || p_message > WARNING_LAST)
+	if(p_message < WARNING_FIRST) | (p_message > WARNING_LAST)
 		m_ErrorString += L" DEBUG: Unknown Warning!";
 #endif
 	m_ErrorString += L"Внимание: " + MESSAGE(p_message) + L"\r\n";
