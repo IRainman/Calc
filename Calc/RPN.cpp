@@ -110,7 +110,7 @@ inline void CalculateOnLineExpression(stack<wchar_t>& c_operations, stack<long d
 					break;
 				case L'/':
 					if(!b)
-						AddError(5);
+						AddError(DIVIDE_BY_ZERO);
 					else
 						c_operands.push(a/b);
 					break;
@@ -122,7 +122,7 @@ inline void CalculateOnLineExpression(stack<wchar_t>& c_operations, stack<long d
 					break;
 #ifdef _DEBUG
 				default:
-					AddError(254);
+					AddError(INTERNAL_PROCESSING_ERROR_CalculateOnLineExpression);
 					break;
 #endif
 			}
@@ -136,9 +136,9 @@ inline void CalculateOnLineExpression(stack<wchar_t>& c_operations, stack<long d
 					break;
 
 				default:
-					AddError(4); // TODO delete this!
+					AddError(CONSECUTIVE_RECORD_NUMBER_OF_TRANSACTIONS); // TODO delete this!
 #ifdef _DEBUG
-					AddError(254);
+					AddError(INTERNAL_PROCESSING_ERROR_CalculateOnLineExpression);
 #endif
 					break;
 			}
@@ -246,8 +246,9 @@ void CalculateLineExpression(wstring p_input_str, wstring& p_output_str)
 					|| (p_input_str.c_str()[l_count_of_num - 1] == L'e'
 					&& (p_input_str.c_str()[l_count_of_num] == L'+' || p_input_str.c_str()[l_count_of_num] == L'-')))
 				{
-					if(p_input_str.c_str()[l_count_of_num - 1] == L'e')
-						l_countE++;
+					// Возможная избыточность! уже есть ошибка MULTI_E_SYMBOL_IN_NUMBER
+					//if(p_input_str.c_str()[l_count_of_num - 1] == L'e')
+					//	l_countE++;
 
 					l_operand_string += p_input_str.c_str()[l_count_of_num];
 				}
@@ -256,10 +257,11 @@ void CalculateLineExpression(wstring p_input_str, wstring& p_output_str)
 					break;
 				}
 			}
-			if(l_countE > 1)
-			{
-				AddError(26, l_count, l_countE);
-			}
+			// Возможная избыточность! уже есть ошибка MULTI_E_SYMBOL_IN_NUMBER
+			//if(l_countE > 1)
+			//{
+			//	AddError(AFTER_E_FOUND_ANOTHER_E, l_count, l_countE);
+			//}
 			if(!l_negative_number || (l_negative_number && l_count_of_num > 1))
 			{
 				c_operands.push(_wtof(l_operand_string.c_str()));
@@ -277,9 +279,9 @@ void CalculateLineExpression(wstring p_input_str, wstring& p_output_str)
 			p_input_str.erase(0, l_count_of_num);
 		}
 	}
-	if((l_current_prioritet > priority_bracket) & !l_negative_number)
+	if(l_current_prioritet > priority_bracket && !l_negative_number)
 	{
-		AddError(8, l_count);
+		AddError(NOT_ENOUGHT_OPERANDS, l_count);
 	}
 	AddMessage(PARSING_A_STRING);
 	while(!c_operations.empty())
@@ -371,7 +373,7 @@ void CalculateRPN(wstring& p_to_process_str)
 							case '/':
 								if(!b)
 								{
-									AddError(5);
+									AddError(DIVIDE_BY_ZERO);
 								}
 								c_operands.push(a/b);
 								break;
@@ -399,7 +401,7 @@ void CalculateRPN(wstring& p_to_process_str)
 								break;
 
 							default:
-								AddError(8);
+								AddError(NOT_ENOUGHT_OPERANDS);
 								/*char l_op = input.c_str()[l_count++];
 								string temp = "";
 								for(; l_count < input.size(); l_count++)
@@ -433,7 +435,7 @@ void CalculateRPN(wstring& p_to_process_str)
 								case '/':
 									if(!b)
 									{
-										AddError(5);
+										AddError(DIVIDE_BY_ZERO);
 										return false;
 									}
 									c_operations.push(a/b);

@@ -34,7 +34,7 @@
 //---------------------------------------------------------------------------
 void PreparingForFunction(wstring& p_input_str);
 //---------------------------------------------------------------------------
-const wchar_t* c_function1[] = {
+const static wchar_t* c_function1[] = {
 	L"sin(",// sinus
 	L"cos(",// cosinus
 	L"exp(",// exponent function, on x=1 return value is e
@@ -51,7 +51,7 @@ const wchar_t* c_function1[] = {
 	L"ldexp(",
 	L"modf("*/
 };
-const wchar_t* c_function2[] = {
+const static wchar_t* c_function2[] = {
 	L"pow("// power
 	/*L"atan2(",
 	L"modf(",
@@ -100,7 +100,7 @@ inline long double CalculateParametrs(const uint_8 p_number_of_param, const uint
 					return sqrt(p_params[0]);
 #ifdef _DEBUG
 				default:
-					AddError(253);
+					AddError(INTERNAL_PROCESSING_ERROR_CalculateFunction);
 					return 0;
 #endif
 			}
@@ -112,7 +112,7 @@ inline long double CalculateParametrs(const uint_8 p_number_of_param, const uint
 					return pow(p_params[0], p_params[1]);
 #ifdef _DEBUG
 				default:
-					AddError(253);
+					AddError(INTERNAL_PROCESSING_ERROR_CalculateFunction);
 					return 0;
 #endif
 			}
@@ -126,7 +126,7 @@ inline long double CalculateParametrs(const uint_8 p_number_of_param, const uint
 					return p_params[0] + p_params[1] + p_params[2];
 #ifdef _DEBUG
 				default:
-					AddError(253);
+					AddError(INTERNAL_PROCESSING_ERROR_CalculateFunction);
 					return 0;
 #endif
 			}
@@ -139,7 +139,7 @@ inline long double CalculateParametrs(const uint_8 p_number_of_param, const uint
 					return p_params[0] + p_params[1] + p_params[2] + p_params[3] + p_params[4];
 #ifdef _DEBUG
 				default:
-					AddError(253);
+					AddError(INTERNAL_PROCESSING_ERROR_CalculateFunction);
 					return 0;
 #endif
 			}
@@ -147,7 +147,7 @@ inline long double CalculateParametrs(const uint_8 p_number_of_param, const uint
 #endif
 #ifdef _DEBUG
 		default:
-			AddError(253);
+			AddError(INTERNAL_PROCESSING_ERROR_CalculateFunction);
 			return 0;
 #endif
 	}
@@ -180,7 +180,7 @@ void GetParametrs(wstring& l_buf, const wstring::size_type l_start, const uint_8
 {
 	if(l_comma_count >= p_number_of_param)
 	{
-		AddError(10, l_start, p_number_of_param, l_comma_count + 1);
+		AddError(FUNCTION_INVALID_NUMBER_OF_ARGUMENTS, l_start, p_number_of_param, l_comma_count + 1);
 		return;
 	}
 	wstring::size_type l_count = CheckParametrs(l_buf);
@@ -195,7 +195,7 @@ void GetParametrs(wstring& l_buf, const wstring::size_type l_start, const uint_8
 		l_count = CheckParametrs(l_outp);
 		if(l_count != wstring::npos || l_outp.empty())
 		{
-			AddError(18, l_start, l_comma_count + 1, l_correct_end);
+			AddError(LOST_FUNCTION_ARGUMENTS, l_start, l_comma_count + 1, l_correct_end);
 			return;
 		}
 		l_params[l_comma_count] = _wtof(l_outp.c_str());
@@ -246,7 +246,7 @@ void CalculateFunction(wstring& p_input_str, const wstring p_in, const uint p_co
 					l_buf = l_buf.substr(l_current_comma + 1);
 					if(l_temp.empty())
 					{
-						AddError(18, l_start, l_comma_count + 1, l_correct_end);
+						AddError(LOST_FUNCTION_ARGUMENTS, l_start, l_comma_count + 1, l_correct_end);
 						return;
 					}
 					GetParametrs(l_temp, l_start, p_number_of_param, l_params, l_comma_count, l_correct_end);
@@ -257,7 +257,7 @@ void CalculateFunction(wstring& p_input_str, const wstring p_in, const uint p_co
 					l_temp += l_buf.substr(0, l_end);
 					if(l_temp.empty())
 					{
-						AddError(18, l_start, l_comma_count + 1, l_correct_end);
+						AddError(LOST_FUNCTION_ARGUMENTS, l_start, l_comma_count + 1, l_correct_end);
 						return;
 					}
 					l_end += l_correct_end;
@@ -275,7 +275,7 @@ void CalculateFunction(wstring& p_input_str, const wstring p_in, const uint p_co
 		}
 		if(l_comma_count != p_number_of_param - 1)
 		{
-			AddError(10, l_start, p_number_of_param, l_comma_count + 1);
+			AddError(FUNCTION_INVALID_NUMBER_OF_ARGUMENTS, l_start, p_number_of_param, l_comma_count + 1);
 			return;
 		}
 		long double result = CalculateParametrs(p_number_of_param, p_count, l_params);
@@ -287,7 +287,7 @@ void CalculateFunction(wstring& p_input_str, const wstring p_in, const uint p_co
 		catch(...)
 		{
 #ifdef _DEBUG
-			AddError(253);
+			AddError(INTERNAL_PROCESSING_ERROR_CalculateFunction);
 			return;
 #endif
 		}
@@ -340,13 +340,13 @@ void PreparingForFunction(wstring& p_input_str)
 			if(GetPriority(p_input_str.c_str()[l_count]) == priority_default
 				&& p_input_str.c_str()[l_count + 1] == L'(')
 			{
-				AddError(30, l_count - 1);
+				AddError(NUMBERS_BEFORE_OPENING_BRACKET, l_count - 1);
 			}
 		}
 		l_count = p_input_str.find_first_not_of(L"0123456789+-*/^.e()", 0);
 		if(l_count != wstring::npos)
 		{
-			AddError(2, l_count);
+			AddError(INVALID_CHARACTER_AFTER_VAR_AND_FUNC, l_count);
 		}
 	}
 }

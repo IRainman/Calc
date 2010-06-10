@@ -167,8 +167,8 @@ void CCalcDlg::OnEnChangeEditInput()
 	{
 		std::wstring l_input_str(l_input);
 		bool isManualcalculate = false;
-		if((IsDlgButtonChecked(IDC_CHECK_AUTO_CALCULATE) == BST_UNCHECKED) &
-			(l_input_str.size() > 1) & (l_input_str[l_input_str.size() - 1] == L'='))
+		if(IsDlgButtonChecked(IDC_CHECK_AUTO_CALCULATE) == BST_UNCHECKED &&
+			l_input_str.size() > 1 && l_input_str[l_input_str.size() - 1] == L'=')
 		{
 			l_input_str.erase(l_input_str.size() - 1);
 			isManualcalculate = true;
