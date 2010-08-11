@@ -45,18 +45,44 @@ const static wchar_t* c_function1[] = {
 	L"log(",// natural logarithm
 	L"log10(",// base-10 logarithm
 	L"sqrt("// square root
-	/*L"ceil(",
-	L"fabs(",
-	L"floor(",
-	L"ldexp(",
-	L"modf("*/
+	//L"ceil(",
+	//L"fabs(",
+	//L"floor(",
+	//L"ldexp(",
+	//L"modf("
+};
+typedef long double (* fptr1) (long double);
+const static fptr1 f_function1[] = {
+	sin,
+	cos,
+	exp,
+	tan,
+	acos,
+	asin,
+	atan,
+	log,
+	log10,
+	sqrt,
+	//ceil,
+	//fabs,
+	//floor,
+	//ldexp,
+	//modf
 };
 const static wchar_t* c_function2[] = {
 	L"pow("// power
-	/*L"atan2(",
-	L"modf(",
-	L"fmod(",
-	L"frexp(",*/
+	//L"atan2(",
+	//L"modf(",
+	//L"fmod(",
+	//L"frexp(",
+};
+typedef long double (* fptr2) (long double, long double);
+const static fptr2 f_function2[] = {
+	pow,// power
+	//atan2,
+	//modf,
+	//fmod,
+	//frexp,
 };
 #ifdef _DEBUG_FUNCTION // TODO: delete this block after add full function support
 const wstring c_function3[] = {
@@ -71,79 +97,19 @@ const wstring c_function5[] = {
 #define c_max_argument_of_function 2
 #endif
 //---------------------------------------------------------------------------
-inline long double CalculateParametrs(const uint_8 p_number_of_param, const uint p_count, long double p_params[])
+inline long double CalculateParametrs(const uint_8 p_number_of_param, const uint p_function_number, long double p_params[])
 {
 	switch(p_number_of_param)
 	{
 		case 1:
-			switch(p_count)
-			{
-				case 0:
-					return sin(p_params[0]);
-				case 1:
-					return cos(p_params[0]);
-				case 2:
-					return exp(p_params[0]);
-				case 3:
-					return tan(p_params[0]);
-				case 4:
-					return acos(p_params[0]);
-				case 5:
-					return asin(p_params[0]);
-				case 6:
-					return atan(p_params[0]);
-				case 7:
-					return log(p_params[0]);
-				case 8:
-					return log10(p_params[0]);
-				case 9:
-					return sqrt(p_params[0]);
-#ifdef _DEBUG
-				default:
-					AddError(INTERNAL_PROCESSING_ERROR_CalculateFunction);
-					return 0;
-#endif
-			}
-			break;
+			return f_function1[p_function_number](p_params[0]);
 		case 2:
-			switch(p_count)
-			{
-				case 0:
-					return pow(p_params[0], p_params[1]);
-#ifdef _DEBUG
-				default:
-					AddError(INTERNAL_PROCESSING_ERROR_CalculateFunction);
-					return 0;
-#endif
-			}
-			break;
+			return f_function2[p_function_number](p_params[0], p_params[1]);
 #ifdef _DEBUG_FUNCTION // TODO: delete this block after add full function support
-		case 3:// FOR TESTS ONLY, its not real function
-			switch(p_count)
-			{
-				case 0:
-				case 1:
-					return p_params[0] + p_params[1] + p_params[2];
-#ifdef _DEBUG
-				default:
-					AddError(INTERNAL_PROCESSING_ERROR_CalculateFunction);
-					return 0;
-#endif
-			}
-			break;
-		case 5:// FOR TESTS ONLY, its not real function
-			switch(p_count)
-			{
-				case 0:
-				case 1:
-					return p_params[0] + p_params[1] + p_params[2] + p_params[3] + p_params[4];
-#ifdef _DEBUG
-				default:
-					AddError(INTERNAL_PROCESSING_ERROR_CalculateFunction);
-					return 0;
-#endif
-			}
-			break;
+		case 3:
+			return p_params[0] + p_params[1] + p_params[2];
+		case 5:
+			return p_params[0] + p_params[1] + p_params[2] + p_params[3] + p_params[4];
 #endif
 #ifdef _DEBUG
 		default:
@@ -151,9 +117,11 @@ inline long double CalculateParametrs(const uint_8 p_number_of_param, const uint
 			return 0;
 #endif
 	}
+	
 	// TODO: delete this block after add full function support
 		m_NoError = false;
 		return 0;
+	// ~TODO 
 }
 //---------------------------------------------------------------------------
 inline wstring::size_type CheckParametrs(wstring& p_buf)
