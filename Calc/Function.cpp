@@ -9,7 +9,7 @@
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.	
+ * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -17,9 +17,9 @@
  */
 
 #ifdef _MSC_VER
-	#include "stdafx.h"
+#include "stdafx.h"
 /*#elif __INTEL_COMPILER
-	// TODO */
+    // TODO */
 
 // #endif // The comment is used in a silly Visual Studio :)
 //---------------------------------------------------------------------------
@@ -34,7 +34,8 @@
 //---------------------------------------------------------------------------
 void PreparingForFunction(wstring& p_input_str);
 //---------------------------------------------------------------------------
-const static wchar_t* c_function1[] = {
+const static wchar_t* c_function1[] =
+{
 	L"sin(",// sinus
 	L"cos(",// cosinus
 	L"exp(",// exponent function, on x=1 return value is e
@@ -51,8 +52,9 @@ const static wchar_t* c_function1[] = {
 	//L"ldexp(",
 	//L"modf("
 };
-typedef long double (* fptr1) (long double);
-const static fptr1 f_function1[] = {
+typedef long double(* fptr1)(long double);
+const static fptr1 f_function1[] =
+{
 	sin,
 	cos,
 	exp,
@@ -69,15 +71,17 @@ const static fptr1 f_function1[] = {
 	//ldexp,
 	//modf
 };
-const static wchar_t* c_function2[] = {
+const static wchar_t* c_function2[] =
+{
 	L"pow("// power
 	//L"atan2(",
 	//L"modf(",
 	//L"fmod(",
 	//L"frexp(",
 };
-typedef long double (* fptr2) (long double, long double);
-const static fptr2 f_function2[] = {
+typedef long double(* fptr2)(long double, long double);
+const static fptr2 f_function2[] =
+{
 	pow,// power
 	//atan2,
 	//modf,
@@ -85,11 +89,13 @@ const static fptr2 f_function2[] = {
 	//frexp,
 };
 #ifdef _DEBUG_FUNCTION // TODO: delete this block after add full function support
-const wstring c_function3[] = {
+const wstring c_function3[] =
+{
 	L"plus3(",// this function performs addition of three arguments
 	L"spin3("// this function performs addition of three arguments
 };
-const wstring c_function5[] = {
+const wstring c_function5[] =
+{
 	L"plus5("// this function performs addition of five arguments
 };
 #define c_max_argument_of_function 5
@@ -99,7 +105,7 @@ const wstring c_function5[] = {
 //---------------------------------------------------------------------------
 inline long double CalculateParametrs(const uint_8 p_number_of_param, const uint p_function_number, long double p_params[])
 {
-	switch(p_number_of_param)
+	switch (p_number_of_param)
 	{
 		case 1:
 			return f_function1[p_function_number](p_params[0]);
@@ -119,15 +125,15 @@ inline long double CalculateParametrs(const uint_8 p_number_of_param, const uint
 	}
 	
 	// TODO: delete this block after add full function support
-		m_NoError = false;
-		return 0;
-	// ~TODO 
+	m_NoError = false;
+	return 0;
+	// ~TODO
 }
 //---------------------------------------------------------------------------
 inline wstring::size_type CheckParametrs(wstring& p_buf)
 {
 	wstring::size_type l_count;
-	if(p_buf.c_str()[0] != L'-')
+	if (p_buf.c_str()[0] != L'-')
 	{
 		l_count = p_buf.find_first_not_of(L"0123456789.e", 0);
 	}
@@ -135,9 +141,9 @@ inline wstring::size_type CheckParametrs(wstring& p_buf)
 	{
 		l_count = p_buf.find_first_not_of(L"0123456789.e", 1);
 	}
-	if(l_count &&
-		(p_buf.find(L"e+") == l_count - 1
-		|| p_buf.find(L"e-") == l_count - 1))
+	if (l_count &&
+	        (p_buf.find(L"e+") == l_count - 1
+	         || p_buf.find(L"e-") == l_count - 1))
 	{
 		return wstring::npos;
 	}
@@ -146,22 +152,22 @@ inline wstring::size_type CheckParametrs(wstring& p_buf)
 //---------------------------------------------------------------------------
 void GetParametrs(wstring& l_buf, const wstring::size_type l_start, const uint_8 p_number_of_param, long double l_params[], wstring::size_type l_comma_count, const wstring::size_type l_correct_end)
 {
-	if(l_comma_count >= p_number_of_param)
+	if (l_comma_count >= p_number_of_param)
 	{
 		AddError(FUNCTION_INVALID_NUMBER_OF_ARGUMENTS, l_start, p_number_of_param, l_comma_count + 1);
 		return;
 	}
 	wstring::size_type l_count = CheckParametrs(l_buf);
-	if(l_count != wstring::npos)
+	if (l_count != wstring::npos)
 	{
 		AddMessage(FOUND_SUBEXPRESSIONS);
 		wstring l_outp;
 		PreparingForFunction(l_buf);
-		CalculateLineExpression(l_buf, l_outp); 
+		CalculateLineExpression(l_buf, l_outp);
 		l_buf = L"";
 		AddMessage(END_OF_THE_SUBEXPRESSION);
 		l_count = CheckParametrs(l_outp);
-		if(l_count != wstring::npos || l_outp.empty())
+		if (l_count != wstring::npos || l_outp.empty())
 		{
 			AddError(LOST_FUNCTION_ARGUMENTS, l_start, l_comma_count + 1, l_correct_end);
 			return;
@@ -177,13 +183,13 @@ void CalculateFunction(wstring& p_input_str, const wstring p_in, const uint p_co
 {
 	wstring::size_type l_start;
 	l_start = p_input_str.find(p_in);
-	if(l_start == wstring::npos
-		|| (l_start && (GetPriority(p_input_str.c_str()[l_start - 1]) < priority_bracket
-		|| GetPriority(p_input_str.c_str()[l_start - 1]) == priority_error))
-		|| p_in.empty()
-		)
+	if (l_start == wstring::npos
+	        || (l_start && (GetPriority(p_input_str.c_str()[l_start - 1]) < priority_bracket
+	                        || GetPriority(p_input_str.c_str()[l_start - 1]) == priority_error))
+	        || p_in.empty()
+	   )
 		return;
-
+		
 	wstring::size_type l_end, l_br_start;
 	wchar_t l_char_buf[320];
 	long double l_params[c_max_argument_of_function];
@@ -193,26 +199,26 @@ void CalculateFunction(wstring& p_input_str, const wstring p_in, const uint p_co
 		wstring l_buf = p_input_str.substr(l_start + p_in.size());
 		wstring::size_type l_current_comma, l_comma_count = 0;
 		uint l_nesting_level = 0;
-		for(wstring::size_type l_correct_end = 0;;)
+		for (wstring::size_type l_correct_end = 0;;)
 		{
 			l_br_start = l_buf.find(L"(");
 			l_end = l_buf.find(L")");
 			l_current_comma = l_buf.find(L",");
-			if(l_br_start != wstring::npos && l_br_start < l_end && l_current_comma > l_br_start)
+			if (l_br_start != wstring::npos && l_br_start < l_end && l_current_comma > l_br_start)
 			{
 				l_correct_end += l_br_start + 1;
 				l_temp += l_buf.substr(0, l_br_start + 1);
 				l_buf = l_buf.substr(l_br_start + 1);
 				l_nesting_level++;
 			}
-			else if(!l_nesting_level)
+			else if (!l_nesting_level)
 			{
-				if(l_current_comma != wstring::npos && l_current_comma < l_end)
+				if (l_current_comma != wstring::npos && l_current_comma < l_end)
 				{
 					l_temp += l_buf.substr(0, l_current_comma);
 					l_correct_end += l_current_comma + 1;
 					l_buf = l_buf.substr(l_current_comma + 1);
-					if(l_temp.empty())
+					if (l_temp.empty())
 					{
 						AddError(LOST_FUNCTION_ARGUMENTS, l_start, l_comma_count + 1, l_correct_end);
 						return;
@@ -220,10 +226,10 @@ void CalculateFunction(wstring& p_input_str, const wstring p_in, const uint p_co
 					GetParametrs(l_temp, l_start, p_number_of_param, l_params, l_comma_count, l_correct_end);
 					l_comma_count++;
 				}
-				else if(l_current_comma == wstring::npos || l_current_comma > l_end)
+				else if (l_current_comma == wstring::npos || l_current_comma > l_end)
 				{
 					l_temp += l_buf.substr(0, l_end);
-					if(l_temp.empty())
+					if (l_temp.empty())
 					{
 						AddError(LOST_FUNCTION_ARGUMENTS, l_start, l_comma_count + 1, l_correct_end);
 						return;
@@ -241,7 +247,7 @@ void CalculateFunction(wstring& p_input_str, const wstring p_in, const uint p_co
 				l_nesting_level--;
 			}
 		}
-		if(l_comma_count != p_number_of_param - 1)
+		if (l_comma_count != p_number_of_param - 1)
 		{
 			AddError(FUNCTION_INVALID_NUMBER_OF_ARGUMENTS, l_start, p_number_of_param, l_comma_count + 1);
 			return;
@@ -252,7 +258,7 @@ void CalculateFunction(wstring& p_input_str, const wstring p_in, const uint p_co
 		{
 			l_c = swprintf_s(l_char_buf, L"%.25lge", result);
 		}
-		catch(...)
+		catch (...)
 		{
 #ifdef _DEBUG
 			AddError(INTERNAL_PROCESSING_ERROR_CalculateFunction);
@@ -260,59 +266,59 @@ void CalculateFunction(wstring& p_input_str, const wstring p_in, const uint p_co
 #endif
 		}
 		l_temp = l_char_buf;
-		if(m_NoError)
+		if (m_NoError)
 			m_Correct_count += l_c - (p_in.size() + l_end + 1);
-
+			
 		p_input_str.erase(l_start, p_in.size() + l_end + 1);
 		p_input_str.insert(l_start, l_temp);
-
+		
 		l_start = p_input_str.find(p_in);
-		if(l_start == wstring::npos
-			|| (l_start && (GetPriority(p_input_str.c_str()[l_start - 1]) < priority_bracket
-			|| GetPriority(p_input_str.c_str()[l_start - 1]) == priority_error))
-			|| p_in.empty()
-			)
+		if (l_start == wstring::npos
+		        || (l_start && (GetPriority(p_input_str.c_str()[l_start - 1]) < priority_bracket
+		                        || GetPriority(p_input_str.c_str()[l_start - 1]) == priority_error))
+		        || p_in.empty()
+		   )
 			return;
 	}
-	while(true);
+	while (true);
 }
 //---------------------------------------------------------------------------
 void PreparingForFunction(wstring& p_input_str)
 {
-	if(m_NoError)
+	if (m_NoError)
 	{
 		AddMessage(CALCULATION_FUNCTIONS);
 		uint i = 0;
-		for(; i < _countof(c_function1); i++)
+		for (; i < _countof(c_function1); i++)
 			CalculateFunction(p_input_str, c_function1[i], i, 1);
-
+			
 		i = 0;
-		for(; i < _countof(c_function2); i++)
+		for (; i < _countof(c_function2); i++)
 			CalculateFunction(p_input_str, c_function2[i], i, 2);
 #ifdef _DEBUG_FUNCTION // TODO: delete this block after add full function support
 		i = 0;
-		for(; i < _countof(c_function3); i++)
+		for (; i < _countof(c_function3); i++)
 			CalculateFunction(p_input_str, c_function3[i], i, 3);
-
+			
 		i = 0;
-		for(; i < _countof(c_function5); i++)
+		for (; i < _countof(c_function5); i++)
 			CalculateFunction(p_input_str, c_function5[i], i, 5);
 #endif
 		AddMessage(p_input_str.c_str());
 	}
-	if(m_NoError)
+	if (m_NoError)
 	{
 		wstring::size_type l_count = 0;
-		for(; l_count < p_input_str.size() - 1; l_count++)
+		for (; l_count < p_input_str.size() - 1; l_count++)
 		{
-			if(GetPriority(p_input_str.c_str()[l_count]) == priority_default
-				&& p_input_str.c_str()[l_count + 1] == L'(')
+			if (GetPriority(p_input_str.c_str()[l_count]) == priority_default
+			        && p_input_str.c_str()[l_count + 1] == L'(')
 			{
 				AddError(NUMBERS_BEFORE_OPENING_BRACKET, l_count - 1);
 			}
 		}
 		l_count = p_input_str.find_first_not_of(L"0123456789+-*/^.e()", 0);
-		if(l_count != wstring::npos)
+		if (l_count != wstring::npos)
 		{
 			AddError(INVALID_CHARACTER_AFTER_VAR_AND_FUNC, l_count);
 		}

@@ -9,7 +9,7 @@
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.	
+ * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -17,9 +17,9 @@
  */
 
 #ifdef _MSC_VER
-	#include "stdafx.h"
+#include "stdafx.h"
 /*#elif __INTEL_COMPILER
-	// TODO */
+    // TODO */
 
 // #endif // The comment is used in a silly Visual Studio :)
 //---------------------------------------------------------------------------
@@ -102,7 +102,7 @@ inline void AddMessage(uint_8 p_message)
 	wchar_t l_temp_buf[1024];
 	swprintf_s(l_temp_buf, L"AddMessage(%d... ", p_message);
 	m_ErrorString += l_temp_buf;
-	if(p_message < MESSAGE_FIRST || p_message > MESSAGE_LAST)
+	if (p_message < MESSAGE_FIRST || p_message > MESSAGE_LAST)
 		m_ErrorString += L" DEBUG: Unknown Message!";
 #endif
 	m_ErrorString += MESSAGE(p_message) + L"\r\n";
@@ -114,7 +114,7 @@ inline void AddWarning(uint_8 p_message)
 	wchar_t l_temp_buf[1024];
 	swprintf_s(l_temp_buf, L"AddWarning(%d... ", p_message);
 	m_ErrorString += l_temp_buf;
-	if(p_message < WARNING_FIRST || p_message > WARNING_LAST)
+	if (p_message < WARNING_FIRST || p_message > WARNING_LAST)
 		m_ErrorString += L" DEBUG: Unknown Warning!";
 #endif
 	m_ErrorString += L"Внимание: " + MESSAGE(p_message) + L"\r\n";
@@ -124,7 +124,7 @@ void AddError(uint_8 p_message, wstring::size_type p_count/* = -1*/, wstring::si
 {
 	m_NoError = false;
 	wchar_t l_pre_message_buf[1024];
-	if(p_count == -1)
+	if (p_count == -1)
 	{
 		swprintf_s(l_pre_message_buf, L"Ошибка: %s\r\n", MESSAGE(p_message).c_str());
 	}
@@ -138,7 +138,7 @@ void AddError(uint_8 p_message, wstring::size_type p_count/* = -1*/, wstring::si
 	wchar_t l_temp_buf[1024];
 	swprintf_s(l_temp_buf, L"AddError(%d... %s", p_message, l_out_buf);
 	m_ErrorString += l_temp_buf;
-	if(p_message < ERROR_FIRST || p_message > ERROR_LAST)
+	if (p_message < ERROR_FIRST || p_message > ERROR_LAST)
 		m_ErrorString += L" DEBUG: Unknown Error!";
 #else
 	m_ErrorString += l_out_buf;

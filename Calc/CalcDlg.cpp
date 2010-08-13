@@ -16,20 +16,20 @@
 
 class CAboutDlg : public CDialog
 {
-public:
-	CAboutDlg();
-
+	public:
+		CAboutDlg();
+		
 // Данные диалогового окна
-	enum { IDD = IDD_ABOUTBOX };
-
+		enum { IDD = IDD_ABOUTBOX };
+		
 	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // поддержка DDX/DDV
-
+		virtual void DoDataExchange(CDataExchange* pDX);    // поддержка DDX/DDV
+		
 // Реализация
-protected:
-	DECLARE_MESSAGE_MAP()
-public:
-	afx_msg void OnBnClickedSite();
+	protected:
+		DECLARE_MESSAGE_MAP()
+	public:
+		afx_msg void OnBnClickedSite();
 };
 
 CAboutDlg::CAboutDlg() : CDialog(CAboutDlg::IDD)
@@ -39,7 +39,7 @@ CAboutDlg::CAboutDlg() : CDialog(CAboutDlg::IDD)
 	//dlg
 	//dlg.PrepareCtrl(IDC_COMPILED_DATE);
 	//SetDlgItemText(IDC_COMPILED_DATE, llll.c_str());
-	//::SetDlgItemText(AfxGetApp()->m_hThread, IDC_COMPILED_DATE, getCompileDate().c_str());	
+	//::SetDlgItemText(AfxGetApp()->m_hThread, IDC_COMPILED_DATE, getCompileDate().c_str());
 }
 
 void CAboutDlg::DoDataExchange(CDataExchange* pDX)
@@ -78,13 +78,13 @@ END_MESSAGE_MAP()
 BOOL CCalcDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
-
+	
 	// Добавление пункта "О программе..." в системное меню.
-
+	
 	// IDM_ABOUTBOX должен быть в пределах системной команды.
 	ASSERT((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
 	ASSERT(IDM_ABOUTBOX < 0xF000);
-
+	
 	CMenu* pSysMenu = GetSystemMenu(FALSE);
 	if (pSysMenu != NULL)
 	{
@@ -98,15 +98,15 @@ BOOL CCalcDlg::OnInitDialog()
 			pSysMenu->AppendMenu(MF_STRING, IDM_ABOUTBOX, strAboutMenu);
 		}
 	}
-
+	
 	// Задает значок для этого диалогового окна. Среда делает это автоматически,
 	//  если главное окно приложения не является диалоговым
-	SetIcon(m_hIcon, TRUE);			// Крупный значок
-	SetIcon(m_hIcon, FALSE);		// Мелкий значок
-
+	SetIcon(m_hIcon, TRUE);         // Крупный значок
+	SetIcon(m_hIcon, FALSE);        // Мелкий значок
+	
 	// TODO: добавьте дополнительную инициализацию
 	CheckDlgButton(IDC_CHECK_AUTO_CALCULATE, TRUE);
-
+	
 	return TRUE;  // возврат значения TRUE, если фокус не передан элементу управления
 }
 
@@ -132,9 +132,9 @@ void CCalcDlg::OnPaint()
 	if (IsIconic())
 	{
 		CPaintDC dc(this); // контекст устройства для рисования
-
+		
 		SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
-
+		
 		// Выравнивание значка по центру клиентского прямоугольника
 		int cxIcon = GetSystemMetrics(SM_CXICON);
 		int cyIcon = GetSystemMetrics(SM_CYICON);
@@ -142,7 +142,7 @@ void CCalcDlg::OnPaint()
 		GetClientRect(&rect);
 		int x = (rect.Width() - cxIcon + 1) / 2;
 		int y = (rect.Height() - cyIcon + 1) / 2;
-
+		
 		// Нарисуйте значок
 		dc.DrawIcon(x, y, m_hIcon);
 	}
@@ -163,17 +163,17 @@ void CCalcDlg::OnEnChangeEditInput()
 {
 	wchar_t l_input[4096];
 	std::wstring l_output;
-	if(GetDlgItemText(IDC_EDIT_INPUT, l_input, _countof(l_input)))
+	if (GetDlgItemText(IDC_EDIT_INPUT, l_input, _countof(l_input)))
 	{
 		std::wstring l_input_str(l_input);
 		bool isManualcalculate = false;
-		if(IsDlgButtonChecked(IDC_CHECK_AUTO_CALCULATE) == BST_UNCHECKED &&
-			l_input_str.size() > 1 && l_input_str[l_input_str.size() - 1] == L'=')
+		if (IsDlgButtonChecked(IDC_CHECK_AUTO_CALCULATE) == BST_UNCHECKED &&
+		        l_input_str.size() > 1 && l_input_str[l_input_str.size() - 1] == L'=')
 		{
 			l_input_str.erase(l_input_str.size() - 1);
 			isManualcalculate = true;
 		}
-		if((IsDlgButtonChecked(IDC_CHECK_AUTO_CALCULATE) == BST_CHECKED) || isManualcalculate)
+		if ((IsDlgButtonChecked(IDC_CHECK_AUTO_CALCULATE) == BST_CHECKED) || isManualcalculate)
 		{
 			std::wstring& l_MessageString = Calculate(l_input_str, l_output);
 			SetDlgItemText(IDC_EDIT_MESSAGE, l_MessageString.c_str());

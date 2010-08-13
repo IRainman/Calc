@@ -5,10 +5,10 @@
 #pragma once
 
 #ifndef __AFXWIN_H__
-	#error "включить stdafx.h до включения этого файла в PCH"
+#error "включить stdafx.h до включения этого файла в PCH"
 #endif
 
-#include "resource.h"		// основные символы
+#include "resource.h"       // основные символы
 
 
 // CCalcApp:
@@ -17,16 +17,16 @@
 
 class CCalcApp : public CWinAppEx
 {
-public:
-	CCalcApp();
-
+	public:
+		CCalcApp();
+		
 // Переопределение
 	public:
-	virtual BOOL InitInstance();
-
+		virtual BOOL InitInstance();
+		
 // Реализация
 
-	DECLARE_MESSAGE_MAP()
+		DECLARE_MESSAGE_MAP()
 };
 
 extern CCalcApp theApp;

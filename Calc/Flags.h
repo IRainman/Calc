@@ -9,7 +9,7 @@
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.	
+ * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -23,7 +23,7 @@
 //---------------------------------------------------------------------------
 //#define _ALLOW_INPUT_RPN_STRING //TODO: Calculate on RPN string
 #ifdef _DEBUG
-	#define _DEBUG_FUNCTION // TODO: delete all blocks after add full function support
+#define _DEBUG_FUNCTION // TODO: delete all blocks after add full function support
 #endif
 //---------------------------------------------------------------------------
 #endif

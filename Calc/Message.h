@@ -9,7 +9,7 @@
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.	
+ * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -46,12 +46,12 @@ enum MessageEnum
 	REPLACEMENTS_OF_THE_CONSTANTS,
 	CALCULATION_FUNCTIONS,
 	MESSAGE_LAST = CALCULATION_FUNCTIONS,
-
+	
 	WARNING_FIRST,// Предупреждения
 	OUT_OF_RANGE = WARNING_FIRST,
-//	LOW_ACCURACY, 
+//	LOW_ACCURACY,
 	WARNING_LAST = OUT_OF_RANGE,
-
+	
 	ERROR_FIRST,// Ошибки
 	INVALID_CHARACTER = ERROR_FIRST,
 	NON_BRACKET_BALANCE,
