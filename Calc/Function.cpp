@@ -256,7 +256,7 @@ void CalculateFunction(wstring& p_input_str, const wstring p_in, const uint p_co
 		wstring::size_type l_c;
 		try
 		{
-			l_c = swprintf_s(l_char_buf, L"%.25lge", result);
+			l_c = swprintf_s(l_char_buf, L"%.25g", result);
 		}
 		catch (...)
 		{
@@ -285,8 +285,9 @@ void CalculateFunction(wstring& p_input_str, const wstring p_in, const uint p_co
 //---------------------------------------------------------------------------
 void PreparingForFunction(wstring& p_input_str)
 {
-	if (m_NoError)
-	{
+	if (!m_NoError)
+		return;
+
 		AddMessage(CALCULATION_FUNCTIONS);
 		uint i = 0;
 		for (; i < _countof(c_function1); i++)
@@ -305,9 +306,10 @@ void PreparingForFunction(wstring& p_input_str)
 			CalculateFunction(p_input_str, c_function5[i], i, 5);
 #endif
 		AddMessage(p_input_str.c_str());
-	}
-	if (m_NoError)
-	{
+
+	if (!m_NoError)
+		return;
+
 		wstring::size_type l_count = 0;
 		for (; l_count < p_input_str.size() - 1; l_count++)
 		{
@@ -322,7 +324,6 @@ void PreparingForFunction(wstring& p_input_str)
 		{
 			AddError(INVALID_CHARACTER_AFTER_VAR_AND_FUNC, l_count);
 		}
-	}
 }
 //---------------------------------------------------------------------------
 #endif // _FUNCTION_CPP

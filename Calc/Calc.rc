@@ -81,7 +81,7 @@ CAPTION "О проекте Calc"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,102,14,20,20
-    LTEXT           "Calc, версия 1.2.0",IDC_STATIC,7,7,105,8,SS_NOPREFIX
+    LTEXT           "Calc, версия 1.2.1",IDC_STATIC,7,7,105,8,SS_NOPREFIX
     LTEXT           "© STUDIA2000, Rainman (Соломин А.Л.) 2010 г.",IDC_STATIC,7,16,87,16
     DEFPUSHBUTTON   "ОК",IDOK,87,37,50,14,WS_GROUP
     DEFPUSHBUTTON   "Зайти на сайт",ID_SITE,7,37,56,14,WS_GROUP
