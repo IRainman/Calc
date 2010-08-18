@@ -79,25 +79,15 @@ inline int_8 GetPriority(wchar_t p_sym)
 inline void CalculateOnLineExpression(stack<wchar_t>& c_operations, stack<long double>& c_operands)
 {
 	// TODO: refactoring this function
-	bool set_a = false, set_b = false;// don't use flags
-	long double a, b;
 // 2st!!! get operand's
 	if (!c_operands.empty())
 	{
-		set_b = true;
-		b = c_operands.top();
+		const long double b = c_operands.top();
 		c_operands.pop();
-	}
-	if (!c_operands.empty())
-	{
-		set_a = true;
-		a = c_operands.top();
-		c_operands.pop();
-	}
-	if (set_b)
-	{
-		if (set_a)
+		if (!c_operands.empty())
 		{
+			const long double a = c_operands.top();
+			c_operands.pop();
 			switch (c_operations.top()) // first get operations
 			{
 					//case L'%':
