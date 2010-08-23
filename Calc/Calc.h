@@ -10,7 +10,6 @@
 
 #include "resource.h"       // основные символы
 
-
 // CCalcApp:
 // О реализации данного класса см. Calc.cpp
 //
@@ -25,7 +24,6 @@ class CCalcApp : public CWinAppEx
 		virtual BOOL InitInstance();
 		
 // Реализация
-
 		DECLARE_MESSAGE_MAP()
 };
 
