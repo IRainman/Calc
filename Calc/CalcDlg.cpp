@@ -188,6 +188,6 @@ void CCalcDlg::OnEnChangeEditInput()
 
 void CAboutDlg::OnBnClickedSite()
 {
-	const static wstring url(L"http://80.92.102.122/txt/calc.shtml");
+	const static wstring url(L"http://studia2000.sytes.net/txt/calc.shtml");
 	::ShellExecute(NULL, NULL, url.c_str(), NULL, NULL, SW_SHOWNORMAL);
 }
