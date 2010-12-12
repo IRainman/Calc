@@ -16,7 +16,7 @@
  *
  */
 
-#ifdef _MSC_VER
+//#ifdef _MSC_VER
 #include "stdafx.h"
 /*#elif __INTEL_COMPILER
     // TODO */

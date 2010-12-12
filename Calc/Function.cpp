@@ -16,7 +16,7 @@
  *
  */
 
-#ifdef _MSC_VER
+//#ifdef _MSC_VER
 #include "stdafx.h"
 /*#elif __INTEL_COMPILER
     // TODO */
@@ -179,7 +179,7 @@ void GetParametrs(wstring& l_buf, const wstring::size_type l_start, const uint_8
 	l_buf = L"";
 }
 //---------------------------------------------------------------------------
-void CalculateFunction(wstring& p_input_str, const wstring p_in, const uint p_count, const uint_8 p_number_of_param)
+void CalculateFunction(wstring& p_input_str, const wstring& p_in, const uint p_count, const uint_8 p_number_of_param)
 {
 	wstring::size_type l_start;
 	l_start = p_input_str.find(p_in);
