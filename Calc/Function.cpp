@@ -287,43 +287,43 @@ void PreparingForFunction(wstring& p_input_str)
 {
 	if (!m_NoError)
 		return;
-
-		AddMessage(CALCULATION_FUNCTIONS);
-		uint i = 0;
-		for (; i < _countof(c_function1); i++)
-			CalculateFunction(p_input_str, c_function1[i], i, 1);
-			
-		i = 0;
-		for (; i < _countof(c_function2); i++)
-			CalculateFunction(p_input_str, c_function2[i], i, 2);
+		
+	AddMessage(CALCULATION_FUNCTIONS);
+	uint i = 0;
+	for (; i < _countof(c_function1); i++)
+		CalculateFunction(p_input_str, c_function1[i], i, 1);
+		
+	i = 0;
+	for (; i < _countof(c_function2); i++)
+		CalculateFunction(p_input_str, c_function2[i], i, 2);
 #ifdef _DEBUG_FUNCTION // TODO: delete this block after add full function support
-		i = 0;
-		for (; i < _countof(c_function3); i++)
-			CalculateFunction(p_input_str, c_function3[i], i, 3);
-			
-		i = 0;
-		for (; i < _countof(c_function5); i++)
-			CalculateFunction(p_input_str, c_function5[i], i, 5);
+	i = 0;
+	for (; i < _countof(c_function3); i++)
+		CalculateFunction(p_input_str, c_function3[i], i, 3);
+		
+	i = 0;
+	for (; i < _countof(c_function5); i++)
+		CalculateFunction(p_input_str, c_function5[i], i, 5);
 #endif
-		AddMessage(p_input_str.c_str());
-
+	AddMessage(p_input_str.c_str());
+	
 	if (!m_NoError)
 		return;
-
-		wstring::size_type l_count = 0;
-		for (; l_count < p_input_str.size() - 1; l_count++)
+		
+	wstring::size_type l_count = 0;
+	for (; l_count < p_input_str.size() - 1; l_count++)
+	{
+		if (GetPriority(p_input_str.c_str()[l_count]) == priority_default
+		        && p_input_str.c_str()[l_count + 1] == L'(')
 		{
-			if (GetPriority(p_input_str.c_str()[l_count]) == priority_default
-			        && p_input_str.c_str()[l_count + 1] == L'(')
-			{
-				AddError(NUMBERS_BEFORE_OPENING_BRACKET, l_count - 1);
-			}
+			AddError(NUMBERS_BEFORE_OPENING_BRACKET, l_count - 1);
 		}
-		l_count = p_input_str.find_first_not_of(L"0123456789+-*/^.e()", 0);
-		if (l_count != wstring::npos)
-		{
-			AddError(INVALID_CHARACTER_AFTER_VAR_AND_FUNC, l_count);
-		}
+	}
+	l_count = p_input_str.find_first_not_of(L"0123456789+-*/^.e()", 0);
+	if (l_count != wstring::npos)
+	{
+		AddError(INVALID_CHARACTER_AFTER_VAR_AND_FUNC, l_count);
+	}
 }
 //---------------------------------------------------------------------------
 #endif // _FUNCTION_CPP

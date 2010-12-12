@@ -16,7 +16,7 @@ class CCalcDlg : public CDialog
 		
 	protected:
 		virtual void DoDataExchange(CDataExchange* pDX);    // поддержка DDX/DDV
-
+		
 // Реализация
 	protected:
 		HICON m_hIcon;

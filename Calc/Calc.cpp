@@ -36,14 +36,14 @@ BOOL CCalcApp::InitInstance()
 	// стилей отображени€. ¬ противном случае будет возникать сбой при создании любого окна.
 	INITCOMMONCONTROLSEX InitCtrls;
 	InitCtrls.dwSize = sizeof(InitCtrls);
-
+	
 	InitCtrls.dwICC = ICC_WIN95_CLASSES;
 	InitCommonControlsEx(&InitCtrls);
 	
 	CWinAppEx::InitInstance();
 	
 	AfxEnableControlContainer();
-
+	
 	CCalcDlg dlg;
 	m_pMainWnd = &dlg;
 	INT_PTR nResponse = dlg.DoModal();

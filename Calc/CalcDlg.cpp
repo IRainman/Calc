@@ -130,20 +130,20 @@ inline void CCalcDlg::OnPaint()
 {
 	//if (IsIconic())
 	//{
-	//	CPaintDC dc(this); // контекст устройства для рисования
-	//	
-	//	SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
-	//	
-	//	// Выравнивание значка по центру клиентского прямоугольника
-	//	int cxIcon = GetSystemMetrics(SM_CXICON);
-	//	int cyIcon = GetSystemMetrics(SM_CYICON);
-	//	CRect rect;
-	//	GetClientRect(&rect);
-	//	int x = (rect.Width() - cxIcon + 1) / 2;
-	//	int y = (rect.Height() - cyIcon + 1) / 2;
-	//	
-	//	// Нарисуйте значок
-	//	dc.DrawIcon(x, y, m_hIcon);
+	//  CPaintDC dc(this); // контекст устройства для рисования
+	//
+	//  SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
+	//
+	//  // Выравнивание значка по центру клиентского прямоугольника
+	//  int cxIcon = GetSystemMetrics(SM_CXICON);
+	//  int cyIcon = GetSystemMetrics(SM_CYICON);
+	//  CRect rect;
+	//  GetClientRect(&rect);
+	//  int x = (rect.Width() - cxIcon + 1) / 2;
+	//  int y = (rect.Height() - cyIcon + 1) / 2;
+	//
+	//  // Нарисуйте значок
+	//  dc.DrawIcon(x, y, m_hIcon);
 	//}
 	//else
 	{
