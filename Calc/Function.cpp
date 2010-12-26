@@ -103,7 +103,7 @@ const wstring c_function5[] =
 #define c_max_argument_of_function 2
 #endif
 //---------------------------------------------------------------------------
-inline long double CalculateParametrs(const uint_8 p_number_of_param, const uint p_function_number, long double p_params[])
+inline long double CalculateParametrs(const size_t p_number_of_param, const uint p_function_number, long double p_params[])
 {
 	switch (p_number_of_param)
 	{
@@ -150,7 +150,7 @@ inline wstring::size_type CheckParametrs(wstring& p_buf)
 	return l_count;
 }
 //---------------------------------------------------------------------------
-void GetParametrs(wstring& l_buf, const wstring::size_type l_start, const uint_8 p_number_of_param, long double l_params[], wstring::size_type l_comma_count, const wstring::size_type l_correct_end)
+void GetParametrs(wstring& l_buf, const wstring::size_type l_start, const size_t p_number_of_param, long double l_params[], wstring::size_type l_comma_count, const wstring::size_type l_correct_end)
 {
 	if (l_comma_count >= p_number_of_param)
 	{
@@ -179,7 +179,7 @@ void GetParametrs(wstring& l_buf, const wstring::size_type l_start, const uint_8
 	l_buf = L"";
 }
 //---------------------------------------------------------------------------
-void CalculateFunction(wstring& p_input_str, const wstring& p_in, const uint p_count, const uint_8 p_number_of_param)
+void CalculateFunction(wstring& p_input_str, const wstring& p_in, const uint p_count, const size_t p_number_of_param)
 {
 	wstring::size_type l_start;
 	l_start = p_input_str.find(p_in);
@@ -256,7 +256,7 @@ void CalculateFunction(wstring& p_input_str, const wstring& p_in, const uint p_c
 		wstring::size_type l_c;
 		try
 		{
-			l_c = swprintf_s(l_char_buf, L"%.25g", result);
+			l_c = static_cast<wstring::size_type>(swprintf_s(l_char_buf, L"%.25g", result));
 		}
 		catch (...)
 		{

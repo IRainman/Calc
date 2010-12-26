@@ -133,7 +133,7 @@ void AddError(uint_8 p_message, wstring::size_type p_count/* = -1*/, wstring::si
 		swprintf_s(l_pre_message_buf, L"В позиции %d ошибка: %s\r\n", p_count + m_Correct_count, MESSAGE(p_message).c_str());
 	}
 	wchar_t l_out_buf[1024];
-	swprintf_s(l_out_buf, l_pre_message_buf, p_1, p_2);
+	swprintf_s(l_out_buf, l_pre_message_buf, p_1, p_2); //-V111
 #ifdef _DEBUG
 	wchar_t l_temp_buf[1024];
 	swprintf_s(l_temp_buf, L"AddError(%d... %s", p_message, l_out_buf);
