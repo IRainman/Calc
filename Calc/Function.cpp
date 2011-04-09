@@ -132,15 +132,7 @@ inline long double CalculateParametrs(const size_t p_number_of_param, const uint
 //---------------------------------------------------------------------------
 inline wstring::size_type CheckParametrs(wstring& p_buf)
 {
-	wstring::size_type l_count;
-	if (p_buf.c_str()[0] != L'-')
-	{
-		l_count = p_buf.find_first_not_of(L"0123456789.e", 0);
-	}
-	else
-	{
-		l_count = p_buf.find_first_not_of(L"0123456789.e", 1);
-	}
+	const wstring::size_type l_count = p_buf.find_first_not_of(L"0123456789.e", (p_buf.c_str()[0] != L'-') ? 0 : 1);
 	if (l_count &&
 	        (p_buf.find(L"e+") == l_count - 1
 	         || p_buf.find(L"e-") == l_count - 1))
@@ -164,7 +156,7 @@ void GetParametrs(wstring& l_buf, const wstring::size_type l_start, const size_t
 		wstring l_outp;
 		PreparingForFunction(l_buf);
 		CalculateLineExpression(l_buf, l_outp);
-		l_buf = L"";
+		l_buf = EmptyString;
 		AddMessage(END_OF_THE_SUBEXPRESSION);
 		l_count = CheckParametrs(l_outp);
 		if (l_count != wstring::npos || l_outp.empty())
@@ -176,7 +168,7 @@ void GetParametrs(wstring& l_buf, const wstring::size_type l_start, const size_t
 		return;
 	}
 	l_params[l_comma_count] = _wtof(l_buf.c_str());
-	l_buf = L"";
+	l_buf = EmptyString;
 }
 //---------------------------------------------------------------------------
 void CalculateFunction(wstring& p_input_str, const wstring& p_in, const uint p_count, const size_t p_number_of_param)
@@ -201,9 +193,9 @@ void CalculateFunction(wstring& p_input_str, const wstring& p_in, const uint p_c
 		uint l_nesting_level = 0;
 		for (wstring::size_type l_correct_end = 0;;)
 		{
-			l_br_start = l_buf.find(L"(");
-			l_end = l_buf.find(L")");
-			l_current_comma = l_buf.find(L",");
+			l_br_start = l_buf.find(L'(');
+			l_end = l_buf.find(L')');
+			l_current_comma = l_buf.find(L',');
 			if (l_br_start != wstring::npos && l_br_start < l_end && l_current_comma > l_br_start)
 			{
 				l_correct_end += l_br_start + 1;

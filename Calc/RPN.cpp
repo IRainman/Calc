@@ -221,7 +221,7 @@ void CalculateLineExpression(wstring p_input_str, wstring& p_output_str)
 		}
 		else
 		{
-			wstring l_operand_string = L"";
+			wstring l_operand_string = EmptyString;
 			wstring::size_type l_count_of_num = 0;
 			if (l_negative_number)
 			{
