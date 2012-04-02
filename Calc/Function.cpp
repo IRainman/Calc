@@ -103,7 +103,7 @@ const wstring c_function5[] =
 #define c_max_argument_of_function 2
 #endif
 //---------------------------------------------------------------------------
-inline long double CalculateParametrs(const size_t p_number_of_param, const uint p_function_number, long double p_params[])
+inline long double CalculateParametrs(const size_t p_number_of_param, const size_t p_function_number, long double p_params[])
 {
 	switch (p_number_of_param)
 	{
@@ -142,7 +142,7 @@ inline wstring::size_type CheckParametrs(wstring& p_buf)
 	return l_count;
 }
 //---------------------------------------------------------------------------
-void GetParametrs(wstring& l_buf, const wstring::size_type l_start, const size_t p_number_of_param, long double l_params[], wstring::size_type l_comma_count, const wstring::size_type l_correct_end)
+void GetParametrs(wstring& l_buf, const wstring::size_type l_start, const size_t p_number_of_param, long double l_params[], const wstring::size_type l_comma_count, const wstring::size_type l_correct_end)
 {
 	if (l_comma_count >= p_number_of_param)
 	{
@@ -171,7 +171,7 @@ void GetParametrs(wstring& l_buf, const wstring::size_type l_start, const size_t
 	l_buf = EmptyString;
 }
 //---------------------------------------------------------------------------
-void CalculateFunction(wstring& p_input_str, const wstring& p_in, const uint p_count, const size_t p_number_of_param)
+void CalculateFunction(wstring& p_input_str, const wstring& p_in, const size_t p_count, const size_t p_number_of_param)
 {
 	wstring::size_type l_start;
 	l_start = p_input_str.find(p_in);
@@ -190,7 +190,7 @@ void CalculateFunction(wstring& p_input_str, const wstring& p_in, const uint p_c
 		wstring l_temp;
 		wstring l_buf = p_input_str.substr(l_start + p_in.size());
 		wstring::size_type l_current_comma, l_comma_count = 0;
-		uint l_nesting_level = 0;
+		size_t l_nesting_level = 0;
 		for (wstring::size_type l_correct_end = 0;;)
 		{
 			l_br_start = l_buf.find(L'(');
@@ -281,7 +281,7 @@ void PreparingForFunction(wstring& p_input_str)
 		return;
 		
 	AddMessage(CALCULATION_FUNCTIONS);
-	uint i = 0;
+	size_t i = 0;
 	for (; i < _countof(c_function1); i++)
 		CalculateFunction(p_input_str, c_function1[i], i, 1);
 		

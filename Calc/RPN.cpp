@@ -37,7 +37,7 @@
 #undef min
 #endif
 //---------------------------------------------------------------------------
-inline int_8 GetPriority(wchar_t p_sym)
+inline int GetPriority(const wchar_t p_sym)
 {
 	switch (p_sym)
 	{
@@ -99,10 +99,10 @@ inline void CalculateOnLineExpression(stack<wchar_t>& c_operations, stack<long d
 					c_operands.push(a * b);
 					break;
 				case L'/':
-					if (!b)
-						AddError(DIVIDE_BY_ZERO);
-					else
-						c_operands.push(a / b);
+					/*if (!b)
+					    AddError(DIVIDE_BY_ZERO);
+					else*/
+					c_operands.push(a / b);
 					break;
 				case L'+':
 					c_operands.push(a + b);
@@ -139,7 +139,7 @@ inline void CalculateOnLineExpression(stack<wchar_t>& c_operations, stack<long d
 //---------------------------------------------------------------------------
 void CalculateLineExpression(wstring p_input_str, wstring& p_output_str)
 {
-	int_8 l_current_prioritet = priority_error;
+	int l_current_prioritet = priority_error;
 	stack <wchar_t> c_operations;
 	stack <long double> c_operands;
 	bool l_negative_number;
@@ -300,7 +300,7 @@ void CalculateRPN(wstring& p_to_process_str)
 	string input = p_to_process_str;
 	p_to_process_str = "";
 	long double a, b;
-	int_8 l_current_priority;
+	int l_current_priority;
 	
 	for (string::size_type l_count = 0; l_count < input.size(); l_count++)
 	{

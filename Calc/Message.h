@@ -28,9 +28,9 @@ extern wstring m_ErrorString;
 extern bool m_NoError;
 extern wstring::size_type m_Correct_count;
 extern void AddMessage(const wstring& p_message);
-extern void AddMessage(uint_8 p_message);
-extern void AddWarning(uint_8 p_message);
-extern void AddError(uint_8 p_message, wstring::size_type p_count = -1, wstring::size_type p_1 = 0, wstring::size_type p_2 = 0);
+extern void AddMessage(unsigned int p_message);
+extern void AddWarning(unsigned int p_message);
+extern void AddError(unsigned int p_message, wstring::size_type p_count = -1, wstring::size_type p_1 = 0, wstring::size_type p_2 = 0);
 //---------------------------------------------------------------------------
 enum MessageEnum
 {

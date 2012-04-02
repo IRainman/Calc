@@ -96,7 +96,7 @@ inline void AddMessage(const wstring& p_message)
 	m_ErrorString += p_message + L"\r\n";
 }
 //---------------------------------------------------------------------------
-inline void AddMessage(uint_8 p_message)
+inline void AddMessage(const unsigned int p_message)
 {
 #ifdef _DEBUG
 	wchar_t l_temp_buf[1024];
@@ -108,7 +108,7 @@ inline void AddMessage(uint_8 p_message)
 	m_ErrorString += MESSAGE(p_message) + L"\r\n";
 }
 //---------------------------------------------------------------------------
-inline void AddWarning(uint_8 p_message)
+inline void AddWarning(const unsigned int p_message)
 {
 #ifdef _DEBUG
 	wchar_t l_temp_buf[1024];
@@ -120,7 +120,7 @@ inline void AddWarning(uint_8 p_message)
 	m_ErrorString += L"Внимание: " + MESSAGE(p_message) + L"\r\n";
 }
 //---------------------------------------------------------------------------
-void AddError(uint_8 p_message, wstring::size_type p_count/* = -1*/, wstring::size_type p_1/* = 0*/, wstring::size_type p_2/* = 0*/)
+void AddError(unsigned int p_message, wstring::size_type p_count/* = -1*/, wstring::size_type p_1/* = 0*/, wstring::size_type p_2/* = 0*/)
 {
 	m_NoError = false;
 	wchar_t l_pre_message_buf[1024];
