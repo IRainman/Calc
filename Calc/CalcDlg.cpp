@@ -165,16 +165,16 @@ void CCalcDlg::OnEnChangeEditInput()
 	if (GetDlgItemText(IDC_EDIT_INPUT, l_input, _countof(l_input)))
 	{
 		std::wstring l_input_str(l_input);
-		bool isManualcalculate = false;
 		if (IsDlgButtonChecked(IDC_CHECK_AUTO_CALCULATE) == BST_UNCHECKED &&
 		        l_input_str.size() > 1 && l_input_str[l_input_str.size() - 1] == L'=')
 		{
 			l_input_str.erase(l_input_str.size() - 1);
-			isManualcalculate = true;
+			goto calculate_function_call;
 		}
-		if ((IsDlgButtonChecked(IDC_CHECK_AUTO_CALCULATE) == BST_CHECKED) || isManualcalculate)
+		if ((IsDlgButtonChecked(IDC_CHECK_AUTO_CALCULATE) == BST_CHECKED))
 		{
-			std::wstring& l_MessageString = Calculate(l_input_str, l_output);
+calculate_function_call:
+			const std::wstring& l_MessageString = Calculate(l_input_str, l_output);
 			SetDlgItemText(IDC_EDIT_MESSAGE, l_MessageString.c_str());
 			SetDlgItemText(IDC_EDIT_RESULT, l_output.c_str());
 		}
@@ -188,6 +188,5 @@ void CCalcDlg::OnEnChangeEditInput()
 
 void CAboutDlg::OnBnClickedSite()
 {
-	const static wstring url(L"http://studia2000.sytes.net/txt/calc.shtml");
-	::ShellExecute(NULL, NULL, url.c_str(), NULL, NULL, SW_SHOWNORMAL);
+	::ShellExecute(NULL, NULL, L"http://studia2000.sytes.net/txt/calc.shtml", NULL, NULL, SW_SHOWNORMAL);
 }

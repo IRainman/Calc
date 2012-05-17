@@ -89,7 +89,7 @@ const static wchar_t* MessageString[] =
 //---------------------------------------------------------------------------
 static_assert(_countof(MessageString) == ERROR_LAST + 1, "MessageString and MessageEnum sizes do not match ;) Check them out!");
 //---------------------------------------------------------------------------
-#define MESSAGE(code) wstring(MessageString[code]) // TODO optimize this, refactoring witout string!
+#define MESSAGE(code) (MessageString[code])
 //---------------------------------------------------------------------------
 inline void AddMessage(const wstring& p_message)
 {
@@ -102,10 +102,11 @@ inline void AddMessage(const unsigned int p_message)
 	wchar_t l_temp_buf[1024];
 	swprintf_s(l_temp_buf, L"AddMessage(%d... ", p_message);
 	m_ErrorString += l_temp_buf;
-	if (p_message < MESSAGE_FIRST || p_message > MESSAGE_LAST)
+	if (p_message > MESSAGE_LAST)
 		m_ErrorString += L" DEBUG: Unknown Message!";
 #endif
-	m_ErrorString += MESSAGE(p_message) + L"\r\n";
+	m_ErrorString += MESSAGE(p_message);
+	m_ErrorString += L"\r\n";
 }
 //---------------------------------------------------------------------------
 inline void AddWarning(const unsigned int p_message)
@@ -117,7 +118,9 @@ inline void AddWarning(const unsigned int p_message)
 	if (p_message < WARNING_FIRST || p_message > WARNING_LAST)
 		m_ErrorString += L" DEBUG: Unknown Warning!";
 #endif
-	m_ErrorString += L"Внимание: " + MESSAGE(p_message) + L"\r\n";
+	m_ErrorString += L"Внимание: ";
+	m_ErrorString += MESSAGE(p_message);
+	m_ErrorString += L"\r\n";
 }
 //---------------------------------------------------------------------------
 void AddError(unsigned int p_message, wstring::size_type p_count/* = -1*/, wstring::size_type p_1/* = 0*/, wstring::size_type p_2/* = 0*/)
@@ -126,11 +129,11 @@ void AddError(unsigned int p_message, wstring::size_type p_count/* = -1*/, wstri
 	wchar_t l_pre_message_buf[1024];
 	if (p_count == -1)
 	{
-		swprintf_s(l_pre_message_buf, L"Ошибка: %s\r\n", MESSAGE(p_message).c_str());
+		swprintf_s(l_pre_message_buf, L"Ошибка: %s\r\n", MESSAGE(p_message));
 	}
 	else
 	{
-		swprintf_s(l_pre_message_buf, L"В позиции %d ошибка: %s\r\n", p_count + m_Correct_count, MESSAGE(p_message).c_str());
+		swprintf_s(l_pre_message_buf, L"В позиции %d ошибка: %s\r\n", p_count + m_Correct_count, MESSAGE(p_message)); //-V111
 	}
 	wchar_t l_out_buf[1024];
 	swprintf_s(l_out_buf, l_pre_message_buf, p_1, p_2); //-V111

@@ -22,7 +22,7 @@
 using namespace std;
 #include <string>
 //---------------------------------------------------------------------------
-wstring& Calculate(wstring p_input, wstring& p_output);
+const wstring& Calculate(wstring p_input, wstring& p_output);
 //---------------------------------------------------------------------------
 //static wstring getCompileDate()
 //{
