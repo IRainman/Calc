@@ -281,7 +281,7 @@ void CalculateLineExpression(wstring p_input_str, wstring& p_output_str)
 	if (!c_operands.empty())
 	{
 		wchar_t l_char_buf[100];
-		swprintf_s(l_char_buf, L"%.15g", c_operands.top()); // TODO: Add variable accuracy
+		swprintf_s(l_char_buf, L"%.15g", c_operands.top()); // TODO: Add variable accuracy //-V618
 		p_output_str = l_char_buf;
 	}
 }

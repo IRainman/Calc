@@ -100,7 +100,7 @@ inline void AddMessage(const unsigned int p_message)
 {
 #ifdef _DEBUG
 	wchar_t l_temp_buf[1024];
-	swprintf_s(l_temp_buf, L"AddMessage(%d... ", p_message);
+	swprintf_s(l_temp_buf, L"AddMessage(%d... ", p_message); //-V618
 	m_ErrorString += l_temp_buf;
 	if (p_message > MESSAGE_LAST)
 		m_ErrorString += L" DEBUG: Unknown Message!";
@@ -113,7 +113,7 @@ inline void AddWarning(const unsigned int p_message)
 {
 #ifdef _DEBUG
 	wchar_t l_temp_buf[1024];
-	swprintf_s(l_temp_buf, L"AddWarning(%d... ", p_message);
+	swprintf_s(l_temp_buf, L"AddWarning(%d... ", p_message); //-V618
 	m_ErrorString += l_temp_buf;
 	if (p_message < WARNING_FIRST || p_message > WARNING_LAST)
 		m_ErrorString += L" DEBUG: Unknown Warning!";
@@ -129,7 +129,7 @@ void AddError(unsigned int p_message, wstring::size_type p_count/* = -1*/, wstri
 	wchar_t l_pre_message_buf[1024];
 	if (p_count == -1)
 	{
-		swprintf_s(l_pre_message_buf, L"Ошибка: %s\r\n", MESSAGE(p_message));
+		swprintf_s(l_pre_message_buf, L"Ошибка: %s\r\n", MESSAGE(p_message)); //-V618 //-V111
 	}
 	else
 	{
@@ -139,7 +139,7 @@ void AddError(unsigned int p_message, wstring::size_type p_count/* = -1*/, wstri
 	swprintf_s(l_out_buf, l_pre_message_buf, p_1, p_2); //-V111
 #ifdef _DEBUG
 	wchar_t l_temp_buf[1024];
-	swprintf_s(l_temp_buf, L"AddError(%d... %s", p_message, l_out_buf);
+	swprintf_s(l_temp_buf, L"AddError(%d... %s", p_message, l_out_buf); //-V111
 	m_ErrorString += l_temp_buf;
 	if (p_message < ERROR_FIRST || p_message > ERROR_LAST)
 		m_ErrorString += L" DEBUG: Unknown Error!";

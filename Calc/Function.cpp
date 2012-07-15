@@ -248,7 +248,7 @@ void CalculateFunction(wstring& p_input_str, const wstring& p_in, const size_t p
 		wstring::size_type l_c;
 		try
 		{
-			l_c = static_cast<wstring::size_type>(swprintf_s(l_char_buf, L"%.25g", result));
+			l_c = static_cast<wstring::size_type>(swprintf_s(l_char_buf, L"%.25g", result)); //-V618
 		}
 		catch (...)
 		{
