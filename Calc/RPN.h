@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2010 Solomin Alexey Leonovich, a.rainman on gmail point com
+ * Copyright 2009-2016 Solomin Alexey Leonovich, a.rainman on gmail point com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,12 +23,11 @@ using namespace std;
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <limits>
-#include <string>
 #include <stack>
 #include "Flags.h"
 #include "MyTypes.h"
 //---------------------------------------------------------------------------
-enum
+enum Priority
 {
 	priority_function       = 16,
 	priority_power          = 8,
@@ -39,11 +38,11 @@ enum
 	priority_error          = -1
 };
 //---------------------------------------------------------------------------
-extern int GetPriority(wchar_t p_sym);
-extern void CalculateOnLineExpression(stack<wchar_t>& c_operations, stack<long double>& c_operands);
-extern void CalculateLineExpression(wstring p_input_str, wstring& p_output_str);
+extern Priority GetPriority(char p_sym);
+extern void CalculateOnLineExpression(stack<char>& p_operations, stack<calc_variable>& p_operands);
+extern void CalculateLineExpression(string p_input_str, string& p_output_str);
 #ifdef _USE_RPN
-extern void CalculateRPN(wstring& p_to_process_str);
+extern void CalculateRPN(string& p_to_process_str);
 #endif //_USE_RPN
 //---------------------------------------------------------------------------
 #endif

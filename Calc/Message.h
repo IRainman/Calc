@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2010 Solomin Alexey Leonovich, a.rainman on gmail point com
+ * Copyright 2009-2016 Solomin Alexey Leonovich, a.rainman on gmail point com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,20 +24,12 @@ using namespace std;
 #include "MyTypes.h"
 #include "Flags.h"
 //---------------------------------------------------------------------------
-extern wstring m_ErrorString;
-extern bool m_NoError;
-extern wstring::size_type m_Correct_count;
-extern void AddMessage(const wstring& p_message);
-extern void AddMessage(unsigned int p_message);
-extern void AddWarning(unsigned int p_message);
-extern void AddError(unsigned int p_message, wstring::size_type p_count = -1, wstring::size_type p_1 = 0, wstring::size_type p_2 = 0);
-//---------------------------------------------------------------------------
 enum MessageEnum
 {
 	MESSAGE_FIRST = 0,// Сообщения
 	PREPARING = MESSAGE_FIRST,
 	PARSING_A_STRING,
-//	CALCULATION,
+	//	CALCULATION,
 #ifdef _USE_RPN
 	RPN,
 #endif
@@ -46,14 +38,15 @@ enum MessageEnum
 	REPLACEMENTS_OF_THE_CONSTANTS,
 	CALCULATION_FUNCTIONS,
 	MESSAGE_LAST = CALCULATION_FUNCTIONS,
-	
+
 	WARNING_FIRST,// Предупреждения
 	OUT_OF_RANGE = WARNING_FIRST,
-//	LOW_ACCURACY,
+	//	LOW_ACCURACY,
 	WARNING_LAST = OUT_OF_RANGE,
-	
+
 	ERROR_FIRST,// Ошибки
-	INVALID_CHARACTER = ERROR_FIRST,
+	EXPRESSION_NOT_FOUND = ERROR_FIRST,
+	INVALID_CHARACTER,
 	NON_BRACKET_BALANCE,
 	INVALID_CHARACTER_AFTER_VAR_AND_FUNC,
 #ifdef _USE_RPN
@@ -61,8 +54,8 @@ enum MessageEnum
 #endif
 	CONSECUTIVE_RECORD_NUMBER_OF_TRANSACTIONS,
 	DIVIDE_BY_ZERO,
-//	FUNCTION_LACKS_CLOSING_BRACKET,
-//	FUNCTION_NOT_HAVING_ARGUMENTS,
+	//	FUNCTION_LACKS_CLOSING_BRACKET,
+	//	FUNCTION_NOT_HAVING_ARGUMENTS,
 	NOT_ENOUGHT_OPERANDS,
 	EXPRESSION_CAN_NOT_START_FROM_OPERATION,
 	FUNCTION_INVALID_NUMBER_OF_ARGUMENTS,
@@ -79,7 +72,7 @@ enum MessageEnum
 	BEFORE_E_NOT_FOUND_NUMBER,
 	RECORD_DOUBLE_MINUS_AFTER_E,
 	AFTER_E_NOT_FOUND_EXPONENT,
-//	AFTER_E_FOUND_ANOTHER_E,
+	//	AFTER_E_FOUND_ANOTHER_E,
 	RECORD_PLUS_MINUS_AFTER_E,
 	LAST_SYMBOL_IN_EXPRESSION_IS_E,
 	CLOSING_BRACKET_BEFORE_OPENING,
@@ -93,5 +86,14 @@ enum MessageEnum
 	ERROR_LAST = NUMBERS_BEFORE_OPENING_BRACKET,
 #endif
 };
+//---------------------------------------------------------------------------
+extern string m_message_string;
+extern bool m_no_error;
+extern string::size_type m_correct_count;
+//---------------------------------------------------------------------------
+extern void AddMessage(const string& p_message);
+extern void AddMessage(const MessageEnum p_message);
+extern void AddWarning(const MessageEnum p_message);
+extern void AddError(const MessageEnum p_message, string::size_type p_count = -1, string::size_type p_1 = 0, string::size_type p_2 = 0);
 //---------------------------------------------------------------------------
 #endif

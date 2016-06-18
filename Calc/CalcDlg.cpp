@@ -5,7 +5,7 @@
 #include "stdafx.h"
 #include "Calc.h"
 #include "CalcDlg.h"
-#include "Calculator.h"
+#include "CalculatorWideAdapter.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -41,7 +41,7 @@ CAboutDlg::CAboutDlg() : CDialog(CAboutDlg::IDD)
 	//::SetDlgItemText(AfxGetApp()->m_hThread, IDC_COMPILED_DATE, getCompileDate().c_str());
 }
 
-void CAboutDlg::DoDataExchange(CDataExchange* pDX)
+inline void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 }
@@ -58,7 +58,7 @@ CCalcDlg::CCalcDlg(CWnd* pParent /*=NULL*/)
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
 
-void CCalcDlg::DoDataExchange(CDataExchange* pDX)
+inline void CCalcDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 }
@@ -109,7 +109,7 @@ BOOL CCalcDlg::OnInitDialog()
 	return TRUE;  // возврат значения TRUE, если фокус не передан элементу управления
 }
 
-void CCalcDlg::OnSysCommand(UINT nID, LPARAM lParam)
+inline void CCalcDlg::OnSysCommand(UINT nID, LPARAM lParam)
 {
 	if ((nID & 0xFFF0) == IDM_ABOUTBOX)
 	{
@@ -160,23 +160,25 @@ inline HCURSOR CCalcDlg::OnQueryDragIcon()
 
 void CCalcDlg::OnEnChangeEditInput()
 {
-	wchar_t l_input[4096];
-	std::wstring l_output;
-	if (GetDlgItemText(IDC_EDIT_INPUT, l_input, _countof(l_input)))
+	m_input.resize(c_max_edit_input_size);
+	const auto l_count = GetDlgItemText(IDC_EDIT_INPUT, &m_input[0], c_max_edit_input_size);
+	if (l_count > 0)
 	{
-		std::wstring l_input_str(l_input);
+		m_input.resize(l_count);
+		
 		if (IsDlgButtonChecked(IDC_CHECK_AUTO_CALCULATE) == BST_UNCHECKED &&
-		        l_input_str.size() > 1 && l_input_str[l_input_str.size() - 1] == L'=')
+		        m_input.size() > 1 && m_input[m_input.size() - 1] == '=')
 		{
-			l_input_str.erase(l_input_str.size() - 1);
+			m_input.erase(m_input.size() - 1);
 			goto calculate_function_call;
 		}
 		if ((IsDlgButtonChecked(IDC_CHECK_AUTO_CALCULATE) == BST_CHECKED))
 		{
 calculate_function_call:
-			const std::wstring& l_MessageString = Calculate(l_input_str, l_output);
-			SetDlgItemText(IDC_EDIT_MESSAGE, l_MessageString.c_str());
-			SetDlgItemText(IDC_EDIT_RESULT, l_output.c_str());
+			
+			auto& l_message = Calculate(m_input, m_result);
+			SetDlgItemText(IDC_EDIT_MESSAGE, l_message.c_str());
+			SetDlgItemText(IDC_EDIT_RESULT, m_result.c_str());
 		}
 	}
 	else

@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <string>
+
 // диалоговое окно CCalcDlg
 class CCalcDlg : public CDialog
 {
@@ -29,4 +31,8 @@ class CCalcDlg : public CDialog
 		DECLARE_MESSAGE_MAP()
 	public:
 		afx_msg void OnEnChangeEditInput();
+	private:
+		static const std::wstring::size_type c_max_edit_input_size = 4096;
+		std::wstring m_input;
+		std::wstring m_result;
 };

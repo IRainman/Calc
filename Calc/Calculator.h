@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2010 Solomin Alexey Leonovich, a.rainman on gmail point com
+ * Copyright 2009-2016 Solomin Alexey Leonovich, a.rainman on gmail point com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,17 +19,8 @@
 #ifndef _CALCULATOR_H
 #define _CALCULATOR_H
 //---------------------------------------------------------------------------
-using namespace std;
 #include <string>
 //---------------------------------------------------------------------------
-const wstring& Calculate(wstring p_input, wstring& p_output);
-//---------------------------------------------------------------------------
-//static wstring getCompileDate()
-//{
-//	TODO
-//	COleDateTime tCompileDate;
-//	tCompileDate.ParseDateTime(_T(__DATE__), LOCALE_NOUSEROVERRIDE, 1033);
-//	return tCompileDate.Format(_T("%Y-%m-%d")).GetString();
-//}
+const std::string& Calculate(std::string p_input, std::string& p_output);
 //---------------------------------------------------------------------------
 #endif

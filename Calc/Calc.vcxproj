@@ -42,6 +42,10 @@
     <UseOfMfc>Dynamic</UseOfMfc>
     <CharacterSet>Unicode</CharacterSet>
     <PlatformToolset>v110_xp</PlatformToolset>
+    <UseIntelIPP>false</UseIntelIPP>
+    <UseIntelTBB>false</UseIntelTBB>
+    <InstrumentIntelTBB>false</InstrumentIntelTBB>
+    <UseIntelMKL>No</UseIntelMKL>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -235,9 +239,10 @@
       <GenerateAlternateCodePaths>SSE3</GenerateAlternateCodePaths>
       <Optimization>Full</Optimization>
       <BufferSecurityCheck>false</BufferSecurityCheck>
-      <FloatingPointModel>Fast</FloatingPointModel>
+      <FloatingPointModel>Precise</FloatingPointModel>
       <OpenMPSupport>false</OpenMPSupport>
       <FunctionLevelLinking>false</FunctionLevelLinking>
+      <CreateHotpatchableImage>false</CreateHotpatchableImage>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -257,6 +262,7 @@
     <ClCompile Include="Calc.cpp" />
     <ClCompile Include="CalcDlg.cpp" />
     <ClCompile Include="Calculator.cpp" />
+    <ClCompile Include="CalculatorWideAdapter.cpp" />
     <ClCompile Include="Function.cpp" />
     <ClCompile Include="Message.cpp" />
     <ClCompile Include="RPN.cpp" />
@@ -271,6 +277,7 @@
     <ClInclude Include="Calc.h" />
     <ClInclude Include="CalcDlg.h" />
     <ClInclude Include="Calculator.h" />
+    <ClInclude Include="CalculatorWideAdapter.h" />
     <ClInclude Include="Flags.h" />
     <ClInclude Include="Function.h" />
     <ClInclude Include="Message.h" />

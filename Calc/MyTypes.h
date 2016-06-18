@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2010 Solomin Alexey Leonovich, a.rainman on gmail point com
+ * Copyright 2009-2016 Solomin Alexey Leonovich, a.rainman on gmail point com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,10 @@
 
 #ifndef MYTYPES_H
 #define MYTYPES_H
+
 //---------------------------------------------------------------------------
-const static wstring EmptyString = L"";
+typedef long double calc_variable;
+//---------------------------------------------------------------------------
+//
 //---------------------------------------------------------------------------
 #endif// MYTYPES_H
