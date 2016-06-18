@@ -281,16 +281,16 @@ void PreparingForFunction(string& p_input_str)
 		return;
 		
 	AddMessage(CALCULATION_FUNCTIONS);
-
+	
 	size_t i;
 	i = 0;
 	for (; i < _countof(c_function1); i++)
 		CalculateFunction(p_input_str, c_function1[i], i, 1);
-
+		
 	i = 0;
 	for (; i < _countof(c_function2); i++)
 		CalculateFunction(p_input_str, c_function2[i], i, 2);
-	
+		
 #ifdef _DEBUG_FUNCTION // TODO: delete this block after add full function support
 	i = 0;
 	for (; i < _countof(c_function3); i++)

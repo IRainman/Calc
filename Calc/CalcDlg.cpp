@@ -175,7 +175,6 @@ void CCalcDlg::OnEnChangeEditInput()
 		if ((IsDlgButtonChecked(IDC_CHECK_AUTO_CALCULATE) == BST_CHECKED))
 		{
 calculate_function_call:
-			
 			auto& l_message = Calculate(m_input, m_result);
 			SetDlgItemText(IDC_EDIT_MESSAGE, l_message.c_str());
 			SetDlgItemText(IDC_EDIT_RESULT, m_result.c_str());

@@ -134,7 +134,7 @@ void AddError(const MessageEnum p_message, string::size_type p_count/* = -1*/, s
 	}
 	else
 	{
-		sprintf_s(l_pre_message_buf, "В позиции %d ошибка: %s\r\n", p_count + m_correct_count, MESSAGE(p_message)); //-V111
+		sprintf_s(l_pre_message_buf, "В позиции %zd ошибка: %s\r\n", p_count + m_correct_count, MESSAGE(p_message)); //-V111
 	}
 	char l_out_buf[1024];
 	sprintf_s(l_out_buf, l_pre_message_buf, p_1, p_2); //-V111

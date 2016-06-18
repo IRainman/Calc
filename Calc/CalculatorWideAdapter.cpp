@@ -9,7 +9,7 @@
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.	
+ * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -17,9 +17,9 @@
  */
 
 //#ifdef _MSC_VER
-	#include "stdafx.h"
+#include "stdafx.h"
 /*#elif __INTEL_COMPILER
-	// TODO */
+    // TODO */
 
 // #endif // The comment is used in a silly Visual Studio :)
 //---------------------------------------------------------------------------
@@ -37,7 +37,7 @@ static wstring_convert<codecvt_utf8_utf16<wchar_t>> m_converter;
 //---------------------------------------------------------------------------
 inline wstring to_wstring(const string& p_text)
 {
-	return m_converter.from_bytes(p_text);	
+	return m_converter.from_bytes(p_text);
 }
 //---------------------------------------------------------------------------
 inline string to_string(const wstring& p_text)
@@ -50,20 +50,20 @@ extern const string& Calculate(string p_input, string& p_output);
 wstring& Calculate(wstring p_input, wstring& p_output)
 {
 	string l_output;
-
+	
 	m_message_string = to_wstring(Calculate(to_string(p_input), l_output));
-
+	
 	p_output = to_wstring(l_output);
-
+	
 	return m_message_string;
 }
 //---------------------------------------------------------------------------
-/* //	TODO
+/* //   TODO
 const std::wstring getCompileDate()
 {
-	COleDateTime tCompileDate;
-	tCompileDate.ParseDateTime(_T(__DATE__), LOCALE_NOUSEROVERRIDE, 1033);
-	return tCompileDate.Format(_T("%Y-%m-%d")).GetString();
+    COleDateTime tCompileDate;
+    tCompileDate.ParseDateTime(_T(__DATE__), LOCALE_NOUSEROVERRIDE, 1033);
+    return tCompileDate.Format(_T("%Y-%m-%d")).GetString();
 }
 */
 //---------------------------------------------------------------------------
