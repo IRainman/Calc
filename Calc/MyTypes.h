@@ -21,7 +21,14 @@
 
 //---------------------------------------------------------------------------
 typedef long double calc_variable;
+#define calc_input_function strtold
 //---------------------------------------------------------------------------
-//
+#define CALC_BUFFER_SIZE 256
+//---------------------------------------------------------------------------
+#define CALC_INTERNAL_ACCURACY_FORMAT "%.100g"
+//---------------------------------------------------------------------------
+// TODO: Add variable accuracy
+#define CALC_OUTPUT_ACCURACY_FORMAT "%.15g"
+//const calc_variable calc_output_accuracy_mult = 1.e150L;
 //---------------------------------------------------------------------------
 #endif// MYTYPES_H

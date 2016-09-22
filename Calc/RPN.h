@@ -20,8 +20,7 @@
 #define _RPN_H
 //---------------------------------------------------------------------------
 using namespace std;
-#define _USE_MATH_DEFINES
-#include <math.h>
+#include <cmath>
 #include <limits>
 #include <stack>
 #include "Flags.h"

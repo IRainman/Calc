@@ -32,6 +32,8 @@ string m_message_string;
 bool m_no_error;
 string::size_type m_correct_count;
 //---------------------------------------------------------------------------
+#define MESSAGE_BUFFER_SIZE 1024
+//---------------------------------------------------------------------------
 const static char* c_message_string[] =
 {
 // Сообщения
@@ -100,8 +102,8 @@ inline void AddMessage(const string& p_message)
 inline void AddMessage(const MessageEnum p_message)
 {
 #ifdef _DEBUG
-	char l_temp_buf[1024];
-	sprintf_s(l_temp_buf, "AddMessage(%u... ", p_message);
+	char l_temp_buf[MESSAGE_BUFFER_SIZE];
+	snprintf(l_temp_buf, MESSAGE_BUFFER_SIZE - 1, "AddMessage(%u... ", p_message);
 	m_message_string += l_temp_buf;
 	if (p_message > MESSAGE_LAST)
 		m_message_string += " DEBUG: Unknown Message!";
@@ -113,8 +115,8 @@ inline void AddMessage(const MessageEnum p_message)
 inline void AddWarning(const MessageEnum p_message)
 {
 #ifdef _DEBUG
-	char l_temp_buf[1024];
-	sprintf_s(l_temp_buf, "AddWarning(%u... ", p_message);
+	char l_temp_buf[MESSAGE_BUFFER_SIZE];
+	snprintf(l_temp_buf, MESSAGE_BUFFER_SIZE - 1, "AddWarning(%u... ", p_message);
 	m_message_string += l_temp_buf;
 	if (p_message < WARNING_FIRST || p_message > WARNING_LAST)
 		m_message_string += " DEBUG: Unknown Warning!";
@@ -127,20 +129,20 @@ inline void AddWarning(const MessageEnum p_message)
 void AddError(const MessageEnum p_message, string::size_type p_count/* = -1*/, string::size_type p_1/* = 0*/, string::size_type p_2/* = 0*/)
 {
 	m_no_error = false;
-	char l_pre_message_buf[1024];
+	char l_pre_message_buf[MESSAGE_BUFFER_SIZE];
 	if (p_count == -1)
 	{
-		sprintf_s(l_pre_message_buf, "Ошибка: %s\r\n", MESSAGE(p_message)); //-V111
+		snprintf(l_pre_message_buf, MESSAGE_BUFFER_SIZE - 1, "Ошибка: %s\r\n", MESSAGE(p_message)); //-V111
 	}
 	else
 	{
-		sprintf_s(l_pre_message_buf, "В позиции %zd ошибка: %s\r\n", p_count + m_correct_count, MESSAGE(p_message)); //-V111
+		snprintf(l_pre_message_buf, MESSAGE_BUFFER_SIZE - 1, "В позиции %zd ошибка: %s\r\n", p_count + m_correct_count, MESSAGE(p_message)); //-V111
 	}
-	char l_out_buf[1024];
-	sprintf_s(l_out_buf, l_pre_message_buf, p_1, p_2); //-V111
+	char l_out_buf[MESSAGE_BUFFER_SIZE];
+	snprintf(l_out_buf, MESSAGE_BUFFER_SIZE - 1, l_pre_message_buf, p_1, p_2); //-V111
 #ifdef _DEBUG
-	char l_temp_buf[1024];
-	sprintf_s(l_temp_buf, "AddError(%u... %s", p_message, l_out_buf); //-V111
+	char l_temp_buf[MESSAGE_BUFFER_SIZE];
+	snprintf(l_temp_buf, MESSAGE_BUFFER_SIZE - 1, "AddError(%u... %s", p_message, l_out_buf); //-V111
 	m_message_string += l_temp_buf;
 	if (p_message < ERROR_FIRST || p_message > ERROR_LAST)
 		m_message_string += " DEBUG: Unknown Error!";

@@ -70,6 +70,7 @@ END
 // remains consistent on all systems.
 IDR_MAINFRAME           ICON                    "res\\C.ico"
 
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Dialog
@@ -81,7 +82,7 @@ CAPTION "О проекте Calc"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,102,14,20,20
-    LTEXT           "Calc, версия 1.5.0",IDC_STATIC,7,7,105,8,SS_NOPREFIX
+    LTEXT           "Calc, версия 1.6.0",IDC_STATIC,7,7,105,8,SS_NOPREFIX
     LTEXT           "© STUDIA2000, Rainman (Соломин А.Л.)",IDC_STATIC,7,16,87,16
     DEFPUSHBUTTON   "ОК",IDOK,87,37,50,14,WS_GROUP
     DEFPUSHBUTTON   "Зайти на сайт",ID_SITE,7,37,56,14,WS_GROUP
@@ -107,8 +108,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,5,0,140
- PRODUCTVERSION 1,5,0,140
+ FILEVERSION 1,6,0,141
+ PRODUCTVERSION 1,6,0,141
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -125,12 +126,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "STUDIA2000"
             VALUE "FileDescription", "Калькулятор для Windows"
-            VALUE "FileVersion", "1.5.0.140"
+            VALUE "FileVersion", "1.6.0.141"
             VALUE "InternalName", "Calc.exe"
             VALUE "LegalCopyright", "© STUDIA2000 Rainman (Соломин А.Л.). Все права защищены."
             VALUE "OriginalFilename", "Calc.exe"
             VALUE "ProductName", "Calc"
-            VALUE "ProductVersion", "1.5.0.140"
+            VALUE "ProductVersion", "1.6.0.141"
         END
     END
     BLOCK "VarFileInfo"

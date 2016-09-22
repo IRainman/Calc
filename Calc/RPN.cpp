@@ -143,8 +143,8 @@ void CalculateLineExpression(string p_input_str, string& p_output_str)
 	stack <char> l_operations;
 	stack <calc_variable> l_operands;
 	bool l_negative_number;
-	string::size_type l_count = 0;
-	for (; p_input_str.size(); l_count++)
+	string::size_type l_count;
+	for (l_count = 0; p_input_str.size(); l_count++)
 	{
 		l_negative_number = l_current_prioritet > 0 && p_input_str.c_str()[0] == '-' && p_input_str.c_str()[1] != '(';
 		l_current_prioritet = GetPriority(p_input_str.c_str()[0]);
@@ -254,7 +254,7 @@ void CalculateLineExpression(string p_input_str, string& p_output_str)
 			//}
 			if (!l_negative_number || (l_negative_number && l_count_of_num > 1))
 			{
-				l_operands.push(atof(l_operand_string.c_str()));
+				l_operands.push(calc_input_function(l_operand_string.c_str(), nullptr));
 				if (l_operands.top() >= std::numeric_limits<calc_variable>::max() || l_operands.top() <= std::numeric_limits<calc_variable>::min())
 				{
 					AddWarning(OUT_OF_RANGE);
@@ -280,9 +280,8 @@ void CalculateLineExpression(string p_input_str, string& p_output_str)
 	}
 	if (!l_operands.empty())
 	{
-		char l_char_buf[100];
-		sprintf_s(l_char_buf, "%.16g", l_operands.top()); // TODO: Add variable accuracy //-V618
-		p_output_str = l_char_buf;
+		p_output_str.resize(CALC_BUFFER_SIZE);
+		p_output_str.resize(snprintf(&p_output_str[0], CALC_BUFFER_SIZE - 1, CALC_INTERNAL_ACCURACY_FORMAT, l_operands.top()));
 	}
 }
 //---------------------------------------------------------------------------
@@ -299,12 +298,10 @@ void CalculateRPN(string& p_to_process_str)
 	stack <calc_variable> c_operands;
 	string input = p_to_process_str;
 	p_to_process_str.clear();
-	calc_variable a, b;
-	int l_current_priority;
 	
 	for (string::size_type l_count = 0; l_count < input.size(); l_count++)
 	{
-		l_current_priority = GetPriority(input.c_str()[l_count]);
+		const int l_current_priority = GetPriority(input.c_str()[l_count]);
 		if (l_current_priority == priority_default)
 		{
 			/*
@@ -320,7 +317,7 @@ void CalculateRPN(string& p_to_process_str)
 					break;
 				}
 			}
-			c_operands.push(atof(l_operand_string.c_str()));
+			c_operands.push(calc_input_function(l_operand_string.c_str(), nullptr));
 			input.erase(0, l_count);
 			l_count = -1;
 		}
@@ -334,23 +331,16 @@ void CalculateRPN(string& p_to_process_str)
 				извлечённых из стека, взятых в порядке добавления.
 				Результат выполненной операции кладётся на вершину стека.
 				*/
-				bool set_a = false, set_b = false;
 				if (!c_operands.empty())
 				{
-					set_b = true;
-					b = c_operands.top();
+					const calc_variable b = c_operands.top();
 					c_operands.pop();
-				}
-				if (!c_operands.empty())
-				{
-					set_a = true;
-					a = c_operands.top();
-					c_operands.pop();
-				}
-				if (set_b)
-				{
-					if (set_a)
+					
+					if (!c_operands.empty())
 					{
+						const calc_variable a = c_operands.top();
+						c_operands.pop();
+						
 						switch (input.c_str()[l_count])
 						{
 							case 'P':
@@ -403,7 +393,7 @@ void CalculateRPN(string& p_to_process_str)
 								    }
 								}
 								
-								calc_variable temp_operand = atof(temp.c_str());
+								calc_variable temp_operand = calc_input_function(temp.c_str(), nullptr);
 								a = b;
 								b = temp_operand;*/
 								/*
@@ -452,9 +442,8 @@ void CalculateRPN(string& p_to_process_str)
 	}
 	if (!c_operands.empty())
 	{
-		char l_char_buf[100];
-		sprintf_s(l_char_buf, " %.15lge ", c_operands.top());
-		p_to_process_str = l_char_buf;
+		p_to_process_str.resize(CALC_BUFFER_SIZE);
+		p_to_process_str.resize(snprintf(&p_to_process_str[0], CALC_BUFFER_SIZE - 1, " " CALC_INTERNAL_ACCURACY_FORMAT " ", c_operands.top()));
 	}
 }
 #endif //_ALLOW_INPUT_RPN_STRING

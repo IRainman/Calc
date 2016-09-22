@@ -164,10 +164,10 @@ void GetParametrs(string& p_buf, const string::size_type p_start, const size_t p
 			AddError(LOST_FUNCTION_ARGUMENTS, p_start, p_comma_count + 1, p_correct_end);
 			return;
 		}
-		p_params[p_comma_count] = atof(l_outp.c_str());
+		p_params[p_comma_count] = calc_input_function(l_outp.c_str(), nullptr);
 		return;
 	}
-	p_params[p_comma_count] = atof(p_buf.c_str());
+	p_params[p_comma_count] = calc_input_function(p_buf.c_str(), nullptr);
 	p_buf.clear();
 }
 //---------------------------------------------------------------------------
@@ -183,7 +183,6 @@ void CalculateFunction(string& p_input_str, const string& p_in, const size_t p_c
 		return;
 		
 	string::size_type l_end, l_br_start;
-	char l_char_buf[320];
 	calc_variable l_params[c_max_argument_of_function];
 	do
 	{
@@ -244,22 +243,12 @@ void CalculateFunction(string& p_input_str, const string& p_in, const size_t p_c
 			AddError(FUNCTION_INVALID_NUMBER_OF_ARGUMENTS, l_start, p_number_of_param, l_comma_count + 1);
 			return;
 		}
-		auto result = CalculateParametrs(p_number_of_param, p_count, l_params);
-		string::size_type l_c;
-		try
-		{
-			l_c = static_cast<string::size_type>(sprintf_s(l_char_buf, "%.25g", result)); //-V618
-		}
-		catch (...)
-		{
-#ifdef _DEBUG
-			AddError(INTERNAL_PROCESSING_ERROR_CalculateFunction);
-			return;
-#endif
-		}
-		l_temp = l_char_buf;
+		const auto result = CalculateParametrs(p_number_of_param, p_count, l_params);
+		l_temp.resize(CALC_BUFFER_SIZE);
+		l_temp.resize(snprintf(&l_temp[0], CALC_BUFFER_SIZE - 1, CALC_INTERNAL_ACCURACY_FORMAT, result));
+		
 		if (m_no_error)
-			m_correct_count += l_c - (p_in.size() + l_end + 1);
+			m_correct_count += l_temp.size() - (p_in.size() + l_end + 1);
 			
 		p_input_str.erase(l_start, p_in.size() + l_end + 1);
 		p_input_str.insert(l_start, l_temp);
@@ -283,21 +272,18 @@ void PreparingForFunction(string& p_input_str)
 	AddMessage(CALCULATION_FUNCTIONS);
 	
 	size_t i;
-	i = 0;
-	for (; i < _countof(c_function1); i++)
+	
+	for (i = 0; i < _countof(c_function1); i++)
 		CalculateFunction(p_input_str, c_function1[i], i, 1);
 		
-	i = 0;
-	for (; i < _countof(c_function2); i++)
+	for (i = 0; i < _countof(c_function2); i++)
 		CalculateFunction(p_input_str, c_function2[i], i, 2);
 		
 #ifdef _DEBUG_FUNCTION // TODO: delete this block after add full function support
-	i = 0;
-	for (; i < _countof(c_function3); i++)
+	for (i = 0; i < _countof(c_function3); i++)
 		CalculateFunction(p_input_str, c_function3[i], i, 3);
 		
-	i = 0;
-	for (; i < _countof(c_function5); i++)
+	for (i = 0; i < _countof(c_function5); i++)
 		CalculateFunction(p_input_str, c_function5[i], i, 5);
 #endif
 	AddMessage(p_input_str.c_str());
@@ -305,8 +291,8 @@ void PreparingForFunction(string& p_input_str)
 	if (!m_no_error)
 		return;
 		
-	string::size_type l_count = 0;
-	for (; l_count < p_input_str.size() - 1; l_count++)
+	string::size_type l_count;
+	for (l_count = 0; l_count < p_input_str.size() - 1; l_count++)
 	{
 		if (GetPriority(p_input_str.c_str()[l_count]) == priority_default
 		        && p_input_str.c_str()[l_count + 1] == '(')
