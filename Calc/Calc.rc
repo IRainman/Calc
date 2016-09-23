@@ -82,7 +82,7 @@ CAPTION "О проекте Calc"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,102,14,20,20
-    LTEXT           "Calc, версия 1.6.0",IDC_STATIC,7,7,105,8,SS_NOPREFIX
+    LTEXT           "Calc, версия 1.7.0",IDC_STATIC,7,7,105,8,SS_NOPREFIX
     LTEXT           "© STUDIA2000, Rainman (Соломин А.Л.)",IDC_STATIC,7,16,87,16
     DEFPUSHBUTTON   "ОК",IDOK,87,37,50,14,WS_GROUP
     DEFPUSHBUTTON   "Зайти на сайт",ID_SITE,7,37,56,14,WS_GROUP
@@ -108,8 +108,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,6,1,142
- PRODUCTVERSION 1,6,1,142
+ FILEVERSION 1,7,0,143
+ PRODUCTVERSION 1,7,0,143
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -126,12 +126,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "STUDIA2000"
             VALUE "FileDescription", "Калькулятор для Windows"
-            VALUE "FileVersion", "1.6.1.142"
+            VALUE "FileVersion", "1.7.0.143"
             VALUE "InternalName", "Calc.exe"
             VALUE "LegalCopyright", "© STUDIA2000 Rainman (Соломин А.Л.). Все права защищены."
             VALUE "OriginalFilename", "Calc.exe"
             VALUE "ProductName", "Calc"
-            VALUE "ProductVersion", "1.6.1.142"
+            VALUE "ProductVersion", "1.7.0.143"
         END
     END
     BLOCK "VarFileInfo"
@@ -169,6 +169,17 @@ BEGIN
     END
 END
 #endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_ABOUTBOX AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
 
 
 /////////////////////////////////////////////////////////////////////////////

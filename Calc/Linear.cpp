@@ -23,10 +23,10 @@
 
 // #endif // The comment is used in a silly Visual Studio :)
 //---------------------------------------------------------------------------
-#ifndef _RPN_CPP
-#define _RPN_CPP
+#ifndef _LINEAR_CPP
+#define _LINEAR_CPP
 //---------------------------------------------------------------------------
-#include "RPN.h"
+#include "Linear.h"
 #include "Message.h"
 //---------------------------------------------------------------------------
 #ifdef max
@@ -99,9 +99,6 @@ inline void CalculateOnLineExpression(stack<char>& p_operations, stack<calc_vari
 					p_operands.push(a * b);
 					break;
 				case '/':
-					/*if (!b)
-					    AddError(DIVIDE_BY_ZERO);
-					else*/
 					p_operands.push(a / b);
 					break;
 				case '+':
@@ -124,13 +121,11 @@ inline void CalculateOnLineExpression(stack<char>& p_operations, stack<calc_vari
 				case '-':
 					p_operands.push(-b);
 					break;
-					
-				default:
-					AddError(CONSECUTIVE_RECORD_NUMBER_OF_TRANSACTIONS); // TODO delete this!
 #ifdef _DEBUG
+				default:
 					AddError(INTERNAL_PROCESSING_ERROR_CalculateOnLineExpression);
-#endif
 					break;
+#endif
 			}
 		}
 	}
@@ -290,167 +285,4 @@ void CalculateLineExpression(string p_input_str, string& p_output_str, const str
 	AddMessage(p_output_str);
 }
 //---------------------------------------------------------------------------
-#ifdef _ALLOW_INPUT_RPN_STRING
-void CalculateRPN(string& p_to_process_str)
-{
-	/*
-	Автоматизация вычисления выражений в обратной польской нотации основана на использовании стека. Алгоритм вычисления для стековой машины элементарен:
-	Обработка входного символа:
-	...
-	 3)Если входной набор символов обработан не полностью, перейти к шагу 1.
-	После полной обработки входного набора символов результат вычисления выражения лежит на вершине стека.
-	*/
-	stack <calc_variable> c_operands;
-	string input = p_to_process_str;
-	p_to_process_str.clear();
-	
-	for (string::size_type l_count = 0; l_count < input.size(); l_count++)
-	{
-		const int l_current_priority = GetPriority(input.c_str()[l_count]);
-		if (l_current_priority == priority_default)
-		{
-			/*
-			1)Если на вход подан операнд, он помещается на вершину стека.
-			*/
-			string l_operand_string;
-			for (; l_count < input.size() && GetPriority(input.c_str()[l_count]) == priority_default; l_count++)
-			{
-				l_operand_string += input.c_str()[l_count];
-				if (input.c_str()[l_count] == ' ' && l_count)
-				{
-					l_count++;
-					break;
-				}
-			}
-			c_operands.push(calc_input_function(l_operand_string.c_str(), nullptr));
-			input.erase(0, l_count);
-			l_count = -1;
-		}
-		else
-		{
-			if (l_current_priority != priority_error)
-			{
-				/*
-				2)Если на вход подан знак операции,
-				то соответствующая операция выполняется над требуемым количеством значений,
-				извлечённых из стека, взятых в порядке добавления.
-				Результат выполненной операции кладётся на вершину стека.
-				*/
-				if (!c_operands.empty())
-				{
-					const calc_variable b = c_operands.top();
-					c_operands.pop();
-					
-					if (!c_operands.empty())
-					{
-						const calc_variable a = c_operands.top();
-						c_operands.pop();
-						
-						switch (input.c_str()[l_count])
-						{
-							case 'P':
-							case '^':
-								c_operands.push(pow(a, b));
-								break;
-							case '*':
-								c_operands.push(a * b);
-								break;
-							case '/':
-								if (!b)
-								{
-									AddError(DIVIDE_BY_ZERO);
-								}
-								c_operands.push(a / b);
-								break;
-							case '+':
-								c_operands.push(a + b);
-								break;
-							case '-':
-								c_operands.push(a - b);
-								break;
-#ifdef _DEBUG
-							default:
-								p_to_process_str += "DEBUG: Internal Processing Error!" + input.c_str()[l_count];
-								break;
-#endif
-						}
-						input.erase(l_count, l_count + 1);
-						l_count = -1;
-					}
-					else
-					{
-						switch (input.c_str()[l_count])
-						{
-							case '-':
-								c_operands.push(-b);
-								break;
-								
-							default:
-								AddError(NOT_ENOUGHT_OPERANDS);
-								/*char l_op = input.c_str()[l_count++];
-								string temp = "";
-								for(; l_count < input.size(); l_count++)
-								{
-								    temp += input.c_str()[l_count];
-								    if(GetPriority(input.c_str()[l_count]) > priority_default)
-								    {
-								        break;
-								    }
-								}
-								
-								calc_variable temp_operand = calc_input_function(temp.c_str(), nullptr);
-								a = b;
-								b = temp_operand;*/
-								/*
-								switch(input.c_str()[l_count])
-								{
-								    case 'P':
-								        c_operations.push(pow(a,b));
-								        break;
-								    case '^':
-								        if((int)a != a || (int)b != b)
-								        {
-								            AddWarning(LOW_ACCURACY);
-								        }
-								        c_operations.push((int)a^(int)b);
-								        break;
-								    case '*':
-								        c_operations.push(a*b);
-								        break;
-								    case '/':
-								        if(!b)
-								        {
-								            AddError(DIVIDE_BY_ZERO);
-								            return false;
-								        }
-								        c_operations.push(a/b);
-								        break;
-								    case '+':
-								        c_operations.push(a+b);
-								        break;
-								    case '-':
-								        c_operations.push(a-b);
-								        break;
-								#ifdef _DEBUG
-								    default:
-								        p_to_process_str += "DEBUG: Internal Processing Error!" + input.c_str()[l_count];
-								        break;
-								#endif
-								}
-								*/
-						}
-						l_count = -1;
-					}
-				}
-			}
-		}
-	}
-	if (!c_operands.empty())
-	{
-		p_to_process_str.resize(CALC_BUFFER_SIZE);
-		p_to_process_str.resize(snprintf(&p_to_process_str[0], CALC_BUFFER_SIZE - 1, " " CALC_INTERNAL_ACCURACY_FORMAT " ", c_operands.top()));
-	}
-}
-#endif //_ALLOW_INPUT_RPN_STRING
-//---------------------------------------------------------------------------
-#endif // _RPN_CPP
+#endif // _LINEAR_CPP

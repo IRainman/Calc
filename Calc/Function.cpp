@@ -27,7 +27,7 @@
 #define _FUNCTION_CPP
 //---------------------------------------------------------------------------
 #include "Flags.h"
-#include "RPN.h"
+#include "Linear.h"
 #include "Message.h"
 #include "Function.h"
 #include <stdlib.h>

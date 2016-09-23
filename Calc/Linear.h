@@ -16,8 +16,8 @@
  *
  */
 
-#ifndef _RPN_H
-#define _RPN_H
+#ifndef _LINEAR_H
+#define _LINEAR_H
 //---------------------------------------------------------------------------
 using namespace std;
 #include <cmath>
@@ -40,8 +40,5 @@ enum Priority
 extern Priority GetPriority(char p_sym);
 extern void CalculateOnLineExpression(stack<char>& p_operations, stack<calc_variable>& p_operands);
 extern void CalculateLineExpression(string p_input_str, string& p_output_str, const string::size_type p_mes_pos_shift = 0);
-#ifdef _USE_RPN
-extern void CalculateRPN(string& p_to_process_str);
-#endif //_USE_RPN
 //---------------------------------------------------------------------------
-#endif
+#endif // _LINEAR_H

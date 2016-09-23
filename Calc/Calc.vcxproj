@@ -282,7 +282,7 @@
     <ClCompile Include="CalculatorWideAdapter.cpp" />
     <ClCompile Include="Function.cpp" />
     <ClCompile Include="Message.cpp" />
-    <ClCompile Include="RPN.cpp" />
+    <ClCompile Include="Linear.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -300,7 +300,7 @@
     <ClInclude Include="Message.h" />
     <ClInclude Include="MyTypes.h" />
     <ClInclude Include="Resource.h" />
-    <ClInclude Include="RPN.h" />
+    <ClInclude Include="Linear.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
