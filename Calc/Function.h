@@ -22,6 +22,6 @@
 using namespace std;
 #include <string>
 //---------------------------------------------------------------------------
-void PreparingForFunction(string& p_input_str);
+void ProcessFunctions(string& p_input_str, const string::size_type p_mes_pos_shift = 0);
 //---------------------------------------------------------------------------
 #endif

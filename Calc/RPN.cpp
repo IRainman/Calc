@@ -137,8 +137,9 @@ inline void CalculateOnLineExpression(stack<char>& p_operations, stack<calc_vari
 	p_operations.pop();
 }
 //---------------------------------------------------------------------------
-void CalculateLineExpression(string p_input_str, string& p_output_str)
+void CalculateLineExpression(string p_input_str, string& p_output_str, const string::size_type p_mes_pos_shift /*= 0*/)
 {
+	AddMessage(CALCULATION);
 	Priority l_current_prioritet = priority_error;
 	stack <char> l_operations;
 	stack <calc_variable> l_operands;
@@ -255,25 +256,28 @@ void CalculateLineExpression(string p_input_str, string& p_output_str)
 			if (!l_negative_number || (l_negative_number && l_count_of_num > 1))
 			{
 				l_operands.push(calc_input_function(l_operand_string.c_str(), nullptr));
+#ifdef ENABLE_WARNINGS_IN_LOG
 				if (l_operands.top() >= std::numeric_limits<calc_variable>::max() || l_operands.top() <= std::numeric_limits<calc_variable>::min())
 				{
-					AddWarning(OUT_OF_RANGE);
+					AddWarning(OUT_OF_RANGE, l_operands.top());
 				}
+#endif
 				l_current_prioritet = priority_default;
 			}
-			// TODO
-			//if(l_count_of_num > std::numeric_limits<calc_variable>::max_digits10)
-			//{
-			//  AddWarning(LOW_ACCURACY);
-			//}
+#ifdef ENABLE_WARNINGS_IN_LOG
+			if (l_count_of_num > std::numeric_limits<calc_variable>::max_digits10)
+			{
+				AddWarning(LOW_ACCURACY, l_count_of_num, std::numeric_limits<calc_variable>::max_digits10);
+			}
+#endif
 			p_input_str.erase(0, l_count_of_num);
 		}
 	}
 	if (l_current_prioritet > priority_bracket && !l_negative_number)
 	{
-		AddError(NOT_ENOUGHT_OPERANDS, l_count);
+		AddError(NOT_ENOUGHT_OPERANDS, l_count + p_mes_pos_shift);
+		return;
 	}
-	AddMessage(PARSING_A_STRING);
 	while (!l_operations.empty())
 	{
 		CalculateOnLineExpression(l_operations, l_operands);
@@ -283,6 +287,7 @@ void CalculateLineExpression(string p_input_str, string& p_output_str)
 		p_output_str.resize(CALC_BUFFER_SIZE);
 		p_output_str.resize(snprintf(&p_output_str[0], CALC_BUFFER_SIZE - 1, CALC_INTERNAL_ACCURACY_FORMAT, l_operands.top()));
 	}
+	AddMessage(p_output_str);
 }
 //---------------------------------------------------------------------------
 #ifdef _ALLOW_INPUT_RPN_STRING

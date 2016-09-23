@@ -34,12 +34,12 @@ string::size_type m_correct_count;
 //---------------------------------------------------------------------------
 #define MESSAGE_BUFFER_SIZE 1024
 //---------------------------------------------------------------------------
-const static char* c_message_string[] =
+const string c_message_string[] =
 {
 // Сообщения
 	"\tПодготовка:",
-	"\tРазбор строки:",
-//	"\tВычисление:",
+	//  "\tРазбор строки:",
+	"\tВычисление:",
 #ifdef _USE_RPN
 	"\tRPN:",
 #endif
@@ -47,21 +47,22 @@ const static char* c_message_string[] =
 	"Конец вложенного выражения.",
 	"\tЗамена констант:",
 	"\tВычисление функций:",
+#ifdef ENABLE_WARNINGS_IN_LOG
 // Предупреждения
 	"число слишком большое, вычисление может быть выполнено с ошибками",
-//	"число имеет слишком высокую точность %d максимальная поддерживаемая точность %d, вычисление может быть выполнено с ошибками",
+	"число имеет слишком высокую точность %d максимальная поддерживаемая точность %d, вычисление может быть выполнено с ошибками",
+#endif // ENABLE_WARNINGS_IN_LOG
 // Ошибки
 	"Выражение не найдено",
 	"Недопустимый символ",
-	"Количество открывающих %d и закрывающих %d скобок не совпадает",
-	"Недопустимый символ после замены переменных и проверки на функции, проверьте правильность их написания",
+	"Недопустимый символ после замены констант замены и обработки функций, проверьте правильность их написания",
 #ifdef _USE_RPN
 	"Недопустимый символ во время преобразования в обратную польскую запись",
 #endif
+	"Количество открывающих %d и закрывающих %d скобок не совпадает",
 	"Последовательная запись нескольких операций не подерживается",
-	"На ноль делить нельзя",
-//	"У функции нехватает закрывающей скобки",
-//	"У функции отсутсвуют аргументы",
+	//  "У функции нехватает закрывающей скобки",
+	//  "У функции отсутсвуют аргументы",
 	"Недостаточно операндов для получения результата",
 	"Выражение не может начинатся со знака операции",
 	"У функции неверное число аргументов необходимо %d, обнаружено %d",
@@ -78,7 +79,7 @@ const static char* c_message_string[] =
 	"Перед символом степени \"e\" не обнаружено число",
 	"Запись \"--\" после степенного символа \"e\" недопустима",
 	"После символа \"e\" не обнаружен показатель степени",
-//	"Некорректное использование символа \"e\" сразу после показателя степени в позиции %d следует ещё один символ \"e\"",
+	//  "Некорректное использование символа \"e\" сразу после показателя степени в позиции %d следует ещё один символ \"e\"",
 	"Запись \"+-\" после степенного символа \"e\" недопостима",
 	"Последним символом в выражении не может быть символ \"e\"",
 	"Закрывающая скобка находится раньше открывающей",
@@ -101,54 +102,69 @@ inline void AddMessage(const string& p_message)
 //---------------------------------------------------------------------------
 inline void AddMessage(const MessageEnum p_message)
 {
-#ifdef _DEBUG
+#ifdef ENABLE_LOG_DEBUG
 	char l_temp_buf[MESSAGE_BUFFER_SIZE];
 	snprintf(l_temp_buf, MESSAGE_BUFFER_SIZE - 1, "AddMessage(%u... ", p_message);
 	m_message_string += l_temp_buf;
 	if (p_message > MESSAGE_LAST)
 		m_message_string += " DEBUG: Unknown Message!";
-#endif
-	m_message_string += MESSAGE(p_message);
-	m_message_string += "\r\n";
+#endif // ENABLE_LOG_DEBUG
+	AddMessage(MESSAGE(p_message));
 }
 //---------------------------------------------------------------------------
+#ifdef ENABLE_WARNINGS_IN_LOG
 inline void AddWarning(const MessageEnum p_message)
 {
-#ifdef _DEBUG
+#ifdef ENABLE_LOG_DEBUG
 	char l_temp_buf[MESSAGE_BUFFER_SIZE];
 	snprintf(l_temp_buf, MESSAGE_BUFFER_SIZE - 1, "AddWarning(%u... ", p_message);
 	m_message_string += l_temp_buf;
 	if (p_message < WARNING_FIRST || p_message > WARNING_LAST)
 		m_message_string += " DEBUG: Unknown Warning!";
-#endif
+#endif // ENABLE_LOG_DEBUG
 	m_message_string += "Внимание: ";
-	m_message_string += MESSAGE(p_message);
-	m_message_string += "\r\n";
+	AddMessage(MESSAGE(p_message));
 }
 //---------------------------------------------------------------------------
-void AddError(const MessageEnum p_message, string::size_type p_count/* = -1*/, string::size_type p_1/* = 0*/, string::size_type p_2/* = 0*/)
+void AddWarning(const MessageEnum p_message, string::size_type p_1, string::size_type p_2)
+{
+#ifdef ENABLE_LOG_DEBUG
+	char l_temp_buf[MESSAGE_BUFFER_SIZE];
+	snprintf(l_temp_buf, MESSAGE_BUFFER_SIZE - 1, "AddWarning(%u... ", p_message);
+	m_message_string += l_temp_buf;
+	if (p_message < WARNING_FIRST || p_message > WARNING_LAST)
+		m_message_string += " DEBUG: Unknown Warning!";
+#endif // ENABLE_LOG_DEBUG
+	char l_pre_message_buf[MESSAGE_BUFFER_SIZE];
+	snprintf(l_pre_message_buf, MESSAGE_BUFFER_SIZE - 1, "Внимание: %s", MESSAGE(p_message)); //-V111
+	char l_out_buf[MESSAGE_BUFFER_SIZE];
+	snprintf(l_out_buf, MESSAGE_BUFFER_SIZE - 1, l_pre_message_buf, p_1, p_2); //-V111
+	AddMessage(l_out_buf);
+}
+#endif // ENABLE_WARNINGS_IN_LOG
+//---------------------------------------------------------------------------
+void AddError(const MessageEnum p_message, string::size_type p_count/* = string::npos*/, string::size_type p_1/* = 0*/, string::size_type p_2/* = 0*/)
 {
 	m_no_error = false;
 	char l_pre_message_buf[MESSAGE_BUFFER_SIZE];
-	if (p_count == -1)
+	if (p_count == string::npos)
 	{
-		snprintf(l_pre_message_buf, MESSAGE_BUFFER_SIZE - 1, "Ошибка: %s\r\n", MESSAGE(p_message)); //-V111
+		snprintf(l_pre_message_buf, MESSAGE_BUFFER_SIZE - 1, "Ошибка: %s", MESSAGE(p_message).c_str()); //-V111
 	}
 	else
 	{
-		snprintf(l_pre_message_buf, MESSAGE_BUFFER_SIZE - 1, "В позиции %zd ошибка: %s\r\n", p_count + m_correct_count, MESSAGE(p_message)); //-V111
+		snprintf(l_pre_message_buf, MESSAGE_BUFFER_SIZE - 1, "В позиции %zd ошибка: %s", p_count - m_correct_count, MESSAGE(p_message).c_str()); //-V111
 	}
 	char l_out_buf[MESSAGE_BUFFER_SIZE];
 	snprintf(l_out_buf, MESSAGE_BUFFER_SIZE - 1, l_pre_message_buf, p_1, p_2); //-V111
-#ifdef _DEBUG
+	AddMessage(l_out_buf);
+#ifdef ENABLE_LOG_DEBUG
 	char l_temp_buf[MESSAGE_BUFFER_SIZE];
 	snprintf(l_temp_buf, MESSAGE_BUFFER_SIZE - 1, "AddError(%u... %s", p_message, l_out_buf); //-V111
 	m_message_string += l_temp_buf;
 	if (p_message < ERROR_FIRST || p_message > ERROR_LAST)
 		m_message_string += " DEBUG: Unknown Error!";
-#else
-	m_message_string += l_out_buf;
-#endif
+#endif // ENABLE_LOG_DEBUG
 }
 //---------------------------------------------------------------------------
 #endif // _MESSAGE_CPP

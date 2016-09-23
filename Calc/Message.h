@@ -28,32 +28,31 @@ enum MessageEnum
 {
 	MESSAGE_FIRST = 0,// Сообщения
 	PREPARING = MESSAGE_FIRST,
-	PARSING_A_STRING,
-	//  CALCULATION,
+	//  PARSING_A_STRING,
+	CALCULATION,
 #ifdef _USE_RPN
 	RPN,
 #endif
 	FOUND_SUBEXPRESSIONS,
 	END_OF_THE_SUBEXPRESSION,
 	REPLACEMENTS_OF_THE_CONSTANTS,
-	CALCULATION_FUNCTIONS,
-	MESSAGE_LAST = CALCULATION_FUNCTIONS,
-	
+	CALCULATE_FUNCTIONS,
+	MESSAGE_LAST = CALCULATE_FUNCTIONS,
+#ifdef ENABLE_WARNINGS_IN_LOG
 	WARNING_FIRST,// Предупреждения
 	OUT_OF_RANGE = WARNING_FIRST,
-	//  LOW_ACCURACY,
-	WARNING_LAST = OUT_OF_RANGE,
-	
+	LOW_ACCURACY,
+	WARNING_LAST = LOW_ACCURACY,
+#endif // ENABLE_WARNINGS_IN_LOG
 	ERROR_FIRST,// Ошибки
 	EXPRESSION_NOT_FOUND = ERROR_FIRST,
 	INVALID_CHARACTER,
-	NON_BRACKET_BALANCE,
-	INVALID_CHARACTER_AFTER_VAR_AND_FUNC,
+	INVALID_CHARACTER_AFTER_CONSTANT_AND_FUNCTION_PROCESS,
 #ifdef _USE_RPN
 	INVALID_CHARACTER_ON_RPN,
 #endif
+	NON_BRACKET_BALANCE,
 	CONSECUTIVE_RECORD_NUMBER_OF_TRANSACTIONS,
-	DIVIDE_BY_ZERO,
 	//  FUNCTION_LACKS_CLOSING_BRACKET,
 	//  FUNCTION_NOT_HAVING_ARGUMENTS,
 	NOT_ENOUGHT_OPERANDS,
@@ -93,7 +92,10 @@ extern string::size_type m_correct_count;
 //---------------------------------------------------------------------------
 extern void AddMessage(const string& p_message);
 extern void AddMessage(const MessageEnum p_message);
+#ifdef ENABLE_WARNINGS_IN_LOG
 extern void AddWarning(const MessageEnum p_message);
-extern void AddError(const MessageEnum p_message, string::size_type p_count = -1, string::size_type p_1 = 0, string::size_type p_2 = 0);
+extern void AddWarning(const MessageEnum p_message, string::size_type p_1, string::size_type p_2);
+#endif // ENABLE_WARNINGS_IN_LOG
+extern void AddError(const MessageEnum p_message, string::size_type p_count = string::npos, string::size_type p_1 = 0, string::size_type p_2 = 0);
 //---------------------------------------------------------------------------
 #endif

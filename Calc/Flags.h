@@ -29,5 +29,13 @@
 
 #define _DEBUG_FUNCTION // TODO: delete all blocks after add full function support
 #endif // _DEBUG
+
+#define ENABLE_LOG
+#ifdef ENABLE_LOG
+//#define ENABLE_WARNINGS_IN_LOG
+#ifdef _DEBUG
+//#define ENABLE_LOG_DEBUG
+#endif // _DEBUG
+#endif // ENABLE_LOG
 //---------------------------------------------------------------------------
 #endif
