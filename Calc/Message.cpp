@@ -31,6 +31,9 @@
 string m_message_string;
 bool m_no_error;
 string::size_type m_correct_count;
+#ifdef 0
+vector<string::size_type> m_corrected_spaces;
+#endif
 //---------------------------------------------------------------------------
 #define MESSAGE_BUFFER_SIZE 1024
 //---------------------------------------------------------------------------
@@ -147,7 +150,11 @@ void AddError(const MessageEnum p_message, string::size_type p_count/* = string:
 	}
 	else
 	{
-		snprintf(l_pre_message_buf, MESSAGE_BUFFER_SIZE - 1, "В позиции %zd ошибка: %s", p_count - m_correct_count, MESSAGE(p_message).c_str()); //-V111
+		const auto l_i = p_count - m_correct_count;
+#ifdef 0
+		//m_corrected_spaces.
+#endif
+		snprintf(l_pre_message_buf, MESSAGE_BUFFER_SIZE - 1, "В позиции %zd ошибка: %s", l_i, MESSAGE(p_message).c_str()); //-V111
 	}
 	char l_out_buf[MESSAGE_BUFFER_SIZE];
 	snprintf(l_out_buf, MESSAGE_BUFFER_SIZE - 1, l_pre_message_buf, p_1, p_2); //-V111

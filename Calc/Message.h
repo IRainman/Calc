@@ -21,6 +21,9 @@
 //---------------------------------------------------------------------------
 using namespace std;
 #include <string>
+#ifdef 0
+#include <vector>
+#endif
 #include "MyTypes.h"
 #include "Flags.h"
 //---------------------------------------------------------------------------
@@ -83,6 +86,9 @@ enum MessageEnum
 extern string m_message_string;
 extern bool m_no_error;
 extern string::size_type m_correct_count;
+#ifdef 0
+extern vector<string::size_type> m_corrected_spaces;
+#endif
 //---------------------------------------------------------------------------
 extern void AddMessage(const string& p_message);
 extern void AddMessage(const MessageEnum p_message);
