@@ -28,6 +28,7 @@
 #define ENABLE_LOG
 #ifdef ENABLE_LOG
 //#define ENABLE_WARNINGS_IN_LOG
+//#define EXTENDENT_REPORT_OF_POSITION_IN_LOG
 #ifdef _DEBUG
 //#define ENABLE_LOG_DEBUG
 #endif // _DEBUG

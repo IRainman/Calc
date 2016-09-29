@@ -31,7 +31,7 @@
 string m_message_string;
 bool m_no_error;
 string::size_type m_correct_count;
-#ifdef 0
+#ifdef EXTENDENT_REPORT_OF_POSITION_IN_LOG
 vector<string::size_type> m_corrected_spaces;
 #endif
 //---------------------------------------------------------------------------
@@ -151,8 +151,8 @@ void AddError(const MessageEnum p_message, string::size_type p_count/* = string:
 	else
 	{
 		const auto l_i = p_count - m_correct_count;
-#ifdef 0
-		//m_corrected_spaces.
+#ifdef EXTENDENT_REPORT_OF_POSITION_IN_LOG
+		m_corrected_spaces.push_back(l_i);
 #endif
 		snprintf(l_pre_message_buf, MESSAGE_BUFFER_SIZE - 1, "В позиции %zd ошибка: %s", l_i, MESSAGE(p_message).c_str()); //-V111
 	}

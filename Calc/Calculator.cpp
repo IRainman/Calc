@@ -321,7 +321,7 @@ void ValidateInputString(string& p_io_str)
 const string& Calculate(string p_input, string& p_output)
 {
 	m_correct_count = 0;
-#ifdef 0
+#ifdef EXTENDENT_REPORT_OF_POSITION_IN_LOG
 	m_corrected_spaces.clear();
 #endif
 	m_message_string.clear();
@@ -337,7 +337,7 @@ const string& Calculate(string p_input, string& p_output)
 				break;
 
 			p_input.erase(l_count, 1);
-#ifdef 0
+#ifdef EXTENDENT_REPORT_OF_POSITION_IN_LOG
 			m_corrected_spaces.push_back(l_count);
 #endif
 		}

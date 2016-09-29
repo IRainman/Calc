@@ -20,12 +20,12 @@
 #define _MESSAGE_H
 //---------------------------------------------------------------------------
 using namespace std;
+#include "Flags.h"
 #include <string>
-#ifdef 0
+#ifdef EXTENDENT_REPORT_OF_POSITION_IN_LOG
 #include <vector>
 #endif
 #include "MyTypes.h"
-#include "Flags.h"
 //---------------------------------------------------------------------------
 enum MessageEnum
 {
@@ -86,7 +86,7 @@ enum MessageEnum
 extern string m_message_string;
 extern bool m_no_error;
 extern string::size_type m_correct_count;
-#ifdef 0
+#ifdef EXTENDENT_REPORT_OF_POSITION_IN_LOG
 extern vector<string::size_type> m_corrected_spaces;
 #endif
 //---------------------------------------------------------------------------
