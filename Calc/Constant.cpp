@@ -44,7 +44,7 @@ const static char* c_str_constant[] =
 	"R",// Gas constant (J·K−1·mol−1)
 };
 //---------------------------------------------------------------------------
-const static calc_variable c_l_constant[] =
+const static calc_variable c_cv_constant[] =
 {
 	3.14159265358979323846264338327950288L,// Pi, Archimedes' constant or Ludolph's number
 	299792458.0L,// Speed of light in vacuum (m·s-1)
@@ -57,7 +57,12 @@ const static calc_variable c_l_constant[] =
 	8.31447215151515151515151515151515151L,// Gas constant (J·K−1·mol−1)
 };
 //---------------------------------------------------------------------------
-static_assert(_countof(c_str_constant) == _countof(c_l_constant), "c_str_constant and c_l_constant sizes do not match ;) Check them out!");
+static_assert(_countof(c_str_constant) == _countof(c_cv_constant) && _countof(c_cv_constant) == constant_counts, "c_str_constant and c_l_constant sizes do not match ;) Check them out!");
+//---------------------------------------------------------------------------
+inline const calc_variable GetConstant(Constants p_const_ind)
+{
+	return c_cv_constant[p_const_ind];
+}
 //---------------------------------------------------------------------------
 inline void ReplaceConstant(string& p_io_str, const string& p_const_name, const size_t p_number_of_constant)
 {
@@ -86,7 +91,7 @@ inline void ReplaceConstant(string& p_io_str, const string& p_const_name, const 
 	{
 		string l_const;
 		l_const.resize(CALC_BUFFER_SIZE);
-		l_const.resize(snprintf(&l_const[0], CALC_BUFFER_SIZE - 1, CALC_INTERNAL_ACCURACY_FORMAT, c_l_constant[p_number_of_constant]));
+		l_const.resize(snprintf(&l_const[0], CALC_BUFFER_SIZE - 1, CALC_INTERNAL_ACCURACY_FORMAT, c_cv_constant[p_number_of_constant]));
 		do
 		{
 			p_io_str.erase(l_pos, p_const_name.length());
