@@ -41,38 +41,38 @@ inline Priority GetPriority(const char p_sym)
 {
 	switch (p_sym)
 	{
-	case '^':
-		//		case '%':
-		return priority_power;
-
-	case '*':
-	case '/':
-		return priority_multiply;
-
-	case '+':
-	case '-':
-		return priority_addition;
-
-	case '(':
-	case ')':
-		return priority_bracket;
-
-	case '0':
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-	case '.':
-	case 'e':
-		return priority_default;
-
-	default:
-		return priority_error;
+		case '^':
+			//      case '%':
+			return priority_power;
+			
+		case '*':
+		case '/':
+			return priority_multiply;
+			
+		case '+':
+		case '-':
+			return priority_addition;
+			
+		case '(':
+		case ')':
+			return priority_bracket;
+			
+		case '0':
+		case '1':
+		case '2':
+		case '3':
+		case '4':
+		case '5':
+		case '6':
+		case '7':
+		case '8':
+		case '9':
+		case '.':
+		case 'e':
+			return priority_default;
+			
+		default:
+			return priority_error;
 	}
 }
 //---------------------------------------------------------------------------
