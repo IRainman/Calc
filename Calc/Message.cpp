@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2016 Solomin Alexey Leonovich, a.rainman on gmail point com
+ * Copyright 2009-2017 Solomin Alexey Leonovich, a.rainman on gmail point com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -49,41 +49,44 @@ const string c_message_string[] =
 	"\tВычисление функций:",
 #ifdef ENABLE_WARNINGS_IN_LOG
 // Предупреждения
-	"число слишком большое, вычисление может быть выполнено с ошибками",
-	"число имеет слишком высокую точность %d максимальная поддерживаемая точность %d, вычисление может быть выполнено с ошибками",
+	"число выходит за рамки допустимого диапазона, вычисление может быть выполнено с ошибками",
+	"число имеет слишком большое количество разрядов %d максимальное поддерживаемое %d, вычисление может быть выполнено с ошибками",
 #endif // ENABLE_WARNINGS_IN_LOG
 // Ошибки
-	"Выражение не найдено",
-	"Недопустимый символ",
-	"Недопустимый символ после замены констант и обработки функций, проверьте правильность их написания",
-	"Количество открывающих %d и закрывающих %d скобок не совпадает",
-	"Последовательная запись нескольких операций не подерживается",
-	//  "У функции нехватает закрывающей скобки",
-	//  "У функции отсутсвуют аргументы",
-	"Недостаточно операндов для получения результата",
+	"неопределённая ошибка",
+	"выражение не найдено",
+	"недопустимый символ",
+	"недопустимый символ после замены констант и обработки функций, проверьте правильность их написания",
+	"количество открывающих %d и закрывающих %d скобок не совпадает",
+	"последовательная запись нескольких операций не подерживается",
+	//  "у функции нехватает закрывающей скобки",
+	//  "у функции отсутсвуют аргументы",
+	"недостаточно операндов для получения результата",
 	"Выражение не может начинатся со знака операции",
-	"У функции неверное число аргументов необходимо %d, обнаружено %d",
-	"Пустые скобки",
-	"Открывающая скобка идёт сразу после закрывающей",
-	"Запись числа после закрывающей скобки недопустима",
-	"Выражение в скобках заканчивается знаком операции",
-	"Выражение в скобках начинается со знака операции",
-	"У функции отсутствует %d аргумент, позиция внутри скобок функции %d",
-	"Запись функции после закрывающей скобки недопустима",
-	"Запись нескольких точек в одном числе недопустима, следующая точка в позиции %d",
-	"Последним символом в выражении не может быть знак операции",
-	"Запись нескольких символов \"e\" в одном числе недопустима, следующий символ \"e\" в позиции %d",
-	"Перед символом степени \"e\" не обнаружено число",
-	"Запись \"--\" после степенного символа \"e\" недопустима",
-	"После символа \"e\" не обнаружен показатель степени",
-	//  "Некорректное использование символа \"e\" сразу после показателя степени в позиции %d следует ещё один символ \"e\"",
-	"Запись \"+-\" после степенного символа \"e\" недопостима",
-	"Последним символом в выражении не может быть символ \"e\"",
-	"Закрывающая скобка находится раньше открывающей",
-	"Запись числа перед открывающей скобкой недопустима",
+	"у функции неверное число аргументов необходимо %d, обнаружено %d",
+	"пустые скобки",
+	"открывающая скобка идёт сразу после закрывающей",
+	"запись числа после закрывающей скобки недопустима",
+	"выражение в скобках заканчивается знаком операции",
+	"выражение в скобках начинается со знака операции",
+	"у функции отсутствует %d аргумент, позиция внутри скобок функции %d",
+	"запись функции после закрывающей скобки недопустима",
+	"запись нескольких точек в одном числе недопустима, следующая точка в позиции %d",
+	"последним символом в выражении не может быть знак операции",
+	"запись нескольких символов \"e\" в одном числе недопустима, следующий символ \"e\" в позиции %d",
+	"перед символом степени \"e\" не обнаружено число",
+	"запись \"--\" после степенного символа \"e\" недопустима",
+	"после символа \"e\" не обнаружен показатель степени",
+	"запись \"+-\" после степенного символа \"e\" недопостима",
+	"последним символом в выражении не может быть символ \"e\"",
+	"закрывающая скобка находится раньше открывающей",
+	"запись числа перед открывающей скобкой недопустима",
 #ifdef _DEBUG
 	"DEBUG: Internal Processing Error: \"void CalculateFunction(...)\"",
-	"DEBUG: Internal Processing Error: \"bool CalculateOnLineExpression()\"",
+	"DEBUG: Internal Processing Error: \"void CalculateOnLineExpression(...): p_operands is unknown\"",
+	"DEBUG: Internal Processing Error: \"void CalculateOnLineExpression(...): p_operands is not addition\"",
+	"DEBUG: Internal Processing Error: \"void CalculateLineExpression(...): l_current_operand is invalid\"",
+	"DEBUG: Internal Processing Error: \"void CalculateLineExpression(...): l_operands.size() > 1 after processing\"",
 	"DEBUG: number of arguments passed to the function \"replace\" is not defined in the function of \"replace\", it is impossible to calculate the expression",
 #endif
 };
@@ -91,6 +94,7 @@ const string c_message_string[] =
 static_assert(_countof(c_message_string) == ERROR_LAST + 1, "MessageString and MessageEnum sizes do not match ;) Check them out!");
 //---------------------------------------------------------------------------
 #define MESSAGE(code) (c_message_string[code])
+#define CMESSAGE(code) (c_message_string[code].c_str())
 //---------------------------------------------------------------------------
 inline void AddMessage(const string& p_message)
 {
@@ -133,7 +137,7 @@ void AddWarning(const MessageEnum p_message, string::size_type p_1, string::size
 		m_message_string += " DEBUG: Unknown Warning!";
 #endif // ENABLE_LOG_DEBUG
 	char l_pre_message_buf[MESSAGE_BUFFER_SIZE];
-	snprintf(l_pre_message_buf, MESSAGE_BUFFER_SIZE - 1, "Внимание: %s", MESSAGE(p_message)); //-V111
+	snprintf(l_pre_message_buf, MESSAGE_BUFFER_SIZE - 1, "Внимание: %s", CMESSAGE(p_message)); //-V111
 	char l_out_buf[MESSAGE_BUFFER_SIZE];
 	snprintf(l_out_buf, MESSAGE_BUFFER_SIZE - 1, l_pre_message_buf, p_1, p_2); //-V111
 	AddMessage(l_out_buf);
@@ -146,7 +150,7 @@ void AddError(const MessageEnum p_message, string::size_type p_count/* = string:
 	char l_pre_message_buf[MESSAGE_BUFFER_SIZE];
 	if (p_count == string::npos)
 	{
-		snprintf(l_pre_message_buf, MESSAGE_BUFFER_SIZE - 1, "Ошибка: %s", MESSAGE(p_message).c_str()); //-V111
+		snprintf(l_pre_message_buf, MESSAGE_BUFFER_SIZE - 1, "Ошибка: %s", CMESSAGE(p_message)); //-V111
 	}
 	else
 	{
@@ -154,7 +158,7 @@ void AddError(const MessageEnum p_message, string::size_type p_count/* = string:
 #ifdef EXTENDENT_REPORT_OF_POSITION_IN_LOG
 		m_corrected_spaces.push_back(l_i);
 #endif
-		snprintf(l_pre_message_buf, MESSAGE_BUFFER_SIZE - 1, "В позиции %zd ошибка: %s", l_i, MESSAGE(p_message).c_str()); //-V111
+		snprintf(l_pre_message_buf, MESSAGE_BUFFER_SIZE - 1, "В позиции %zd ошибка: %s", l_i, CMESSAGE(p_message)); //-V111
 	}
 	char l_out_buf[MESSAGE_BUFFER_SIZE];
 	snprintf(l_out_buf, MESSAGE_BUFFER_SIZE - 1, l_pre_message_buf, p_1, p_2); //-V111

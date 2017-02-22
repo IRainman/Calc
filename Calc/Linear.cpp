@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2016 Solomin Alexey Leonovich, a.rainman on gmail point com
+ * Copyright 2009-2017 Solomin Alexey Leonovich, a.rainman on gmail point com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -76,7 +76,7 @@ inline Priority GetPriority(const char p_sym)
 	}
 }
 //---------------------------------------------------------------------------
-inline void CalculateOnLineExpression(stack<char>& p_operations, stack<calc_variable>& p_operands)
+inline void CalculateOnLineExpression(stack<char>& p_operations, stack<calc_variable>& p_operands, const string::size_type p_count, const string::size_type p_mes_pos_shift)
 {
 	// TODO: refactoring this function
 // 2st!!! get operand's
@@ -107,11 +107,12 @@ inline void CalculateOnLineExpression(stack<char>& p_operations, stack<calc_vari
 				case '-':
 					p_operands.push(a - b);
 					break;
-#ifdef _DEBUG
 				default:
-					AddError(INTERNAL_PROCESSING_ERROR_CalculateOnLineExpression);
-					break;
+#ifdef _DEBUG
+					AddError(INTERNAL_PROCESSING_ERROR_CalculateOnLineExpression_p_operands_is_unknown);
 #endif
+					AddError(UNKNOWN_ERROR, p_count + p_mes_pos_shift);
+					break;
 			}
 		}
 		else
@@ -121,30 +122,32 @@ inline void CalculateOnLineExpression(stack<char>& p_operations, stack<calc_vari
 				case '-':
 					p_operands.push(-b);
 					break;
-#ifdef _DEBUG
-				default:
-					AddError(INTERNAL_PROCESSING_ERROR_CalculateOnLineExpression);
+				case '+':
+					p_operands.push(b);
 					break;
+				default:
+#ifdef _DEBUG
+					AddError(INTERNAL_PROCESSING_ERROR_CalculateOnLineExpression_p_operands_is_not_addition);
 #endif
+					AddError(UNKNOWN_ERROR, p_count + p_mes_pos_shift);
+					break;
 			}
 		}
 	}
 	p_operations.pop();
 }
 //---------------------------------------------------------------------------
-void CalculateLineExpression(string p_input_str, string& p_output_str, const string::size_type p_mes_pos_shift /*= 0*/)
+void CalculateLineExpression(string p_input_str, string& p_output_str, string::size_type p_mes_pos_shift /*= 0*/)
 {
 	AddMessage(CALCULATION);
 	Priority l_current_prioritet = priority_error;
 	stack <char> l_operations;
 	stack <calc_variable> l_operands;
-	bool l_negative_number;
 	string::size_type l_count;
-	for (l_count = 0; p_input_str.size(); l_count++)
+	for (l_count = 0; !p_input_str.empty(); l_count++)
 	{
-		l_negative_number = l_current_prioritet > 0 && p_input_str.c_str()[0] == '-' && p_input_str.c_str()[1] != '(';
 		l_current_prioritet = GetPriority(p_input_str.c_str()[0]);
-		if (l_current_prioritet && !l_negative_number)
+		if (l_current_prioritet != priority_default)
 		{
 			if (l_operations.empty())
 			{
@@ -153,6 +156,7 @@ void CalculateLineExpression(string p_input_str, string& p_output_str, const str
 				*/
 				l_operations.push(p_input_str.c_str()[0]);
 				p_input_str.erase(0, 1);
+				p_mes_pos_shift += 1;
 			}
 			else
 			{
@@ -160,16 +164,17 @@ void CalculateLineExpression(string p_input_str, string& p_output_str, const str
 				{
 					do
 					{
+						/*
+						b)  опеpация выталкивает из стека все опеpации с большим или pавным пpиоpитетом в выходную стpоку;
+						*/
 						if (GetPriority(l_operations.top()) >= l_current_prioritet)
 						{
-							/*
-							b)  опеpация выталкивает из стека все опеpации с большим или pавным пpиоpитетом в выходную стpоку;
-							*/
-							CalculateOnLineExpression(l_operations, l_operands);
+							CalculateOnLineExpression(l_operations, l_operands, l_count, p_mes_pos_shift);
 							if (l_operations.empty())
 							{
 								l_operations.push(p_input_str.c_str()[0]);
 								p_input_str.erase(0, 1);
+								p_mes_pos_shift += 1;
 								break;
 							}
 						}
@@ -177,6 +182,7 @@ void CalculateLineExpression(string p_input_str, string& p_output_str, const str
 						{
 							l_operations.push(p_input_str.c_str()[0]);
 							p_input_str.erase(0, 1);
+							p_mes_pos_shift += 1;
 							break;
 						}
 					}
@@ -191,91 +197,90 @@ void CalculateLineExpression(string p_input_str, string& p_output_str, const str
 						*/
 						l_operations.push(p_input_str.c_str()[0]);
 						p_input_str.erase(0, 1);
+						p_mes_pos_shift += 1;
 					}
 					else
 					{
-						while (!l_operations.empty())
+						/*
+						d)  закpывающая кpуглая скобка выталкивает все опеpации из стека до ближайшей откpывающей скобки,
+						сами скобки в выходную стpоку не пеpеписываются, а уничтожают дpуг дpуга.
+						*/
+						do
 						{
-							/*
-							d)  закpывающая кpуглая скобка выталкивает все опеpации из стека до ближайшей откpывающей скобки,
-							сами скобки в выходную стpоку не пеpеписываются, а уничтожают дpуг дpуга.
-							*/
-							if (GetPriority(l_operations.top()) == priority_bracket && l_operations.top() != ')')
+							if (l_operations.top() != '(')
 							{
-								l_operations.pop();
-								p_input_str.erase(0, 1);
-								break;
+								CalculateOnLineExpression(l_operations, l_operands, l_count, p_mes_pos_shift);
 							}
 							else
 							{
-								CalculateOnLineExpression(l_operations, l_operands);
+								l_operations.pop();
+								
+								p_input_str.erase(0, 1);
+								p_mes_pos_shift += 1;
+								break;
 							}
 						}
+						while (!l_operations.empty());
 					}
 				}
 			}
 		}
 		else
 		{
-			string l_operand_string;
-			string::size_type l_count_of_num = 0;
-			if (l_negative_number)
+			char* l_current_operand_ptr = &p_input_str[0];
+			char** l_current_operand_ptr_ptr = &l_current_operand_ptr;
+			const auto l_current_operand = calc_input_function(p_input_str.c_str(), l_current_operand_ptr_ptr);
+			const auto l_diff = *l_current_operand_ptr_ptr - p_input_str.c_str();
+			if (l_diff)
 			{
-				l_operand_string = p_input_str.c_str()[0];
-				l_count_of_num++;
-				l_count++;
-			}
-			string::size_type l_countE = 0;
-			for (; l_count_of_num < p_input_str.size(); l_count_of_num++, l_count++)
-			{
-				if (GetPriority(p_input_str.c_str()[l_count_of_num]) == priority_default
-				        || (p_input_str.c_str()[l_count_of_num - 1] == 'e'
-				            && (p_input_str.c_str()[l_count_of_num] == '+' || p_input_str.c_str()[l_count_of_num] == '-')))
-				{
-					// Возможная избыточность! уже есть ошибка MULTI_E_SYMBOL_IN_NUMBER
-					//if(p_input_str.c_str()[l_count_of_num - 1] == 'e')
-					//  l_countE++;
-					
-					l_operand_string += p_input_str.c_str()[l_count_of_num];
-				}
-				else
-				{
-					break;
-				}
-			}
-			// Возможная избыточность! уже есть ошибка MULTI_E_SYMBOL_IN_NUMBER
-			//if(l_countE > 1)
-			//{
-			//  AddError(AFTER_E_FOUND_ANOTHER_E, l_count, l_countE);
-			//}
-			if (!l_negative_number || (l_negative_number && l_count_of_num > 1))
-			{
-				l_operands.push(calc_input_function(l_operand_string.c_str(), nullptr));
+				p_input_str.erase(0, l_diff);
+				p_mes_pos_shift += l_diff;
+				
+				l_operands.push(l_current_operand);
+				
 #ifdef ENABLE_WARNINGS_IN_LOG
-				if (l_operands.top() >= std::numeric_limits<calc_variable>::max() || l_operands.top() <= std::numeric_limits<calc_variable>::min())
+				// TODO
+				if (l_operands.top() >= std::numeric_limits<calc_variable>::max())
 				{
-					AddWarning(OUT_OF_RANGE, l_operands.top());
+					AddWarning(OUT_OF_RANGE);
+				}
+				if (l_operands.top() <= std::numeric_limits<calc_variable>::min())
+				{
+					AddWarning(OUT_OF_RANGE);
+				}
+				if (l_diff > std::numeric_limits<calc_variable>::max_digits10)
+				{
+					AddWarning(MAX_DIGITS, l_diff, std::numeric_limits<calc_variable>::max_digits10);
 				}
 #endif
 				l_current_prioritet = priority_default;
 			}
-#ifdef ENABLE_WARNINGS_IN_LOG
-			if (l_count_of_num > std::numeric_limits<calc_variable>::max_digits10)
+			else
 			{
-				AddWarning(LOW_ACCURACY, l_count_of_num, std::numeric_limits<calc_variable>::max_digits10);
-			}
+#ifdef _DEBUG
+				AddError(INTERNAL_PROCESSING_ERROR_CalculateLineExpression_l_current_operand, l_count + p_mes_pos_shift);
 #endif
-			p_input_str.erase(0, l_count_of_num);
+				AddError(UNKNOWN_ERROR, l_count + p_mes_pos_shift);
+				return;
+			}
 		}
 	}
-	if (l_current_prioritet > priority_bracket && !l_negative_number)
+	if (l_current_prioritet > priority_bracket)
 	{
 		AddError(NOT_ENOUGHT_OPERANDS, l_count + p_mes_pos_shift);
 		return;
 	}
 	while (!l_operations.empty())
 	{
-		CalculateOnLineExpression(l_operations, l_operands);
+		CalculateOnLineExpression(l_operations, l_operands, l_count, p_mes_pos_shift);
+	}
+	if (l_operands.size() > 1)
+	{
+#ifdef _DEBUG
+		AddError(INTERNAL_PROCESSING_ERROR_CalculateLineExpression_l_operands, l_count + p_mes_pos_shift);
+#endif
+		AddError(UNKNOWN_ERROR, l_count + p_mes_pos_shift);
+		return;
 	}
 	if (!l_operands.empty())
 	{

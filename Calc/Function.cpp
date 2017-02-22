@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2016 Solomin Alexey Leonovich, a.rainman on gmail point com
+ * Copyright 2009-2017 Solomin Alexey Leonovich, a.rainman on gmail point com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,8 +32,19 @@
 #include "Function.h"
 #include <stdlib.h>
 //---------------------------------------------------------------------------
+// TODO
+//extern const calc_variable c_l_constant[];
+//
+//inline calc_variable rad(calc_variable x)
+//{
+//	return x * c_l_constant[0] / 180;
+//}
+// TODO http://en.cppreference.com/w/cpp/numeric/math
+// TODO http://en.cppreference.com/w/cpp/experimental/special_math
+//---------------------------------------------------------------------------
 const string c_function1[] =
 {
+	//"rad(",// One radian is equivalent to 180/PI degrees.
 	"sin(",// sinus
 	"cos(",// cosinus
 	"exp(",// exponent function, on x=1 return value is e
@@ -48,11 +59,12 @@ const string c_function1[] =
 	//"fabs(",
 	//"floor(",
 	//"ldexp(",
-	//"modf("
+	//"modf(",
 };
 typedef calc_variable(* fptr1)(calc_variable);
 const fptr1 f_function1[] =
 {
+	//rad,
 	sin,
 	cos,
 	exp,
@@ -67,7 +79,7 @@ const fptr1 f_function1[] =
 	//fabs,
 	//floor,
 	//ldexp,
-	//modf
+	//modf,
 };
 const string c_function2[] =
 {
@@ -76,6 +88,9 @@ const string c_function2[] =
 	//"modf(",
 	//"fmod(",
 	//"frexp(",
+	
+	//"max(",
+	//"min(",
 };
 typedef calc_variable(* fptr2)(calc_variable, calc_variable);
 const fptr2 f_function2[] =
@@ -85,6 +100,9 @@ const fptr2 f_function2[] =
 	//modf,
 	//fmod,
 	//frexp,
+	
+	//fmax,
+	//fmin,
 };
 #ifdef _DEBUG_FUNCTION // TODO: delete this block after add full function support
 const string c_function3[] =
@@ -179,14 +197,22 @@ void ProcessParametr(string& p_param_str, const string::size_type p_start, const
 //---------------------------------------------------------------------------
 void CalculateFunction(string& p_io_str, const string& p_func_name, const size_t p_count, const size_t p_number_of_param)
 {
-	string::size_type l_start;
-	l_start = p_io_str.find(p_func_name);
-	if (l_start == string::npos
-	        || (l_start && (GetPriority(p_io_str.c_str()[l_start - 1]) < priority_bracket
-	                        || GetPriority(p_io_str.c_str()[l_start - 1]) == priority_error))
-	   )
+	// find func
+	auto l_start = p_io_str.find(p_func_name);
+	if (l_start == string::npos)
+	{
 		return;
-		
+	}
+	else if (l_start)
+	{
+		const auto l_current_priority = GetPriority(p_io_str.c_str()[l_start - 1]);
+		if (l_current_priority < priority_bracket ||
+		        l_current_priority == priority_error)
+		{
+			return;
+		}
+	}
+	// ~find func
 	do
 	{
 		string l_params_str;
@@ -260,13 +286,22 @@ void CalculateFunction(string& p_io_str, const string& p_func_name, const size_t
 			p_io_str.insert(l_start, l_params_str);
 			m_correct_count += l_params_str.size();
 		}
-		
+		// find func
 		l_start = p_io_str.find(p_func_name);
-		if (l_start == string::npos
-		        || (l_start && (GetPriority(p_io_str.c_str()[l_start - 1]) < priority_bracket
-		                        || GetPriority(p_io_str.c_str()[l_start - 1]) == priority_error))
-		   )
+		if (l_start == string::npos)
+		{
 			return;
+		}
+		else if (l_start)
+		{
+			const auto l_current_priority = GetPriority(p_io_str.c_str()[l_start - 1]);
+			if (l_current_priority < priority_bracket ||
+			        l_current_priority == priority_error)
+			{
+				return;
+			}
+		}
+		// ~find func
 	}
 	while (true);
 }
@@ -289,11 +324,11 @@ void ProcessFunctions(string& p_io_str, const string::size_type p_mes_pos_shift 
 		CalculateFunction(p_io_str, c_function5[i], i, 5);
 #endif
 	AddMessage(p_io_str.c_str());
-		
+	
 	for (string::size_type l_count = 0; l_count < p_io_str.size() - 1; l_count++)
 	{
-		if (GetPriority(p_io_str.c_str()[l_count]) == priority_default
-		        && p_io_str.c_str()[l_count + 1] == '(')
+		if (p_io_str.c_str()[l_count + 1] == '('
+		        && GetPriority(p_io_str.c_str()[l_count]) == priority_default)
 		{
 			AddError(NUMBERS_BEFORE_OPENING_BRACKET, l_count - 1 + p_mes_pos_shift);
 			return;

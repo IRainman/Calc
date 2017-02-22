@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2016 Solomin Alexey Leonovich, a.rainman on gmail point com
+ * Copyright 2009-2017 Solomin Alexey Leonovich, a.rainman on gmail point com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,11 +41,12 @@ enum MessageEnum
 #ifdef ENABLE_WARNINGS_IN_LOG
 	WARNING_FIRST,// Предупреждения
 	OUT_OF_RANGE = WARNING_FIRST,
-	LOW_ACCURACY,
-	WARNING_LAST = LOW_ACCURACY,
+	MAX_DIGITS,
+	WARNING_LAST = MAX_DIGITS,
 #endif // ENABLE_WARNINGS_IN_LOG
 	ERROR_FIRST,// Ошибки
-	EXPRESSION_NOT_FOUND = ERROR_FIRST,
+	UNKNOWN_ERROR = ERROR_FIRST,
+	EXPRESSION_NOT_FOUND,
 	INVALID_CHARACTER,
 	INVALID_CHARACTER_AFTER_CONSTANT_AND_FUNCTION_PROCESS,
 	NON_BRACKET_BALANCE,
@@ -68,14 +69,16 @@ enum MessageEnum
 	BEFORE_E_NOT_FOUND_NUMBER,
 	RECORD_DOUBLE_MINUS_AFTER_E,
 	AFTER_E_NOT_FOUND_EXPONENT,
-	//  AFTER_E_FOUND_ANOTHER_E,
 	RECORD_PLUS_MINUS_AFTER_E,
 	LAST_SYMBOL_IN_EXPRESSION_IS_E,
 	CLOSING_BRACKET_BEFORE_OPENING,
 	NUMBERS_BEFORE_OPENING_BRACKET,
 #ifdef _DEBUG
 	INTERNAL_PROCESSING_ERROR_CalculateFunction,
-	INTERNAL_PROCESSING_ERROR_CalculateOnLineExpression,
+	INTERNAL_PROCESSING_ERROR_CalculateOnLineExpression_p_operands_is_unknown,
+	INTERNAL_PROCESSING_ERROR_CalculateOnLineExpression_p_operands_is_not_addition,
+	INTERNAL_PROCESSING_ERROR_CalculateLineExpression_l_current_operand,
+	INTERNAL_PROCESSING_ERROR_CalculateLineExpression_l_operands,
 	INTERNAL_PROCESSING_ERROR_replace,
 	ERROR_LAST = INTERNAL_PROCESSING_ERROR_replace,
 #else

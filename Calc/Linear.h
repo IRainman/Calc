@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2016 Solomin Alexey Leonovich, a.rainman on gmail point com
+ * Copyright 2009-2017 Solomin Alexey Leonovich, a.rainman on gmail point com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,7 +38,6 @@ enum Priority
 };
 //---------------------------------------------------------------------------
 extern Priority GetPriority(char p_sym);
-extern void CalculateOnLineExpression(stack<char>& p_operations, stack<calc_variable>& p_operands);
-extern void CalculateLineExpression(string p_input_str, string& p_output_str, const string::size_type p_mes_pos_shift = 0);
+extern void CalculateLineExpression(string p_input_str, string& p_output_str, string::size_type p_mes_pos_shift = 0);
 //---------------------------------------------------------------------------
 #endif // _LINEAR_H
