@@ -51,12 +51,12 @@ void ValidateInputString(const string& p_input_str)
 	string::size_type l_count_p1;
 	const auto* l_start = p_input_str.c_str();
 	
-	l_count = p_input_str.find_first_not_of("0123456789+-*/^.e(),picGJphiatmLRpowsincosexptanacosasinatanloglog10sqrt");
-	if (l_count != string::npos)
-	{
-		AddError(INVALID_CHARACTER, l_count);
-		return;
-	}
+	//l_count = p_input_str.find_first_not_of("0123456789+-*/^.e(),picGJphiatmLRpowmaxminradsincosexptanacosasinatanloglog10sqrt");
+	//if (l_count != string::npos)
+	//{
+	//  AddError(INVALID_CHARACTER, l_count);
+	//  return;
+	//}
 	
 	if (l_start[0] != '-' && GetPriority(l_start[0]) > priority_bracket)
 	{

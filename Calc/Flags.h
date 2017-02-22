@@ -21,9 +21,8 @@
 //---------------------------------------------------------------------------
 // TODO: Add support for all blocks and delete this header from project
 //---------------------------------------------------------------------------
-#ifdef _DEBUG
-#define _DEBUG_FUNCTION // TODO: delete all blocks after add full function support
-#endif // _DEBUG
+// TODO
+//#define _ENABLE_THREE_ARGUMENT_FUNCTION
 
 #define ENABLE_LOG
 #ifdef ENABLE_LOG

@@ -30,41 +30,62 @@
 #include "Linear.h"
 #include "Message.h"
 #include "Function.h"
+#include "Constant.h"
 #include <stdlib.h>
 //---------------------------------------------------------------------------
-// TODO
-//extern const calc_variable c_l_constant[];
-//
-//inline calc_variable rad(calc_variable x)
-//{
-//	return x * c_l_constant[0] / 180;
-//}
+inline calc_variable rad(calc_variable p_grad)
+{
+	return p_grad * GetConstant(pi_constant) / 180;
+}
 // TODO http://en.cppreference.com/w/cpp/numeric/math
 // TODO http://en.cppreference.com/w/cpp/experimental/special_math
 //---------------------------------------------------------------------------
 const string c_function1[] =
 {
-	//"rad(",// One radian is equivalent to 180/PI degrees.
+	"rad(",// One radian is equivalent to 180/PI degrees.
 	"sin(",// sinus
 	"cos(",// cosinus
 	"exp(",// exponent function, on x=1 return value is e
 	"tan(",// tangens
-	"acos(",// arccosinus
-	"asin(",// arcsinus
-	"atan(",// arctangens
+	"arccos(",// arccosinus
+	"arcsin(",// arcsinus
+	"arctan(",// arctangens
 	"log(",// natural logarithm
 	"log10(",// base-10 logarithm
-	"sqrt("// square root
+	"sqrt(",// square root
 	//"ceil(",
 	//"fabs(",
 	//"floor(",
 	//"ldexp(",
 	//"modf(",
+#ifdef _DEBUG
+	//TODO not tested
+	"sh("
+	"ch("
+	"tanh("
+	
+	"abs(",
+	
+	"log2(",
+	"log1p(",
+	
+	"cbrt(",
+	
+	"arsinh(",
+	"arcosh(",
+	"artanh(",
+	
+	"tgamma(",
+	"lgamma(",
+	
+	"trunc(",
+	"round(",
+#endif
 };
 typedef calc_variable(* fptr1)(calc_variable);
 const fptr1 f_function1[] =
 {
-	//rad,
+	rad,
 	sin,
 	cos,
 	exp,
@@ -80,17 +101,46 @@ const fptr1 f_function1[] =
 	//floor,
 	//ldexp,
 	//modf,
+#ifdef _DEBUG
+	//TODO not tested
+	sinh, // http://en.cppreference.com/w/cpp/numeric/math/sinh
+	cosh, // http://en.cppreference.com/w/cpp/numeric/math/cosh
+	tanh, // http://en.cppreference.com/w/cpp/numeric/math/tanh
+	
+	fabs,// http://en.cppreference.com/w/cpp/numeric/math/fabs
+	
+	log2,// http://en.cppreference.com/w/cpp/numeric/math/log2
+	log1p,// http://en.cppreference.com/w/cpp/numeric/math/log1p
+	
+	cbrt,// http://en.cppreference.com/w/cpp/numeric/math/cbrt
+	
+	asinh, // http://en.cppreference.com/w/cpp/numeric/math/asinh
+	acosh, // http://en.cppreference.com/w/cpp/numeric/math/acosh
+	atanh, // http://en.cppreference.com/w/cpp/numeric/math/atanh
+	
+	tgamma, // http://en.cppreference.com/w/cpp/numeric/math/tgamma
+	lgamma, // http://en.cppreference.com/w/cpp/numeric/math/lgamma
+	
+	trunc, // http://en.cppreference.com/w/cpp/numeric/math/trunc
+	round, // http://en.cppreference.com/w/cpp/numeric/math/round
+#endif
 };
 const string c_function2[] =
 {
-	"pow("// power
+	"pow(",// power
 	//"atan2(",
 	//"modf(",
 	//"fmod(",
 	//"frexp(",
-	
-	//"max(",
-	//"min(",
+#ifdef _DEBUG
+	//TODO not working properly
+	"max(",
+	"min(",
+#endif
+#ifdef _DEBUG
+	//TODO not tested
+	"hypot2(",
+#endif
 };
 typedef calc_variable(* fptr2)(calc_variable, calc_variable);
 const fptr2 f_function2[] =
@@ -100,21 +150,33 @@ const fptr2 f_function2[] =
 	//modf,
 	//fmod,
 	//frexp,
-	
-	//fmax,
-	//fmin,
+#ifdef _DEBUG
+	//TODO not working properly
+	fmax,// http://en.cppreference.com/w/cpp/numeric/math/fmax
+	fmin,// http://en.cppreference.com/w/cpp/numeric/math/fmin
+#endif
+#ifdef _DEBUG
+	//TODO not tested
+	hypot, // http://en.cppreference.com/w/cpp/numeric/math/hypot
+#endif
 };
-#ifdef _DEBUG_FUNCTION // TODO: delete this block after add full function support
+#ifdef _ENABLE_THREE_ARGUMENT_FUNCTION
 const string c_function3[] =
 {
-	"plus3(",// this function performs addition of three arguments
-	"spin3("// this function performs addition of three arguments
+#ifdef _DEBUG
+	//TODO not tested
+	"hypot2(",
+#endif
 };
-const string c_function5[] =
+typedef calc_variable(*fptr3)(calc_variable, calc_variable, calc_variable);
+const fptr3 f_function3[] =
 {
-	"plus5("// this function performs addition of five arguments
+#ifdef _DEBUG
+	//TODO not tested
+	hypot, // (since C++17) http://en.cppreference.com/w/cpp/numeric/math/hypot
+#endif
 };
-#define c_max_argument_of_function 5
+#define c_max_argument_of_function 3
 #else
 #define c_max_argument_of_function 2
 #endif
@@ -127,11 +189,9 @@ inline calc_variable CalculateParametrs(const size_t p_number_of_param, const si
 			return f_function1[p_function_number](p_params[0]);
 		case 2:
 			return f_function2[p_function_number](p_params[0], p_params[1]);
-#ifdef _DEBUG_FUNCTION // TODO: delete this block after add full function support
+#ifdef _ENABLE_THREE_ARGUMENT_FUNCTION
 		case 3:
-			return p_params[0] + p_params[1] + p_params[2];
-		case 5:
-			return p_params[0] + p_params[1] + p_params[2] + p_params[3] + p_params[4];
+			return f_function3[p_function_number](p_params[0], p_params[1], p_params[2]);
 #endif
 #ifdef _DEBUG
 		default:
@@ -316,12 +376,9 @@ void ProcessFunctions(string& p_io_str, const string::size_type p_mes_pos_shift 
 	for (size_t i = 0; i < _countof(c_function2); i++)
 		CalculateFunction(p_io_str, c_function2[i], i, 2);
 		
-#ifdef _DEBUG_FUNCTION // TODO: delete this block after add full function support
+#ifdef _ENABLE_THREE_ARGUMENT_FUNCTION
 	for (size_t i = 0; i < _countof(c_function3); i++)
 		CalculateFunction(p_io_str, c_function3[i], i, 3);
-		
-	for (size_t i = 0; i < _countof(c_function5); i++)
-		CalculateFunction(p_io_str, c_function5[i], i, 5);
 #endif
 	AddMessage(p_io_str.c_str());
 	

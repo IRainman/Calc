@@ -59,7 +59,7 @@ const static calc_variable c_cv_constant[] =
 //---------------------------------------------------------------------------
 static_assert(_countof(c_str_constant) == _countof(c_cv_constant) && _countof(c_cv_constant) == constant_counts, "c_str_constant and c_l_constant sizes do not match ;) Check them out!");
 //---------------------------------------------------------------------------
-inline const calc_variable GetConstant(Constants p_const_ind)
+const calc_variable GetConstant(Constants p_const_ind)
 {
 	return c_cv_constant[p_const_ind];
 }
