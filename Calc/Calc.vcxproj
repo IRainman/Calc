@@ -280,6 +280,7 @@
     <ClCompile Include="CalcDlg.cpp" />
     <ClCompile Include="Calculator.cpp" />
     <ClCompile Include="CalculatorWideAdapter.cpp" />
+    <ClCompile Include="Constant.cpp" />
     <ClCompile Include="Function.cpp" />
     <ClCompile Include="Message.cpp" />
     <ClCompile Include="Linear.cpp" />
@@ -295,6 +296,7 @@
     <ClInclude Include="CalcDlg.h" />
     <ClInclude Include="Calculator.h" />
     <ClInclude Include="CalculatorWideAdapter.h" />
+    <ClInclude Include="Constant.h" />
     <ClInclude Include="Flags.h" />
     <ClInclude Include="Function.h" />
     <ClInclude Include="Message.h" />
