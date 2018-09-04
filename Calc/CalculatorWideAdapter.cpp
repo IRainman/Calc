@@ -50,7 +50,7 @@ inline string to_string(const wstring& p_text)
 //---------------------------------------------------------------------------
 extern const string& Calculate(string p_input, string& p_output);
 
-wstring& Calculate(wstring p_input, wstring& p_output)
+wstring& Calculate(const wstring& p_input, wstring& p_output)
 {
 	string l_output;
 	

@@ -21,7 +21,7 @@
 //---------------------------------------------------------------------------
 #include <string>
 //---------------------------------------------------------------------------
-std::wstring& Calculate(std::wstring p_input, std::wstring& p_output);
+std::wstring& Calculate(const std::wstring& p_input, std::wstring& p_output);
 //---------------------------------------------------------------------------
 // TODO
 //const std::wstring getCompileDate();
