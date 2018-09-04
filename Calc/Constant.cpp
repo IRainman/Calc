@@ -77,14 +77,14 @@ inline void ReplaceConstant(string& p_io_str, const string& p_const_name, const 
 		return (l_pos == string::npos \
 		|| \
 		(l_pos \
-		&& (GetPriority(p_io_str.c_str()[l_pos - 1]) < priority_bracket \
-		|| GetPriority(p_io_str.c_str()[l_pos - 1]) == priority_error) \
+		&& (GetPriority(p_io_str.c_str()[l_pos - 1]) < Priority::priority_bracket \
+		|| GetPriority(p_io_str.c_str()[l_pos - 1]) == Priority::priority_error) \
 		&& p_io_str.c_str()[l_pos - 1] != ',' \
 		) \
 		|| \
 		((p_const_name.length() + l_pos) < p_io_str.length() \
-		&& (GetPriority(p_io_str.c_str()[l_pos + p_const_name.length()]) < priority_bracket \
-		|| GetPriority(p_io_str.c_str()[l_pos + p_const_name.length()]) == priority_error) \
+		&& (GetPriority(p_io_str.c_str()[l_pos + p_const_name.length()]) < Priority::priority_bracket \
+		|| GetPriority(p_io_str.c_str()[l_pos + p_const_name.length()]) == Priority::priority_error) \
 		&& p_io_str.c_str()[l_pos + p_const_name.length()] != ',' \
 		) \
 		       );

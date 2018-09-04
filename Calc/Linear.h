@@ -26,7 +26,7 @@ using namespace std;
 #include "Flags.h"
 #include "MyTypes.h"
 //---------------------------------------------------------------------------
-enum Priority
+enum class Priority
 {
 	priority_function       = 16,
 	priority_power          = 8,
@@ -43,19 +43,19 @@ inline Priority GetPriority(const char p_sym)
 	{
 		case '^':
 			//      case '%':
-			return priority_power;
+			return Priority::priority_power;
 			
 		case '*':
 		case '/':
-			return priority_multiply;
+			return Priority::priority_multiply;
 			
 		case '+':
 		case '-':
-			return priority_addition;
+			return Priority::priority_addition;
 			
 		case '(':
 		case ')':
-			return priority_bracket;
+			return Priority::priority_bracket;
 			
 		case '0':
 		case '1':
@@ -69,10 +69,10 @@ inline Priority GetPriority(const char p_sym)
 		case '9':
 		case '.':
 		case 'e':
-			return priority_default;
+			return Priority::priority_default;
 			
 		default:
-			return priority_error;
+			return Priority::priority_error;
 	}
 }
 //---------------------------------------------------------------------------

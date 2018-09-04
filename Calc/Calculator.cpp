@@ -61,12 +61,12 @@ void ValidateInputString(const string& p_input_str)
 	//  return;
 	//}
 	
-	if (l_start[0] != '-' && GetPriority(l_start[0]) > priority_bracket)
+	if (l_start[0] != '-' && GetPriority(l_start[0]) > Priority::priority_bracket)
 	{
 		AddError(EXPRESSION_CAN_NOT_START_FROM_OPERATION, 0);
 		return;
 	}
-	if (l_start[0] == 'e' && GetPriority(l_start[1]) != priority_error)
+	if (l_start[0] == 'e' && GetPriority(l_start[1]) != Priority::priority_error)
 	{
 		AddError(BEFORE_E_NOT_FOUND_NUMBER, 0);
 		return;
@@ -91,7 +91,7 @@ void ValidateInputString(const string& p_input_str)
 					return;
 				}
 				if (l_start[l_count_p1] != '-' &&
-				        GetPriority(l_start[l_count_p1]) > priority_bracket)
+				        GetPriority(l_start[l_count_p1]) > Priority::priority_bracket)
 				{
 					AddError(EXPRESSION_IN_BRACKETS_START_WITH_OPERATION, l_count_p1);
 					return;
@@ -106,12 +106,12 @@ void ValidateInputString(const string& p_input_str)
 					AddError(EMPTY_BRACKETS, l_count_m1);
 					return;
 				}
-				if (GetPriority(l_start[l_count_m1]) > priority_bracket)
+				if (GetPriority(l_start[l_count_m1]) > Priority::priority_bracket)
 				{
 					AddError(EXPRESSION_IN_BRACKETS_MARK_OPERATION_ENDING, l_count_m1);
 					return;
 				}
-				if (GetPriority(l_start[l_count_p1]) == priority_default)
+				if (GetPriority(l_start[l_count_p1]) == Priority::priority_default)
 				{
 					AddError(NUMBERS_AFTER_CLOSING_BRACKET, l_count_p1);
 					return;
@@ -146,16 +146,16 @@ void ValidateInputString(const string& p_input_str)
 				}
 				const auto l_count_m1_priority = GetPriority(l_start[l_count_m1]);
 				const auto l_count_p1_priority = GetPriority(l_start[l_count_p1]);
-				if (l_count_m1_priority != priority_error
-				        && l_count_p1_priority != priority_error)
+				if (l_count_m1_priority != Priority::priority_error
+				        && l_count_p1_priority != Priority::priority_error)
 				{
-					if (l_count_m1_priority > priority_default)
+					if (l_count_m1_priority > Priority::priority_default)
 					{
 						AddError(BEFORE_E_NOT_FOUND_NUMBER, l_count_m1);
 						return;
 					}
-					if (l_count_p1_priority != priority_default
-					        && l_count_p1_priority != priority_addition)
+					if (l_count_p1_priority != Priority::priority_default
+					        && l_count_p1_priority != Priority::priority_addition)
 					{
 						AddError(AFTER_E_NOT_FOUND_EXPONENT, l_count_p1);
 						return;

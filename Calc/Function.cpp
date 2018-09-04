@@ -269,8 +269,7 @@ void CalculateFunction(string& p_io_str, const string& p_func_name, const size_t
 	else if (l_start)
 	{
 		const auto l_current_priority = GetPriority(p_io_str.c_str()[l_start - 1]);
-		if (l_current_priority < priority_bracket ||
-		        l_current_priority == priority_error)
+		if (l_current_priority < Priority::priority_bracket)
 		{
 			return;
 		}
@@ -358,8 +357,7 @@ void CalculateFunction(string& p_io_str, const string& p_func_name, const size_t
 		else if (l_start)
 		{
 			const auto l_current_priority = GetPriority(p_io_str.c_str()[l_start - 1]);
-			if (l_current_priority < priority_bracket ||
-			        l_current_priority == priority_error)
+			if (l_current_priority < Priority::priority_bracket)
 			{
 				return;
 			}
@@ -388,7 +386,7 @@ void ProcessFunctions(string& p_io_str, const string::size_type p_mes_pos_shift 
 	for (string::size_type l_count = 0; l_count < p_io_str.size() - 1; l_count++)
 	{
 		if (p_io_str.c_str()[l_count + 1] == '('
-		        && GetPriority(p_io_str.c_str()[l_count]) == priority_default)
+		        && GetPriority(p_io_str.c_str()[l_count]) == Priority::priority_default)
 		{
 			AddError(NUMBERS_BEFORE_OPENING_BRACKET, l_count - 1 + p_mes_pos_shift);
 			return;

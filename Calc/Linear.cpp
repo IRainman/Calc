@@ -104,14 +104,14 @@ inline void CalculateOnLineExpression(stack<char>& p_operations, stack<calc_vari
 void CalculateLineExpression(string p_input_str, string& p_output_str, string::size_type p_mes_pos_shift /*= 0*/)
 {
 	AddMessage(CALCULATION);
-	Priority l_current_prioritet = priority_error;
+	auto l_current_prioritet = Priority::priority_error;
 	stack <char> l_operations;
 	stack <calc_variable> l_operands;
 	string::size_type l_count;
 	for (l_count = 0; !p_input_str.empty(); l_count++)
 	{
 		l_current_prioritet = GetPriority(p_input_str.c_str()[0]);
-		if (l_current_prioritet != priority_default)
+		if (l_current_prioritet != Priority::priority_default)
 		{
 			if (l_operations.empty())
 			{
@@ -124,7 +124,7 @@ void CalculateLineExpression(string p_input_str, string& p_output_str, string::s
 			}
 			else
 			{
-				if (l_current_prioritet != priority_bracket)
+				if (l_current_prioritet != Priority::priority_bracket)
 				{
 					do
 					{
@@ -191,7 +191,7 @@ void CalculateLineExpression(string p_input_str, string& p_output_str, string::s
 		}
 		else
 		{
-			char* l_current_operand_ptr = &p_input_str[0];
+			char* l_current_operand_ptr = &p_input_str[0]; //-V767
 			char** l_current_operand_ptr_ptr = &l_current_operand_ptr;
 			const auto l_current_operand = calc_input_function(p_input_str.c_str(), l_current_operand_ptr_ptr);
 			const auto l_diff = *l_current_operand_ptr_ptr - p_input_str.c_str();
@@ -217,7 +217,7 @@ void CalculateLineExpression(string p_input_str, string& p_output_str, string::s
 					AddWarning(MAX_DIGITS, l_diff, std::numeric_limits<calc_variable>::max_digits10);
 				}
 #endif
-				l_current_prioritet = priority_default;
+				l_current_prioritet = Priority::priority_default;
 			}
 			else
 			{
@@ -229,7 +229,7 @@ void CalculateLineExpression(string p_input_str, string& p_output_str, string::s
 			}
 		}
 	}
-	if (l_current_prioritet > priority_bracket)
+	if (l_current_prioritet > Priority::priority_bracket)
 	{
 		AddError(NOT_ENOUGHT_OPERANDS, l_count + p_mes_pos_shift);
 		return;
