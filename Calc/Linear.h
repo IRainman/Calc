@@ -28,13 +28,13 @@ using namespace std;
 //---------------------------------------------------------------------------
 enum class Priority
 {
-	priority_function       = 16,
-	priority_power          = 8,
-	priority_multiply       = 4, //-V112
-	priority_addition       = 2,
-	priority_bracket        = 1,
-	priority_default        = 0,
-	priority_error          = -1
+    priority_function       = 16,
+    priority_power          = 8,
+    priority_multiply       = 4, //-V112
+    priority_addition       = 2,
+    priority_bracket        = 1,
+    priority_default        = 0,
+    priority_error          = -1
 };
 //---------------------------------------------------------------------------
 inline Priority GetPriority(const char p_sym)

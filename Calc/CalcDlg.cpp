@@ -166,7 +166,7 @@ void CCalcDlg::OnEnChangeEditInput()
 	const auto l_count = GetDlgItemText(IDC_EDIT_INPUT, &m_input[0], c_max_edit_input_size);
 	if (l_count > 0)
 	{
-		m_input.resize(static_cast<wstring::size_type>(l_count));
+		m_input.resize(static_cast<std::wstring::size_type>(l_count));
 		
 		if (IsDlgButtonChecked(IDC_CHECK_AUTO_CALCULATE) == BST_UNCHECKED &&
 		        m_input.size() > 1 && m_input[m_input.size() - 1] == '=')
