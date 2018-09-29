@@ -48,6 +48,8 @@ inline string to_string(const wstring& p_text)
 	return m_converter.to_bytes(p_text);
 }
 //---------------------------------------------------------------------------
+extern void CalculatorInit();
+//---------------------------------------------------------------------------
 extern const string& Calculate(string p_input, string& p_output);
 
 wstring& Calculate(const wstring& p_input, wstring& p_output)

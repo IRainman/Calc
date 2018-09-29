@@ -58,6 +58,7 @@ CCalcDlg::CCalcDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CCalcDlg::IDD, pParent)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+	CalculatorInit();
 }
 
 inline void CCalcDlg::DoDataExchange(CDataExchange* pDX)
@@ -166,7 +167,7 @@ void CCalcDlg::OnEnChangeEditInput()
 	const auto l_count = GetDlgItemText(IDC_EDIT_INPUT, &m_input[0], c_max_edit_input_size);
 	if (l_count > 0)
 	{
-		m_input.resize(static_cast<std::wstring::size_type>(l_count));
+		m_input.resize(l_count);
 		
 		if (IsDlgButtonChecked(IDC_CHECK_AUTO_CALCULATE) == BST_UNCHECKED &&
 		        m_input.size() > 1 && m_input[m_input.size() - 1] == '=')
@@ -191,5 +192,5 @@ calculate_function_call:
 
 void CAboutDlg::OnBnClickedSite()
 {
-	::ShellExecute(NULL, NULL, L"http://studia2000.sytes.net/txt/calc.shtml", NULL, NULL, SW_SHOWNORMAL);
+	::ShellExecute(nullptr, nullptr, L"http://studia2000.sytes.net/txt/calc.shtml", nullptr, nullptr, SW_SHOWNORMAL); //-V2001
 }

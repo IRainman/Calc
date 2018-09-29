@@ -40,7 +40,7 @@ vector<string::size_type> m_corrected_spaces;
 //---------------------------------------------------------------------------
 #define MESSAGE_BUFFER_SIZE 1024
 //---------------------------------------------------------------------------
-const string c_message_string[] =
+static const string c_message_string[] =
 {
 // Сообщения
 	"\tПодготовка:",
@@ -96,8 +96,14 @@ const string c_message_string[] =
 //---------------------------------------------------------------------------
 static_assert(_countof(c_message_string) == ERROR_LAST + 1, "MessageString and MessageEnum sizes do not match ;) Check them out!");
 //---------------------------------------------------------------------------
-#define MESSAGE(code) (c_message_string[code])
-#define CMESSAGE(code) (c_message_string[code].c_str())
+inline constexpr auto& MESSAGE(const MessageEnum code)
+{
+	return c_message_string[code];
+}
+inline const auto* CMESSAGE(const MessageEnum code)
+{
+	return MESSAGE(code).c_str();
+}
 //---------------------------------------------------------------------------
 inline void AddMessage(const string& p_message)
 {

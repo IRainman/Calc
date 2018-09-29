@@ -36,6 +36,11 @@
 #include "Linear.h"
 #include "Constant.h"
 //---------------------------------------------------------------------------
+void CalculatorInit()
+{
+	ConstantInit();
+}
+//---------------------------------------------------------------------------
 void ValidateInputString(const string& p_input_str)
 {
 	AddMessage(PREPARING);

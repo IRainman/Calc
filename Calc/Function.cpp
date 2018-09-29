@@ -43,7 +43,7 @@ inline calc_variable rad(calc_variable p_grad)
 // TODO http://en.cppreference.com/w/cpp/numeric/math
 // TODO http://en.cppreference.com/w/cpp/experimental/special_math
 //---------------------------------------------------------------------------
-const string c_function1[] =
+static const string c_function1[] =
 {
 	"rad(",// One radian is equivalent to 180/PI degrees.
 	"sin(",// sinus
