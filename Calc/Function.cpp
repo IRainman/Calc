@@ -40,8 +40,8 @@ inline calc_variable rad(calc_variable p_grad)
 {
 	return p_grad * GetConstant(pi_constant) / 180;
 }
-// TODO http://en.cppreference.com/w/cpp/numeric/math
-// TODO http://en.cppreference.com/w/cpp/experimental/special_math
+// TODO https://en.cppreference.com/w/cpp/numeric/math
+// TODO https://en.cppreference.com/w/cpp/numeric/special_math
 //---------------------------------------------------------------------------
 static const string c_function1[] =
 {
@@ -83,7 +83,7 @@ static const string c_function1[] =
 	
 	"trunc(",
 	"round(",
-#endif
+#endif // _DEBUG
 };
 typedef calc_variable(* fptr1)(calc_variable);
 const fptr1 f_function1[] =
@@ -106,27 +106,27 @@ const fptr1 f_function1[] =
 	//modf,
 #ifdef _DEBUG
 	//TODO not tested
-	sinh, // http://en.cppreference.com/w/cpp/numeric/math/sinh
-	cosh, // http://en.cppreference.com/w/cpp/numeric/math/cosh
-	tanh, // http://en.cppreference.com/w/cpp/numeric/math/tanh
+	sinh, // https://en.cppreference.com/w/cpp/numeric/math/sinh
+	cosh, // https://en.cppreference.com/w/cpp/numeric/math/cosh
+	tanh, // https://en.cppreference.com/w/cpp/numeric/math/tanh
 	
-	fabs,// http://en.cppreference.com/w/cpp/numeric/math/fabs
+	fabs,// https://en.cppreference.com/w/cpp/numeric/math/fabs
 	
-	log2,// http://en.cppreference.com/w/cpp/numeric/math/log2
-	log1p,// http://en.cppreference.com/w/cpp/numeric/math/log1p
+	log2,// https://en.cppreference.com/w/cpp/numeric/math/log2
+	log1p,// https://en.cppreference.com/w/cpp/numeric/math/log1p
 	
-	cbrt,// http://en.cppreference.com/w/cpp/numeric/math/cbrt
+	cbrt,// https://en.cppreference.com/w/cpp/numeric/math/cbrt
 	
-	asinh, // http://en.cppreference.com/w/cpp/numeric/math/asinh
-	acosh, // http://en.cppreference.com/w/cpp/numeric/math/acosh
-	atanh, // http://en.cppreference.com/w/cpp/numeric/math/atanh
+	asinh, // https://en.cppreference.com/w/cpp/numeric/math/asinh
+	acosh, // https://en.cppreference.com/w/cpp/numeric/math/acosh
+	atanh, // https://en.cppreference.com/w/cpp/numeric/math/atanh
 	
-	tgamma, // http://en.cppreference.com/w/cpp/numeric/math/tgamma
-	lgamma, // http://en.cppreference.com/w/cpp/numeric/math/lgamma
+	tgamma, // https://en.cppreference.com/w/cpp/numeric/math/tgamma
+	lgamma, // https://en.cppreference.com/w/cpp/numeric/math/lgamma
 	
-	trunc, // http://en.cppreference.com/w/cpp/numeric/math/trunc
-	round, // http://en.cppreference.com/w/cpp/numeric/math/round
-#endif
+	trunc, // https://en.cppreference.com/w/cpp/numeric/math/trunc
+	round, // https://en.cppreference.com/w/cpp/numeric/math/round
+#endif // _DEBUG
 };
 const string c_function2[] =
 {
@@ -139,11 +139,11 @@ const string c_function2[] =
 	//TODO not working properly
 	"max(",
 	"min(",
-#endif
+#endif // _DEBUG
 #ifdef _DEBUG
 	//TODO not tested
 	"hypot2(",
-#endif
+#endif // _DEBUG
 };
 typedef calc_variable(* fptr2)(calc_variable, calc_variable);
 const fptr2 f_function2[] =
@@ -155,12 +155,12 @@ const fptr2 f_function2[] =
 	//frexp,
 #ifdef _DEBUG
 	//TODO not working properly
-	fmax,// http://en.cppreference.com/w/cpp/numeric/math/fmax
-	fmin,// http://en.cppreference.com/w/cpp/numeric/math/fmin
+	fmax,// https://en.cppreference.com/w/cpp/numeric/math/fmax
+	fmin,// https://en.cppreference.com/w/cpp/numeric/math/fmin
 #endif
 #ifdef _DEBUG
 	//TODO not tested
-	hypot, // http://en.cppreference.com/w/cpp/numeric/math/hypot
+	hypot, // https://en.cppreference.com/w/cpp/numeric/math/hypot
 #endif
 };
 #ifdef _ENABLE_THREE_ARGUMENT_FUNCTION
@@ -168,7 +168,7 @@ const string c_function3[] =
 {
 #ifdef _DEBUG
 	//TODO not tested
-	"hypot2(",
+	"hypot3(",
 #endif
 };
 typedef calc_variable(*fptr3)(calc_variable, calc_variable, calc_variable);
@@ -176,7 +176,7 @@ const fptr3 f_function3[] =
 {
 #ifdef _DEBUG
 	//TODO not tested
-	hypot, // (since C++17) http://en.cppreference.com/w/cpp/numeric/math/hypot
+	hypot, // (since C++17) https://en.cppreference.com/w/cpp/numeric/math/hypot
 #endif
 };
 #define c_max_argument_of_function 3
@@ -383,7 +383,7 @@ void ProcessFunctions(string& p_io_str, const string::size_type p_mes_pos_shift 
 #endif
 	AddMessage(p_io_str.c_str());
 	
-	for (string::size_type l_count = 0; l_count < p_io_str.size() - 1; l_count++)
+	for (string::size_type l_count = 0; l_count < p_io_str.size() - 1; ++l_count)
 	{
 		if (p_io_str.c_str()[l_count + 1] == '('
 		        && GetPriority(p_io_str.c_str()[l_count]) == Priority::priority_default)

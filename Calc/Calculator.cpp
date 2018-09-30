@@ -79,13 +79,13 @@ void ValidateInputString(const string& p_input_str)
 	
 	for (l_count = 0, count_inp = 0, count_outp = 0; l_count < p_input_str.size(); ++l_count)
 	{
-		if (count_outp > count_inp)
-		{
-			AddError(CLOSING_BRACKET_BEFORE_OPENING, l_count - 1);
-			return;
-		}
 		l_count_p1 = l_count + 1;
 		l_count_m1 = l_count - 1;
+		if (count_outp > count_inp)
+		{
+			AddError(CLOSING_BRACKET_BEFORE_OPENING, l_count_m1);
+			return;
+		}
 		switch (l_start[l_count])
 		{
 			case '(':
@@ -221,19 +221,22 @@ void ValidateInputString(const string& p_input_str)
 	l_count = p_input_str.find("e--");
 	if (l_count != string::npos)
 	{
-		AddError(RECORD_DOUBLE_MINUS_AFTER_E, l_count + 1);
+		++l_count;
+		AddError(RECORD_DOUBLE_MINUS_AFTER_E, l_count);
 		return;
 	}
 	l_count = p_input_str.find("e+-");
 	if (l_count != string::npos)
 	{
-		AddError(RECORD_PLUS_MINUS_AFTER_E, l_count + 1);
+		++l_count;
+		AddError(RECORD_PLUS_MINUS_AFTER_E, l_count);
 		return;
 	}
 	l_count = p_input_str.find("---");
 	if (l_count != string::npos)
 	{
-		AddError(CONSECUTIVE_RECORD_NUMBER_OF_TRANSACTIONS, l_count + 1);
+		++l_count;
+		AddError(CONSECUTIVE_RECORD_NUMBER_OF_TRANSACTIONS, l_count);
 		return;
 	}
 }

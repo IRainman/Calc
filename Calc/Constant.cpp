@@ -45,6 +45,7 @@ constexpr static const char* c_str_constant[] =
 	"atm",// Standard atmosphere (Pa), this constant valid on Earths only ;)
 	"L",// Avogadro's number (mol−1)
 	"R",// Gas constant (J·K−1·mol−1)
+	//"INF",// Infinity
 };
 //---------------------------------------------------------------------------
 constexpr static const calc_variable c_cv_constant[] =
@@ -58,6 +59,7 @@ constexpr static const calc_variable c_cv_constant[] =
 	101325.0L,// Standard atmosphere (Pa), this constant valid on Earths only ;)
 	6.02214151010101010101010101010101010e23L,// Avogadro's number (mol−1)
 	8.31447215151515151515151515151515151L,// Gas constant (J·K−1·mol−1)
+	//std::numeric_limits<calc_variable>::infinity(),// Infinity
 };
 //---------------------------------------------------------------------------
 static string c_cv_opt[constant_counts];

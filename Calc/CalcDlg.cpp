@@ -24,6 +24,7 @@ class CAboutDlg : public CDialog
 		enum { IDD = IDD_ABOUTBOX };
 		
 	protected:
+		virtual BOOL OnInitDialog();
 		virtual void DoDataExchange(CDataExchange* pDX);    // поддержка DDX/DDV
 		
 // Реализация
@@ -33,14 +34,15 @@ class CAboutDlg : public CDialog
 		afx_msg void OnBnClickedSite();
 };
 
+BOOL CAboutDlg::OnInitDialog()
+{
+	CDialog::OnInitDialog();
+	SetDlgItemText(IDC_COMPILED_DATE, _T(__TIMESTAMP__));
+	return TRUE;
+}
+
 CAboutDlg::CAboutDlg() : CDialog(CAboutDlg::IDD)
 {
-	//std::wstring llll;
-	//getCompileDate(llll);
-	//dlg
-	//dlg.PrepareCtrl(IDC_COMPILED_DATE);
-	//SetDlgItemText(IDC_COMPILED_DATE, llll.c_str());
-	//::SetDlgItemText(AfxGetApp()->m_hThread, IDC_COMPILED_DATE, getCompileDate().c_str());
 }
 
 inline void CAboutDlg::DoDataExchange(CDataExchange* pDX)

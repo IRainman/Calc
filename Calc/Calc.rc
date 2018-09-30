@@ -76,16 +76,16 @@ IDR_MAINFRAME           ICON                    "res\\C.ico"
 // Dialog
 //
 
-IDD_ABOUTBOX DIALOGEX 0, 0, 144, 58
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "О проекте Calc"
+IDD_ABOUTBOX DIALOGEX 0, 0, 118, 71
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_BORDER | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    ICON            IDR_MAINFRAME,IDC_STATIC,102,14,20,20
-    LTEXT           "Calc, версия 1.8.4",IDC_STATIC,7,7,105,8,SS_NOPREFIX
-    LTEXT           "© STUDIA2000, Rainman (Соломин А.Л.)",IDC_STATIC,7,16,87,16
-    DEFPUSHBUTTON   "ОК",IDOK,87,37,50,14,WS_GROUP
-    DEFPUSHBUTTON   "Зайти на сайт",ID_SITE,7,37,56,14,WS_GROUP
+    ICON            IDR_MAINFRAME,IDC_STATIC,83,14,21,20
+    LTEXT           "Calc, версия 1.8.5",IDC_STATIC,7,7,77,8,SS_NOPREFIX
+    LTEXT           "© STUDIA2000, HedgehogInTheFog (Соломин А.Л.)",IDC_STATIC,7,24,71,26
+    DEFPUSHBUTTON   "ОК",IDOK,75,50,36,14,WS_GROUP
+    DEFPUSHBUTTON   "Зайти на сайт",ID_SITE,7,50,56,14,WS_GROUP
+    LTEXT           "",IDC_COMPILED_DATE,7,16,77,8,SS_NOPREFIX
 END
 
 IDD_CALC_DIALOG DIALOGEX 0, 0, 217, 187
@@ -108,8 +108,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,8,4,156
- PRODUCTVERSION 1,8,4,156
+ FILEVERSION 1,8,5,157
+ PRODUCTVERSION 1,8,5,157
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -126,12 +126,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "STUDIA2000"
             VALUE "FileDescription", "Калькулятор для Windows"
-            VALUE "FileVersion", "1.8.4.156"
+            VALUE "FileVersion", "1.8.5.157"
             VALUE "InternalName", "Calc.exe"
-            VALUE "LegalCopyright", "© STUDIA2000 Rainman (Соломин А.Л.). Все права защищены."
+            VALUE "LegalCopyright", "© STUDIA2000 HedgehogInTheFog (Соломин А.Л.). Все права защищены."
             VALUE "OriginalFilename", "Calc.exe"
             VALUE "ProductName", "Calc"
-            VALUE "ProductVersion", "1.8.4.156"
+            VALUE "ProductVersion", "1.8.5.157"
         END
     END
     BLOCK "VarFileInfo"
@@ -152,10 +152,10 @@ BEGIN
     IDD_ABOUTBOX, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 137
+        RIGHTMARGIN, 111
         VERTGUIDE, 112
         TOPMARGIN, 7
-        BOTTOMMARGIN, 51
+        BOTTOMMARGIN, 64
         HORZGUIDE, 24
         HORZGUIDE, 44
     END
@@ -177,6 +177,11 @@ END
 //
 
 IDD_ABOUTBOX AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_CALC_DIALOG AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

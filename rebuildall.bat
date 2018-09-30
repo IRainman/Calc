@@ -1,5 +1,5 @@
-call "%VS140COMNTOOLS%\..\..\VC\bin\vcvars32.bat"
-"%VS140COMNTOOLS%..\ide\devenv" Calc.sln /Rebuild "Release|Win32"
+call "c:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\Tools\VsMSBuildCmd.bat"
 
-call "%VS140COMNTOOLS%\..\..\VC\bin\amd64\vcvars64.bat"
-"%VS140COMNTOOLS%..\ide\devenv" Calc.sln /Rebuild "Release|x64"
+devenv Calc.sln /Rebuild "Release|Win32"
+
+devenv Calc.sln /Rebuild "Release|x64"

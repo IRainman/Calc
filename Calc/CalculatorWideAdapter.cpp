@@ -63,13 +63,4 @@ wstring& Calculate(const wstring& p_input, wstring& p_output)
 	return m_message_string;
 }
 //---------------------------------------------------------------------------
-/* //   TODO
-const std::wstring getCompileDate()
-{
-    COleDateTime tCompileDate;
-    tCompileDate.ParseDateTime(_T(__DATE__), LOCALE_NOUSEROVERRIDE, 1033);
-    return tCompileDate.Format(_T("%Y-%m-%d")).GetString();
-}
-*/
-//---------------------------------------------------------------------------
 #endif // _CALCULATOR_WIDE_ADAPTER_CPP
