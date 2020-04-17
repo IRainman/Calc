@@ -20,15 +20,18 @@
 #define MYTYPES_H
 
 //---------------------------------------------------------------------------
+#include <charconv>
+//---------------------------------------------------------------------------
 typedef long double calc_variable;
 #define calc_input_function strtold
 //---------------------------------------------------------------------------
-#define CALC_BUFFER_SIZE 256
+constexpr auto CALC_BUFFER_SIZE = 32;
 //---------------------------------------------------------------------------
-#define CALC_INTERNAL_ACCURACY_FORMAT "%.100g"
-//---------------------------------------------------------------------------
-// TODO: Add variable accuracy
-#define CALC_OUTPUT_ACCURACY_FORMAT "%.15g"
-//const calc_variable calc_output_accuracy_mult = 1.e150L;
+template<typename T>
+inline constexpr void print_value(T& p_str, const calc_variable& p_val)
+{
+    p_str.resize(CALC_BUFFER_SIZE);
+    p_str.resize(to_chars(p_str.data(), p_str.data() + p_str.size(), p_val).ptr - p_str.data());
+}
 //---------------------------------------------------------------------------
 #endif// MYTYPES_H

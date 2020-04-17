@@ -31,6 +31,7 @@
 
 #include "CalculatorWideAdapter.h"
 #include <locale>
+#define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
 #include <codecvt>
 
 using namespace std;
@@ -47,8 +48,6 @@ inline string to_string(const wstring& p_text)
 {
 	return m_converter.to_bytes(p_text);
 }
-//---------------------------------------------------------------------------
-extern void CalculatorInit();
 //---------------------------------------------------------------------------
 extern const string& Calculate(string p_input, string& p_output);
 

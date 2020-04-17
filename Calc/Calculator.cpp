@@ -36,13 +36,9 @@
 #include "Linear.h"
 #include "Constant.h"
 //---------------------------------------------------------------------------
-void CalculatorInit()
-{
-	ConstantInit();
-}
-//---------------------------------------------------------------------------
 void ValidateInputString(const string& p_input_str)
 {
+	// TODO shrink the checking 
 	AddMessage(PREPARING);
 	
 	if (p_input_str.empty())
@@ -57,7 +53,7 @@ void ValidateInputString(const string& p_input_str)
 	string::size_type l_count;
 	string::size_type l_count_m1;
 	string::size_type l_count_p1;
-	const auto* l_start = p_input_str.c_str();
+	const auto* l_start = p_input_str.data();
 	
 	if (l_start[0] != '-' && GetPriority(l_start[0]) > Priority::priority_bracket)
 	{
@@ -260,10 +256,6 @@ const string& Calculate(string p_input, string& p_output)
 		while (true);
 	}
 	
-	// Allow all cases, don't activate this code!
-	//for(string::size_type l_count = 0; l_count < p_input.size(); l_count++)
-	//  p_input[l_count] = tolower(p_input.c_str()[l_count]);
-	
 	ValidateInputString(p_input);
 	if (m_no_error)
 	{
@@ -274,15 +266,7 @@ const string& Calculate(string p_input, string& p_output)
 			CalculateLineExpression(p_input, p_output);
 		}
 	}
-	if (m_no_error)
-	{
-		// TODO: Add variable accuracy
-		//const auto l_tmp = (round(calc_input_function(p_output.c_str(), nullptr) * calc_output_accuracy_mult)) / calc_output_accuracy_mult;
-		const auto l_tmp = calc_input_function(p_output.c_str(), nullptr);
-		p_output.resize(CALC_BUFFER_SIZE);
-		p_output.resize(snprintf(&p_output[0], CALC_BUFFER_SIZE - 1, CALC_OUTPUT_ACCURACY_FORMAT, l_tmp));
-	}
-	else
+	if (!m_no_error)
 	{
 		p_output.clear();
 	}

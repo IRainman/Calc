@@ -38,9 +38,9 @@ string::size_type m_correct_count;
 vector<string::size_type> m_corrected_spaces;
 #endif
 //---------------------------------------------------------------------------
-#define MESSAGE_BUFFER_SIZE 1024
+constexpr size_t MESSAGE_BUFFER_SIZE = 1024;
 //---------------------------------------------------------------------------
-static const string c_message_string[] =
+constexpr static const string_view c_message_string[] =
 {
 // Сообщения
 	"\tПодготовка:",
@@ -53,7 +53,7 @@ static const string c_message_string[] =
 #ifdef ENABLE_WARNINGS_IN_LOG
 // Предупреждения
 	"число выходит за рамки допустимого диапазона, вычисление может быть выполнено с ошибками",
-	"число имеет слишком большое количество разрядов %d максимальное поддерживаемое %d, вычисление может быть выполнено с ошибками",
+	"число имеет слишком большое количество разрядов %d максимальное поддерживаемое %d, вычисление может быть выполнено с погрешностью",
 #endif // ENABLE_WARNINGS_IN_LOG
 // Ошибки
 	"неопределённая ошибка",
@@ -100,14 +100,15 @@ inline constexpr auto& MESSAGE(const MessageEnum code)
 {
 	return c_message_string[code];
 }
-inline const auto* CMESSAGE(const MessageEnum code)
+inline constexpr const auto* CMESSAGE(const MessageEnum code)
 {
-	return MESSAGE(code).c_str();
+	return MESSAGE(code).data();
 }
 //---------------------------------------------------------------------------
-inline void AddMessage(const string& p_message)
+inline void AddMessage(const string_view& p_message)
 {
-	m_message_string += p_message + "\r\n";
+	m_message_string += p_message;
+	m_message_string += "\r\n";
 }
 //---------------------------------------------------------------------------
 inline void AddMessage(const MessageEnum p_message)

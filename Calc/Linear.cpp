@@ -29,16 +29,10 @@
 #ifndef _LINEAR_CPP
 #define _LINEAR_CPP
 //---------------------------------------------------------------------------
+#include <charconv>
+#include <stack>
 #include "Linear.h"
 #include "Message.h"
-//---------------------------------------------------------------------------
-#ifdef max
-#undef max
-#endif
-
-#ifdef min
-#undef min
-#endif
 //---------------------------------------------------------------------------
 inline void CalculateOnLineExpression(stack<char>& p_operations, stack<calc_variable>& p_operands, const string::size_type p_count, const string::size_type p_mes_pos_shift)
 {
@@ -110,15 +104,15 @@ void CalculateLineExpression(string p_input_str, string& p_output_str, string::s
 	string::size_type l_count;
 	for (l_count = 0; !p_input_str.empty(); l_count++)
 	{
-		l_current_prioritet = GetPriority(p_input_str.c_str()[0]);
+		l_current_prioritet = GetPriority(p_input_str[0]);
 		if (l_current_prioritet != Priority::priority_default)
 		{
 			if (l_operations.empty())
 			{
 				/*
-				a)  если стек пуст, то опеpация из входной стpоки пеpеписывается в стек;
+				a) if the stack is empty, an operation from the input string is pushed onto the stack.
 				*/
-				l_operations.push(p_input_str.c_str()[0]);
+				l_operations.push(p_input_str[0]);
 				p_input_str.erase(0, 1);
 				p_mes_pos_shift += 1;
 			}
@@ -129,14 +123,14 @@ void CalculateLineExpression(string p_input_str, string& p_output_str, string::s
 					do
 					{
 						/*
-						b)  опеpация выталкивает из стека все опеpации с большим или pавным пpиоpитетом в выходную стpоку;
+						b) the operation pushes all operations with a large or equal priority to the output line from the stack.
 						*/
 						if (GetPriority(l_operations.top()) >= l_current_prioritet)
 						{
 							CalculateOnLineExpression(l_operations, l_operands, l_count, p_mes_pos_shift);
 							if (l_operations.empty())
 							{
-								l_operations.push(p_input_str.c_str()[0]);
+								l_operations.push(p_input_str[0]);
 								p_input_str.erase(0, 1);
 								p_mes_pos_shift += 1;
 								break;
@@ -144,30 +138,30 @@ void CalculateLineExpression(string p_input_str, string& p_output_str, string::s
 						}
 						else
 						{
-							l_operations.push(p_input_str.c_str()[0]);
+							l_operations.push(p_input_str[0]);
 							p_input_str.erase(0, 1);
 							p_mes_pos_shift += 1;
 							break;
 						}
 					}
-					while (!l_operations.empty());
+					while (true/*!l_operations.empty() [-] PVS*/);
 				}
 				else
 				{
-					if (p_input_str.c_str()[0] == '(')
+					if (p_input_str[0] == '(')
 					{
 						/*
-						c)  если очеpедной символ из исходной стpоки есть откpывающая скобка, то он пpоталкивается в стек;
+						c) if the next character from the source string is an opening bracket, then it is pushed onto the stack.
 						*/
-						l_operations.push(p_input_str.c_str()[0]);
+						l_operations.push(p_input_str[0]);
 						p_input_str.erase(0, 1);
 						p_mes_pos_shift += 1;
 					}
 					else
 					{
 						/*
-						d)  закpывающая кpуглая скобка выталкивает все опеpации из стека до ближайшей откpывающей скобки,
-						сами скобки в выходную стpоку не пеpеписываются, а уничтожают дpуг дpуга.
+						d) the closing round bracket pushes all operations from the stack to the nearest opening bracket,
+						the brackets themselves do not fall into the output line, but destroy the other.
 						*/
 						do
 						{
@@ -191,11 +185,10 @@ void CalculateLineExpression(string p_input_str, string& p_output_str, string::s
 		}
 		else
 		{
-			char* l_current_operand_ptr = &p_input_str[0]; //-V767
-			char** l_current_operand_ptr_ptr = &l_current_operand_ptr;
-			const auto l_current_operand = calc_input_function(p_input_str.c_str(), l_current_operand_ptr_ptr);
-			const auto l_diff = *l_current_operand_ptr_ptr - p_input_str.c_str();
-			if (l_diff)
+			calc_variable l_current_operand;
+			const auto l_res = from_chars(p_input_str.data(), p_input_str.data() + p_input_str.size(), l_current_operand);
+			const auto l_diff = l_res.ptr - p_input_str.data();
+			if (l_res.ec == errc())
 			{
 				p_input_str.erase(0, l_diff);
 				p_mes_pos_shift += l_diff;
@@ -217,7 +210,7 @@ void CalculateLineExpression(string p_input_str, string& p_output_str, string::s
 					AddWarning(MAX_DIGITS, l_diff, std::numeric_limits<calc_variable>::max_digits10);
 				}
 #endif
-				l_current_prioritet = Priority::priority_default;
+				//l_current_prioritet = Priority::priority_default; // [-] PVS
 			}
 			else
 			{
@@ -248,8 +241,7 @@ void CalculateLineExpression(string p_input_str, string& p_output_str, string::s
 	}
 	if (!l_operands.empty())
 	{
-		p_output_str.resize(CALC_BUFFER_SIZE);
-		p_output_str.resize(snprintf(&p_output_str[0], CALC_BUFFER_SIZE - 1, CALC_INTERNAL_ACCURACY_FORMAT, l_operands.top()));
+		print_value(p_output_str, l_operands.top());
 	}
 	AddMessage(p_output_str);
 }

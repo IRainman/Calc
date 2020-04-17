@@ -29,7 +29,7 @@ using namespace std;
 //---------------------------------------------------------------------------
 enum MessageEnum
 {
-	MESSAGE_FIRST = 0,// Сообщения
+	MESSAGE_FIRST = 0,// Messages
 	PREPARING = MESSAGE_FIRST,
 	//  PARSING_A_STRING,
 	CALCULATION,
@@ -39,12 +39,12 @@ enum MessageEnum
 	CALCULATE_FUNCTIONS,
 	MESSAGE_LAST = CALCULATE_FUNCTIONS,
 #ifdef ENABLE_WARNINGS_IN_LOG
-	WARNING_FIRST,// Предупреждения
+	WARNING_FIRST,// Warnings
 	OUT_OF_RANGE = WARNING_FIRST,
 	MAX_DIGITS,
 	WARNING_LAST = MAX_DIGITS,
 #endif // ENABLE_WARNINGS_IN_LOG
-	ERROR_FIRST,// Ошибки
+	ERROR_FIRST,// Errors
 	UNKNOWN_ERROR = ERROR_FIRST,
 	EXPRESSION_NOT_FOUND,
 	//INVALID_CHARACTER,
@@ -73,7 +73,9 @@ enum MessageEnum
 	LAST_SYMBOL_IN_EXPRESSION_IS_E,
 	CLOSING_BRACKET_BEFORE_OPENING,
 	NUMBERS_BEFORE_OPENING_BRACKET,
-#ifdef _DEBUG
+#ifndef _DEBUG
+	ERROR_LAST = NUMBERS_BEFORE_OPENING_BRACKET,
+#else
 	INTERNAL_PROCESSING_ERROR_CalculateFunction,
 	INTERNAL_PROCESSING_ERROR_CalculateOnLineExpression_p_operands_is_unknown,
 	INTERNAL_PROCESSING_ERROR_CalculateOnLineExpression_p_operands_is_not_addition,
@@ -81,8 +83,6 @@ enum MessageEnum
 	INTERNAL_PROCESSING_ERROR_CalculateLineExpression_l_operands,
 	INTERNAL_PROCESSING_ERROR_replace,
 	ERROR_LAST = INTERNAL_PROCESSING_ERROR_replace,
-#else
-	ERROR_LAST = NUMBERS_BEFORE_OPENING_BRACKET,
 #endif
 };
 //---------------------------------------------------------------------------
@@ -93,7 +93,7 @@ extern string::size_type m_correct_count;
 extern vector<string::size_type> m_corrected_spaces;
 #endif
 //---------------------------------------------------------------------------
-extern void AddMessage(const string& p_message);
+extern void AddMessage(const string_view& p_message);
 extern void AddMessage(const MessageEnum p_message);
 #ifdef ENABLE_WARNINGS_IN_LOG
 extern void AddWarning(const MessageEnum p_message);

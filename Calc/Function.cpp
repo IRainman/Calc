@@ -29,21 +29,21 @@
 #ifndef _FUNCTION_CPP
 #define _FUNCTION_CPP
 //---------------------------------------------------------------------------
+#include <cmath>
 #include "Flags.h"
 #include "Linear.h"
 #include "Message.h"
 #include "Function.h"
 #include "Constant.h"
-#include <stdlib.h>
 //---------------------------------------------------------------------------
-inline calc_variable rad(calc_variable p_grad)
+inline calc_variable rad(const calc_variable p_grad)
 {
 	return p_grad * GetConstant(pi_constant) / 180;
 }
 // TODO https://en.cppreference.com/w/cpp/numeric/math
 // TODO https://en.cppreference.com/w/cpp/numeric/special_math
 //---------------------------------------------------------------------------
-static const string c_function1[] =
+constexpr static string_view c_function1[] =
 {
 	"rad(",// One radian is equivalent to 180/PI degrees.
 	"sin(",// sinus
@@ -61,8 +61,6 @@ static const string c_function1[] =
 	//"floor(",
 	//"ldexp(",
 	//"modf(",
-#ifdef _DEBUG
-	//TODO not tested
 	"sh("
 	"ch("
 	"tanh("
@@ -83,10 +81,9 @@ static const string c_function1[] =
 	
 	"trunc(",
 	"round(",
-#endif // _DEBUG
 };
 typedef calc_variable(* fptr1)(calc_variable);
-const fptr1 f_function1[] =
+constexpr static fptr1 f_function1[] =
 {
 	rad,
 	sin,
@@ -104,8 +101,6 @@ const fptr1 f_function1[] =
 	//floor,
 	//ldexp,
 	//modf,
-#ifdef _DEBUG
-	//TODO not tested
 	sinh, // https://en.cppreference.com/w/cpp/numeric/math/sinh
 	cosh, // https://en.cppreference.com/w/cpp/numeric/math/cosh
 	tanh, // https://en.cppreference.com/w/cpp/numeric/math/tanh
@@ -126,65 +121,46 @@ const fptr1 f_function1[] =
 	
 	trunc, // https://en.cppreference.com/w/cpp/numeric/math/trunc
 	round, // https://en.cppreference.com/w/cpp/numeric/math/round
-#endif // _DEBUG
 };
-const string c_function2[] =
+constexpr static string_view c_function2[] =
 {
 	"pow(",// power
 	//"atan2(",
 	//"modf(",
 	//"fmod(",
 	//"frexp(",
-#ifdef _DEBUG
-	//TODO not working properly
 	"max(",
 	"min(",
-#endif // _DEBUG
-#ifdef _DEBUG
-	//TODO not tested
 	"hypot2(",
-#endif // _DEBUG
+//	"gcd(",
+//	"lcm(",
 };
 typedef calc_variable(* fptr2)(calc_variable, calc_variable);
-const fptr2 f_function2[] =
+constexpr static fptr2 f_function2[] =
 {
 	pow,// power
 	//atan2,
 	//modf,
 	//fmod,
 	//frexp,
-#ifdef _DEBUG
-	//TODO not working properly
 	fmax,// https://en.cppreference.com/w/cpp/numeric/math/fmax
 	fmin,// https://en.cppreference.com/w/cpp/numeric/math/fmin
-#endif
-#ifdef _DEBUG
-	//TODO not tested
 	hypot, // https://en.cppreference.com/w/cpp/numeric/math/hypot
-#endif
+//	gcd, // https://en.cppreference.com/w/cpp/numeric/gcd
+//	lcm, // https://en.cppreference.com/w/cpp/numeric/lcm
 };
-#ifdef _ENABLE_THREE_ARGUMENT_FUNCTION
-const string c_function3[] =
+constexpr static string_view c_function3[] =
 {
-#ifdef _DEBUG
-	//TODO not tested
 	"hypot3(",
-#endif
 };
-typedef calc_variable(*fptr3)(calc_variable, calc_variable, calc_variable);
-const fptr3 f_function3[] =
+typedef calc_variable(* fptr3)(calc_variable, calc_variable, calc_variable);
+constexpr static fptr3 f_function3[] =
 {
-#ifdef _DEBUG
-	//TODO not tested
-	hypot, // (since C++17) https://en.cppreference.com/w/cpp/numeric/math/hypot
-#endif
+	hypot, // https://en.cppreference.com/w/cpp/numeric/math/hypot
 };
-#define c_max_argument_of_function 3
-#else
-#define c_max_argument_of_function 2
-#endif
+constexpr size_t c_max_argument_of_function = 3;
 //---------------------------------------------------------------------------
-inline calc_variable CalculateParametrs(const size_t p_number_of_param, const size_t p_function_number, calc_variable p_params[])
+constexpr inline calc_variable CalculateParametrs(const size_t p_number_of_param, const size_t p_function_number, calc_variable p_params[])
 {
 	switch (p_number_of_param)
 	{
@@ -192,10 +168,8 @@ inline calc_variable CalculateParametrs(const size_t p_number_of_param, const si
 			return f_function1[p_function_number](p_params[0]);
 		case 2:
 			return f_function2[p_function_number](p_params[0], p_params[1]);
-#ifdef _ENABLE_THREE_ARGUMENT_FUNCTION
 		case 3:
 			return f_function3[p_function_number](p_params[0], p_params[1], p_params[2]);
-#endif
 #ifdef _DEBUG
 		default:
 			AddError(INTERNAL_PROCESSING_ERROR_CalculateFunction);
@@ -209,19 +183,18 @@ inline calc_variable CalculateParametrs(const size_t p_number_of_param, const si
 	// ~TODO
 }
 //---------------------------------------------------------------------------
-inline string::size_type CheckParametr(const string& p_param_str)
+inline constexpr bool CheckParametrIsSubexpr(const string_view& p_param_str)
 {
-	const auto l_count = p_param_str.find_first_not_of("0123456789.e", (p_param_str.c_str()[0] != '-') ? 0 : 1);
-	if (l_count == string::npos)
+	const auto l_count = p_param_str.find_first_not_of("0123456789.", (p_param_str[0] != '-') ? 0 : 1);
+	if (l_count == string::npos
+		|| p_param_str.compare(l_count, 2, "e+", 2) == 0
+		|| p_param_str.compare(l_count, 2, "e-", 2) == 0
+		|| p_param_str.compare(l_count, 1, "e",  1) == 0
+		)
 	{
-		return string::npos;
+		return false;
 	}
-	if (p_param_str.compare(l_count, 2, "e+", 2) == 0
-	        || p_param_str.compare(l_count, 2, "e-", 2) == 0)
-	{
-		return string::npos;
-	}
-	return l_count;
+	return true;
 }
 //---------------------------------------------------------------------------
 void ProcessParametr(string& p_param_str, const string::size_type p_start, const size_t p_number_of_param, calc_variable p_params[], const string::size_type p_comma_count, const string::size_type p_correct_end)
@@ -231,8 +204,7 @@ void ProcessParametr(string& p_param_str, const string::size_type p_start, const
 		AddError(FUNCTION_INVALID_NUMBER_OF_ARGUMENTS, p_start, p_number_of_param, p_comma_count + 1);
 		return;
 	}
-	auto l_count = CheckParametr(p_param_str);
-	if (l_count != string::npos)
+	if (CheckParametrIsSubexpr(p_param_str))
 	{
 		AddMessage(FOUND_SUBEXPRESSIONS);
 		string l_outp;
@@ -245,8 +217,7 @@ void ProcessParametr(string& p_param_str, const string::size_type p_start, const
 			AddError(LOST_FUNCTION_ARGUMENTS, p_start, p_comma_count + 1, p_correct_end);
 			return;
 		}
-		l_count = CheckParametr(l_outp);
-		if (l_count != string::npos)
+		if (CheckParametrIsSubexpr(l_outp))
 		{
 			AddError(LOST_FUNCTION_ARGUMENTS, p_start, p_comma_count + 1, p_correct_end);
 			return;
@@ -258,7 +229,7 @@ void ProcessParametr(string& p_param_str, const string::size_type p_start, const
 	p_param_str.clear();
 }
 //---------------------------------------------------------------------------
-void CalculateFunction(string& p_io_str, const string& p_func_name, const size_t p_count, const size_t p_number_of_param)
+void CalculateFunction(string& p_io_str, const string_view& p_func_name, const size_t p_count, const size_t p_number_of_param)
 {
 	// find func
 	auto l_start = p_io_str.find(p_func_name);
@@ -268,7 +239,7 @@ void CalculateFunction(string& p_io_str, const string& p_func_name, const size_t
 	}
 	else if (l_start)
 	{
-		const auto l_current_priority = GetPriority(p_io_str.c_str()[l_start - 1]);
+		const auto l_current_priority = GetPriority(p_io_str[l_start - 1]);
 		if (l_current_priority < Priority::priority_bracket)
 		{
 			return;
@@ -337,9 +308,7 @@ void CalculateFunction(string& p_io_str, const string& p_func_name, const size_t
 			AddError(FUNCTION_INVALID_NUMBER_OF_ARGUMENTS, l_start, p_number_of_param, l_comma_count + 1);
 			return;
 		}
-		const auto l_result = CalculateParametrs(p_number_of_param, p_count, l_params);
-		l_params_str.resize(CALC_BUFFER_SIZE);
-		l_params_str.resize(snprintf(&l_params_str[0], CALC_BUFFER_SIZE - 1, CALC_INTERNAL_ACCURACY_FORMAT, l_result));
+		print_value(l_params_str, CalculateParametrs(p_number_of_param, p_count, l_params));
 		
 		{
 			const string::size_type l_erased = p_func_name.size() + l_end + 1;
@@ -377,16 +346,15 @@ void ProcessFunctions(string& p_io_str, const string::size_type p_mes_pos_shift 
 	for (size_t i = 0; i < _countof(c_function2); i++)
 		CalculateFunction(p_io_str, c_function2[i], i, 2);
 		
-#ifdef _ENABLE_THREE_ARGUMENT_FUNCTION
 	for (size_t i = 0; i < _countof(c_function3); i++)
 		CalculateFunction(p_io_str, c_function3[i], i, 3);
-#endif
-	AddMessage(p_io_str.c_str());
+		
+	AddMessage(p_io_str);
 	
 	for (string::size_type l_count = 0; l_count < p_io_str.size() - 1; ++l_count)
 	{
-		if (p_io_str.c_str()[l_count + 1] == '('
-		        && GetPriority(p_io_str.c_str()[l_count]) == Priority::priority_default)
+		if (p_io_str[l_count + 1] == '('
+		        && GetPriority(p_io_str[l_count]) == Priority::priority_default)
 		{
 			AddError(NUMBERS_BEFORE_OPENING_BRACKET, l_count - 1 + p_mes_pos_shift);
 			return;

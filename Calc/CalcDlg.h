@@ -32,7 +32,7 @@ class CCalcDlg : public CDialog
 	public:
 		afx_msg void OnEnChangeEditInput();
 	private:
-		static const std::wstring::size_type c_max_edit_input_size = 4096;
+		static constexpr std::wstring::size_type c_max_edit_input_size = 4096;
 		std::wstring m_input;
 		std::wstring m_result;
 };

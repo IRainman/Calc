@@ -20,9 +20,7 @@
 #define _LINEAR_H
 //---------------------------------------------------------------------------
 using namespace std;
-#include <cmath>
-#include <limits>
-#include <stack>
+#include <string>
 #include "Flags.h"
 #include "MyTypes.h"
 //---------------------------------------------------------------------------
@@ -37,7 +35,7 @@ enum class Priority
     priority_error          = -1
 };
 //---------------------------------------------------------------------------
-inline Priority GetPriority(const char p_sym)
+constexpr inline Priority GetPriority(const char p_sym)
 {
 	switch (p_sym)
 	{

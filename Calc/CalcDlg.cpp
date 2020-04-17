@@ -60,7 +60,6 @@ CCalcDlg::CCalcDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CCalcDlg::IDD, pParent)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
-	CalculatorInit();
 }
 
 inline void CCalcDlg::DoDataExchange(CDataExchange* pDX)

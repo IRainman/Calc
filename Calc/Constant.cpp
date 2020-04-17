@@ -29,12 +29,13 @@
 #ifndef _CONSTANT_CPP
 #define _CONSTANT_CPP
 //---------------------------------------------------------------------------
+#include <numbers>
 #include "Flags.h"
 #include "Constant.h"
 #include "Message.h"
 #include "Linear.h"
 //---------------------------------------------------------------------------
-constexpr static const char* c_str_constant[] =
+constexpr static string_view c_str_constant[] =
 {
 	"pi",// Pi, Archimedes' constant or Ludolph's number
 	"c",// Speed of light in vacuum (m·s-1)
@@ -48,21 +49,20 @@ constexpr static const char* c_str_constant[] =
 	//"INF",// Infinity
 };
 //---------------------------------------------------------------------------
-constexpr static const calc_variable c_cv_constant[] =
+constexpr static calc_variable c_cv_constant[] =
 {
-	3.14159265358979323846264338327950288L,// Pi, Archimedes' constant or Ludolph's number
+	// TODO https://en.cppreference.com/w/cpp/numeric/constants
+	numbers::pi_v<calc_variable>,// Pi, Archimedes' constant or Ludolph's number
 	299792458.0L,// Speed of light in vacuum (m·s-1)
-	6.67428676767676767676767676767676767e-11L,// Newtonian constant of gravitation (m3·kg−1·s−2), this constant valid on Earths only ;)
+	6.674286767676767676767676767676767676e-11L,// Newtonian constant of gravitation (m3·kg−1·s−2), this constant valid on Earths only ;)
 	3.058198247456354132564564787888767L,// Constants of Gauss fild
-	1.61803398874989484820458683436563812L,// Golden ratio
-	6.62606896333333333333333333333333333e-34L,// Planck constant (J·s)
+	numbers::phi_v<calc_variable>,// Golden ratio
+	6.626068963333333333333333333333333333e-34L,// Planck constant (J·s)
 	101325.0L,// Standard atmosphere (Pa), this constant valid on Earths only ;)
-	6.02214151010101010101010101010101010e23L,// Avogadro's number (mol−1)
-	8.31447215151515151515151515151515151L,// Gas constant (J·K−1·mol−1)
+	6.022141510101010101010101010101010101e23L,// Avogadro's number (mol−1)
+	8.314472151515151515151515151515151515L,// Gas constant (J·K−1·mol−1)
 	//std::numeric_limits<calc_variable>::infinity(),// Infinity
 };
-//---------------------------------------------------------------------------
-static string c_cv_opt[constant_counts];
 //---------------------------------------------------------------------------
 static_assert(_countof(c_str_constant) == _countof(c_cv_constant) && _countof(c_cv_constant) == constant_counts, "c_str_constant and c_l_constant sizes do not match ;) Check them out!");
 //---------------------------------------------------------------------------
@@ -71,37 +71,25 @@ const calc_variable& GetConstant(const Constants p_const_ind)
 	return c_cv_constant[p_const_ind];
 }
 //---------------------------------------------------------------------------
-void ConstantInit()
-{
-	for (size_t i = 0; i != _countof(c_cv_constant); ++i)
-	{
-		string l_const;
-		l_const.resize(CALC_BUFFER_SIZE);
-		l_const.resize(snprintf(&l_const[0], CALC_BUFFER_SIZE - 1, CALC_INTERNAL_ACCURACY_FORMAT, c_cv_constant[i]));
-		l_const.shrink_to_fit();
-		c_cv_opt[i].swap(l_const);
-	}
-}
-//---------------------------------------------------------------------------
-inline void ReplaceConstant(string& p_io_str, const string& p_const_name, const size_t p_number_of_constant)
+inline void ReplaceConstant(string& p_io_str, const string_view& p_const_name, const size_t p_number_of_constant)
 {
 	string::size_type l_pos;
 	
-	auto ConstantNotFound = [](const string & p_io_str, const string & p_const_name, string::size_type & l_pos) -> bool
+	auto ConstantNotFound = [](const string_view& p_io_str, const string_view& p_const_name, string::size_type & l_pos) -> bool
 	{
 		l_pos = p_io_str.find(p_const_name);
-		return (l_pos == string::npos \
+		return (l_pos == string_view::npos \
 		|| \
 		(l_pos \
-		&& (GetPriority(p_io_str.c_str()[l_pos - 1]) < Priority::priority_bracket \
-		|| GetPriority(p_io_str.c_str()[l_pos - 1]) == Priority::priority_error) \
-		&& p_io_str.c_str()[l_pos - 1] != ',' \
+		&& (GetPriority(p_io_str[l_pos - 1]) < Priority::priority_bracket \
+		|| GetPriority(p_io_str[l_pos - 1]) == Priority::priority_error) \
+		&& p_io_str[l_pos - 1] != ',' \
 		) \
 		|| \
 		((p_const_name.length() + l_pos) < p_io_str.length() \
-		&& (GetPriority(p_io_str.c_str()[l_pos + p_const_name.length()]) < Priority::priority_bracket \
-		|| GetPriority(p_io_str.c_str()[l_pos + p_const_name.length()]) == Priority::priority_error) \
-		&& p_io_str.c_str()[l_pos + p_const_name.length()] != ',' \
+		&& (GetPriority(p_io_str[l_pos + p_const_name.length()]) < Priority::priority_bracket \
+		|| GetPriority(p_io_str[l_pos + p_const_name.length()]) == Priority::priority_error) \
+		&& p_io_str[l_pos + p_const_name.length()] != ',' \
 		) \
 		       );
 	};
@@ -111,7 +99,8 @@ inline void ReplaceConstant(string& p_io_str, const string& p_const_name, const 
 		p_io_str.erase(l_pos, p_const_name.length());
 		m_correct_count -= p_const_name.length();
 		
-		const auto& l_const = c_cv_opt[p_number_of_constant];
+		string l_const;
+		print_value(l_const, c_cv_constant[p_number_of_constant]);
 		
 		p_io_str.insert(l_pos, l_const);
 		m_correct_count += l_const.length();

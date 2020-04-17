@@ -36,6 +36,22 @@
 
 #include <afxcontrolbars.h>     // поддержка MFC для лент и панелей управления
 
+#ifdef max
+#undef max
+#endif
+
+#ifdef min
+#undef min
+#endif
+/*
+#include <string>
+#include <string_view>
+#include <charconv>
+#include <numbers>
+#include <cmath>
+#include <limits>
+#include <stack>
+*/
 #ifdef _UNICODE
 #if defined _M_IX86
 #pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='x86' publicKeyToken='6595b64144ccf1df' language='*'\"")
