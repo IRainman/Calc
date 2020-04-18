@@ -26,13 +26,13 @@ using namespace std;
 //---------------------------------------------------------------------------
 enum class Priority
 {
-    function	= 16,
-    power		= 8,
-    multiply	= 4, //-V112
-    addition	= 2,
-    bracket		= 1,
-    number		= 0,
-    error		= -1
+    function    = 16,
+    power       = 8,
+    multiply    = 4, //-V112
+    addition    = 2,
+    bracket     = 1,
+    number      = 0,
+    error       = -1
 };
 //---------------------------------------------------------------------------
 constexpr inline Priority GetPriority(const char p_sym)

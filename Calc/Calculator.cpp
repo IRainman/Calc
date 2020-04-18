@@ -39,7 +39,7 @@
 #ifdef ENABLE_INPUT_VALIDATION
 void ValidateInputString(const string& p_input_str)
 {
-	// TODO shrink the checking 
+	// TODO shrink the checking
 	AddMessage(PREPARING);
 	
 	if (p_input_str.empty())

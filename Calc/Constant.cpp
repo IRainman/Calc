@@ -75,22 +75,22 @@ inline void ReplaceConstant(string& p_io_str, const string_view& p_const_name, c
 {
 	string::size_type l_pos;
 	
-	auto ConstantNotFound = [](const string_view& p_io_str, const string_view& p_const_name, string::size_type & l_pos)
+	auto ConstantNotFound = [](const string_view & p_io_str, const string_view & p_const_name, string::size_type & l_pos)
 	{
 		l_pos = p_io_str.find(p_const_name);
 		return (l_pos == string_view::npos \
-		|| \
-		(l_pos \
-		&& (GetPriority(p_io_str[l_pos - 1]) < Priority::bracket \
-		|| GetPriority(p_io_str[l_pos - 1]) == Priority::error) \
-		&& p_io_str[l_pos - 1] != ',' \
-		) \
-		|| \
-		((p_const_name.length() + l_pos) < p_io_str.length() \
-		&& (GetPriority(p_io_str[l_pos + p_const_name.length()]) < Priority::bracket \
-		|| GetPriority(p_io_str[l_pos + p_const_name.length()]) == Priority::error) \
-		&& p_io_str[l_pos + p_const_name.length()] != ',' \
-		) \
+		        || \
+		        (l_pos \
+		         && (GetPriority(p_io_str[l_pos - 1]) < Priority::bracket \
+		             || GetPriority(p_io_str[l_pos - 1]) == Priority::error) \
+		         && p_io_str[l_pos - 1] != ',' \
+		        ) \
+		        || \
+		        ((p_const_name.length() + l_pos) < p_io_str.length() \
+		         && (GetPriority(p_io_str[l_pos + p_const_name.length()]) < Priority::bracket \
+		             || GetPriority(p_io_str[l_pos + p_const_name.length()]) == Priority::error) \
+		         && p_io_str[l_pos + p_const_name.length()] != ',' \
+		        ) \
 		       );
 	};
 	

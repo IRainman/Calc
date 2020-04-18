@@ -99,12 +99,12 @@ void CalculateLineExpression(string p_input_str, string& p_output_str, string::s
 	stack <char> l_operations;
 	stack <calc_variable> l_operands;
 	string::size_type l_count = 0;
-
-	auto isNegativeNumber = [] (const string& p_input_str)
+	
+	auto isNegativeNumber = [](const string & p_input_str)
 	{
 		return p_input_str[0] == '-' && GetPriority(p_input_str[1]) == Priority::number;
 	};
-
+	
 	if (GetPriority(p_input_str[0]) > Priority::bracket && !isNegativeNumber(p_input_str))
 	{
 		AddError(EXPRESSION_CAN_NOT_START_FROM_OPERATION, p_mes_pos_shift);
@@ -120,7 +120,7 @@ void CalculateLineExpression(string p_input_str, string& p_output_str, string::s
 			AddError(CONSECUTIVE_RECORD_NUMBER_OF_TRANSACTIONS, l_count + p_mes_pos_shift);
 			return;
 		}
-
+		
 		if (l_current_priority != Priority::number)
 		{
 			if (l_operations.empty())

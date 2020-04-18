@@ -182,10 +182,10 @@ inline constexpr bool CheckParametrIsSubexpr(const string_view& p_param_str)
 {
 	const auto l_count = p_param_str.find_first_not_of("0123456789.", (p_param_str[0] != '-') ? 0 : 1);
 	if (l_count == string::npos
-		|| p_param_str.compare(l_count, 2, "e+", 2) == 0
-		|| p_param_str.compare(l_count, 2, "e-", 2) == 0
-		|| p_param_str.compare(l_count, 1, "e",  1) == 0
-		)
+	        || p_param_str.compare(l_count, 2, "e+", 2) == 0
+	        || p_param_str.compare(l_count, 2, "e-", 2) == 0
+	        || p_param_str.compare(l_count, 1, "e",  1) == 0
+	   )
 	{
 		return false;
 	}
@@ -243,7 +243,7 @@ void CalculateFunction(string& p_io_str, const string_view& p_func_name, const s
 			}
 		}
 		// ~find func
-
+		
 		string l_params_str;
 		string l_buf = p_io_str.substr(l_start + p_func_name.size());
 		calc_variable l_params[c_max_argument_of_function];
