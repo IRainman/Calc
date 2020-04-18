@@ -231,23 +231,24 @@ void ProcessParametr(string& p_param_str, const string::size_type p_start, const
 //---------------------------------------------------------------------------
 void CalculateFunction(string& p_io_str, const string_view& p_func_name, const size_t p_count, const size_t p_number_of_param)
 {
-	// find func
-	auto l_start = p_io_str.find(p_func_name);
-	if (l_start == string::npos)
+	do
 	{
-		return;
-	}
-	else if (l_start)
-	{
-		const auto l_current_priority = GetPriority(p_io_str[l_start - 1]);
-		if (l_current_priority < Priority::priority_bracket)
+		// find func
+		const auto l_start = p_io_str.find(p_func_name);
+		if (l_start == string::npos)
 		{
 			return;
 		}
-	}
-	// ~find func
-	do
-	{
+		else if (l_start)
+		{
+			const auto l_current_priority = GetPriority(p_io_str[l_start - 1]);
+			if (l_current_priority < Priority::priority_bracket)
+			{
+				return;
+			}
+		}
+		// ~find func
+
 		string l_params_str;
 		string l_buf = p_io_str.substr(l_start + p_func_name.size());
 		calc_variable l_params[c_max_argument_of_function];
@@ -317,21 +318,6 @@ void CalculateFunction(string& p_io_str, const string_view& p_func_name, const s
 			p_io_str.insert(l_start, l_params_str);
 			m_correct_count += l_params_str.size();
 		}
-		// find func
-		l_start = p_io_str.find(p_func_name);
-		if (l_start == string::npos)
-		{
-			return;
-		}
-		else if (l_start)
-		{
-			const auto l_current_priority = GetPriority(p_io_str.c_str()[l_start - 1]);
-			if (l_current_priority < Priority::priority_bracket)
-			{
-				return;
-			}
-		}
-		// ~find func
 	}
 	while (true);
 }
