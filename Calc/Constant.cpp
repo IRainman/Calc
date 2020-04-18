@@ -64,31 +64,31 @@ constexpr static calc_variable c_cv_constant[] =
 	//std::numeric_limits<calc_variable>::infinity(),// Infinity
 };
 //---------------------------------------------------------------------------
-static_assert(_countof(c_str_constant) == _countof(c_cv_constant) && _countof(c_cv_constant) == constant_counts, "c_str_constant and c_l_constant sizes do not match ;) Check them out!");
+static_assert(_countof(c_str_constant) == _countof(c_cv_constant) && _countof(c_cv_constant) == static_cast<unsigned int>(Constants::constant_counts), "c_str_constant and c_l_constant sizes do not match ;) Check them out!");
 //---------------------------------------------------------------------------
 const calc_variable& GetConstant(const Constants p_const_ind)
 {
-	return c_cv_constant[p_const_ind];
+	return c_cv_constant[static_cast<unsigned int>(p_const_ind)];
 }
 //---------------------------------------------------------------------------
 inline void ReplaceConstant(string& p_io_str, const string_view& p_const_name, const size_t p_number_of_constant)
 {
 	string::size_type l_pos;
 	
-	auto ConstantNotFound = [](const string_view& p_io_str, const string_view& p_const_name, string::size_type & l_pos) -> bool
+	auto ConstantNotFound = [](const string_view& p_io_str, const string_view& p_const_name, string::size_type & l_pos)
 	{
 		l_pos = p_io_str.find(p_const_name);
 		return (l_pos == string_view::npos \
 		|| \
 		(l_pos \
-		&& (GetPriority(p_io_str[l_pos - 1]) < Priority::priority_bracket \
-		|| GetPriority(p_io_str[l_pos - 1]) == Priority::priority_error) \
+		&& (GetPriority(p_io_str[l_pos - 1]) < Priority::bracket \
+		|| GetPriority(p_io_str[l_pos - 1]) == Priority::error) \
 		&& p_io_str[l_pos - 1] != ',' \
 		) \
 		|| \
 		((p_const_name.length() + l_pos) < p_io_str.length() \
-		&& (GetPriority(p_io_str[l_pos + p_const_name.length()]) < Priority::priority_bracket \
-		|| GetPriority(p_io_str[l_pos + p_const_name.length()]) == Priority::priority_error) \
+		&& (GetPriority(p_io_str[l_pos + p_const_name.length()]) < Priority::bracket \
+		|| GetPriority(p_io_str[l_pos + p_const_name.length()]) == Priority::error) \
 		&& p_io_str[l_pos + p_const_name.length()] != ',' \
 		) \
 		       );

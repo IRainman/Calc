@@ -36,6 +36,7 @@
 #include "Linear.h"
 #include "Constant.h"
 //---------------------------------------------------------------------------
+#ifdef ENABLE_INPUT_VALIDATION
 void ValidateInputString(const string& p_input_str)
 {
 	// TODO shrink the checking 
@@ -229,6 +230,7 @@ void ValidateInputString(const string& p_input_str)
 		return;
 	}
 }
+#endif // ENABLE_INPUT_VALIDATION
 //---------------------------------------------------------------------------
 const string& Calculate(string p_input, string& p_output)
 {
@@ -256,8 +258,10 @@ const string& Calculate(string p_input, string& p_output)
 		while (true);
 	}
 	
+#ifdef ENABLE_INPUT_VALIDATION
 	ValidateInputString(p_input);
 	if (m_no_error)
+#endif // ENABLE_INPUT_VALIDATION
 	{
 		ReplaceConstants(p_input);
 		ProcessFunctions(p_input);

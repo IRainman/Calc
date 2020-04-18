@@ -38,7 +38,7 @@
 //---------------------------------------------------------------------------
 inline calc_variable rad(const calc_variable p_grad)
 {
-	return p_grad * GetConstant(pi_constant) / 180;
+	return p_grad * GetConstant(Constants::pi) / 180;
 }
 // TODO https://en.cppreference.com/w/cpp/numeric/math
 // TODO https://en.cppreference.com/w/cpp/numeric/special_math
@@ -176,11 +176,6 @@ constexpr inline calc_variable CalculateParametrs(const size_t p_number_of_param
 			return 0;
 #endif
 	}
-	
-	// TODO: delete this block after add full function support
-	m_no_error = false;
-	return 0;
-	// ~TODO
 }
 //---------------------------------------------------------------------------
 inline constexpr bool CheckParametrIsSubexpr(const string_view& p_param_str)
@@ -242,7 +237,7 @@ void CalculateFunction(string& p_io_str, const string_view& p_func_name, const s
 		else if (l_start)
 		{
 			const auto l_current_priority = GetPriority(p_io_str[l_start - 1]);
-			if (l_current_priority < Priority::priority_bracket)
+			if (l_current_priority < Priority::bracket)
 			{
 				return;
 			}
@@ -304,11 +299,13 @@ void CalculateFunction(string& p_io_str, const string_view& p_func_name, const s
 				l_nesting_level--;
 			}
 		}
+#if 0 // Don't needed because ProcessParametr already have it.
 		if (l_comma_count != p_number_of_param - 1)
 		{
 			AddError(FUNCTION_INVALID_NUMBER_OF_ARGUMENTS, l_start, p_number_of_param, l_comma_count + 1);
 			return;
 		}
+#endif
 		print_value(l_params_str, CalculateParametrs(p_number_of_param, p_count, l_params));
 		
 		{
@@ -337,6 +334,7 @@ void ProcessFunctions(string& p_io_str, const string::size_type p_mes_pos_shift 
 		
 	AddMessage(p_io_str);
 	
+#ifdef ENABLE_INPUT_VALIDATION
 	for (string::size_type l_count = 0; l_count < p_io_str.size() - 1; ++l_count)
 	{
 		if (p_io_str[l_count + 1] == '('
@@ -352,6 +350,7 @@ void ProcessFunctions(string& p_io_str, const string::size_type p_mes_pos_shift 
 		AddError(INVALID_CHARACTER_AFTER_CONSTANT_AND_FUNCTION_PROCESS, l_count + p_mes_pos_shift);
 		return;
 	}
+#endif // ENABLE_INPUT_VALIDATION
 }
 //---------------------------------------------------------------------------
 #endif // _FUNCTION_CPP

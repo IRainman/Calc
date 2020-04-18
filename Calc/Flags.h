@@ -21,6 +21,9 @@
 //---------------------------------------------------------------------------
 // TODO: Add support for all blocks and delete this header from project
 //---------------------------------------------------------------------------
+// Deprecated because is very slow and get high value of cyclomatic complexity https://en.wikipedia.org/wiki/Cyclomatic_complexity
+//#define ENABLE_INPUT_VALIDATION // Deprecated
+
 #define ENABLE_LOG
 #ifdef ENABLE_LOG
 // TODO

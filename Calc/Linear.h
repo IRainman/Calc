@@ -26,13 +26,13 @@ using namespace std;
 //---------------------------------------------------------------------------
 enum class Priority
 {
-    priority_function       = 16,
-    priority_power          = 8,
-    priority_multiply       = 4, //-V112
-    priority_addition       = 2,
-    priority_bracket        = 1,
-    priority_default        = 0,
-    priority_error          = -1
+    function	= 16,
+    power		= 8,
+    multiply	= 4, //-V112
+    addition	= 2,
+    bracket		= 1,
+    number		= 0,
+    error		= -1
 };
 //---------------------------------------------------------------------------
 constexpr inline Priority GetPriority(const char p_sym)
@@ -41,19 +41,19 @@ constexpr inline Priority GetPriority(const char p_sym)
 	{
 		case '^':
 			//      case '%':
-			return Priority::priority_power;
+			return Priority::power;
 			
 		case '*':
 		case '/':
-			return Priority::priority_multiply;
+			return Priority::multiply;
 			
 		case '+':
 		case '-':
-			return Priority::priority_addition;
+			return Priority::addition;
 			
 		case '(':
 		case ')':
-			return Priority::priority_bracket;
+			return Priority::bracket;
 			
 		case '0':
 		case '1':
@@ -67,10 +67,10 @@ constexpr inline Priority GetPriority(const char p_sym)
 		case '9':
 		case '.':
 		case 'e':
-			return Priority::priority_default;
+			return Priority::number;
 			
 		default:
-			return Priority::priority_error;
+			return Priority::error;
 	}
 }
 //---------------------------------------------------------------------------

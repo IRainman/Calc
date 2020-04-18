@@ -21,7 +21,7 @@ class CCalcDlg : public CDialog
 		
 // Реализация
 	protected:
-		HICON m_hIcon;
+		HICON m_hIcon;//-V122_NOPTR
 		
 		// Созданные функции схемы сообщений
 		virtual BOOL OnInitDialog();

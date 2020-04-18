@@ -23,17 +23,17 @@ using namespace std;
 #include <string>
 #include "MyTypes.h"
 //---------------------------------------------------------------------------
-enum Constants
+enum class Constants
 {
-	pi_constant = 0,// Pi, Archimedes' constant or Ludolph's number
-	c_constant,// Speed of light in vacuum (m·s-1)
-	G_constant,// Newtonian constant of gravitation (m3·kg−1·s−2), this constant valid on Earths only ;)
-	J_constant,// Constants of Gauss fild
-	phi_constant,// Golden ratio
-	h_constant,// Planck constant (J·s)
-	atm_constant,// Standard atmosphere (Pa), this constant valid on Earths only ;)
-	L_constant,// Avogadro's number (mol−1)
-	R_constant,// Gas constant (J·K−1·mol−1)
+	pi = 0,// Pi, Archimedes' constant or Ludolph's number
+	c,// Speed of light in vacuum (m·s-1)
+	G,// Newtonian constant of gravitation (m3·kg−1·s−2), this constant valid on Earths only ;)
+	J,// Constants of Gauss fild
+	phi,// Golden ratio
+	h,// Planck constant (J·s)
+	atm,// Standard atmosphere (Pa), this constant valid on Earths only ;)
+	L,// Avogadro's number (mol−1)
+	R,// Gas constant (J·K−1·mol−1)
 	//inf_constant,// Infinity
 	constant_counts,
 };
