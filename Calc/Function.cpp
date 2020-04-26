@@ -204,6 +204,9 @@ inline constexpr bool CheckParametrIsSubexpr(const string_view& p_param_str)
 		AddError(LOST_FUNCTION_ARGUMENTS, p_start, p_comma_count + 1, p_correct_end);
 		return false;
 	}
+
+	calc_variable l_outp;
+
 	if (CheckParametrIsSubexpr(p_param_str))
 	{
 		AddMessage(FOUND_SUBEXPRESSIONS);
@@ -212,18 +215,25 @@ inline constexpr bool CheckParametrIsSubexpr(const string_view& p_param_str)
 			, p_start
 #endif
 		);
-		auto l_outp = CalculateLineExpression(p_param_str, p_start);
-		p_param_str.clear();
+		l_outp = CalculateLineExpression(p_param_str, p_start);
 		AddMessage(END_OF_THE_SUBEXPRESSION);
 		if (isnan(l_outp))
 		{
 			AddError(LOST_FUNCTION_ARGUMENTS, p_start, p_comma_count + 1, p_correct_end);
 			return false;
 		}
-		p_params[p_comma_count] = l_outp;
-		return true;
 	}
-	p_params[p_comma_count] = calc_input_function(p_param_str.c_str(), nullptr);
+	else
+	{
+		const auto l_res = from_chars(p_param_str.data(), p_param_str.data() + p_param_str.size(), l_outp);
+		const auto l_diff = l_res.ptr - p_param_str.data();
+		if (l_res.ec != errc() || l_diff != p_param_str.size())
+		{
+			AddError(LOST_FUNCTION_ARGUMENTS, p_start, p_comma_count + 1, p_correct_end);
+			return false;
+		}
+	}
+	p_params[p_comma_count] = l_outp;
 	p_param_str.clear();
 	return true;
 }
