@@ -181,7 +181,7 @@ constexpr inline calc_variable CalculateParametrs(const size_t p_number_of_param
 inline constexpr bool CheckParametrIsSubexpr(const string_view& p_param_str)
 {
 	const auto l_count = p_param_str.find_first_not_of("0123456789.", (p_param_str[0] != '-') ? 0 : 1);
-	if (l_count == string::npos
+	if (l_count == string_view::npos
 	        || p_param_str.compare(l_count, 2, "e+", 2) == 0
 	        || p_param_str.compare(l_count, 2, "e-", 2) == 0
 	        || p_param_str.compare(l_count, 1, "e",  1) == 0
@@ -192,36 +192,40 @@ inline constexpr bool CheckParametrIsSubexpr(const string_view& p_param_str)
 	return true;
 }
 //---------------------------------------------------------------------------
-void ProcessParametr(string& p_param_str, const string::size_type p_start, const size_t p_number_of_param, calc_variable p_params[], const string::size_type p_comma_count, const string::size_type p_correct_end)
+[[nodiscard]] bool ProcessParametr(string& p_param_str, const string::size_type p_start, const size_t p_number_of_param, calc_variable p_params[], const string::size_type p_comma_count, const string::size_type p_correct_end)
 {
 	if (p_comma_count >= p_number_of_param)
 	{
 		AddError(FUNCTION_INVALID_NUMBER_OF_ARGUMENTS, p_start, p_number_of_param, p_comma_count + 1);
-		return;
+		return false;
+	}
+	if (p_param_str.empty())
+	{
+		AddError(LOST_FUNCTION_ARGUMENTS, p_start, p_comma_count + 1, p_correct_end);
+		return false;
 	}
 	if (CheckParametrIsSubexpr(p_param_str))
 	{
 		AddMessage(FOUND_SUBEXPRESSIONS);
-		string l_outp;
-		ProcessFunctions(p_param_str, p_start);
-		CalculateLineExpression(p_param_str, l_outp, p_start);
+		ProcessFunctions(p_param_str
+#ifdef ENABLE_INPUT_VALIDATION
+			, p_start
+#endif
+		);
+		auto l_outp = CalculateLineExpression(p_param_str, p_start);
 		p_param_str.clear();
 		AddMessage(END_OF_THE_SUBEXPRESSION);
-		if (l_outp.empty())
+		if (isnan(l_outp))
 		{
 			AddError(LOST_FUNCTION_ARGUMENTS, p_start, p_comma_count + 1, p_correct_end);
-			return;
+			return false;
 		}
-		if (CheckParametrIsSubexpr(l_outp))
-		{
-			AddError(LOST_FUNCTION_ARGUMENTS, p_start, p_comma_count + 1, p_correct_end);
-			return;
-		}
-		p_params[p_comma_count] = calc_input_function(l_outp.c_str(), nullptr);
-		return;
+		p_params[p_comma_count] = l_outp;
+		return true;
 	}
 	p_params[p_comma_count] = calc_input_function(p_param_str.c_str(), nullptr);
 	p_param_str.clear();
+	return true;
 }
 //---------------------------------------------------------------------------
 void CalculateFunction(string& p_io_str, const string_view& p_func_name, const size_t p_count, const size_t p_number_of_param)
@@ -234,18 +238,18 @@ void CalculateFunction(string& p_io_str, const string_view& p_func_name, const s
 		{
 			return;
 		}
-		else if (l_start)
+		else if (l_start != 0)
 		{
-			const auto l_current_priority = GetPriority(p_io_str[l_start - 1]);
-			if (l_current_priority < Priority::bracket)
+			if (GetPriority(p_io_str[l_start - 1]) < Priority::bracket)
 			{
+				AddError(NUMBER_BEFORE_FUNCTION, l_start);
 				return;
 			}
 		}
 		// ~find func
 		
-		string l_params_str;
-		string l_buf = p_io_str.substr(l_start + p_func_name.size());
+		string l_params_str; // TODO string_view
+		string l_buf = p_io_str.substr(l_start + p_func_name.size()); // TODO string_view
 		calc_variable l_params[c_max_argument_of_function];
 		string::size_type l_comma_count = 0;
 		size_t l_nesting_level = 0;
@@ -255,6 +259,11 @@ void CalculateFunction(string& p_io_str, const string_view& p_func_name, const s
 		{
 			const auto l_br_start = l_buf.find('(');
 			l_end = l_buf.find(')');
+			if (l_end == string::npos)
+			{
+				AddError(FUNCTION_LOST_CLOSING_BRACKET, l_start);
+				return;
+			}
 			const auto l_current_comma = l_buf.find(',');
 			if (l_br_start != string::npos && l_br_start < l_end && l_current_comma > l_br_start)
 			{
@@ -270,24 +279,20 @@ void CalculateFunction(string& p_io_str, const string_view& p_func_name, const s
 					l_params_str += l_buf.substr(0, l_current_comma);
 					l_correct_end += l_current_comma + 1;
 					l_buf = l_buf.substr(l_current_comma + 1);
-					if (l_params_str.empty())
+					l_comma_count++;
+					if (!ProcessParametr(l_params_str, l_start, p_number_of_param, l_params, l_comma_count, l_correct_end))
 					{
-						AddError(LOST_FUNCTION_ARGUMENTS, l_start, l_comma_count + 1, l_correct_end);
 						return;
 					}
-					ProcessParametr(l_params_str, l_start, p_number_of_param, l_params, l_comma_count, l_correct_end);
-					l_comma_count++;
 				}
 				else if (l_current_comma == string::npos || l_current_comma > l_end)
 				{
 					l_params_str += l_buf.substr(0, l_end);
-					if (l_params_str.empty())
+					l_end += l_correct_end;
+					if (!ProcessParametr(l_params_str, l_start, p_number_of_param, l_params, l_comma_count, l_correct_end))
 					{
-						AddError(LOST_FUNCTION_ARGUMENTS, l_start, l_comma_count + 1, l_correct_end);
 						return;
 					}
-					l_end += l_correct_end;
-					ProcessParametr(l_params_str, l_start, p_number_of_param, l_params, l_comma_count, l_correct_end);
 					break;
 				}
 			}
@@ -299,17 +304,16 @@ void CalculateFunction(string& p_io_str, const string_view& p_func_name, const s
 				l_nesting_level--;
 			}
 		}
-#if 0 // Don't needed because ProcessParametr already have it.
 		if (l_comma_count != p_number_of_param - 1)
 		{
 			AddError(FUNCTION_INVALID_NUMBER_OF_ARGUMENTS, l_start, p_number_of_param, l_comma_count + 1);
 			return;
 		}
-#endif
+		
 		print_value(l_params_str, CalculateParametrs(p_number_of_param, p_count, l_params));
 		
 		{
-			const string::size_type l_erased = p_func_name.size() + l_end + 1;
+			const auto l_erased = p_func_name.size() + l_end + 1;
 			p_io_str.erase(l_start, l_erased);
 			m_correct_count -= l_erased;
 			p_io_str.insert(l_start, l_params_str);
@@ -319,7 +323,11 @@ void CalculateFunction(string& p_io_str, const string_view& p_func_name, const s
 	while (true);
 }
 //---------------------------------------------------------------------------
-void ProcessFunctions(string& p_io_str, const string::size_type p_mes_pos_shift /*= 0*/)
+void ProcessFunctions(string& p_io_str
+#ifdef ENABLE_INPUT_VALIDATION
+	, const string::size_type p_mes_pos_shift /*= 0*/
+#endif
+)
 {
 	AddMessage(CALCULATE_FUNCTIONS);
 	

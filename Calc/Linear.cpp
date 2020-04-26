@@ -31,10 +31,11 @@
 //---------------------------------------------------------------------------
 #include <charconv>
 #include <stack>
+//#include <numbers>
 #include "Linear.h"
 #include "Message.h"
 //---------------------------------------------------------------------------
-inline void CalculateOnLineExpression(stack<char>& p_operations, stack<calc_variable>& p_operands, const string::size_type p_count, const string::size_type p_mes_pos_shift)
+inline void CalculateOnLineExpression(stack<char>& p_operations, stack<calc_variable>& p_operands, const string::size_type p_pos)
 {
 	if (!p_operands.empty())
 	{
@@ -67,14 +68,14 @@ inline void CalculateOnLineExpression(stack<char>& p_operations, stack<calc_vari
 #ifdef _DEBUG
 					AddError(INTERNAL_PROCESSING_ERROR_CalculateOnLineExpression_p_operands_is_unknown);
 #endif
-					AddError(UNKNOWN_ERROR, p_count + p_mes_pos_shift);
+					AddError(UNKNOWN_ERROR, p_pos);
 					break;
 			}
 		}
 	}
 	p_operations.pop();
 }
-inline void FinalizeOnLineExpression(stack<char>& p_operations, stack<calc_variable>& p_operands, const string::size_type p_count, const string::size_type p_mes_pos_shift)
+inline void FinalizeOnLineExpression(stack<char>& p_operations, stack<calc_variable>& p_operands, const string_view::size_type p_pos)
 {
 	const auto b = p_operands.top();
 	p_operands.pop();
@@ -87,38 +88,48 @@ inline void FinalizeOnLineExpression(stack<char>& p_operations, stack<calc_varia
 #ifdef _DEBUG
 			AddError(INTERNAL_PROCESSING_ERROR_CalculateOnLineExpression_p_operands_is_not_addition);
 #endif
-			AddError(UNKNOWN_ERROR, p_count + p_mes_pos_shift);
+			AddError(UNKNOWN_ERROR, p_pos);
 			break;
 	}
 }
 //---------------------------------------------------------------------------
-void CalculateLineExpression(string p_input_str, string& p_output_str, string::size_type p_mes_pos_shift /*= 0*/)
+[[nodiscard]] calc_variable CalculateLineExpression(const string_view& p_input_str, string_view::size_type p_mes_pos_shift /*= 0*/)
 {
+#ifdef ENABLE_INPUT_VALIDATION
 	AddMessage(CALCULATION);
+#endif
 	auto l_current_priority = Priority::error;
 	stack <char> l_operations;
 	stack <calc_variable> l_operands;
-	string::size_type l_count = 0;
+	const auto l_begin = p_input_str.data();
+	const auto l_end = l_begin + p_input_str.size();
+	auto l_current = l_begin;
 	
-	auto isNegativeNumber = [](const string & p_input_str)
+	auto isNegativeNumber = [&]()
 	{
-		return p_input_str[0] == '-' && GetPriority(p_input_str[1]) == Priority::number;
+		return *l_current == '-' && l_current + 1 < l_end && GetPriority(*(l_current + 1)) == Priority::number;
+	};
+
+	auto currentPosition = [&]()
+	{
+		return l_current - l_begin + p_mes_pos_shift;
 	};
 	
-	if (GetPriority(p_input_str[0]) > Priority::bracket && !isNegativeNumber(p_input_str))
+	if (GetPriority(*l_current) > Priority::bracket && !isNegativeNumber())
 	{
-		AddError(EXPRESSION_CAN_NOT_START_FROM_OPERATION, p_mes_pos_shift);
-		return;
+		AddError(EXPRESSION_CAN_NOT_START_FROM_OPERATION, 0);
+		return NAN;
 	}
-	for (; !p_input_str.empty(); l_count++)
+	while (l_current != l_end)
 	{
 		const auto l_previous_priority = l_current_priority;
-		const bool l_negative_number = l_previous_priority != Priority::number && isNegativeNumber(p_input_str);
-		l_current_priority = l_negative_number ? Priority::number : GetPriority(p_input_str[0]);
+		const bool l_negative_number = l_previous_priority != Priority::number && isNegativeNumber();
+		l_current_priority = l_negative_number ? Priority::number : GetPriority(*l_current);
+
 		if (l_previous_priority > Priority::bracket && !l_negative_number && l_current_priority > Priority::bracket)
 		{
-			AddError(CONSECUTIVE_RECORD_NUMBER_OF_TRANSACTIONS, l_count + p_mes_pos_shift);
-			return;
+			AddError(CONSECUTIVE_RECORD_NUMBER_OF_TRANSACTIONS, currentPosition());
+			return NAN;
 		}
 		
 		if (l_current_priority != Priority::number)
@@ -128,9 +139,8 @@ void CalculateLineExpression(string p_input_str, string& p_output_str, string::s
 				/*
 				a) if the stack is empty, an operation from the input string is pushed onto the stack.
 				*/
-				l_operations.push(p_input_str[0]);
-				p_input_str.erase(0, 1);
-				p_mes_pos_shift += 1;
+				l_operations.push(*l_current);
+				++l_current;
 			}
 			else
 			{
@@ -143,34 +153,31 @@ void CalculateLineExpression(string p_input_str, string& p_output_str, string::s
 						*/
 						if (GetPriority(l_operations.top()) >= l_current_priority)
 						{
-							CalculateOnLineExpression(l_operations, l_operands, l_count, p_mes_pos_shift);
+							CalculateOnLineExpression(l_operations, l_operands, currentPosition());
 							if (l_operations.empty())
 							{
-								l_operations.push(p_input_str[0]);
-								p_input_str.erase(0, 1);
-								p_mes_pos_shift += 1;
+								l_operations.push(*l_current);
+								++l_current;
 								break;
 							}
 						}
 						else
 						{
-							l_operations.push(p_input_str[0]);
-							p_input_str.erase(0, 1);
-							p_mes_pos_shift += 1;
+							l_operations.push(*l_current);
+							++l_current;
 							break;
 						}
 					}
 				}
 				else
 				{
-					if (p_input_str[0] == '(')
+					if (*l_current == '(')
 					{
 						/*
 						c) if the next character from the source string is an opening bracket, then it is pushed onto the stack.
 						*/
-						l_operations.push(p_input_str[0]);
-						p_input_str.erase(0, 1);
-						p_mes_pos_shift += 1;
+						l_operations.push(*l_current);
+						++l_current;
 					}
 					else
 					{
@@ -182,14 +189,13 @@ void CalculateLineExpression(string p_input_str, string& p_output_str, string::s
 						{
 							if (l_operations.top() != '(')
 							{
-								CalculateOnLineExpression(l_operations, l_operands, l_count, p_mes_pos_shift);
+								CalculateOnLineExpression(l_operations, l_operands, currentPosition());
 							}
 							else
 							{
 								l_operations.pop();
 								
-								p_input_str.erase(0, 1);
-								p_mes_pos_shift += 1;
+								++l_current;
 								break;
 							}
 						}
@@ -197,17 +203,27 @@ void CalculateLineExpression(string p_input_str, string& p_output_str, string::s
 				}
 			}
 		}
+		//else if (l_current_priority == Priority::error)
+		//{
+		//	auto isEconst = [&]()
+		//	{
+		//		return l_previous_priority != Priority::number && *l_current == 'e' && l_current + 1 < l_end && GetPriority(*(l_current + 1)) != Priority::number;
+		//	};
+		//	if (isEconst())
+		//	{
+		//		l_operands.push(numbers::e_v<calc_variable>);
+		//	}
+		//	l_current += 1;
+		//}
 		else
 		{
 			calc_variable l_current_operand;
-			const auto l_res = from_chars(p_input_str.data(), p_input_str.data() + p_input_str.size(), l_current_operand);
-			const auto l_diff = l_res.ptr - p_input_str.data();
+			const auto l_res = from_chars(l_current, l_end, l_current_operand);
+			const auto l_diff = l_res.ptr - l_current;
 			if (l_res.ec == errc())
 			{
-				p_input_str.erase(0, l_diff);
-				p_mes_pos_shift += l_diff;
-				
 				l_operands.push(l_current_operand);
+				l_current += l_diff;
 				
 #ifdef ENABLE_WARNINGS_IN_LOG
 				// TODO
@@ -228,39 +244,43 @@ void CalculateLineExpression(string p_input_str, string& p_output_str, string::s
 			else
 			{
 #ifdef _DEBUG
-				AddError(INTERNAL_PROCESSING_ERROR_CalculateLineExpression_l_current_operand, l_count + p_mes_pos_shift);
+				AddError(INTERNAL_PROCESSING_ERROR_CalculateLineExpression_l_current_operand, currentPosition());
 #endif
-				AddError(UNKNOWN_ERROR, l_count + p_mes_pos_shift);
-				return;
+				AddError(UNKNOWN_ERROR, currentPosition());
+				return NAN;
 			}
 		}
 	}
 	if (l_current_priority > Priority::bracket)
 	{
-		AddError(NOT_ENOUGHT_OPERANDS, l_count + p_mes_pos_shift);
-		return;
+		AddError(NOT_ENOUGHT_OPERANDS, currentPosition());
+		return NAN;
 	}
 	while (!l_operations.empty() && l_operands.size() > 1)
 	{
-		CalculateOnLineExpression(l_operations, l_operands, l_count, p_mes_pos_shift);
+		CalculateOnLineExpression(l_operations, l_operands, currentPosition());
 	}
 	if (l_operands.size() > 1)
 	{
 #ifdef _DEBUG
-		AddError(INTERNAL_PROCESSING_ERROR_CalculateLineExpression_l_operands, l_count + p_mes_pos_shift);
+		AddError(INTERNAL_PROCESSING_ERROR_CalculateLineExpression_l_operands, currentPosition());
 #endif
-		AddError(UNKNOWN_ERROR, l_count + p_mes_pos_shift);
-		return;
+		AddError(UNKNOWN_ERROR, currentPosition());
+		return NAN;
 	}
 	if (!l_operations.empty() && !l_operands.empty())
 	{
-		FinalizeOnLineExpression(l_operations, l_operands, l_count, p_mes_pos_shift);
+		FinalizeOnLineExpression(l_operations, l_operands, currentPosition());
 	}
 	if (!l_operands.empty())
 	{
-		print_value(p_output_str, l_operands.top());
+#ifdef ENABLE_INPUT_VALIDATION
+		AddMessage(print_value(string(), l_operands.top()));
+#endif
+		return l_operands.top();
 	}
-	AddMessage(p_output_str);
+	AddError(UNKNOWN_ERROR, currentPosition());
+	return NAN;
 }
 //---------------------------------------------------------------------------
 #endif // _LINEAR_CPP

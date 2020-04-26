@@ -267,14 +267,20 @@ const string& Calculate(string p_input, string& p_output)
 		ProcessFunctions(p_input);
 		if (m_no_error)
 		{
-			CalculateLineExpression(p_input, p_output);
+			print_value(p_output, CalculateLineExpression(p_input));
 		}
 	}
 	if (!m_no_error)
 	{
 		p_output.clear();
 	}
-	
+#ifdef ENABLE_INPUT_VALIDATION
+	else
+	{
+		AddMessage(CALCULATION);
+		AddMessage(p_output);
+	}
+#endif // ENABLE_INPUT_VALIDATION
 	return m_message_string;
 }
 //---------------------------------------------------------------------------

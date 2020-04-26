@@ -66,7 +66,6 @@ constexpr inline Priority GetPriority(const char p_sym)
 		case '8':
 		case '9':
 		case '.':
-		case 'e':
 			return Priority::number;
 			
 		default:
@@ -74,6 +73,6 @@ constexpr inline Priority GetPriority(const char p_sym)
 	}
 }
 //---------------------------------------------------------------------------
-extern void CalculateLineExpression(string p_input_str, string& p_output_str, string::size_type p_mes_pos_shift = 0);
+extern [[nodiscard]] calc_variable CalculateLineExpression(const string_view& p_input_str, string_view::size_type p_mes_pos_shift = 0);
 //---------------------------------------------------------------------------
 #endif // _LINEAR_H

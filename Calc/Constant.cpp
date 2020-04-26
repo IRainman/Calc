@@ -38,6 +38,7 @@
 constexpr static string_view c_str_constant[] =
 {
 	"pi",// Pi, Archimedes' constant or Ludolph's number
+	"e",// Euler's number
 	"c",// Speed of light in vacuum (m·s-1)
 	"G",// Newtonian constant of gravitation (m3·kg−1·s−2), this constant valid on Earths only ;)
 	"J",// Constants of Gauss fild
@@ -53,6 +54,7 @@ constexpr static calc_variable c_cv_constant[] =
 {
 	// TODO https://en.cppreference.com/w/cpp/numeric/constants
 	numbers::pi_v<calc_variable>,// Pi, Archimedes' constant or Ludolph's number
+	numbers::e_v<calc_variable>,// Euler's number
 	299792458.0L,// Speed of light in vacuum (m·s-1)
 	6.674286767676767676767676767676767676e-11L,// Newtonian constant of gravitation (m3·kg−1·s−2), this constant valid on Earths only ;)
 	3.058198247456354132564564787888767L,// Constants of Gauss fild
@@ -64,7 +66,7 @@ constexpr static calc_variable c_cv_constant[] =
 	//std::numeric_limits<calc_variable>::infinity(),// Infinity
 };
 //---------------------------------------------------------------------------
-static_assert(_countof(c_str_constant) == _countof(c_cv_constant) && _countof(c_cv_constant) == static_cast<unsigned int>(Constants::constant_counts), "c_str_constant and c_l_constant sizes do not match ;) Check them out!");
+static_assert(_countof(c_str_constant) == _countof(c_cv_constant) && _countof(c_cv_constant) == static_cast<unsigned int>(Constants::constant_counts), "c_str_constant and c_l_constant sizes do not match or constant_counts don't equal to it ;) Check them out!");
 //---------------------------------------------------------------------------
 const calc_variable& GetConstant(const Constants p_const_ind)
 {
@@ -81,14 +83,12 @@ inline void ReplaceConstant(string& p_io_str, const string_view& p_const_name, c
 		return (l_pos == string_view::npos \
 		        || \
 		        (l_pos \
-		         && (GetPriority(p_io_str[l_pos - 1]) < Priority::bracket \
-		             || GetPriority(p_io_str[l_pos - 1]) == Priority::error) \
+		         && GetPriority(p_io_str[l_pos - 1]) < Priority::bracket \
 		         && p_io_str[l_pos - 1] != ',' \
 		        ) \
 		        || \
 		        ((p_const_name.length() + l_pos) < p_io_str.length() \
-		         && (GetPriority(p_io_str[l_pos + p_const_name.length()]) < Priority::bracket \
-		             || GetPriority(p_io_str[l_pos + p_const_name.length()]) == Priority::error) \
+		         && GetPriority(p_io_str[l_pos + p_const_name.length()]) < Priority::bracket \
 		         && p_io_str[l_pos + p_const_name.length()] != ',' \
 		        ) \
 		       );

@@ -28,10 +28,11 @@ typedef long double calc_variable;
 constexpr auto CALC_BUFFER_SIZE = 32;
 //---------------------------------------------------------------------------
 template<typename T>
-inline constexpr void print_value(T& p_str, const calc_variable& p_val)
+inline constexpr T& print_value(T& p_str, const calc_variable& p_val)
 {
 	p_str.resize(CALC_BUFFER_SIZE);
 	p_str.resize(to_chars(p_str.data(), p_str.data() + p_str.size(), p_val).ptr - p_str.data());
+	return p_str;
 }
 //---------------------------------------------------------------------------
 #endif// MYTYPES_H

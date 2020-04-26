@@ -26,6 +26,7 @@ using namespace std;
 enum class Constants
 {
     pi = 0,// Pi, Archimedes' constant or Ludolph's number
+    e,// Euler's number
     c,// Speed of light in vacuum (m·s-1)
     G,// Newtonian constant of gravitation (m3·kg−1·s−2), this constant valid on Earths only ;)
     J,// Constants of Gauss fild

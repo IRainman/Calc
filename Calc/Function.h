@@ -22,6 +22,10 @@
 using namespace std;
 #include <string>
 //---------------------------------------------------------------------------
-void ProcessFunctions(string& p_input_str, const string::size_type p_mes_pos_shift = 0);
+void ProcessFunctions(string& p_input_str
+#ifdef ENABLE_INPUT_VALIDATION
+    , const string::size_type p_mes_pos_shift = 0
+#endif
+);
 //---------------------------------------------------------------------------
 #endif

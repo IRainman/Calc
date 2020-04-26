@@ -43,12 +43,12 @@ constexpr size_t MESSAGE_BUFFER_SIZE = 1024;
 constexpr static const string_view c_message_string[] =
 {
 // Сообщения
-	"\tВычисление:",
-#ifdef ENABLE_INPUT_VALIDATION
-	"\tПодготовка:",
-#endif
 	"Обнаружено вложенное выражение:",
 	"Конец вложенного выражения.",
+#ifdef ENABLE_INPUT_VALIDATION
+	"\tПодготовка:",
+	"\tВычисление:",
+#endif // ENABLE_INPUT_VALIDATION
 	"\tЗамена констант:",
 	"\tВычисление функций:",
 #ifdef ENABLE_WARNINGS_IN_LOG
@@ -82,13 +82,15 @@ constexpr static const string_view c_message_string[] =
 	"перед символом степени \"e\" не обнаружено число",
 	"запись \"--\" после степенного символа \"e\" недопустима",
 	"после символа \"e\" не обнаружен показатель степени",
-	"запись \"+-\" после степенного символа \"e\" недопостима",
+	"запись \"+-\" после степенного символа \"e\" недопустима",
 	"последним символом в выражении не может быть символ \"e\"",
 	"закрывающая скобка находится раньше открывающей",
 	"запись числа перед открывающей скобкой недопустима",
 #endif // ENABLE_INPUT_VALIDATION
+	"запись числа перед функцией недопустима",
 	"у функции неверное число аргументов необходимо %d, обнаружено %d",
 	"у функции отсутствует %d аргумент, позиция внутри скобок функции %d",
+	"у функции отсутствует закрывающая скобка",
 #ifdef _DEBUG
 	"DEBUG: Internal Processing Error: \"void CalculateFunction(...)\"",
 	"DEBUG: Internal Processing Error: \"void CalculateOnLineExpression(...): p_operands is unknown\"",
@@ -103,7 +105,7 @@ static_assert(_countof(c_message_string) == ERROR_LAST + 1, "MessageString and M
 //---------------------------------------------------------------------------
 inline constexpr auto& MESSAGE(const MessageEnum code)
 {
-	return c_message_string[code];
+	return c_message_string[code]; //-V2006
 }
 inline constexpr const auto* CMESSAGE(const MessageEnum code)
 {
@@ -171,7 +173,7 @@ void AddError(const MessageEnum p_message, string::size_type p_count/* = string:
 	{
 		const auto l_i = p_count - m_correct_count;
 #ifdef EXTENDENT_REPORT_OF_POSITION_IN_LOG
-		m_corrected_spaces.push_back(l_i);
+		m_corrected_spaces.push_back(l_i); ???
 #endif
 		snprintf(l_pre_message_buf, MESSAGE_BUFFER_SIZE - 1, "В позиции %zd ошибка: %s", l_i, CMESSAGE(p_message)); //-V111
 	}
