@@ -19,17 +19,8 @@
  *
  */
 
-//#ifdef _MSC_VER
 #include "stdafx.h"
-/*#elif __INTEL_COMPILER
-    // TODO */
-
-// #endif // The comment is used in a silly Visual Studio :)
 //---------------------------------------------------------------------------
-#ifndef _FUNCTION_CPP
-#define _FUNCTION_CPP
-//---------------------------------------------------------------------------
-#include <cmath>
 #include "Flags.h"
 #include "Linear.h"
 #include "Message.h"
@@ -376,4 +367,3 @@ void ProcessFunctions(string& p_io_str
 #endif // ENABLE_INPUT_VALIDATION
 }
 //---------------------------------------------------------------------------
-#endif // _FUNCTION_CPP

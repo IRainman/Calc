@@ -19,20 +19,9 @@
  *
  */
 
-//#ifdef _MSC_VER
 #include "stdafx.h"
-/*#elif __INTEL_COMPILER
-    // TODO */
-
-// #endif // The comment is used in a silly Visual Studio :)
 //---------------------------------------------------------------------------
-#ifndef _CALCULATOR_WIDE_ADAPTER_CPP
-#define _CALCULATOR_WIDE_ADAPTER_CPP
-
 #include "CalculatorWideAdapter.h"
-#include <locale>
-//#include <utility>
-#include <codecvt>
 
 using namespace std;
 
@@ -97,4 +86,3 @@ refactoring_wstring& Calculate(const refactoring_wstring& p_input, refactoring_w
 	return m_message_string;
 }
 //---------------------------------------------------------------------------
-#endif // _CALCULATOR_WIDE_ADAPTER_CPP

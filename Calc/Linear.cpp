@@ -19,19 +19,8 @@
  *
  */
 
-//#ifdef _MSC_VER
 #include "stdafx.h"
-/*#elif __INTEL_COMPILER
-    // TODO */
-
-// #endif // The comment is used in a silly Visual Studio :)
 //---------------------------------------------------------------------------
-#ifndef _LINEAR_CPP
-#define _LINEAR_CPP
-//---------------------------------------------------------------------------
-#include <charconv>
-#include <stack>
-//#include <numbers>
 #include "Linear.h"
 #include "Message.h"
 //---------------------------------------------------------------------------
@@ -283,4 +272,3 @@ inline void FinalizeOnLineExpression(stack<char>& p_operations, stack<calc_varia
 	return NAN;
 }
 //---------------------------------------------------------------------------
-#endif // _LINEAR_CPP

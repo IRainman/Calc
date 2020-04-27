@@ -19,17 +19,8 @@
  *
  */
 
-//#ifdef _MSC_VER
 #include "stdafx.h"
-/*#elif __INTEL_COMPILER
-    // TODO */
-
-// #endif // The comment is used in a silly Visual Studio :)
 //---------------------------------------------------------------------------
-#ifndef _CONSTANT_CPP
-#define _CONSTANT_CPP
-//---------------------------------------------------------------------------
-#include <numbers>
 #include "Flags.h"
 #include "Constant.h"
 #include "Message.h"
@@ -117,4 +108,3 @@ void ReplaceConstants(string& p_io_str)
 	AddMessage(p_io_str);
 }
 //---------------------------------------------------------------------------
-#endif // _CONSTANT_CPP

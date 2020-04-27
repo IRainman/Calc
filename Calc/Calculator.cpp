@@ -19,15 +19,7 @@
  *
  */
 
-//#ifdef _MSC_VER
 #include "stdafx.h"
-/*#elif __INTEL_COMPILER
-    // TODO */
-
-// #endif // The comment is used in a silly Visual Studio :)
-//---------------------------------------------------------------------------
-#ifndef _CALCULATOR_CPP
-#define _CALCULATOR_CPP
 //---------------------------------------------------------------------------
 #include "Flags.h"
 #include "Calculator.h"
@@ -284,4 +276,3 @@ const string& Calculate(string p_input, string& p_output)
 	return m_message_string;
 }
 //---------------------------------------------------------------------------
-#endif // _CALCULATOR_CPP

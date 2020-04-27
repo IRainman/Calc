@@ -19,15 +19,7 @@
  *
  */
 
-//#ifdef _MSC_VER
 #include "stdafx.h"
-/*#elif __INTEL_COMPILER
-    // TODO */
-
-// #endif // The comment is used in a silly Visual Studio :)
-//---------------------------------------------------------------------------
-#ifndef _MESSAGE_CPP
-#define _MESSAGE_CPP
 //---------------------------------------------------------------------------
 #include "Message.h"
 //---------------------------------------------------------------------------
@@ -189,4 +181,3 @@ void AddError(const MessageEnum p_message, string::size_type p_count/* = string:
 #endif // ENABLE_LOG_DEBUG
 }
 //---------------------------------------------------------------------------
-#endif // _MESSAGE_CPP
