@@ -242,7 +242,7 @@ void CalculateFunction(string& p_io_str, const string_view& p_func_name, const s
 {
 	do
 	{
-		// find func
+		// find function
 		const auto l_start = p_io_str.find(p_func_name);
 		if (l_start == string::npos)
 		{
@@ -256,79 +256,84 @@ void CalculateFunction(string& p_io_str, const string_view& p_func_name, const s
 				return;
 			}
 		}
-		// ~find func
+		// ~find function
 		
-		string l_buf = p_io_str.substr(l_start + p_func_name.size()); // TODO string_view
-		calc_variable l_params[c_max_argument_of_function]; // TODO use p_number_of_param as size
-		string::size_type l_comma_count = 0;
-		size_t l_nesting_level = 0;
 		string::size_type l_end;
-		
-		for (string::size_type l_correct_end = 0;;)
+		calc_variable l_params[c_max_argument_of_function]; // TODO use p_number_of_param as size
+
+		// process function
 		{
-			string l_params_str; // TODO string_view
-			const auto l_br_start = l_buf.find('(');
-			l_end = l_buf.find(')');
-			if (l_end == string::npos)
+			string l_params_str;
+			string l_buf = p_io_str.substr(l_start + p_func_name.size());
+			string::size_type l_comma_count = 0;
+			size_t l_nesting_level = 0;
+
+			for (string::size_type l_correct_end = 0;;)
 			{
-				AddError(FUNCTION_LOST_CLOSING_BRACKET, l_start);
+				const auto l_br_start = l_buf.find('(');
+				l_end = l_buf.find(')');
+				if (l_end == string::npos)
+				{
+					AddError(FUNCTION_LOST_CLOSING_BRACKET, l_start);
+					return;
+				}
+				const auto l_current_comma = l_buf.find(',');
+				if (l_br_start != string::npos && l_br_start < l_end && l_current_comma > l_br_start)
+				{
+					l_correct_end += l_br_start + 1;
+					l_params_str += l_buf.substr(0, l_br_start + 1);
+					l_buf = l_buf.substr(l_br_start + 1);
+					l_nesting_level++;
+				}
+				else if (!l_nesting_level)
+				{
+					if (l_current_comma != string::npos && l_current_comma < l_end)
+					{
+						l_params_str += l_buf.substr(0, l_current_comma);
+						l_correct_end += l_current_comma + 1;
+						l_buf = l_buf.substr(l_current_comma + 1);
+						if (!ProcessParametr(l_params_str, l_start, p_number_of_param, l_params, l_comma_count, l_correct_end))
+						{
+							return;
+						}
+						l_comma_count++;
+					}
+					else if (l_current_comma == string::npos || l_current_comma > l_end)
+					{
+						l_params_str += l_buf.substr(0, l_end);
+						l_end += l_correct_end;
+						if (!ProcessParametr(l_params_str, l_start, p_number_of_param, l_params, l_comma_count, l_correct_end))
+						{
+							return;
+						}
+						break;
+					}
+				}
+				else
+				{
+					l_correct_end += l_end + 1;
+					l_params_str += l_buf.substr(0, l_end + 1);
+					l_buf = l_buf.substr(l_end + 1);
+					l_nesting_level--;
+				}
+			}
+			if (l_comma_count != p_number_of_param - 1)
+			{
+				AddError(FUNCTION_INVALID_NUMBER_OF_ARGUMENTS, l_start, p_number_of_param, l_comma_count + 1);
 				return;
 			}
-			const auto l_current_comma = l_buf.find(',');
-			if (l_br_start != string::npos && l_br_start < l_end && l_current_comma > l_br_start)
-			{
-				l_correct_end += l_br_start + 1;
-				l_params_str += l_buf.substr(0, l_br_start + 1);
-				l_buf = l_buf.substr(l_br_start + 1);
-				l_nesting_level++;
-			}
-			else if (!l_nesting_level)
-			{
-				if (l_current_comma != string::npos && l_current_comma < l_end)
-				{
-					l_params_str += l_buf.substr(0, l_current_comma);
-					l_correct_end += l_current_comma + 1;
-					l_buf = l_buf.substr(l_current_comma + 1);
-					if (!ProcessParametr(l_params_str, l_start, p_number_of_param, l_params, l_comma_count, l_correct_end))
-					{
-						return;
-					}
-					l_comma_count++;
-				}
-				else if (l_current_comma == string::npos || l_current_comma > l_end)
-				{
-					l_params_str += l_buf.substr(0, l_end);
-					l_end += l_correct_end;
-					if (!ProcessParametr(l_params_str, l_start, p_number_of_param, l_params, l_comma_count, l_correct_end))
-					{
-						return;
-					}
-					break;
-				}
-			}
-			else
-			{
-				l_correct_end += l_end + 1;
-				l_params_str += l_buf.substr(0, l_end + 1);
-				l_buf = l_buf.substr(l_end + 1);
-				l_nesting_level--;
-			}
 		}
-		if (l_comma_count != p_number_of_param - 1)
-		{
-			AddError(FUNCTION_INVALID_NUMBER_OF_ARGUMENTS, l_start, p_number_of_param, l_comma_count + 1);
-			return;
-		}
+		// ~process function
 		
-		const auto l_outp = print_value(string(), CalculateParametrs(p_number_of_param, p_count, l_params));
-		
+		// process result
 		{
+			const auto l_outp = print_value(string(), CalculateParametrs(p_number_of_param, p_count, l_params));
 			const auto l_erased = p_func_name.size() + l_end + 1;
 			p_io_str.erase(l_start, l_erased);
-			m_correct_count -= l_erased;
 			p_io_str.insert(l_start, l_outp);
-			m_correct_count += l_outp.size();
+			m_correct_count += l_outp.size() - l_erased;
 		}
+		// ~process result
 	}
 	while (true);
 }
