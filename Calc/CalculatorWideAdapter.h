@@ -21,6 +21,10 @@
 //---------------------------------------------------------------------------
 #include <string>
 //---------------------------------------------------------------------------
+#ifdef NEW_CODECVT_CONVERTER
+std::u16string& Calculate(const std::u16string& p_input, std::u16string& p_output);
+#else
 std::wstring& Calculate(const std::wstring& p_input, std::wstring& p_output);
+#endif
 //---------------------------------------------------------------------------
 #endif

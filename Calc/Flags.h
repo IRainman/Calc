@@ -24,6 +24,8 @@
 // Deprecated because is very slow and get high value of cyclomatic complexity https://en.wikipedia.org/wiki/Cyclomatic_complexity
 //#define ENABLE_INPUT_VALIDATION // Deprecated
 
+//#define NEW_CODECVT_CONVERTER // TODO fix me, I don't know how 
+
 #define ENABLE_LOG
 #ifdef ENABLE_LOG
 // TODO

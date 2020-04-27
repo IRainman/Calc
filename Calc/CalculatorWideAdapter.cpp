@@ -31,27 +31,62 @@
 
 #include "CalculatorWideAdapter.h"
 #include <locale>
-#define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
+//#include <utility>
 #include <codecvt>
 
 using namespace std;
 
-static wstring m_message_string;
+#ifdef NEW_CODECVT_CONVERTER
+
+// TODO, how?
+
+// https://en.cppreference.com/w/cpp/locale/codecvt
+
+// utility wrapper to adapt locale-bound facets for wstring/wbuffer convert
+template<class Facet>
+struct deletable_facet : Facet
+{
+	template<class ...Args>
+	deletable_facet(Args&& ...args) : Facet(std::forward<Args>(args)...) {}
+	~deletable_facet() {}
+};
+
+
+
+typedef deletable_facet<std::codecvt_byname<char16_t, char, std::mbstate_t>> gbfacet_t;
+
+
+static std::u16string m_message_string;
+
+// using standard (locale-independent) codecvt facet
+std::wstring_convert<
+	deletable_facet<std::codecvt<char16_t, char8_t, std::mbstate_t>>, char16_t> m_converter;
+
+typedef u16string refactoring_wstring;
+
+#else // NEW_CODECVT_CONVERTER
+
 static wstring_convert<codecvt_utf8_utf16<wchar_t>> m_converter;
+
+typedef wstring refactoring_wstring;
+
+#endif // NEW_CODECVT_CONVERTER
+
+static refactoring_wstring m_message_string;
 //---------------------------------------------------------------------------
-inline wstring to_wstring(const string& p_text)
+inline refactoring_wstring to_wstring(const string& p_text)
 {
 	return m_converter.from_bytes(p_text);
 }
 //---------------------------------------------------------------------------
-inline string to_string(const wstring& p_text)
+inline string to_string(const refactoring_wstring& p_text)
 {
 	return m_converter.to_bytes(p_text);
 }
 //---------------------------------------------------------------------------
 extern const string& Calculate(string p_input, string& p_output);
 
-wstring& Calculate(const wstring& p_input, wstring& p_output)
+refactoring_wstring& Calculate(const refactoring_wstring& p_input, refactoring_wstring& p_output)
 {
 	string l_output;
 	
