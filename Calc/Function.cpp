@@ -258,15 +258,15 @@ void CalculateFunction(string& p_io_str, const string_view& p_func_name, const s
 		}
 		// ~find func
 		
-		string l_params_str; // TODO string_view
 		string l_buf = p_io_str.substr(l_start + p_func_name.size()); // TODO string_view
-		calc_variable l_params[c_max_argument_of_function];
+		calc_variable l_params[c_max_argument_of_function]; // TODO use p_number_of_param as size
 		string::size_type l_comma_count = 0;
 		size_t l_nesting_level = 0;
 		string::size_type l_end;
 		
 		for (string::size_type l_correct_end = 0;;)
 		{
+			string l_params_str; // TODO string_view
 			const auto l_br_start = l_buf.find('(');
 			l_end = l_buf.find(')');
 			if (l_end == string::npos)
@@ -289,11 +289,11 @@ void CalculateFunction(string& p_io_str, const string_view& p_func_name, const s
 					l_params_str += l_buf.substr(0, l_current_comma);
 					l_correct_end += l_current_comma + 1;
 					l_buf = l_buf.substr(l_current_comma + 1);
-					l_comma_count++;
 					if (!ProcessParametr(l_params_str, l_start, p_number_of_param, l_params, l_comma_count, l_correct_end))
 					{
 						return;
 					}
+					l_comma_count++;
 				}
 				else if (l_current_comma == string::npos || l_current_comma > l_end)
 				{
@@ -320,14 +320,14 @@ void CalculateFunction(string& p_io_str, const string_view& p_func_name, const s
 			return;
 		}
 		
-		print_value(l_params_str, CalculateParametrs(p_number_of_param, p_count, l_params));
+		const auto l_outp = print_value(string(), CalculateParametrs(p_number_of_param, p_count, l_params));
 		
 		{
 			const auto l_erased = p_func_name.size() + l_end + 1;
 			p_io_str.erase(l_start, l_erased);
 			m_correct_count -= l_erased;
-			p_io_str.insert(l_start, l_params_str);
-			m_correct_count += l_params_str.size();
+			p_io_str.insert(l_start, l_outp);
+			m_correct_count += l_outp.size();
 		}
 	}
 	while (true);
