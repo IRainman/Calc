@@ -24,8 +24,8 @@ using namespace std;
 //---------------------------------------------------------------------------
 void ProcessFunctions(string& p_input_str
 #ifdef ENABLE_INPUT_VALIDATION
-    , const string::size_type p_mes_pos_shift = 0
+                      , const string::size_type p_mes_pos_shift = 0
 #endif
-);
+                     );
 //---------------------------------------------------------------------------
 #endif

@@ -204,17 +204,17 @@ inline constexpr bool CheckParametrIsSubexpr(const string_view& p_param_str)
 		AddError(LOST_FUNCTION_ARGUMENTS, p_start, p_comma_count + 1, p_correct_end);
 		return false;
 	}
-
+	
 	calc_variable l_outp;
-
+	
 	if (CheckParametrIsSubexpr(p_param_str))
 	{
 		AddMessage(FOUND_SUBEXPRESSIONS);
 		ProcessFunctions(p_param_str
 #ifdef ENABLE_INPUT_VALIDATION
-			, p_start
+		                 , p_start
 #endif
-		);
+		                );
 		l_outp = CalculateLineExpression(p_param_str, p_start);
 		AddMessage(END_OF_THE_SUBEXPRESSION);
 		if (isnan(l_outp))
@@ -260,14 +260,14 @@ void CalculateFunction(string& p_io_str, const string_view& p_func_name, const s
 		
 		string::size_type l_end;
 		calc_variable l_params[c_max_argument_of_function]; // TODO use p_number_of_param as size
-
+		
 		// process function
 		{
 			string l_params_str;
 			string l_buf = p_io_str.substr(l_start + p_func_name.size());
 			string::size_type l_comma_count = 0;
 			size_t l_nesting_level = 0;
-
+			
 			for (string::size_type l_correct_end = 0;;)
 			{
 				const auto l_br_start = l_buf.find('(');
@@ -340,9 +340,9 @@ void CalculateFunction(string& p_io_str, const string_view& p_func_name, const s
 //---------------------------------------------------------------------------
 void ProcessFunctions(string& p_io_str
 #ifdef ENABLE_INPUT_VALIDATION
-	, const string::size_type p_mes_pos_shift /*= 0*/
+                      , const string::size_type p_mes_pos_shift /*= 0*/
 #endif
-)
+                     )
 {
 	AddMessage(CALCULATE_FUNCTIONS);
 	

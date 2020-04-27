@@ -109,7 +109,7 @@ inline void FinalizeOnLineExpression(stack<char>& p_operations, stack<calc_varia
 	{
 		return *l_current == '-' && l_current + 1 < l_end && GetPriority(*(l_current + 1)) == Priority::number;
 	};
-
+	
 	auto currentPosition = [&]()
 	{
 		return l_current - l_begin + p_mes_pos_shift;
@@ -125,7 +125,7 @@ inline void FinalizeOnLineExpression(stack<char>& p_operations, stack<calc_varia
 		const auto l_previous_priority = l_current_priority;
 		const bool l_negative_number = l_previous_priority != Priority::number && isNegativeNumber();
 		l_current_priority = l_negative_number ? Priority::number : GetPriority(*l_current);
-
+		
 		if (l_previous_priority > Priority::bracket && !l_negative_number && l_current_priority > Priority::bracket)
 		{
 			AddError(CONSECUTIVE_RECORD_NUMBER_OF_TRANSACTIONS, currentPosition());
