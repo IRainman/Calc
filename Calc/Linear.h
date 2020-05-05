@@ -16,11 +16,9 @@
  *
  */
 
-#ifndef _LINEAR_H
-#define _LINEAR_H
+#pragma once
 //---------------------------------------------------------------------------
 using namespace std;
-#include <string>
 #include "Flags.h"
 #include "MyTypes.h"
 //---------------------------------------------------------------------------
@@ -75,4 +73,3 @@ constexpr inline Priority GetPriority(const char p_sym)
 //---------------------------------------------------------------------------
 extern [[nodiscard]] calc_variable CalculateLineExpression(const string_view& p_input_str, string_view::size_type p_mes_pos_shift = 0);
 //---------------------------------------------------------------------------
-#endif // _LINEAR_H

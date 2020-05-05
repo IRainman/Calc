@@ -16,11 +16,8 @@
  *
  */
 
-#ifndef _CONSTANT_H
-#define _CONSTANT_H
-//---------------------------------------------------------------------------
+#pragma once
 using namespace std;
-#include <string>
 #include "MyTypes.h"
 //---------------------------------------------------------------------------
 enum class Constants
@@ -43,4 +40,3 @@ const calc_variable& GetConstant(const Constants p_const_ind);
 //---------------------------------------------------------------------------
 void ReplaceConstants(string& p_io_str);
 //---------------------------------------------------------------------------
-#endif

@@ -21,11 +21,24 @@
 
 #include "stdafx.h"
 //---------------------------------------------------------------------------
+#ifdef _WIN32
+//---------------------------------------------------------------------------
 #include "CalculatorWideAdapter.h"
 
 using namespace std;
 
 #ifdef NEW_CODECVT_CONVERTER
+
+
+std::wstring utf8_decode(const std::string& str)
+{
+	TODO cleanup.
+	if (str.empty()) return std::wstring();
+	int size_needed = MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), NULL, 0);
+	std::wstring wstrTo(size_needed, 0);
+	MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), &wstrTo[0], size_needed);
+	return wstrTo;
+}
 
 // TODO, how?
 
@@ -85,4 +98,6 @@ refactoring_wstring& Calculate(const refactoring_wstring& p_input, refactoring_w
 	
 	return m_message_string;
 }
+//---------------------------------------------------------------------------
+#endif //  _WIN32
 //---------------------------------------------------------------------------

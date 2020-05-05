@@ -16,15 +16,10 @@
  *
  */
 
-#ifndef _MESSAGE_H
-#define _MESSAGE_H
+#pragma once
 //---------------------------------------------------------------------------
 using namespace std;
 #include "Flags.h"
-#include <string>
-#ifdef EXTENDENT_REPORT_OF_POSITION_IN_LOG
-#include <vector>
-#endif
 #include "MyTypes.h"
 //---------------------------------------------------------------------------
 enum MessageEnum
@@ -77,6 +72,7 @@ enum MessageEnum
 	NUMBERS_BEFORE_OPENING_BRACKET,
 #endif // ENABLE_INPUT_VALIDATION
 	NUMBER_BEFORE_FUNCTION,
+	NUMBER_AFTER_FUNCTION,
 	FUNCTION_INVALID_NUMBER_OF_ARGUMENTS,
 	LOST_FUNCTION_ARGUMENTS,
 	FUNCTION_LOST_CLOSING_BRACKET,
@@ -108,4 +104,3 @@ extern void AddWarning(const MessageEnum p_message, string::size_type p_1, strin
 #endif // ENABLE_WARNINGS_IN_LOG
 extern void AddError(const MessageEnum p_message, string::size_type p_count = string::npos, string::size_type p_1 = 0, string::size_type p_2 = 0);
 //---------------------------------------------------------------------------
-#endif

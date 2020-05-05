@@ -268,6 +268,11 @@ void CalculateFunction(string& p_io_str, const string_view& p_func_name, const s
 					AddError(FUNCTION_LOST_CLOSING_BRACKET, l_start);
 					return;
 				}
+				if (l_end + 1 < l_buf.size() && GetPriority(l_buf[l_end + 1]) < Priority::bracket)
+				{
+					AddError(NUMBER_AFTER_FUNCTION, l_end + 1);
+					return;
+				}
 				const auto l_current_comma = l_buf.find(',');
 				if (l_br_start != string::npos && l_br_start < l_end && l_current_comma > l_br_start)
 				{

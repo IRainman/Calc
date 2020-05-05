@@ -4,8 +4,6 @@
 
 #pragma once
 
-#include <string>
-
 // диалоговое окно CCalcDlg
 class CCalcDlg : public CDialog
 {

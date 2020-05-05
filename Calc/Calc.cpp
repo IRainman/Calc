@@ -9,10 +9,6 @@
 #include "Calc.h"
 #include "CalcDlg.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
-
 // CCalcApp
 
 BEGIN_MESSAGE_MAP(CCalcApp, CWinAppEx)

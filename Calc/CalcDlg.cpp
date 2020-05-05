@@ -7,11 +7,7 @@
 #include "stdafx.h"
 #include "Calc.h"
 #include "CalcDlg.h"
-#include "CalculatorWideAdapter.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
+#include "Calculator.h"
 
 // Диалоговое окно CAboutDlg используется для описания сведений о приложении
 
@@ -180,8 +176,8 @@ void CCalcDlg::OnEnChangeEditInput()
 		{
 calculate_function_call:
 			auto& l_message = Calculate(m_input, m_result);
-			SetDlgItemText(IDC_EDIT_MESSAGE, l_message.c_str());
-			SetDlgItemText(IDC_EDIT_RESULT, m_result.c_str());
+			SetDlgItemText(IDC_EDIT_MESSAGE, l_message.data());
+			SetDlgItemText(IDC_EDIT_RESULT, m_result.data());
 		}
 	}
 	else

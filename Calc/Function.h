@@ -16,11 +16,9 @@
  *
  */
 
-#ifndef _FUNCTION_H
-#define _FUNCTION_H
+#pragma once
 //---------------------------------------------------------------------------
 using namespace std;
-#include <string>
 //---------------------------------------------------------------------------
 void ProcessFunctions(string& p_input_str
 #ifdef ENABLE_INPUT_VALIDATION
@@ -28,4 +26,3 @@ void ProcessFunctions(string& p_input_str
 #endif
                      );
 //---------------------------------------------------------------------------
-#endif

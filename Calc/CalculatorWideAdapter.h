@@ -16,10 +16,9 @@
  *
  */
 
-#ifndef _CALCULATOR_WIDE_ADAPTER_H
-#define _CALCULATOR_WIDE_ADAPTER_H
+#pragma once
 //---------------------------------------------------------------------------
-#include <string>
+#ifdef _WIN32
 //---------------------------------------------------------------------------
 #ifdef NEW_CODECVT_CONVERTER
 std::u16string& Calculate(const std::u16string& p_input, std::u16string& p_output);
@@ -27,4 +26,5 @@ std::u16string& Calculate(const std::u16string& p_input, std::u16string& p_outpu
 std::wstring& Calculate(const std::wstring& p_input, std::wstring& p_output);
 #endif
 //---------------------------------------------------------------------------
-#endif
+#endif // _WIN32
+//---------------------------------------------------------------------------

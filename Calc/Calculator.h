@@ -16,11 +16,10 @@
  *
  */
 
-#ifndef _CALCULATOR_H
-#define _CALCULATOR_H
-//---------------------------------------------------------------------------
-#include <string>
+#pragma once
+#ifdef _WIN32
+#include "CalculatorWideAdapter.h"
+#endif
 //---------------------------------------------------------------------------
 const std::string& Calculate(std::string p_input, std::string& p_output);
 //---------------------------------------------------------------------------
-#endif
