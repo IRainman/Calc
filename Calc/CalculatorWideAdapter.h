@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Solomin Alexey Leonovich, a.rainman on gmail point com
+ * Copyright 2016 Solomina Elle Leonovna, a.rainman on gmail point com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
