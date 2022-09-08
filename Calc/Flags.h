@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2010 Solomina Elle Leonovna, a.rainman on gmail point com
+ * Copyright 2009-2022 Solomina Elle Leonovna, a.rainman on gmail point com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
 // Deprecated because is very slow and get high value of cyclomatic complexity https://en.wikipedia.org/wiki/Cyclomatic_complexity
 //#define ENABLE_INPUT_VALIDATION // Deprecated
 
-//#define NEW_CODECVT_CONVERTER // TODO fix me, I don't know how
+//#define NEW_CODECVT_CONVERTER // Deprecated
 
 #define ENABLE_LOG
 #ifdef ENABLE_LOG

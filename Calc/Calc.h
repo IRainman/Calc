@@ -2,7 +2,7 @@
 #pragma once
 
 #ifndef __AFXWIN_H__
-#error "�������� stdafx.h �� ��������� ����� ����� � PCH"
+#error "The stdafx.h isn't set as the PCH file"
 #endif
 
 #include "resource.h"

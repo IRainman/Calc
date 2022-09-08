@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2017 Solomina Elle Leonovna, a.rainman on gmail point com
+ * Copyright 2009-2022 Solomina Elle Leonovna, a.rainman on gmail point com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,9 +17,10 @@
  */
 
 #pragma once
-#ifdef _WIN32
-#include "CalculatorWideAdapter.h"
-#endif
+// Deprecated
+//#ifdef _WIN32
+//#include "CalculatorWideAdapter.h"
+//#endif
 //---------------------------------------------------------------------------
 const std::string& Calculate(std::string p_input, std::string& p_output);
 //---------------------------------------------------------------------------

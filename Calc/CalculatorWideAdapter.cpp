@@ -21,6 +21,7 @@
 
 #include "stdafx.h"
 //---------------------------------------------------------------------------
+// Deprecated
 #if 0 // ifdef _WIN32
 //---------------------------------------------------------------------------
 #include "CalculatorWideAdapter.h"
@@ -66,7 +67,7 @@ deletable_facet<std::codecvt<char16_t, char8_t, std::mbstate_t>>, char16_t > m_c
 
 typedef u16string refactoring_wstring;
 
-#else // NEW_CODECVT_CONVERTER
+#else
 
 static wstring_convert<codecvt_utf8_utf16<wchar_t>> m_converter;
 

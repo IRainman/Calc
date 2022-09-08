@@ -91,7 +91,7 @@ const std::string_view c = "qwerty";
 expand(a, b, c);
 */
 
-#endif // 0
+#endif
 
 //---------------------------------------------------------------------------
 #ifdef ENABLE_INPUT_VALIDATION
