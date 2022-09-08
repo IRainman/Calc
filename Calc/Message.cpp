@@ -2,7 +2,7 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 /*
- * Copyright 2009-2017 Solomina Elle Leonovna, a.rainman on gmail point com
+ * Copyright 2009-2022 Solomina Elle Leonovna, a.rainman on gmail point com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,56 +34,56 @@ constexpr size_t MESSAGE_BUFFER_SIZE = 1024;
 //---------------------------------------------------------------------------
 constexpr static const string_view c_message_string[] =
 {
-// Сообщения
-	"Обнаружено вложенное выражение:",
-	"Конец вложенного выражения.",
+// Messages
+	"An nested expression was found:",
+	"End of nested expression.",
 #ifdef ENABLE_INPUT_VALIDATION
-	"\tПодготовка:",
-	"\tВычисление:",
-#endif // ENABLE_INPUT_VALIDATION
-	"\tЗамена констант:",
-	"\tВычисление функций:",
+	"\tPreparation:",
+	"\tCalculation:",
+#endif
+	"\tReplacing constants:",
+	"\tCalculating functions:",
 #ifdef ENABLE_WARNINGS_IN_LOG
-// Предупреждения
-	"число выходит за рамки допустимого диапазона, вычисление может быть выполнено с ошибками",
-	"число имеет слишком большое количество разрядов %d максимальное поддерживаемое %d, вычисление может быть выполнено с погрешностью",
-#endif // ENABLE_WARNINGS_IN_LOG
-// Ошибки
-	"неопределённая ошибка",
+// Warnings
+	"the number is out of the acceptable range, the calculation may be performed with errors",
+	"the number has too many digits %d the maximum supported %d, the calculation can be performed with an error",
+#endif
+// Errors
+	"undefined error",
 #ifdef ENABLE_INPUT_VALIDATION
-	"выражение не найдено",
-	//"недопустимый символ",
-	"недопустимый символ после замены констант и обработки функций, проверьте правильность их написания",
-	"количество открывающих %d и закрывающих %d скобок не совпадает",
-	//  "у функции нехватает закрывающей скобки",
-	//  "у функции отсутсвуют аргументы",
-#endif // ENABLE_INPUT_VALIDATION
-	"последовательная запись нескольких операций не подерживается",
-	"недостаточно операндов для получения результата",
-	"выражение не может начинатся со знака операции",
+	"expression not found",
+	//"invalid character",
+	"invalid character after replacing constants and processing functions, check the correctness of their spelling",
+	"the number of opening %d and closing %d brackets does not match",
+	//  "the function lacks a closing parenthesis",
+	//  "the function has no arguments",
+#endif
+	"sequential recording of multiple operations isn't supported",
+	"not enough operands to get the result",
+	"an expression cannot start with an operation sign",
 #ifdef ENABLE_INPUT_VALIDATION
-	"пустые скобки",
-	"открывающая скобка идёт сразу после закрывающей",
-	"запись числа после закрывающей скобки недопустима",
-	"выражение в скобках заканчивается знаком операции",
-	"выражение в скобках начинается со знака операции",
-	"запись функции после закрывающей скобки недопустима",
-	"запись нескольких точек в одном числе недопустима, следующая точка в позиции %d",
-	"последним символом в выражении не может быть знак операции",
-	"запись нескольких символов \"e\" в одном числе недопустима, следующий символ \"e\" в позиции %d",
-	"перед символом степени \"e\" не обнаружено число",
-	"запись \"--\" после степенного символа \"e\" недопустима",
-	"после символа \"e\" не обнаружен показатель степени",
-	"запись \"+-\" после степенного символа \"e\" недопустима",
-	"последним символом в выражении не может быть символ \"e\"",
-	"закрывающая скобка находится раньше открывающей",
-	"запись числа перед открывающей скобкой недопустима",
-#endif // ENABLE_INPUT_VALIDATION
-	"запись числа перед функцией недопустима",
-	"запись числа после функции недопустима",
-	"у функции неверное число аргументов необходимо %d, обнаружено %d",
-	"у функции отсутствует %d аргумент, позиция внутри скобок функции %d",
-	"у функции отсутствует закрывающая скобка",
+	"empty brackets",
+	"the opening bracket comes right after the closing one",
+	"writing a number after the closing parenthesis is not allowed",
+	"the expression in parentheses ends with an operation sign",
+	"the expression in parentheses begins with the operation sign",
+	"writing a function after the closing parenthesis is not allowed",
+	"writing multiple points in one number is not allowed, the next point is at position %d",
+	"the last character in the expression cant'be the operation sign",
+	"writing multiple characters \"e\" in one number is not allowed, the next character \"e\" in position %d",
+	"no number found before the degree symbol \"e\"",
+	"the entry \"--\" after the power symbol \"e\" is not allowed",
+	"no exponent was found after the \"e\" symbol",
+	"the entry \"+-\" after the power symbol \"e\" is not allowed",
+	"the last character in the expression cannot be the \"e\" symbol"",
+	"the closing bracket is located before the opening one",
+	"writing a number before the opening parenthesis is not allowed",
+#endif
+	"writing a number before a function is not allowed",
+	"writing a number after a function is not allowed",
+	"the function has an incorrect number of arguments:% d is needed, % d is detected",
+	"the function has no % d argument, the position inside the brackets of the function % d",
+	"the function is missing a closing parenthesis",
 #ifdef _DEBUG
 	"DEBUG: Internal Processing Error: \"void CalculateFunction(...)\"",
 	"DEBUG: Internal Processing Error: \"void CalculateOnLineExpression(...): p_operands is unknown\"",
@@ -119,7 +119,7 @@ inline void AddMessage(const MessageEnum p_message)
 	m_message_string += l_temp_buf;
 	if (p_message > MESSAGE_LAST)
 		m_message_string += " DEBUG: Unknown Message!";
-#endif // ENABLE_LOG_DEBUG
+#endif
 	AddMessage(MESSAGE(p_message));
 }
 //---------------------------------------------------------------------------
@@ -132,8 +132,8 @@ inline void AddWarning(const MessageEnum p_message)
 	m_message_string += l_temp_buf;
 	if (p_message < WARNING_FIRST || p_message > WARNING_LAST)
 		m_message_string += " DEBUG: Unknown Warning!";
-#endif // ENABLE_LOG_DEBUG
-	m_message_string += "Внимание: ";
+#endif
+	m_message_string += "Attention: ";
 	AddMessage(MESSAGE(p_message));
 }
 //---------------------------------------------------------------------------
@@ -145,14 +145,14 @@ void AddWarning(const MessageEnum p_message, string::size_type p_1, string::size
 	m_message_string += l_temp_buf;
 	if (p_message < WARNING_FIRST || p_message > WARNING_LAST)
 		m_message_string += " DEBUG: Unknown Warning!";
-#endif // ENABLE_LOG_DEBUG
+#endif
 	char l_pre_message_buf[MESSAGE_BUFFER_SIZE];
-	snprintf(l_pre_message_buf, MESSAGE_BUFFER_SIZE - 1, "Внимание: %s", CMESSAGE(p_message)); //-V111
+	snprintf(l_pre_message_buf, MESSAGE_BUFFER_SIZE - 1, "Attention: %s", CMESSAGE(p_message)); //-V111
 	char l_out_buf[MESSAGE_BUFFER_SIZE];
 	snprintf(l_out_buf, MESSAGE_BUFFER_SIZE - 1, l_pre_message_buf, p_1, p_2); //-V111
 	AddMessage(l_out_buf);
 }
-#endif // ENABLE_WARNINGS_IN_LOG
+#endif
 //---------------------------------------------------------------------------
 void AddError(const MessageEnum p_message, string::size_type p_count/* = string::npos*/, string::size_type p_1/* = 0*/, string::size_type p_2/* = 0*/)
 {
@@ -160,7 +160,7 @@ void AddError(const MessageEnum p_message, string::size_type p_count/* = string:
 	char l_pre_message_buf[MESSAGE_BUFFER_SIZE];
 	if (p_count == string::npos)
 	{
-		snprintf(l_pre_message_buf, MESSAGE_BUFFER_SIZE - 1, "Ошибка: %s", CMESSAGE(p_message)); //-V111
+		snprintf(l_pre_message_buf, MESSAGE_BUFFER_SIZE - 1, "Error: %s", CMESSAGE(p_message)); //-V111
 	}
 	else
 	{
@@ -168,7 +168,7 @@ void AddError(const MessageEnum p_message, string::size_type p_count/* = string:
 #ifdef EXTENDENT_REPORT_OF_POSITION_IN_LOG
 		m_corrected_spaces.push_back(l_i); ???
 #endif
-		snprintf(l_pre_message_buf, MESSAGE_BUFFER_SIZE - 1, "В позиции %zd ошибка: %s", l_i, CMESSAGE(p_message)); //-V111
+		snprintf(l_pre_message_buf, MESSAGE_BUFFER_SIZE - 1, "Error at position %zd: %s", l_i, CMESSAGE(p_message)); //-V111
 	}
 	char l_out_buf[MESSAGE_BUFFER_SIZE];
 	snprintf(l_out_buf, MESSAGE_BUFFER_SIZE - 1, l_pre_message_buf, p_1, p_2); //-V111
@@ -179,6 +179,6 @@ void AddError(const MessageEnum p_message, string::size_type p_count/* = string:
 	m_message_string += l_temp_buf;
 	if (p_message < ERROR_FIRST || p_message > ERROR_LAST)
 		m_message_string += " DEBUG: Unknown Error!";
-#endif // ENABLE_LOG_DEBUG
+#endif
 }
 //---------------------------------------------------------------------------

@@ -1,29 +1,23 @@
 // This is an independent project of an individual developer. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
-// CalcDlg.cpp : файл реализации
-//
 
 #include "stdafx.h"
 #include "Calc.h"
 #include "CalcDlg.h"
 #include "Calculator.h"
 
-// Диалоговое окно CAboutDlg используется для описания сведений о приложении
-
 class CAboutDlg : public CDialog
 {
 	public:
 		CAboutDlg();
 		
-// Данные диалогового окна
 		enum { IDD = IDD_ABOUTBOX };
 		
 	protected:
 		virtual BOOL OnInitDialog();
-		virtual void DoDataExchange(CDataExchange* pDX);    // поддержка DDX/DDV
+		virtual void DoDataExchange(CDataExchange* pDX);
 		
-// Реализация
 	protected:
 		DECLARE_MESSAGE_MAP()
 	public:
@@ -50,8 +44,6 @@ BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
 	ON_BN_CLICKED(ID_SITE, &CAboutDlg::OnBnClickedSite)
 END_MESSAGE_MAP()
 
-// диалоговое окно CCalcDlg
-
 CCalcDlg::CCalcDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CCalcDlg::IDD, pParent)
 {
@@ -72,15 +64,10 @@ BEGIN_MESSAGE_MAP(CCalcDlg, CDialog)
 END_MESSAGE_MAP()
 
 
-// обработчики сообщений CCalcDlg
-
 BOOL CCalcDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 	
-	// Добавление пункта "О программе..." в системное меню.
-	
-	// IDM_ABOUTBOX должен быть в пределах системной команды.
 	ASSERT((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
 	ASSERT(IDM_ABOUTBOX < 0xF000);
 	
@@ -98,15 +85,12 @@ BOOL CCalcDlg::OnInitDialog()
 		}
 	}
 	
-	// Задает значок для этого диалогового окна. Среда делает это автоматически,
-	//  если главное окно приложения не является диалоговым
-	SetIcon(m_hIcon, TRUE);         // Крупный значок
-	SetIcon(m_hIcon, FALSE);        // Мелкий значок
+	SetIcon(m_hIcon, TRUE);
+	SetIcon(m_hIcon, FALSE);
 	
-	// TODO: добавьте дополнительную инициализацию
 	CheckDlgButton(IDC_CHECK_AUTO_CALCULATE, TRUE);
 	
-	return TRUE;  // возврат значения TRUE, если фокус не передан элементу управления
+	return TRUE;
 }
 
 inline void CCalcDlg::OnSysCommand(UINT nID, LPARAM lParam)
@@ -122,19 +106,14 @@ inline void CCalcDlg::OnSysCommand(UINT nID, LPARAM lParam)
 	}
 }
 
-// При добавлении кнопки свертывания в диалоговое окно нужно воспользоваться приведенным ниже кодом,
-//  чтобы нарисовать значок. Для приложений MFC, использующих модель документов или представлений,
-//  это автоматически выполняется рабочей областью.
-
 inline void CCalcDlg::OnPaint()
 {
 	//if (IsIconic())
 	//{
-	//  CPaintDC dc(this); // контекст устройства для рисования
+	//  CPaintDC dc(this);
 	//
 	//  SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
 	//
-	//  // Выравнивание значка по центру клиентского прямоугольника
 	//  int cxIcon = GetSystemMetrics(SM_CXICON);
 	//  int cyIcon = GetSystemMetrics(SM_CYICON);
 	//  CRect rect;
@@ -142,7 +121,6 @@ inline void CCalcDlg::OnPaint()
 	//  int x = (rect.Width() - cxIcon + 1) / 2;
 	//  int y = (rect.Height() - cyIcon + 1) / 2;
 	//
-	//  // Нарисуйте значок
 	//  dc.DrawIcon(x, y, m_hIcon);
 	//}
 	//else
@@ -151,8 +129,6 @@ inline void CCalcDlg::OnPaint()
 	}
 }
 
-// Система вызывает эту функцию для получения отображения курсора при перемещении
-//  свернутого окна.
 inline HCURSOR CCalcDlg::OnQueryDragIcon()
 {
 	return static_cast<HCURSOR>(m_hIcon);
@@ -182,12 +158,12 @@ calculate_function_call:
 	}
 	else
 	{
-		SetDlgItemText(IDC_EDIT_MESSAGE, L"");
-		SetDlgItemText(IDC_EDIT_RESULT, L"");
+		SetDlgItemText(IDC_EDIT_MESSAGE, "");
+		SetDlgItemText(IDC_EDIT_RESULT, "");
 	}
 }
 
 void CAboutDlg::OnBnClickedSite()
 {
-	::ShellExecute(nullptr, nullptr, L"http://studia2000.sytes.net/txt/calc.shtml", nullptr, nullptr, SW_SHOWNORMAL); //-V2001
+	::ShellExecute(nullptr, nullptr, "http://studio2000.xyz/txt/calc.shtml", nullptr, nullptr, SW_SHOWNORMAL); //-V2001
 }

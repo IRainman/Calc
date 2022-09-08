@@ -21,7 +21,7 @@
 
 #include "stdafx.h"
 //---------------------------------------------------------------------------
-#ifdef _WIN32
+#if 0 // ifdef _WIN32
 //---------------------------------------------------------------------------
 #include "CalculatorWideAdapter.h"
 
@@ -49,7 +49,7 @@ template<class Facet>
 struct deletable_facet : Facet
 {
 	template<class ...Args>
-	deletable_facet(Args&& ...args) : Facet(std::forward<Args>(args)...) {}
+	deletable_facet(Args && ...args) : Facet(std::forward<Args>(args)...) {}
 	~deletable_facet() {}
 };
 
@@ -61,8 +61,8 @@ typedef deletable_facet<std::codecvt_byname<char16_t, char, std::mbstate_t>> gbf
 static std::u16string m_message_string;
 
 // using standard (locale-independent) codecvt facet
-std::wstring_convert<
-	deletable_facet<std::codecvt<char16_t, char8_t, std::mbstate_t>>, char16_t> m_converter;
+std::wstring_convert <
+deletable_facet<std::codecvt<char16_t, char8_t, std::mbstate_t>>, char16_t > m_converter;
 
 typedef u16string refactoring_wstring;
 
@@ -72,7 +72,7 @@ static wstring_convert<codecvt_utf8_utf16<wchar_t>> m_converter;
 
 typedef wstring refactoring_wstring;
 
-#endif // NEW_CODECVT_CONVERTER
+#endif
 
 static refactoring_wstring m_message_string;
 //---------------------------------------------------------------------------
@@ -99,5 +99,5 @@ refactoring_wstring& Calculate(const refactoring_wstring& p_input, refactoring_w
 	return m_message_string;
 }
 //---------------------------------------------------------------------------
-#endif //  _WIN32
+#endif
 //---------------------------------------------------------------------------

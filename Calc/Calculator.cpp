@@ -2,7 +2,7 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 /*
- * Copyright 2009-2017 Solomina Elle Leonovna, a.rainman on gmail point com
+ * Copyright 2009-2022 Solomina Elle Leonovna, a.rainman on gmail point com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,72 @@
 #include "Message.h"
 #include "Linear.h"
 #include "Constant.h"
+
+//---------------------------------------------------------------------------
+
+#if 0
+
+#include <boost/parameter.hpp>
+
+// I use a prefix, for example, "api"
+
+BOOST_PARAMETER_NAME(a)
+BOOST_PARAMETER_NAME(b)
+BOOST_PARAMETER_NAME(c)
+BOOST_PARAMETER_FUNCTION(
+    (void),
+    api_do_something,
+    tag,
+    (required
+     (a, (bool))
+     (b, (int))
+     (c, (std::string_view))
+     (d, (std::string))
+    )
+)
+{
+	do_something(a, b, c);
+}
+
+// and we can call the function like this:
+
+api_do_something(_a = true, _b = 42, _c = "str");
+
+// or like this
+
+api_do_something(_b = 42, _c = "str", _a = true);
+
+// or like this
+
+api_do_something(42, "str", true);
+
+...
+
+void do_something(bool a, int b, std::string_view c)
+{
+	// A body of a do_something function.
+}
+
+
+
+
+
+/*
+template<typename... Args> inline void pass(Args&&...) {}
+template<typename... Args> inline void expand(Args&&... args) {
+    pass(do_something(args)...);
+}
+
+
+const bool a = true;
+const int b = 12;
+const std::string_view c = "qwerty";
+
+expand(a, b, c);
+*/
+
+#endif // 0
+
 //---------------------------------------------------------------------------
 #ifdef ENABLE_INPUT_VALIDATION
 void ValidateInputString(const string& p_input_str)
@@ -222,7 +288,7 @@ void ValidateInputString(const string& p_input_str)
 		return;
 	}
 }
-#endif // ENABLE_INPUT_VALIDATION
+#endif
 //---------------------------------------------------------------------------
 const string& Calculate(string p_input, string& p_output)
 {
@@ -253,7 +319,7 @@ const string& Calculate(string p_input, string& p_output)
 #ifdef ENABLE_INPUT_VALIDATION
 	ValidateInputString(p_input);
 	if (m_no_error)
-#endif // ENABLE_INPUT_VALIDATION
+#endif
 	{
 		ReplaceConstants(p_input);
 		ProcessFunctions(p_input);
@@ -272,7 +338,7 @@ const string& Calculate(string p_input, string& p_output)
 		AddMessage(CALCULATION);
 		AddMessage(p_output);
 	}
-#endif // ENABLE_INPUT_VALIDATION
+#endif
 	return m_message_string;
 }
 //---------------------------------------------------------------------------

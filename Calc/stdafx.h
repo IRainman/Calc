@@ -1,8 +1,4 @@
 
-// stdafx.h: включите файл для добавления стандартных системных файлов
-//или конкретных файлов проектов, часто используемых,
-// но редко изменяемых
-
 #pragma once
 
 #ifndef _SECURE_ATL
@@ -10,31 +6,30 @@
 #endif
 
 #ifndef VC_EXTRALEAN
-#define VC_EXTRALEAN            // Исключите редко используемые компоненты из заголовков Windows
+#define VC_EXTRALEAN
 #endif
 
 #include "targetver.h"
 
-#define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS      // некоторые конструкторы CString будут явными
+#define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS
 
-// отключает функцию скрытия некоторых общих и часто пропускаемых предупреждений MFC
 #define _AFX_ALL_WARNINGS
 
 //#define _AFXDLL
 
-#include <afxwin.h>         // основные и стандартные компоненты MFC
-#include <afxext.h>         // расширения MFC
+#include <afxwin.h>
+#include <afxext.h>
 
-#include <afxdisp.h>        // классы автоматизации MFC
+#include <afxdisp.h>
 
 #ifndef _AFX_NO_OLE_SUPPORT
-#include <afxdtctl.h>           // поддержка MFC для типовых элементов управления Internet Explorer 4
+#include <afxdtctl.h>
 #endif
 #ifndef _AFX_NO_AFXCMN_SUPPORT
-#include <afxcmn.h>             // поддержка MFC для типовых элементов управления Windows
-#endif // _AFX_NO_AFXCMN_SUPPORT
+#include <afxcmn.h>
+#endif
 
-#include <afxcontrolbars.h>     // поддержка MFC для лент и панелей управления
+#include <afxcontrolbars.h>
 
 #ifdef max
 #undef max

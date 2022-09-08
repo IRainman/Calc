@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2017 Solomina Elle Leonovna, a.rainman on gmail point com
+ * Copyright 2009-2022 Solomina Elle Leonovna, a.rainman on gmail point com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@ enum MessageEnum
 #ifdef ENABLE_INPUT_VALIDATION
 	PREPARING,
 	CALCULATION,
-#endif // ENABLE_INPUT_VALIDATION
+#endif
 	REPLACEMENTS_OF_THE_CONSTANTS,
 	CALCULATE_FUNCTIONS,
 	MESSAGE_LAST = CALCULATE_FUNCTIONS,
@@ -39,7 +39,7 @@ enum MessageEnum
 	OUT_OF_RANGE = WARNING_FIRST,
 	MAX_DIGITS,
 	WARNING_LAST = MAX_DIGITS,
-#endif // ENABLE_WARNINGS_IN_LOG
+#endif
 	ERROR_FIRST,// Errors
 	UNKNOWN_ERROR = ERROR_FIRST,
 #ifdef ENABLE_INPUT_VALIDATION
@@ -49,7 +49,7 @@ enum MessageEnum
 	NON_BRACKET_BALANCE,
 	//  FUNCTION_LACKS_CLOSING_BRACKET,
 	//  FUNCTION_NOT_HAVING_ARGUMENTS,
-#endif // ENABLE_INPUT_VALIDATION
+#endif
 	CONSECUTIVE_RECORD_NUMBER_OF_TRANSACTIONS,
 	NOT_ENOUGHT_OPERANDS,
 	EXPRESSION_CAN_NOT_START_FROM_OPERATION,
@@ -70,7 +70,7 @@ enum MessageEnum
 	LAST_SYMBOL_IN_EXPRESSION_IS_E,
 	CLOSING_BRACKET_BEFORE_OPENING,
 	NUMBERS_BEFORE_OPENING_BRACKET,
-#endif // ENABLE_INPUT_VALIDATION
+#endif
 	NUMBER_BEFORE_FUNCTION,
 	NUMBER_AFTER_FUNCTION,
 	FUNCTION_INVALID_NUMBER_OF_ARGUMENTS,
@@ -101,6 +101,6 @@ extern void AddMessage(const MessageEnum p_message);
 #ifdef ENABLE_WARNINGS_IN_LOG
 extern void AddWarning(const MessageEnum p_message);
 extern void AddWarning(const MessageEnum p_message, string::size_type p_1, string::size_type p_2);
-#endif // ENABLE_WARNINGS_IN_LOG
+#endif
 extern void AddError(const MessageEnum p_message, string::size_type p_count = string::npos, string::size_type p_1 = 0, string::size_type p_2 = 0);
 //---------------------------------------------------------------------------

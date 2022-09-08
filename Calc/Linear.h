@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2017 Solomina Elle Leonovna, a.rainman on gmail point com
+ * Copyright 2009-2022 Solomina Elle Leonovna, a.rainman on gmail point com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -71,5 +71,5 @@ constexpr inline Priority GetPriority(const char p_sym)
 	}
 }
 //---------------------------------------------------------------------------
-extern [[nodiscard]] calc_variable CalculateLineExpression(const string_view& p_input_str, string_view::size_type p_mes_pos_shift = 0);
+extern [[nodiscard]] calc_variable CalculateLineExpression(const string_view p_input_str, string_view::size_type p_mes_pos_shift = 0);
 //---------------------------------------------------------------------------

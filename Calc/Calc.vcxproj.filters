@@ -1,101 +1,101 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Файлы исходного кода">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Заголовочные файлы">
+    <Filter Include="Headers">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
-    <Filter Include="Файлы ресурсов">
+    <Filter Include="Modules">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Resources">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Calc.cpp">
-      <Filter>Файлы исходного кода</Filter>
+      <Filter>Modules</Filter>
     </ClCompile>
     <ClCompile Include="CalcDlg.cpp">
-      <Filter>Файлы исходного кода</Filter>
+      <Filter>Modules</Filter>
     </ClCompile>
     <ClCompile Include="Calculator.cpp">
-      <Filter>Файлы исходного кода</Filter>
+      <Filter>Modules</Filter>
     </ClCompile>
     <ClCompile Include="Function.cpp">
-      <Filter>Файлы исходного кода</Filter>
+      <Filter>Modules</Filter>
     </ClCompile>
     <ClCompile Include="Message.cpp">
-      <Filter>Файлы исходного кода</Filter>
+      <Filter>Modules</Filter>
     </ClCompile>
     <ClCompile Include="stdafx.cpp">
-      <Filter>Файлы исходного кода</Filter>
+      <Filter>Modules</Filter>
     </ClCompile>
     <ClCompile Include="CalculatorWideAdapter.cpp">
-      <Filter>Файлы исходного кода</Filter>
+      <Filter>Modules</Filter>
     </ClCompile>
     <ClCompile Include="Linear.cpp">
-      <Filter>Файлы исходного кода</Filter>
+      <Filter>Modules</Filter>
     </ClCompile>
     <ClCompile Include="Constant.cpp">
-      <Filter>Файлы исходного кода</Filter>
+      <Filter>Modules</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Calc.h">
-      <Filter>Заголовочные файлы</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="CalcDlg.h">
-      <Filter>Заголовочные файлы</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="Calculator.h">
-      <Filter>Заголовочные файлы</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="Flags.h">
-      <Filter>Заголовочные файлы</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="Function.h">
-      <Filter>Заголовочные файлы</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="Message.h">
-      <Filter>Заголовочные файлы</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="MyTypes.h">
-      <Filter>Заголовочные файлы</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="Resource.h">
-      <Filter>Заголовочные файлы</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="stdafx.h">
-      <Filter>Заголовочные файлы</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="targetver.h">
-      <Filter>Заголовочные файлы</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="CalculatorWideAdapter.h">
-      <Filter>Заголовочные файлы</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="Linear.h">
-      <Filter>Заголовочные файлы</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="Constant.h">
-      <Filter>Заголовочные файлы</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\C.ico">
-      <Filter>Файлы ресурсов</Filter>
+      <Filter>Resources</Filter>
     </None>
     <None Include="res\Calc.rc2">
-      <Filter>Файлы ресурсов</Filter>
+      <Filter>Resources</Filter>
     </None>
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Calc.rc">
-      <Filter>Файлы ресурсов</Filter>
+      <Filter>Resources</Filter>
     </ResourceCompile>
   </ItemGroup>
 </Project>

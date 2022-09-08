@@ -18,7 +18,7 @@
 
 #pragma once
 //---------------------------------------------------------------------------
-#ifdef _WIN32
+#if 0 //ifdef _WIN32
 //---------------------------------------------------------------------------
 #ifdef NEW_CODECVT_CONVERTER
 std::u16string& Calculate(const std::u16string& p_input, std::u16string& p_output);

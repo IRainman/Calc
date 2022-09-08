@@ -2,7 +2,7 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 /*
- * Copyright 2009-2017 Solomina Elle Leonovna, a.rainman on gmail point com
+ * Copyright 2009-2022 Solomina Elle Leonovna, a.rainman on gmail point com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -64,11 +64,11 @@ const calc_variable& GetConstant(const Constants p_const_ind)
 	return c_cv_constant[static_cast<unsigned int>(p_const_ind)];
 }
 //---------------------------------------------------------------------------
-inline void ReplaceConstant(string& p_io_str, const string_view& p_const_name, const size_t p_number_of_constant)
+inline void ReplaceConstant(string& p_io_str, const string_view p_const_name, const size_t p_number_of_constant)
 {
 	string::size_type l_pos;
 	
-	auto ConstantNotFound = [](const string_view & p_io_str, const string_view & p_const_name, string::size_type & l_pos)
+	auto ConstantNotFound = [](const string_view p_io_str, const string_view p_const_name, string::size_type & l_pos)
 	{
 		l_pos = p_io_str.find(p_const_name);
 		return (l_pos == string_view::npos \

@@ -16,11 +16,8 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Russian (Russia) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_RUS)
-LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
-#pragma code_page(1251)
+#if !defined(AFX_RESOURCE_DLL)
+#pragma code_page(65001)
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -49,11 +46,10 @@ BEGIN
     "#define _AFX_NO_TRACKER_RESOURCES\r\n"
     "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
     "\r\n"
-    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_RUS)\r\n"
-    "LANGUAGE 25, 1\r\n"
-    "#pragma code_page(1251)\r\n"
-    "#include ""res\\Calc.rc2""  // ресурсы, не редактируемые в Microsoft Visual C++\r\n"
-    "#include ""l.RUS\\afxres.rc""      // Стандартные компоненты\r\n"
+    "#if !defined(AFX_RESOURCE_DLL)\r\n"
+    "#pragma code_page(65001)\r\n"
+    "#include ""res\\Calc.rc2""\r\n"
+    "#include ""afxres.rc""\r\n"
     "#endif\r\n"
     "\0"
 END
@@ -81,10 +77,10 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_BORDER | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,83,14,20,20
-    LTEXT           "Calc, версия 1.11.1 2021",IDC_STATIC,7,7,83,8,SS_NOPREFIX
-    LTEXT           "© STUDIA2000, HedgehogInTheCPP (Соломина Э.Л.)",IDC_STATIC,7,24,71,26
-    DEFPUSHBUTTON   "ОК",IDOK,75,50,36,14,WS_GROUP
-    DEFPUSHBUTTON   "Зайти на сайт",ID_SITE,7,50,56,14,WS_GROUP
+    LTEXT           "Calc, version 1.12.0 2022",IDC_STATIC,7,7,83,8,SS_NOPREFIX
+    LTEXT           "В© STUDIO2000, HedgehogInTheCPP",IDC_STATIC,7,24,71,26
+    DEFPUSHBUTTON   "OK",IDOK,75,50,36,14,WS_GROUP
+    DEFPUSHBUTTON   "Homepage",ID_SITE,7,50,56,14,WS_GROUP
     LTEXT           "",IDC_COMPILED_DATE,7,16,77,8,SS_NOPREFIX
 END
 
@@ -97,7 +93,7 @@ BEGIN
     EDITTEXT        IDC_EDIT_INPUT,7,7,203,30,ES_MULTILINE | ES_AUTOVSCROLL
     EDITTEXT        IDC_EDIT_RESULT,7,59,203,14,ES_AUTOHSCROLL
     EDITTEXT        IDC_EDIT_MESSAGE,7,75,203,105,ES_MULTILINE | ES_READONLY | WS_VSCROLL
-    CONTROL         "Вычислять на лету. Если галочка снята,  в конце выражения должен стоять знак = ",IDC_CHECK_AUTO_CALCULATE,
+    CONTROL         "Calculate immediately. If unchecked, there should be a = sign at the end of the expression",IDC_CHECK_AUTO_CALCULATE,
                     "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,7,38,203,17
 END
 
@@ -108,8 +104,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,11,1,174
- PRODUCTVERSION 1,11,1,174
+ FILEVERSION 1,12,0,175
+ PRODUCTVERSION 1,12,0,175
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -122,21 +118,17 @@ VS_VERSION_INFO VERSIONINFO
 BEGIN
     BLOCK "StringFileInfo"
     BEGIN
-        BLOCK "041904e3"
-        BEGIN
-            VALUE "CompanyName", "STUDIA2000"
-            VALUE "FileDescription", "Калькулятор для Windows"
-            VALUE "FileVersion", "1.11.1.174"
-            VALUE "InternalName", "Calc.exe"
-            VALUE "LegalCopyright", "© STUDIA2000 HedgehogInTheCPP (Соломина Э.Л.). Все права защищены."
-            VALUE "OriginalFilename", "Calc.exe"
-            VALUE "ProductName", "Calc"
-            VALUE "ProductVersion", "1.11.1.174"
-        END
+        VALUE "CompanyName", "STUDIA2000"
+        VALUE "FileDescription", "Calculator for Windows"
+        VALUE "FileVersion", "1.12.0.175"
+        VALUE "InternalName", "Calc.exe"
+        VALUE "LegalCopyright", "В© STUDIO2000 HedgehogInTheCPP"
+        VALUE "OriginalFilename", "Calc.exe"
+        VALUE "ProductName", "Calc"
+        VALUE "ProductVersion", "1.12.0.175"
     END
     BLOCK "VarFileInfo"
     BEGIN
-        VALUE "Translation", 0x419, 1251
     END
 END
 
@@ -194,10 +186,10 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_ABOUTBOX            "&О проекте Calc..."
+    IDS_ABOUTBOX            "&About Calc..."
 END
 
-#endif    // Russian (Russia) resources
+#endif
 /////////////////////////////////////////////////////////////////////////////
 
 
@@ -212,11 +204,10 @@ END
 #define _AFX_NO_TRACKER_RESOURCES
 #define _AFX_NO_PROPERTY_RESOURCES
 
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_RUS)
-LANGUAGE 25, 1
-#pragma code_page(1251)
-#include "res\Calc.rc2"  // ресурсы, не редактируемые в Microsoft Visual C++
-#include "l.RUS\afxres.rc"      // Стандартные компоненты
+#if !defined(AFX_RESOURCE_DLL)
+#pragma code_page(65001)
+#include "res\Calc.rc2"
+#include "afxres.rc"
 #endif
 
 /////////////////////////////////////////////////////////////////////////////

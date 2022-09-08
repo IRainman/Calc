@@ -2,7 +2,7 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 /*
- * Copyright 2009-2017 Solomina Elle Leonovna, a.rainman on gmail point com
+ * Copyright 2009-2022 Solomina Elle Leonovna, a.rainman on gmail point com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -169,7 +169,7 @@ constexpr inline calc_variable CalculateParametrs(const size_t p_number_of_param
 	}
 }
 //---------------------------------------------------------------------------
-inline constexpr bool CheckParametrIsSubexpr(const string_view& p_param_str)
+inline constexpr bool CheckParametrIsSubexpr(const string_view p_param_str)
 {
 	const auto l_count = p_param_str.find_first_not_of("0123456789.", (p_param_str[0] != '-') ? 0 : 1);
 	if (l_count == string_view::npos
@@ -229,7 +229,7 @@ inline constexpr bool CheckParametrIsSubexpr(const string_view& p_param_str)
 	return true;
 }
 //---------------------------------------------------------------------------
-void CalculateFunction(string& p_io_str, const string_view& p_func_name, const size_t p_count, const size_t p_number_of_param)
+void CalculateFunction(string& p_io_str, const string_view p_func_name, const size_t p_count, const size_t p_number_of_param)
 {
 	do
 	{
@@ -370,6 +370,6 @@ void ProcessFunctions(string& p_io_str
 		AddError(INVALID_CHARACTER_AFTER_CONSTANT_AND_FUNCTION_PROCESS, l_count + p_mes_pos_shift);
 		return;
 	}
-#endif // ENABLE_INPUT_VALIDATION
+#endif
 }
 //---------------------------------------------------------------------------

@@ -2,7 +2,7 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 /*
- * Copyright 2009-2017 Solomina Elle Leonovna, a.rainman on gmail point com
+ * Copyright 2009-2022 Solomina Elle Leonovna, a.rainman on gmail point com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -82,7 +82,7 @@ inline void FinalizeOnLineExpression(stack<char>& p_operations, stack<calc_varia
 	}
 }
 //---------------------------------------------------------------------------
-[[nodiscard]] calc_variable CalculateLineExpression(const string_view& p_input_str, string_view::size_type p_mes_pos_shift /*= 0*/)
+[[nodiscard]] calc_variable CalculateLineExpression(const string_view p_input_str, string_view::size_type p_mes_pos_shift /*= 0*/)
 {
 #ifdef ENABLE_INPUT_VALIDATION
 	AddMessage(CALCULATION);

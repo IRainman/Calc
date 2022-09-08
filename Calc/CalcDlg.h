@@ -1,27 +1,19 @@
 
-// CalcDlg.h : файл заголовка
-//
-
 #pragma once
 
-// диалоговое окно CCalcDlg
 class CCalcDlg : public CDialog
 {
-// Создание
 	public:
-		CCalcDlg(CWnd* pParent = NULL); // стандартный конструктор
+		CCalcDlg(CWnd* pParent = NULL);
 		
-// Данные диалогового окна
 		enum { IDD = IDD_CALC_DIALOG };
 		
 	protected:
-		virtual void DoDataExchange(CDataExchange* pDX);    // поддержка DDX/DDV
+		virtual void DoDataExchange(CDataExchange* pDX);
 		
-// Реализация
 	protected:
 		HICON m_hIcon;//-V122_NOPTR
 		
-		// Созданные функции схемы сообщений
 		virtual BOOL OnInitDialog();
 		afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
 		afx_msg void OnPaint();
@@ -30,7 +22,7 @@ class CCalcDlg : public CDialog
 	public:
 		afx_msg void OnEnChangeEditInput();
 	private:
-		static constexpr std::wstring::size_type c_max_edit_input_size = 4096;
-		std::wstring m_input;
-		std::wstring m_result;
+		static constexpr std::string::size_type c_max_edit_input_size = 4096;
+		std::string m_input;
+		std::string m_result;
 };
