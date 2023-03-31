@@ -22,7 +22,7 @@ using namespace std;
 #include "Flags.h"
 #include "MyTypes.h"
 //---------------------------------------------------------------------------
-enum MessageEnum
+enum class MessageEnum : unsigned int
 {
 	MESSAGE_FIRST = 0,// Messages
 	FOUND_SUBEXPRESSIONS = MESSAGE_FIRST,
@@ -44,11 +44,8 @@ enum MessageEnum
 	UNKNOWN_ERROR = ERROR_FIRST,
 #ifdef ENABLE_INPUT_VALIDATION
 	EXPRESSION_NOT_FOUND,
-	//INVALID_CHARACTER,
 	INVALID_CHARACTER_AFTER_CONSTANT_AND_FUNCTION_PROCESS,
 	NON_BRACKET_BALANCE,
-	//  FUNCTION_LACKS_CLOSING_BRACKET,
-	//  FUNCTION_NOT_HAVING_ARGUMENTS,
 #endif
 	CONSECUTIVE_RECORD_NUMBER_OF_TRANSACTIONS,
 	NOT_ENOUGHT_OPERANDS,

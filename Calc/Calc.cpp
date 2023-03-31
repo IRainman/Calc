@@ -5,13 +5,11 @@
 #include "Calc.h"
 #include "CalcDlg.h"
 
-// CCalcApp
-
 BEGIN_MESSAGE_MAP(CCalcApp, CWinAppEx)
 	ON_COMMAND(ID_HELP, &CWinApp::OnHelp)
 END_MESSAGE_MAP()
 
-CCalcApp::CCalcApp()
+CCalcApp::CCalcApp() noexcept
 {
 
 }
@@ -28,10 +26,8 @@ BOOL CCalcApp::InitInstance()
 	
 	CWinAppEx::InitInstance();
 	
-	AfxEnableControlContainer();
-	
 	CCalcDlg dlg;
 	m_pMainWnd = &dlg;
-	/*INT_PTR nResponse = */dlg.DoModal();
+	dlg.DoModal();
 	return FALSE;
 }

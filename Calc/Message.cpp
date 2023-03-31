@@ -52,11 +52,8 @@ constexpr static const string_view c_message_string[] =
 	"undefined error",
 #ifdef ENABLE_INPUT_VALIDATION
 	"expression not found",
-	//"invalid character",
 	"invalid character after replacing constants and processing functions, check the correctness of their spelling",
 	"the number of opening %d and closing %d brackets does not match",
-	//  "the function lacks a closing parenthesis",
-	//  "the function has no arguments",
 #endif
 	"sequential recording of multiple operations isn't supported",
 	"not enough operands to get the result",
@@ -94,11 +91,11 @@ constexpr static const string_view c_message_string[] =
 #endif
 };
 //---------------------------------------------------------------------------
-static_assert(_countof(c_message_string) == ERROR_LAST + 1, "MessageString and MessageEnum sizes do not match ;) Check them out!");
+static_assert(_countof(c_message_string) == static_cast<unsigned int>(MessageEnum::ERROR_LAST) + 1, "MessageString and MessageEnum sizes do not match ;) Check them out!");
 //---------------------------------------------------------------------------
 inline constexpr auto& MESSAGE(const MessageEnum code)
 {
-	return c_message_string[code]; //-V2006
+	return c_message_string[static_cast<unsigned int>(code)];
 }
 inline constexpr const auto* CMESSAGE(const MessageEnum code)
 {

@@ -24,7 +24,7 @@
 #include "Linear.h"
 #include "Message.h"
 //---------------------------------------------------------------------------
-inline void CalculateOnLineExpression(stack<char>& p_operations, stack<calc_variable>& p_operands, const string::size_type p_pos)
+inline void CalculateOnLineExpression(stack<char>& p_operations, stack<calc_variable>& p_operands)
 {
 	if (!p_operands.empty())
 	{
@@ -34,38 +34,40 @@ inline void CalculateOnLineExpression(stack<char>& p_operations, stack<calc_vari
 		{
 			const auto a = p_operands.top();
 			p_operands.pop();
+			calc_variable res;
 			switch (p_operations.top())
 			{
-				case '%':
-					p_operands.push(static_cast<int>(a) % static_cast<int>(b));
-					break;
 				case '^':
-					p_operands.push(pow(a, b));
+					res = pow(a, b);
 					break;
 				case '*':
-					p_operands.push(a * b);
+					res = a * b;
 					break;
 				case '/':
-					p_operands.push(a / b);
+					res = a / b;
+					break;
+				case '%':
+					res = static_cast<int>(a) % static_cast<int>(b); //-V2003
 					break;
 				case '+':
-					p_operands.push(a + b);
+					res = a + b;
 					break;
 				case '-':
-					p_operands.push(a - b);
+					res = a - b;
 					break;
 				default:
 #ifdef _DEBUG
-					AddError(INTERNAL_PROCESSING_ERROR_CalculateOnLineExpression_p_operands_is_unknown);
+					AddError(MessageEnum::INTERNAL_PROCESSING_ERROR_CalculateOnLineExpression_p_operands_is_unknown);
+#else
+					__assume(false); // C++23 unreachable();
 #endif
-					AddError(UNKNOWN_ERROR, p_pos);
-					break;
 			}
+			p_operands.push(res);
 		}
 	}
 	p_operations.pop();
 }
-inline void FinalizeOnLineExpression(stack<char>& p_operations, stack<calc_variable>& p_operands, const string_view::size_type p_pos)
+inline void FinalizeOnLineExpression(stack<char>& p_operations, stack<calc_variable>& p_operands, const string::size_type p_pos)
 {
 	const auto b = p_operands.top();
 	p_operands.pop();
@@ -76,9 +78,9 @@ inline void FinalizeOnLineExpression(stack<char>& p_operations, stack<calc_varia
 			break;
 		default:
 #ifdef _DEBUG
-			AddError(INTERNAL_PROCESSING_ERROR_CalculateOnLineExpression_p_operands_is_not_addition);
+			AddError(MessageEnum::INTERNAL_PROCESSING_ERROR_CalculateOnLineExpression_p_operands_is_not_addition, p_pos);
 #endif
-			AddError(UNKNOWN_ERROR, p_pos);
+			AddError(MessageEnum::UNKNOWN_ERROR, p_pos);
 			break;
 	}
 }
@@ -107,7 +109,7 @@ inline void FinalizeOnLineExpression(stack<char>& p_operations, stack<calc_varia
 	
 	if (GetPriority(*l_current) > Priority::bracket && !isNegativeNumber())
 	{
-		AddError(EXPRESSION_CAN_NOT_START_FROM_OPERATION, 0);
+		AddError(MessageEnum::EXPRESSION_CAN_NOT_START_FROM_OPERATION, 0);
 		return NAN;
 	}
 	while (l_current != l_end)
@@ -118,7 +120,7 @@ inline void FinalizeOnLineExpression(stack<char>& p_operations, stack<calc_varia
 		
 		if (l_previous_priority > Priority::bracket && !l_negative_number && l_current_priority > Priority::bracket)
 		{
-			AddError(CONSECUTIVE_RECORD_NUMBER_OF_TRANSACTIONS, currentPosition());
+			AddError(MessageEnum::CONSECUTIVE_RECORD_NUMBER_OF_TRANSACTIONS, currentPosition());
 			return NAN;
 		}
 		
@@ -143,7 +145,7 @@ inline void FinalizeOnLineExpression(stack<char>& p_operations, stack<calc_varia
 						*/
 						if (GetPriority(l_operations.top()) >= l_current_priority)
 						{
-							CalculateOnLineExpression(l_operations, l_operands, currentPosition());
+							CalculateOnLineExpression(l_operations, l_operands);
 							if (l_operations.empty())
 							{
 								l_operations.push(*l_current);
@@ -179,7 +181,7 @@ inline void FinalizeOnLineExpression(stack<char>& p_operations, stack<calc_varia
 						{
 							if (l_operations.top() != '(')
 							{
-								CalculateOnLineExpression(l_operations, l_operands, currentPosition());
+								CalculateOnLineExpression(l_operations, l_operands);
 							}
 							else
 							{
@@ -206,43 +208,43 @@ inline void FinalizeOnLineExpression(stack<char>& p_operations, stack<calc_varia
 #ifdef ENABLE_WARNINGS_IN_LOG
 				if (l_operands.top() >= std::numeric_limits<calc_variable>::max())
 				{
-					AddWarning(OUT_OF_RANGE);
+					AddWarning(MessageEnum::OUT_OF_RANGE);
 				}
 				if (l_operands.top() <= std::numeric_limits<calc_variable>::lowest())
 				{
-					AddWarning(OUT_OF_RANGE);
+					AddWarning(MessageEnum::OUT_OF_RANGE);
 				}
-				if (l_diff >= std::numeric_limits<calc_variable>::max_digits10)
+				if (l_diff >= std::numeric_limits<calc_variable>::max_digits10) //-V104
 				{
-					AddWarning(MAX_DIGITS, l_diff, std::numeric_limits<calc_variable>::max_digits10);
+					AddWarning(MessageEnum::MAX_DIGITS, l_diff, std::numeric_limits<calc_variable>::max_digits10); //-V106
 				}
 #endif
 			}
 			else
 			{
 #ifdef _DEBUG
-				AddError(INTERNAL_PROCESSING_ERROR_CalculateLineExpression_l_current_operand, currentPosition());
+				AddError(MessageEnum::INTERNAL_PROCESSING_ERROR_CalculateLineExpression_l_current_operand, currentPosition());
 #endif
-				AddError(UNKNOWN_ERROR, currentPosition());
+				AddError(MessageEnum::UNKNOWN_ERROR, currentPosition());
 				return NAN;
 			}
 		}
 	}
 	if (l_current_priority > Priority::bracket)
 	{
-		AddError(NOT_ENOUGHT_OPERANDS, currentPosition());
+		AddError(MessageEnum::NOT_ENOUGHT_OPERANDS, currentPosition());
 		return NAN;
 	}
 	while (!l_operations.empty() && l_operands.size() > 1)
 	{
-		CalculateOnLineExpression(l_operations, l_operands, currentPosition());
+		CalculateOnLineExpression(l_operations, l_operands);
 	}
 	if (l_operands.size() > 1)
 	{
 #ifdef _DEBUG
-		AddError(INTERNAL_PROCESSING_ERROR_CalculateLineExpression_l_operands, currentPosition());
+		AddError(MessageEnum::INTERNAL_PROCESSING_ERROR_CalculateLineExpression_l_operands, currentPosition());
 #endif
-		AddError(UNKNOWN_ERROR, currentPosition());
+		AddError(MessageEnum::UNKNOWN_ERROR, currentPosition());
 		return NAN;
 	}
 	if (!l_operations.empty() && !l_operands.empty())
@@ -256,7 +258,7 @@ inline void FinalizeOnLineExpression(stack<char>& p_operations, stack<calc_varia
 #endif
 		return l_operands.top();
 	}
-	AddError(UNKNOWN_ERROR, currentPosition());
+	AddError(MessageEnum::UNKNOWN_ERROR, currentPosition());
 	return NAN;
 }
 //---------------------------------------------------------------------------

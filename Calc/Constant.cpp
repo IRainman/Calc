@@ -59,7 +59,7 @@ constexpr static calc_variable c_cv_constant[] =
 //---------------------------------------------------------------------------
 static_assert(_countof(c_str_constant) == _countof(c_cv_constant) && _countof(c_cv_constant) == static_cast<unsigned int>(Constants::constant_counts), "c_str_constant and c_l_constant sizes do not match or constant_counts don't equal to it ;) Check them out!");
 //---------------------------------------------------------------------------
-const calc_variable& GetConstant(const Constants p_const_ind)
+const calc_variable& GetConstant(const Constants p_const_ind) noexcept
 {
 	return c_cv_constant[static_cast<unsigned int>(p_const_ind)];
 }
@@ -100,7 +100,7 @@ inline void ReplaceConstant(string& p_io_str, const string_view p_const_name, co
 //---------------------------------------------------------------------------
 void ReplaceConstants(string& p_io_str)
 {
-	AddMessage(REPLACEMENTS_OF_THE_CONSTANTS);
+	AddMessage(MessageEnum::REPLACEMENTS_OF_THE_CONSTANTS);
 	
 	for (size_t i = 0; i < _countof(c_str_constant); i++)
 		ReplaceConstant(p_io_str, c_str_constant[i], i);

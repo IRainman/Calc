@@ -27,7 +27,7 @@
 #include "Function.h"
 #include "Constant.h"
 //---------------------------------------------------------------------------
-inline calc_variable rad(const calc_variable p_grad)
+inline calc_variable rad(const calc_variable p_grad) noexcept
 {
 	return p_grad * GetConstant(Constants::pi) / 180;
 }
@@ -163,10 +163,10 @@ constexpr inline calc_variable CalculateParametrs(const size_t p_number_of_param
 			return f_function3[p_function_number](p_params[0], p_params[1], p_params[2]);
 		default:
 #ifdef _DEBUG
-			AddError(INTERNAL_PROCESSING_ERROR_CalculateFunction);
+			AddError(MessageEnum::INTERNAL_PROCESSING_ERROR_CalculateFunction);
 			return 0;
 #else
-			__assume(false); // C++23 unreachable(); 
+			__assume(false); // C++23 unreachable();
 #endif
 	}
 }
@@ -189,12 +189,12 @@ inline constexpr bool CheckParametrIsSubexpr(const string_view p_param_str)
 {
 	if (p_comma_count >= p_number_of_param)
 	{
-		AddError(FUNCTION_INVALID_NUMBER_OF_ARGUMENTS, p_start, p_number_of_param, p_comma_count + 1);
+		AddError(MessageEnum::FUNCTION_INVALID_NUMBER_OF_ARGUMENTS, p_start, p_number_of_param, p_comma_count + 1);
 		return false;
 	}
 	if (p_param_str.empty())
 	{
-		AddError(LOST_FUNCTION_ARGUMENTS, p_start, p_comma_count + 1, p_correct_end);
+		AddError(MessageEnum::LOST_FUNCTION_ARGUMENTS, p_start, p_comma_count + 1, p_correct_end);
 		return false;
 	}
 	
@@ -202,17 +202,17 @@ inline constexpr bool CheckParametrIsSubexpr(const string_view p_param_str)
 	
 	if (CheckParametrIsSubexpr(p_param_str))
 	{
-		AddMessage(FOUND_SUBEXPRESSIONS);
+		AddMessage(MessageEnum::FOUND_SUBEXPRESSIONS);
 		ProcessFunctions(p_param_str
 #ifdef ENABLE_INPUT_VALIDATION
 		                 , p_start
 #endif
 		                );
 		l_outp = CalculateLineExpression(p_param_str, p_start);
-		AddMessage(END_OF_THE_SUBEXPRESSION);
+		AddMessage(MessageEnum::END_OF_THE_SUBEXPRESSION);
 		if (isnan(l_outp))
 		{
-			AddError(LOST_FUNCTION_ARGUMENTS, p_start, p_comma_count + 1, p_correct_end);
+			AddError(MessageEnum::LOST_FUNCTION_ARGUMENTS, p_start, p_comma_count + 1, p_correct_end);
 			return false;
 		}
 	}
@@ -222,7 +222,7 @@ inline constexpr bool CheckParametrIsSubexpr(const string_view p_param_str)
 		const size_t l_diff = l_res.ptr - p_param_str.data();
 		if (l_res.ec != errc() || l_diff != p_param_str.size())
 		{
-			AddError(LOST_FUNCTION_ARGUMENTS, p_start, p_comma_count + 1, p_correct_end);
+			AddError(MessageEnum::LOST_FUNCTION_ARGUMENTS, p_start, p_comma_count + 1, p_correct_end);
 			return false;
 		}
 	}
@@ -245,7 +245,7 @@ void CalculateFunction(string& p_io_str, const string_view p_func_name, const si
 		{
 			if (GetPriority(p_io_str[l_start - 1]) < Priority::bracket)
 			{
-				AddError(NUMBER_BEFORE_FUNCTION, l_start);
+				AddError(MessageEnum::NUMBER_BEFORE_FUNCTION, l_start);
 				return;
 			}
 		}
@@ -267,12 +267,12 @@ void CalculateFunction(string& p_io_str, const string_view p_func_name, const si
 				l_end = l_buf.find(')');
 				if (l_end == string::npos)
 				{
-					AddError(FUNCTION_LOST_CLOSING_BRACKET, l_start);
+					AddError(MessageEnum::FUNCTION_LOST_CLOSING_BRACKET, l_start);
 					return;
 				}
 				if (l_end + 1 < l_buf.size() && GetPriority(l_buf[l_end + 1]) < Priority::bracket)
 				{
-					AddError(NUMBER_AFTER_FUNCTION, l_end + 1);
+					AddError(MessageEnum::NUMBER_AFTER_FUNCTION, l_end + 1);
 					return;
 				}
 				const auto l_current_comma = l_buf.find(',');
@@ -317,7 +317,7 @@ void CalculateFunction(string& p_io_str, const string_view p_func_name, const si
 			}
 			if (l_comma_count != p_number_of_param - 1)
 			{
-				AddError(FUNCTION_INVALID_NUMBER_OF_ARGUMENTS, l_start, p_number_of_param, l_comma_count + 1);
+				AddError(MessageEnum::FUNCTION_INVALID_NUMBER_OF_ARGUMENTS, l_start, p_number_of_param, l_comma_count + 1);
 				return;
 			}
 		}
@@ -343,7 +343,7 @@ void ProcessFunctions(string& p_io_str
 #endif
                      )
 {
-	AddMessage(CALCULATE_FUNCTIONS);
+	AddMessage(MessageEnum::CALCULATE_FUNCTIONS);
 	
 	for (size_t i = 0; i < _countof(c_function1); i++)
 		CalculateFunction(p_io_str, c_function1[i], i, 1);

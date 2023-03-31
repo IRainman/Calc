@@ -21,7 +21,7 @@ class CAboutDlg : public CDialog
 	protected:
 		DECLARE_MESSAGE_MAP()
 	public:
-		afx_msg void OnBnClickedSite();
+		afx_msg void OnBnClickedSite() noexcept;
 };
 
 BOOL CAboutDlg::OnInitDialog()
@@ -106,38 +106,15 @@ inline void CCalcDlg::OnSysCommand(UINT nID, LPARAM lParam)
 	}
 }
 
-inline void CCalcDlg::OnPaint()
+inline HCURSOR CCalcDlg::OnQueryDragIcon() noexcept
 {
-	//if (IsIconic())
-	//{
-	//  CPaintDC dc(this);
-	//
-	//  SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
-	//
-	//  int cxIcon = GetSystemMetrics(SM_CXICON);
-	//  int cyIcon = GetSystemMetrics(SM_CYICON);
-	//  CRect rect;
-	//  GetClientRect(&rect);
-	//  int x = (rect.Width() - cxIcon + 1) / 2;
-	//  int y = (rect.Height() - cyIcon + 1) / 2;
-	//
-	//  dc.DrawIcon(x, y, m_hIcon);
-	//}
-	//else
-	{
-		CDialog::OnPaint();
-	}
-}
-
-inline HCURSOR CCalcDlg::OnQueryDragIcon()
-{
-	return static_cast<HCURSOR>(m_hIcon);
+	return m_hIcon;
 }
 
 void CCalcDlg::OnEnChangeEditInput()
 {
 	m_input.resize(c_max_edit_input_size);
-	const auto l_count = GetDlgItemText(IDC_EDIT_INPUT, &m_input[0], c_max_edit_input_size);
+	const auto l_count = GetDlgItemText(IDC_EDIT_INPUT, m_input.data(), c_max_edit_input_size);
 	if (l_count > 0)
 	{
 		m_input.resize(l_count); //-V106
@@ -163,7 +140,7 @@ calculate_function_call:
 	}
 }
 
-void CAboutDlg::OnBnClickedSite()
+void CAboutDlg::OnBnClickedSite() noexcept
 {
 	::ShellExecute(nullptr, nullptr, "http://studio2000.xyz/txt/calc.shtml", nullptr, nullptr, SW_SHOWNORMAL); //-V2001
 }

@@ -36,7 +36,7 @@ enum class Constants
     constant_counts,
 };
 //---------------------------------------------------------------------------
-const calc_variable& GetConstant(const Constants p_const_ind);
+const calc_variable& GetConstant(const Constants p_const_ind) noexcept;
 //---------------------------------------------------------------------------
 void ReplaceConstants(string& p_io_str);
 //---------------------------------------------------------------------------
