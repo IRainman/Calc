@@ -36,8 +36,9 @@ inline void CalculateOnLineExpression(stack<char>& p_operations, stack<calc_vari
 			p_operands.pop();
 			switch (p_operations.top())
 			{
-				//case '%':
-				//	c_operands.push((static_cast<int>a)%(static_cast<int>b));
+				case '%':
+					p_operands.push(static_cast<int>(a) % static_cast<int>(b));
+					break;
 				case '^':
 					p_operands.push(pow(a, b));
 					break;
@@ -94,12 +95,12 @@ inline void FinalizeOnLineExpression(stack<char>& p_operations, stack<calc_varia
 	const auto l_end = l_begin + p_input_str.size();
 	auto l_current = l_begin;
 	
-	auto isNegativeNumber = [&]()
+	const auto isNegativeNumber = [&]()
 	{
 		return *l_current == '-' && l_current + 1 < l_end && GetPriority(*(l_current + 1)) == Priority::number;
 	};
 	
-	auto currentPosition = [&]()
+	const auto currentPosition = [&]()
 	{
 		return l_current - l_begin + p_mes_pos_shift;
 	};
@@ -112,7 +113,7 @@ inline void FinalizeOnLineExpression(stack<char>& p_operations, stack<calc_varia
 	while (l_current != l_end)
 	{
 		const auto l_previous_priority = l_current_priority;
-		const bool l_negative_number = l_previous_priority != Priority::number && isNegativeNumber();
+		const auto l_negative_number = l_previous_priority != Priority::number && isNegativeNumber();
 		l_current_priority = l_negative_number ? Priority::number : GetPriority(*l_current);
 		
 		if (l_previous_priority > Priority::bracket && !l_negative_number && l_current_priority > Priority::bracket)
@@ -192,18 +193,6 @@ inline void FinalizeOnLineExpression(stack<char>& p_operations, stack<calc_varia
 				}
 			}
 		}
-		//else if (l_current_priority == Priority::error)
-		//{
-		//	auto isEconst = [&]()
-		//	{
-		//		return l_previous_priority != Priority::number && *l_current == 'e' && l_current + 1 < l_end && GetPriority(*(l_current + 1)) != Priority::number;
-		//	};
-		//	if (isEconst())
-		//	{
-		//		l_operands.push(numbers::e_v<calc_variable>);
-		//	}
-		//	l_current += 1;
-		//}
 		else
 		{
 			calc_variable l_current_operand;
@@ -215,16 +204,15 @@ inline void FinalizeOnLineExpression(stack<char>& p_operations, stack<calc_varia
 				l_current += l_diff;
 				
 #ifdef ENABLE_WARNINGS_IN_LOG
-				// TODO
 				if (l_operands.top() >= std::numeric_limits<calc_variable>::max())
 				{
 					AddWarning(OUT_OF_RANGE);
 				}
-				if (l_operands.top() <= std::numeric_limits<calc_variable>::min())
+				if (l_operands.top() <= std::numeric_limits<calc_variable>::lowest())
 				{
 					AddWarning(OUT_OF_RANGE);
 				}
-				if (l_diff > std::numeric_limits<calc_variable>::max_digits10)
+				if (l_diff >= std::numeric_limits<calc_variable>::max_digits10)
 				{
 					AddWarning(MAX_DIGITS, l_diff, std::numeric_limits<calc_variable>::max_digits10);
 				}

@@ -161,10 +161,12 @@ constexpr inline calc_variable CalculateParametrs(const size_t p_number_of_param
 			return f_function2[p_function_number](p_params[0], p_params[1]);
 		case 3:
 			return f_function3[p_function_number](p_params[0], p_params[1], p_params[2]);
-#ifdef _DEBUG
 		default:
+#ifdef _DEBUG
 			AddError(INTERNAL_PROCESSING_ERROR_CalculateFunction);
 			return 0;
+#else
+			__assume(false); // C++23 unreachable(); 
 #endif
 	}
 }
@@ -217,7 +219,7 @@ inline constexpr bool CheckParametrIsSubexpr(const string_view p_param_str)
 	else
 	{
 		const auto l_res = from_chars(p_param_str.data(), p_param_str.data() + p_param_str.size(), l_outp);
-		const auto l_diff = l_res.ptr - p_param_str.data();
+		const size_t l_diff = l_res.ptr - p_param_str.data();
 		if (l_res.ec != errc() || l_diff != p_param_str.size())
 		{
 			AddError(LOST_FUNCTION_ARGUMENTS, p_start, p_comma_count + 1, p_correct_end);

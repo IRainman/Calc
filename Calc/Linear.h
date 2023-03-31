@@ -38,11 +38,11 @@ constexpr inline Priority GetPriority(const char p_sym)
 	switch (p_sym)
 	{
 		case '^':
-			//      case '%':
 			return Priority::power;
 			
 		case '*':
 		case '/':
+		case '%':
 			return Priority::multiply;
 			
 		case '+':

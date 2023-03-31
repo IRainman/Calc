@@ -77,7 +77,7 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_BORDER | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,83,14,20,20
-    LTEXT           "Calc, version 1.12.0 2022",IDC_STATIC,7,7,83,8,SS_NOPREFIX
+    LTEXT           "Calc, version 1.13.0 2022",IDC_STATIC,7,7,83,8,SS_NOPREFIX
     LTEXT           "© STUDIO2000, HedgehogInTheCPP",IDC_STATIC,7,24,71,26
     DEFPUSHBUTTON   "OK",IDOK,75,50,36,14,WS_GROUP
     DEFPUSHBUTTON   "Homepage",ID_SITE,7,50,56,14,WS_GROUP
@@ -104,8 +104,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,12,0,175
- PRODUCTVERSION 1,12,0,175
+ FILEVERSION 1,13,0,177
+ PRODUCTVERSION 1,13,0,177
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -118,14 +118,14 @@ VS_VERSION_INFO VERSIONINFO
 BEGIN
     BLOCK "StringFileInfo"
     BEGIN
-        VALUE "CompanyName", "STUDIA2000"
+        VALUE "CompanyName", "STUDIO2000"
         VALUE "FileDescription", "Calculator for Windows"
-        VALUE "FileVersion", "1.12.0.175"
+        VALUE "FileVersion", "1.13.0.177"
         VALUE "InternalName", "Calc.exe"
         VALUE "LegalCopyright", "© STUDIO2000 HedgehogInTheCPP"
         VALUE "OriginalFilename", "Calc.exe"
         VALUE "ProductName", "Calc"
-        VALUE "ProductVersion", "1.12.0.175"
+        VALUE "ProductVersion", "1.13.0.177"
     END
     BLOCK "VarFileInfo"
     BEGIN

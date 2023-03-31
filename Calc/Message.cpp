@@ -105,7 +105,7 @@ inline constexpr const auto* CMESSAGE(const MessageEnum code)
 	return MESSAGE(code).data();
 }
 //---------------------------------------------------------------------------
-inline void AddMessage(const string_view& p_message)
+inline void AddMessage(const string_view p_message)
 {
 	m_message_string += p_message;
 	m_message_string += "\r\n";

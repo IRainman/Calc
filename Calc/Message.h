@@ -96,7 +96,7 @@ extern string::size_type m_correct_count;
 extern vector<string::size_type> m_corrected_spaces;
 #endif
 //---------------------------------------------------------------------------
-extern void AddMessage(const string_view& p_message);
+extern void AddMessage(const string_view p_message);
 extern void AddMessage(const MessageEnum p_message);
 #ifdef ENABLE_WARNINGS_IN_LOG
 extern void AddWarning(const MessageEnum p_message);

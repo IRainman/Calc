@@ -49,6 +49,7 @@
 #include <locale>
 //#include <utility>
 #include <codecvt>
+//#include <vector>
 
 #ifdef _UNICODE
 #if defined _M_IX86

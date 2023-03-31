@@ -32,6 +32,6 @@ BOOL CCalcApp::InitInstance()
 	
 	CCalcDlg dlg;
 	m_pMainWnd = &dlg;
-	INT_PTR nResponse = dlg.DoModal();
+	/*INT_PTR nResponse = */dlg.DoModal();
 	return FALSE;
 }
