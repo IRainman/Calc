@@ -6,6 +6,7 @@
 #include "Calc.h"
 #include "CalcDlg.h"
 #include "Calculator.h"
+#include "tests.h"
 
 class CAboutDlg : public CDialog
 {
@@ -66,6 +67,10 @@ END_MESSAGE_MAP()
 
 BOOL CCalcDlg::OnInitDialog()
 {
+#ifdef CALC_TESTS_ENABLED
+	calc_tests();
+#endif
+
 	CDialog::OnInitDialog();
 	
 	ASSERT((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);

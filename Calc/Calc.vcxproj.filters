@@ -83,6 +83,9 @@
     <ClInclude Include="Constant.h">
       <Filter>Headers</Filter>
     </ClInclude>
+    <ClInclude Include="tests.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\C.ico">

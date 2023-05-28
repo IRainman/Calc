@@ -62,7 +62,7 @@ inline void CalculateOnLineExpression(stack<char>& p_operations, stack<calc_vari
 					__assume(false); // C++23 unreachable();
 #endif
 			}
-			p_operands.push(res);
+			p_operands.push(res); //-V614
 		}
 	}
 	p_operations.pop();
