@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2022 Solomina Elle Leonovna, a.rainman on gmail point com
+ * Copyright 2009-2023 Solomina Elle Leonovna, a.rainman on gmail point com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,11 @@
 //#define ENABLE_INPUT_VALIDATION // Deprecated
 
 //#define NEW_CODECVT_CONVERTER // Deprecated
+
+#define CALC_VER2
+#ifdef CALC_VER2
+	#define CALC_VER2_PATCHES
+#endif
 
 #define ENABLE_LOG
 #ifdef ENABLE_LOG

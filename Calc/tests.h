@@ -1,14 +1,32 @@
+/*
+ * Copyright 2023 Solomina Elle Leonovna, a.rainman on gmail point com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 
 #pragma once
 
-#define CALC_TESTS_ENABLED
+#ifdef _DEBUG
+	#define CALC_TESTS_ENABLED
+#endif
 
 #ifdef CALC_TESTS_ENABLED
 
 #include <string>
 #include <vector>
 #include "Calculator.h"
-// const string& Calculate(string p_input, string& p_output)
 
 auto calc_tests()
 {
@@ -17,7 +35,10 @@ auto calc_tests()
 		{"2 * 2", "4"},
 		{"2 + 2 * 2", "6"},
 		{"(2 + 2) * 2", "8"},
-		{"2 + )", ""},
+		{"2 + )", "nan"},
+		{"2 + (", "nan"},
+		{"e(", "nan"},
+		{"1(", "nan"},
 		{"1 / 0", "inf"},
 		{"sin( rad(0) )", "0"},
 		{"pow( sin( pi / 2 ) / .001 + 24, 2 )", "1048576"},

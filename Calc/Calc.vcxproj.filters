@@ -42,6 +42,18 @@
     <ClCompile Include="Constant.cpp">
       <Filter>Modules</Filter>
     </ClCompile>
+    <ClCompile Include="issue_manager.cpp">
+      <Filter>Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="lexer.cpp">
+      <Filter>Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="parser.cpp">
+      <Filter>Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="token.cpp">
+      <Filter>Modules</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Calc.h">
@@ -84,6 +96,18 @@
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="tests.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="issue_manager.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="lexer.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="parser.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="token.h">
       <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>

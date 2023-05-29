@@ -2,7 +2,7 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 /*
- * Copyright 2009-2022 Solomina Elle Leonovna, a.rainman on gmail point com
+ * Copyright 2009-2023 Solomina Elle Leonovna, a.rainman on gmail point com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -290,6 +290,19 @@ void ValidateInputString(const string& p_input_str)
 }
 #endif
 //---------------------------------------------------------------------------
+#ifdef CALC_VER2
+
+#include "lexer.h"
+#include "parser.h"
+const std::string& Calculate(std::string p_input, std::string& p_output)
+{
+	IssueManager im;
+	Lexer l{ std::move(p_input), im };
+	Parser p{ im, l };
+	print_value(p_output, p.parse());
+	return im.to_string();
+}
+#else CALC_VER2
 const string& Calculate(string p_input, string& p_output)
 {
 	m_correct_count = 0;
@@ -341,4 +354,5 @@ const string& Calculate(string p_input, string& p_output)
 #endif
 	return m_message_string;
 }
+#endif
 //---------------------------------------------------------------------------
