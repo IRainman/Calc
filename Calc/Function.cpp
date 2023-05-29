@@ -332,7 +332,7 @@ void CalculateFunction(string& p_io_str, const string_view p_func_name, const si
 		// process result
 		{
 			string l_tmp;
-			const auto l_outp = print_value(l_tmp, CalculateParametrs(p_number_of_param, p_count, l_params));
+			const auto& l_outp = print_value(l_tmp, CalculateParametrs(p_number_of_param, p_count, l_params));
 			const auto l_erased = p_func_name.size() + l_end + 1;
 			p_io_str.erase(l_start, l_erased);
 			p_io_str.insert(l_start, l_outp);

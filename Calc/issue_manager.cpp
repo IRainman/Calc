@@ -11,7 +11,7 @@
 
 std::ostringstream& IssueManager::report(Issue issue) {
     _has_errors |= issue.severity == Issue::Severity::E;
-    _errors.push_back(std::move(issue));
+    _errors.emplace_back(std::move(issue));
     return _errors.back().message;
 }
 
@@ -44,7 +44,7 @@ std::ostringstream& IssueManager::error(Token position) {
     return error(position.line, position.pos);
 }
 
-std::ostream& operator<<(std::ostream& os, const Issue::Severity& severity) {
+std::ostream& operator<<(std::ostream& os, const Issue::Severity severity) {
     switch (severity) {
         case Issue::Severity::I:
             return os << "Info";
@@ -52,6 +52,8 @@ std::ostream& operator<<(std::ostream& os, const Issue::Severity& severity) {
             return os << "Warning";
         case Issue::Severity::E:
             return os << "Error";
+        default:
+            __assume(false); // C++23 unreachable();
     }
 }
 

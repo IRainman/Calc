@@ -84,7 +84,7 @@ public:
     /**
      * Indicate whether any errors have been reported so far.
      */
-    bool has_errors() const {
+    bool has_errors() const noexcept {
         return _has_errors;
     }
 
@@ -104,7 +104,7 @@ private:
     std::vector<Issue> _errors;
 };
 
-std::ostream& operator<<(std::ostream& os, const Issue::Severity& severity);
+std::ostream& operator<<(std::ostream& os, const Issue::Severity severity);
 std::ostream& operator<<(std::ostream& os, const Issue& issue);
 std::ostream& operator<<(std::ostream& os, const IssueManager& manager);
 

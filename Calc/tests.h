@@ -63,7 +63,7 @@ auto calc_tests()
 	
 	try
 	{
-		for (auto t : tests)
+		for (auto& t : tests)
 		{
 			Calculate(t.first, result);
 			if (result != t.second)

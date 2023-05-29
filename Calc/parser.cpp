@@ -76,10 +76,9 @@ long double Parser::parse() {
     auto result = parse_expr_4();
     if (_current.type != Token::Type::END) {
         _im.error(_current) << "extraneous input at the end of expression: " << _current;
-        return NAN;
-    } else {
-        return result;
+        result = NAN;
     }
+    return result;
 }
 
 void Parser::advance() {
@@ -194,11 +193,6 @@ long double Parser::parse_expr_0() {
 }
 
 std::vector<long double> Parser::parse_function_params() {
-    if (_current.type == Token::Type::RPAREN) {
-        advance();
-        return {};
-    }
-
     std::vector<long double> params;
 
     while (true) {
@@ -206,14 +200,16 @@ std::vector<long double> Parser::parse_function_params() {
 
         if (_current.type == Token::Type::RPAREN) {
             advance();
-            return params;
+            break;
         } else if (_current.type == Token::Type::COMA) {
             advance();
             continue;
         } else {
             _im.error(_current) << "expected closing paren or coma, got " << _current;
+            break;
         }
     }
+    return params;
 }
 
 long double Parser::process_function(Token functionName, const std::vector<long double>& params) {
