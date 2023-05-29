@@ -29,7 +29,11 @@
 //---------------------------------------------------------------------------
 inline calc_variable rad(const calc_variable p_grad) noexcept
 {
-	return p_grad * GetConstant(Constants::pi) / 180;
+	return numbers::pi_v<calc_variable> / 180 * p_grad;
+}
+inline calc_variable deg(const calc_variable p_grad) noexcept
+{
+	return 180 / numbers::pi_v<calc_variable> *p_grad;
 }
 // TODO https://en.cppreference.com/w/cpp/numeric/math
 // TODO https://en.cppreference.com/w/cpp/numeric/special_math
@@ -37,6 +41,7 @@ inline calc_variable rad(const calc_variable p_grad) noexcept
 constexpr static string_view c_function1[] =
 {
 	"rad(",// One radian is equivalent to 180/PI degrees.
+	"deg("
 	"sin(",// sinus
 	"cos(",// cosinus
 	"exp(",// exponent function, on x=1 return value is e
@@ -77,6 +82,7 @@ typedef calc_variable(* fptr1)(calc_variable);
 constexpr static fptr1 f_function1[] =
 {
 	rad,
+	deg,
 	sin,
 	cos,
 	exp,

@@ -18,10 +18,10 @@
 
 #pragma once
 //---------------------------------------------------------------------------
+// TODO 128 bit is hardware supported on x86 and ARM. Need fix from compiler.
 typedef long double calc_variable;
 //---------------------------------------------------------------------------
-constexpr auto CALC_INPUT_BUFFER_SIZE = 4096;
-constexpr auto CALC_BUFFER_SIZE = 32;
+constexpr auto CALC_BUFFER_SIZE = 64;
 //---------------------------------------------------------------------------
 template<typename T>
 inline constexpr T& print_value(T& p_str, const calc_variable p_val)

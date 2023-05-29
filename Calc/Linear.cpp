@@ -47,7 +47,7 @@ inline void CalculateOnLineExpression(stack<char>& p_operations, stack<calc_vari
 					res = a / b;
 					break;
 				case '%':
-					res = static_cast<int>(a) % static_cast<int>(b); //-V2003
+					res = fmod(a, b);
 					break;
 				case '+':
 					res = a + b;

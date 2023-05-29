@@ -38,7 +38,7 @@ constexpr static string_view c_str_constant[] =
 	"atm",// Standard atmosphere (Pa), this constant valid on Earths only ;)
 	"L",// Avogadro's number (mol−1)
 	"R",// Gas constant (J·K−1·mol−1)
-	//"INF",// Infinity
+	//don't enable this "inf",// Infinity
 };
 //---------------------------------------------------------------------------
 constexpr static calc_variable c_cv_constant[] =
@@ -54,7 +54,7 @@ constexpr static calc_variable c_cv_constant[] =
 	101325.0L,// Standard atmosphere (Pa), this constant valid on Earths only ;)
 	6.022141510101010101010101010101010101e23L,// Avogadro's number (mol−1)
 	8.314472151515151515151515151515151515L,// Gas constant (J·K−1·mol−1)
-	//std::numeric_limits<calc_variable>::infinity(),// Infinity
+	//don't enable this numeric_limits<calc_variable>::infinity(),// Infinity
 };
 //---------------------------------------------------------------------------
 static_assert(_countof(c_str_constant) == _countof(c_cv_constant) && _countof(c_cv_constant) == static_cast<unsigned int>(Constants::constant_counts), "c_str_constant and c_l_constant sizes do not match or constant_counts don't equal to it ;) Check them out!");

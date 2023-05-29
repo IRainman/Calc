@@ -67,10 +67,6 @@ END_MESSAGE_MAP()
 
 BOOL CCalcDlg::OnInitDialog()
 {
-#ifdef CALC_TESTS_ENABLED
-	calc_tests();
-#endif
-
 	CDialog::OnInitDialog();
 	
 	ASSERT((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
@@ -94,6 +90,10 @@ BOOL CCalcDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);
 	
 	CheckDlgButton(IDC_CHECK_AUTO_CALCULATE, TRUE);
+
+#ifdef CALC_TESTS_ENABLED
+	SetDlgItemText(IDC_EDIT_MESSAGE, calc_tests().data());
+#endif
 	
 	return TRUE;
 }

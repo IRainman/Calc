@@ -32,7 +32,7 @@ enum class Constants
     atm,// Standard atmosphere (Pa), this constant valid on Earths only ;)
     L,// Avogadro's number (mol−1)
     R,// Gas constant (J·K−1·mol−1)
-    //inf_constant,// Infinity
+    //don't enable this inf_constant,// Infinity
     constant_counts,
 };
 //---------------------------------------------------------------------------
