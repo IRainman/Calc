@@ -43,11 +43,9 @@ constexpr static const string_view c_message_string[] =
 #endif
 	"\tReplacing constants:",
 	"\tCalculating functions:",
-#ifdef ENABLE_WARNINGS_IN_LOG
 // Warnings
 	"the number is out of the acceptable range, the calculation may be performed with errors",
 	"the number has too many digits %d the maximum supported %d, the calculation can be performed with an error",
-#endif
 // Errors
 	"undefined error",
 #ifdef ENABLE_INPUT_VALIDATION
@@ -120,7 +118,6 @@ inline void AddMessage(const MessageEnum p_message)
 	AddMessage(MESSAGE(p_message));
 }
 //---------------------------------------------------------------------------
-#ifdef ENABLE_WARNINGS_IN_LOG
 inline void AddWarning(const MessageEnum p_message)
 {
 #ifdef ENABLE_LOG_DEBUG
@@ -149,7 +146,6 @@ void AddWarning(const MessageEnum p_message, string::size_type p_1, string::size
 	snprintf(l_out_buf, MESSAGE_BUFFER_SIZE - 1, l_pre_message_buf, p_1, p_2); //-V111
 	AddMessage(l_out_buf);
 }
-#endif
 //---------------------------------------------------------------------------
 void AddError(const MessageEnum p_message, string::size_type p_count/* = string::npos*/, string::size_type p_1/* = 0*/, string::size_type p_2/* = 0*/)
 {

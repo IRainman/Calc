@@ -4,30 +4,18 @@
 //
 // Created by Tamika Nomara on 28.05.2023.
 //
+//
+// Manteined by Elle Solomina since 29.05.2023.
+//
 
 #include "stdafx.h"
 
 #include "lexer.h"
 
 Token Lexer::next() {
-    bool reported_errors = false;
     while (!_view.empty()) {
-        if (std::isspace(_view.front())) {
-            advance();
-            continue;
-        }
-#ifdef CALC_VER2_PATCHES
-        else if (isdigit(_view.front()) || _view.front() == '.')
-        {
-            return read_number();
-        }
-        else if (isalpha(_view.front()) || _view.front() == '_')
-        {
-            return read_ident();
-        }
-        else
-#endif
-        switch (_view.front()) {
+        const auto& cur = _view.front();
+        switch (cur) {
             case '+':
                 return emit_and_advance(Token::Type::ADD, 1);
             case '-':
@@ -46,19 +34,19 @@ Token Lexer::next() {
                 return emit_and_advance(Token::Type::RPAREN, 1);
             case ',':
                 return emit_and_advance(Token::Type::COMA, 1);
-#ifndef CALC_VER2_PATCHES
-            case '0'...'9':
-            case '.':
-                return read_number();
-            case 'a'...'z':
-            case 'A'...'Z':
-            case '_':
-                return read_ident();
-#endif
             default:
-                if (!reported_errors) {
-                    _im.error(_line, _pos) << "unknown character " << std::quoted(_view.substr(0, 1));
-                    reported_errors = true;
+                if (std::isdigit(cur) || cur == '.') {
+                    return read_number();
+                }
+                else if (std::isalpha(cur) || cur == '_') {
+                    return read_ident();
+                }
+                if (std::isspace(cur)) {
+                    // skip
+                }
+                else {
+                    _im.error(get_position()) << "unknown character \"" << cur << '\"';
+                    return emit(Token::Type::END); // stop processing
                 }
                 advance();
         }
@@ -66,74 +54,40 @@ Token Lexer::next() {
     return emit(Token::Type::END);
 }
 
-void Lexer::advance() {
-    if (_view.empty()) {
-        return;
-    }
-
-    if (_view.starts_with('\n')) {
-        ++_line;
-        _pos = 0;
-    } else {
-        ++_pos;
-    }
-
+void Lexer::advance() noexcept {
     _view.remove_prefix(1);
 }
 
 Token Lexer::emit(Token::Type type, size_t n, long double val) {
     return Token{
         type,
-        _line,
-        _pos,
         _view.substr(0, n),
         val};
 }
 
 Token Lexer::emit_and_advance(Token::Type type, size_t n, long double val) {
-    n = std::min(n, _view.size());
-
     auto token = emit(type, n, val);
     _view.remove_prefix(n);
-    _pos += n;
     return token;
 }
 
 Token Lexer::read_number() {
+    long double val;
+    const auto res = std::from_chars(_view.data(), _view.data() + _view.size(), val);
+    const auto size = res.ptr - _view.data();
 
-#ifdef CALC_VER2_PATCHES
-    char* end;
-    const auto val = std::strtold(_view.data(), &end);
-    const auto size = end - _view.data();
-
-    if (!size
-#else
-    char* end = nullptr;
-
-    auto val = std::strtold(_view.begin(), &end);
-
-    if (end == _view.begin() || end == nullptr
-#endif
-        ) {
-        _im.error(_line, _pos) << "unable to parse number";
-        advance();
+    if (res.ec != std::errc{}) {
+        _im.error(get_position()) << "unable to parse number";
         return emit(Token::Type::NUM, 0, NAN);
     }
-    if (errno == ERANGE) {
-        _im.warning(_line, _pos) << "long double value is out of range";
-    }
 
-#ifdef CALC_VER2_PATCHES
     return emit_and_advance(Token::Type::NUM, size, val);
-#else
-    return emit_and_advance(Token::Type::NUM, end - _view.begin(), val);
-#endif
 }
 
 Token Lexer::read_ident() {
     size_t n = 0;
-    for (; n < _view.size(); n++) {
-        if (!(isalnum(_view[n]) || _view[n] == '_')) {
+    for (; n < _view.size(); ++n) {
+        if (!(std::isalnum(_view[n]) || _view[n] == '_')) {
             break;
         }
     }

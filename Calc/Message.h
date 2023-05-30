@@ -34,12 +34,10 @@ enum class MessageEnum : unsigned int
 	REPLACEMENTS_OF_THE_CONSTANTS,
 	CALCULATE_FUNCTIONS,
 	MESSAGE_LAST = CALCULATE_FUNCTIONS,
-#ifdef ENABLE_WARNINGS_IN_LOG
 	WARNING_FIRST,// Warnings
 	OUT_OF_RANGE = WARNING_FIRST,
 	MAX_DIGITS,
 	WARNING_LAST = MAX_DIGITS,
-#endif
 	ERROR_FIRST,// Errors
 	UNKNOWN_ERROR = ERROR_FIRST,
 #ifdef ENABLE_INPUT_VALIDATION
@@ -95,9 +93,7 @@ extern vector<string::size_type> m_corrected_spaces;
 //---------------------------------------------------------------------------
 extern void AddMessage(const string_view p_message);
 extern void AddMessage(const MessageEnum p_message);
-#ifdef ENABLE_WARNINGS_IN_LOG
 extern void AddWarning(const MessageEnum p_message);
 extern void AddWarning(const MessageEnum p_message, string::size_type p_1, string::size_type p_2);
-#endif
 extern void AddError(const MessageEnum p_message, string::size_type p_count = string::npos, string::size_type p_1 = 0, string::size_type p_2 = 0);
 //---------------------------------------------------------------------------

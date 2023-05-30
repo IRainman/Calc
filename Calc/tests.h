@@ -30,7 +30,7 @@
 
 auto calc_tests()
 {
-	std::vector<std::pair<std::string, std::string>> tests = {
+	std::vector<std::pair<std::string, std::string>> tests = { //-V826
 		{"2 * 2", "4"},
 		{"2 * 2", "4"},
 		{"2 + 2 * 2", "6"},

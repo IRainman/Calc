@@ -1,6 +1,9 @@
 //
 // Created by Tamika Nomara on 28.05.2023.
 //
+//
+// Manteined by Elle Solomina since 29.05.2023.
+//
 
 #pragma once
 
@@ -20,8 +23,8 @@
 
 class Lexer {
 public:
-    Lexer(std::string data, IssueManager& im)
-        : _data{std::move(data)}, _view{_data}, _im{im} {
+    Lexer(const std::string& data, IssueManager& im) noexcept
+        : _data{data}, _view{_data}, _im{im} {
     }
 
 public:
@@ -30,11 +33,16 @@ public:
      */
     Token next();
 
+    /**
+     * Return the current position.
+     */
+    size_t get_position() { return _view.data() - _data.data(); }
+
 private:
     /**
      * Move current position one symbol further.
      */
-    void advance();
+    void advance() noexcept;
 
     /**
      * Create a new token at the beginning of the input view.
@@ -59,11 +67,8 @@ private:
 private:
     IssueManager& _im;
 
-    const std::string _data;
+    const std::string& _data;
     std::string_view _view;
-
-    std::size_t _line = 1;
-    std::size_t _pos = 0;
 };
 
 #endif //CALC_LEXER_H

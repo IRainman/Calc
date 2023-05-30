@@ -1,6 +1,9 @@
 //
 // Created by Tamika Nomara on 28.05.2023.
 //
+//
+// Manteined by Elle Solomina since 29.05.2023.
+//
 
 #pragma once
 
@@ -47,7 +50,7 @@ public:
     /**
      * Parse and eval an expression. Return nullopt in case of an error.
      */
-    long double parse();
+    [[nodiscard]] long double parse();
 
 private:
     /**
@@ -67,9 +70,9 @@ private:
 
     std::vector<long double> parse_function_params();
 
-    long double process_function(Token functionName, const std::vector<long double>& params);
+    long double process_function(const Token& functionName, const std::vector<long double>& params);
 
-    long double process_const(Token constName);
+    long double process_const(const Token& constName);
 
 private:
     IssueManager& _im;

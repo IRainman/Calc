@@ -1,6 +1,9 @@
 //
 // Created by Tamika Nomara on 28.05.2023.
 //
+//
+// Manteined by Elle Solomina since 29.05.2023.
+//
 
 #pragma once
 
@@ -14,8 +17,8 @@
 #include <ostream>
 
 struct Token {
-    enum class Type {
-        END,
+    enum class Type : unsigned int {
+        END = 0,
         ADD,
         SUB,
         MUL,
@@ -32,21 +35,18 @@ struct Token {
     // Type of this token.
     Type type;
 
-    // Line number at which this token was parsed.
-    std::size_t line;
-
-    // Position of the token's first symbol within the line.
-    std::size_t pos;
-
     // Text of the token.
     std::string_view span;
 
     // If token is a number, this is the parsed value of it.
+    [[deprecated("architectural error")]]
     long double val;
-
 };
 
-std::ostream& operator<<(std::ostream& os, const Token::Type& token);
+[[deprecated("it's issue_manager artefact")]]
+std::ostream& operator<<(std::ostream& os, const Token::Type token);
+
+[[deprecated("it's issue_manager artefact")]]
 std::ostream& operator<<(std::ostream& os, const Token& token);
 
 #endif //CALC_TOKEN_H

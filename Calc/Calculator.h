@@ -22,5 +22,5 @@
 //#include "CalculatorWideAdapter.h"
 //#endif
 //---------------------------------------------------------------------------
-const std::string& Calculate(std::string p_input, std::string& p_output);
+const std::string& Calculate(const std::string& p_input, std::string& p_output);
 //---------------------------------------------------------------------------

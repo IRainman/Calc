@@ -1,6 +1,9 @@
 //
 // Created by Tamika Nomara on 28.05.2023.
 //
+//
+// Manteined by Elle Solomina since 29.05.2023.
+//
 
 #pragma once
 
@@ -28,13 +31,13 @@ struct Issue {
     enum class Severity:int {
 
         // Errors that do stop processing.
-        E,
+        ERR,
 
         // Informational messages and comments to previous issues.
-        I,
+        INF,
 
         // Warnings that don't stop processing.
-        W,
+        WARN,
     };
 
     // Message describing the issue.
@@ -43,12 +46,8 @@ struct Issue {
     // Issue severity.
     Severity severity;
 
-    // Line number at which the issue has occurred.
-    size_t line;
-
     // Position withing the line at which the issue has occurred.
-    size_t pos;
-
+    size_t pos; //-V122
 };
 
 /**
@@ -59,27 +58,23 @@ public:
     /**
      * Report a new issue.
      */
-    std::ostringstream& report(Issue issue);
-    std::ostringstream& report(Issue::Severity severity, size_t line, size_t pos);
-    std::ostringstream& report(Issue::Severity severity, Token position);
+    std::ostringstream& report(Issue&& issue);
+    std::ostringstream& report(Issue::Severity severity, size_t pos);
 
     /**
      * Report a new info message.
      */
-    std::ostringstream& info(size_t line, size_t pos);
-    std::ostringstream& info(Token position);
+    std::ostringstream& info(size_t pos);
 
     /**
      * Report a new warning.
      */
-    std::ostringstream& warning(size_t line, size_t pos);
-    std::ostringstream& warning(Token position);
+    std::ostringstream& warning(size_t pos);
 
     /**
      * Report a new error.
      */
-    std::ostringstream& error(size_t line, size_t pos);
-    std::ostringstream& error(Token position);
+    std::ostringstream& error(size_t pos);
 
     /**
      * Indicate whether any errors have been reported so far.
@@ -95,9 +90,10 @@ public:
         return _errors;
     }
 
-#ifdef CALC_VER2_PATCHES
+    /**
+     * Return full report of expression processing.
+     */
     const std::string& to_string() const;
-#endif
 
 private:
     bool _has_errors = false;
@@ -106,6 +102,6 @@ private:
 
 std::ostream& operator<<(std::ostream& os, const Issue::Severity severity);
 std::ostream& operator<<(std::ostream& os, const Issue& issue);
-std::ostream& operator<<(std::ostream& os, const IssueManager& manager);
+std::ostream& operator<<(std::ostream& os, const std::span<const Issue>& manager);
 
 #endif //CALC_ISSUE_MANAGER_H

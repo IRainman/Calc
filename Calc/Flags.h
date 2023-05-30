@@ -20,23 +20,20 @@
 //---------------------------------------------------------------------------
 // TODO: Add support for all blocks and delete this header from project
 //---------------------------------------------------------------------------
-// Deprecated because is very slow and get high value of cyclomatic complexity https://en.wikipedia.org/wiki/Cyclomatic_complexity
-//#define ENABLE_INPUT_VALIDATION // Deprecated
 
 //#define NEW_CODECVT_CONVERTER // Deprecated
 
 #define CALC_VER2
-#ifdef CALC_VER2
-	#define CALC_VER2_PATCHES
-#endif
+#ifndef CALC_VER2
+	// Deprecated because is very slow and get high value of cyclomatic complexity https://en.wikipedia.org/wiki/Cyclomatic_complexity
+	//#define ENABLE_INPUT_VALIDATION // Deprecated
 
-#define ENABLE_LOG
-#ifdef ENABLE_LOG
-#define ENABLE_WARNINGS_IN_LOG
-// TODO
-//#define EXTENDENT_REPORT_OF_POSITION_IN_LOG
-#ifdef _DEBUG
-//#define ENABLE_LOG_DEBUG
-#endif // _DEBUG
-#endif // ENABLE_LOG
+	#ifdef ENABLE_LOG
+	// TODO
+	//#define EXTENDENT_REPORT_OF_POSITION_IN_LOG
+	#ifdef _DEBUG
+	//#define ENABLE_LOG_DEBUG
+	#endif // _DEBUG
+	#endif // ENABLE_LOG
+#endif
 //---------------------------------------------------------------------------

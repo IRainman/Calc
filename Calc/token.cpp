@@ -4,6 +4,9 @@
 //
 // Created by Tamika Nomara on 28.05.2023.
 //
+//
+// Manteined by Elle Solomina since 29.05.2023.
+//
 
 #include "stdafx.h"
 
@@ -11,7 +14,7 @@
 
 #include <iomanip>
 
-std::ostream& operator<<(std::ostream& os, const Token::Type& token_type) {
+std::ostream& operator<<(std::ostream& os, const Token::Type token_type) {
     switch (token_type) {
         case Token::Type::END:
             return os << "END";
@@ -44,7 +47,7 @@ std::ostream& operator<<(std::ostream& os, const Token::Type& token_type) {
 std::ostream& operator<<(std::ostream& os, const Token& token) {
     switch (token.type) {
         case Token::Type::END:
-            return os << "end of file";
+            return os << "end of expresion";
         default:
             return os << std::quoted(token.span);
     }

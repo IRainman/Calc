@@ -205,7 +205,6 @@ inline void FinalizeOnLineExpression(stack<char>& p_operations, stack<calc_varia
 				l_operands.push(l_current_operand);
 				l_current += l_diff;
 				
-#ifdef ENABLE_WARNINGS_IN_LOG
 				if (l_operands.top() >= std::numeric_limits<calc_variable>::max())
 				{
 					AddWarning(MessageEnum::OUT_OF_RANGE);
@@ -218,7 +217,6 @@ inline void FinalizeOnLineExpression(stack<char>& p_operations, stack<calc_varia
 				{
 					AddWarning(MessageEnum::MAX_DIGITS, l_diff, std::numeric_limits<calc_variable>::max_digits10); //-V106
 				}
-#endif
 			}
 			else
 			{

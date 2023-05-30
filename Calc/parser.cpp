@@ -4,18 +4,18 @@
 //
 // Created by Tamika Nomara on 28.05.2023.
 //
+//
+// Manteined by Elle Solomina since 29.05.2023.
+//
 
 #include "stdafx.h"
 
 #include "parser.h"
 
-#ifdef CALC_VER2_PATCHES
 #include <functional>
 
 #define _USE_MATH_DEFINES
 #include <math.h>
-
-#endif
 
 namespace {
     // Template magic! Do not touch.
@@ -26,7 +26,7 @@ namespace {
     Fn make_fn_impl(long double(* inner)(Ts...), std::index_sequence<Is...>) {
         return [=](IssueManager& im, Token functionName, std::span<const long double> params) -> long double {
             if (params.size() != sizeof...(Ts)) {
-                im.error(functionName)
+                im.error(0) // lex.get_position()
                     << "function "
                     << functionName.span
                     << " requires "
@@ -57,8 +57,8 @@ namespace {
 
     long double min(IssueManager&, Token, std::span<const long double> args) { return *std::min_element(args.begin(), args.end()); }
     long double max(IssueManager&, Token, std::span<const long double> args) { return *std::max_element(args.begin(), args.end()); }
-    long double rad(long double x) { return x * M_PI / 180; }
-    long double deg(long double x) { return x * 180 / M_PI; }
+    constexpr long double rad(long double x) noexcept { return x * M_PI / 180; }
+    constexpr long double deg(long double x) noexcept { return x * 180 / M_PI; }
 
     const std::unordered_map<std::string_view, Fn> FUNCTIONS = {
         {"sin", make_fn(&std::sinl)},
@@ -72,13 +72,14 @@ namespace {
     };
 }
 
-long double Parser::parse() {
-    auto result = parse_expr_4();
+[[nodiscard]] long double Parser::parse() {
+    const auto result = parse_expr_4();
     if (_current.type != Token::Type::END) {
-        _im.error(_current) << "extraneous input at the end of expression: " << _current;
-        result = NAN;
+        _im.error(_lex.get_position()) << "extraneous input at the end of expression: " << _current;
+        return NAN;
+    } else {
+        return result;
     }
-    return result;
 }
 
 void Parser::advance() {
@@ -162,22 +163,22 @@ long double Parser::parse_expr_0() {
     switch (_current.type) {
         case Token::Type::LPAREN: {
             advance();
-            auto result = parse_expr_4();
-            if (_current.type != Token::Type::RPAREN) {
-                _im.error(_current) << "expected closing paren, got " << _current;
-                return NAN;
-            } else {
+            const auto result = parse_expr_4();
+            if (_current.type == Token::Type::RPAREN) {
                 advance();
                 return result;
+            } else {
+                _im.error(_lex.get_position()) << "expected closing paren, got " << _current;
+                return NAN;
             }
         }
         case Token::Type::NUM: {
-            auto num = _current;
+            const auto num = _current; //-V836
             advance();
             return num.val;
         }
         case Token::Type::IDENT: {
-            auto ident = _current;
+            const auto ident = _current; //-V836
             advance();
             if (_current.type == Token::Type::LPAREN) {
                 advance();
@@ -187,7 +188,7 @@ long double Parser::parse_expr_0() {
             }
         }
         default:
-            _im.error(_current) << "unexpected " << _current;
+            _im.error(_lex.get_position()) << "unexpected " << _current;
             return NAN;
     }
 }
@@ -205,30 +206,27 @@ std::vector<long double> Parser::parse_function_params() {
             advance();
             continue;
         } else {
-            _im.error(_current) << "expected closing paren or coma, got " << _current;
+            _im.error(_lex.get_position()) << "expected closing paren or coma, got " << _current;
             break;
         }
     }
     return params;
 }
 
-long double Parser::process_function(Token functionName, const std::vector<long double>& params) {
-    if (params.empty()) {
-        _im.error(functionName) << functionName.span << " requires at least one param" << functionName.span;
-        return NAN;
-    } else if (auto function = FUNCTIONS.find(functionName.span); function != FUNCTIONS.end()) {
+long double Parser::process_function(const Token& functionName, const std::vector<long double>& params) {
+    if (const auto function = FUNCTIONS.find(functionName.span); function != FUNCTIONS.end()) {
         return function->second(_im, functionName, params);
     } else {
-        _im.error(functionName) << "unknown function " << functionName.span;
+        _im.error(_lex.get_position()) << "unknown function " << functionName.span;
         return NAN;
     }
 }
 
-long double Parser::process_const(Token constName) {
+long double Parser::process_const(const Token& constName) {
     if (auto constant = CONSTANTS.find(constName.span); constant != CONSTANTS.end()) {
         return constant->second;
     } else {
-        _im.error(constName) << "unknown constant " << constName.span;
+        _im.error(_lex.get_position()) << "unknown constant " << constName.span;
         return NAN;
     }
 }
