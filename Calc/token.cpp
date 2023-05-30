@@ -12,8 +12,6 @@
 
 #include "token.h"
 
-#include <iomanip>
-
 std::ostream& operator<<(std::ostream& os, const Token::Type token_type) {
     switch (token_type) {
         case Token::Type::END:

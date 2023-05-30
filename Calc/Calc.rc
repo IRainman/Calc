@@ -104,8 +104,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,0,0,184
- PRODUCTVERSION 2,0,0,184
+ FILEVERSION 2,0,0,185
+ PRODUCTVERSION 2,0,0,185
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -120,12 +120,12 @@ BEGIN
     BEGIN
         VALUE "CompanyName", "STUDIO2000"
         VALUE "FileDescription", "Calculator for Windows"
-        VALUE "FileVersion", "2.0.0.184"
+        VALUE "FileVersion", "2.0.0.185"
         VALUE "InternalName", "Calc.exe"
         VALUE "LegalCopyright", "© STUDIO2000 HedgehogInTheCPP"
         VALUE "OriginalFilename", "Calc.exe"
         VALUE "ProductName", "Calc"
-        VALUE "ProductVersion", "2.0.0.184"
+        VALUE "ProductVersion", "2.0.0.185"
     END
     BLOCK "VarFileInfo"
     BEGIN

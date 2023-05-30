@@ -294,7 +294,7 @@ void ValidateInputString(const string& p_input_str)
 
 #include "lexer.h"
 #include "parser.h"
-const std::string& Calculate(const std::string& p_input, std::string& p_output)
+const std::string& Calculate(const std::string_view p_input, std::string& p_output)
 {
 	IssueManager im;
 	Lexer l{ p_input, im };

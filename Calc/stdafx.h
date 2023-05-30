@@ -34,3 +34,13 @@
 #include <cmath>
 #include <limits>
 #include <stack>
+#include <ranges>
+#include <vector>
+#include <iomanip>
+#include <sstream>
+#include <format>
+#include <optional>
+#include <ostream>
+#include <functional>
+#include <span>
+#include <sstream>

@@ -12,13 +12,10 @@
 
 #include "parser.h"
 
-#include <functional>
-
 #define _USE_MATH_DEFINES
 #include <math.h>
 
 namespace {
-    // Template magic! Do not touch.
 
     using Fn = std::function<long double(IssueManager&, Token functionName, std::span<const long double>)>;
 

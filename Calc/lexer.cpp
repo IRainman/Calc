@@ -41,21 +41,20 @@ Token Lexer::next() {
                 else if (std::isalpha(cur) || cur == '_') {
                     return read_ident();
                 }
-                if (std::isspace(cur)) {
-                    // skip
+                else if (std::isspace(cur)) {
+                    advance(1);
                 }
                 else {
                     _im.error(get_position()) << "unknown character \"" << cur << '\"';
-                    return emit(Token::Type::END); // stop processing
+                    return emit(Token::Type::END, 0);
                 }
-                advance();
         }
     }
-    return emit(Token::Type::END);
+    return emit(Token::Type::END, 0);
 }
 
-void Lexer::advance() noexcept {
-    _view.remove_prefix(1);
+void Lexer::advance(size_t n) noexcept {
+    _view.remove_prefix(n);
 }
 
 Token Lexer::emit(Token::Type type, size_t n, long double val) {
@@ -67,7 +66,7 @@ Token Lexer::emit(Token::Type type, size_t n, long double val) {
 
 Token Lexer::emit_and_advance(Token::Type type, size_t n, long double val) {
     auto token = emit(type, n, val);
-    _view.remove_prefix(n);
+    advance(n);
     return token;
 }
 

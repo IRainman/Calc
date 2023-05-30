@@ -9,13 +9,7 @@
 
 #include "Flags.h"
 
-#ifndef CALC_PARSER_H
-#define CALC_PARSER_H
-
 #include "lexer.h"
-
-#include <ranges>
-#include <stack>
 
 class Parser {
     /*
@@ -79,5 +73,3 @@ private:
     Lexer& _lex;
     Token _current;
 };
-
-#endif //CALC_PARSER_H

@@ -9,13 +9,6 @@
 
 #include "Flags.h"
 
-#ifndef CALC_TOKEN_H
-#define CALC_TOKEN_H
-
-#include <string_view>
-#include <optional>
-#include <ostream>
-
 struct Token {
     enum class Type : unsigned int {
         END = 0,
@@ -48,5 +41,3 @@ std::ostream& operator<<(std::ostream& os, const Token::Type token);
 
 [[deprecated("it's issue_manager artefact")]]
 std::ostream& operator<<(std::ostream& os, const Token& token);
-
-#endif //CALC_TOKEN_H

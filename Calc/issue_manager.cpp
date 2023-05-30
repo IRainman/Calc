@@ -42,9 +42,8 @@ std::ostream& operator<<(std::ostream& os, const Issue::Severity severity) {
             return os << "Warning";
         case Issue::Severity::ERR:
             return os << "Error";
-        default:
-            __assume(false); // C++23 unreachable();
     }
+    __assume(false); // C++23 unreachable();
 }
 
 std::ostream& operator<<(std::ostream& os, const Issue& issue) {

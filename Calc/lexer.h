@@ -9,21 +9,12 @@
 
 #include "Flags.h"
 
-#ifndef CALC_LEXER_H
-#define CALC_LEXER_H
-
 #include "issue_manager.h"
 #include "token.h"
 
-#include <string_view>
-#include <charconv>
-#include <iomanip>
-#include <sstream>
-#include <format>
-
 class Lexer {
 public:
-    Lexer(const std::string& data, IssueManager& im) noexcept
+    Lexer(const std::string_view data, IssueManager& im) noexcept
         : _data{data}, _view{_data}, _im{im} {
     }
 
@@ -36,18 +27,18 @@ public:
     /**
      * Return the current position.
      */
-    size_t get_position() { return _view.data() - _data.data(); }
+    size_t get_position() const noexcept { return _view.data() - _data.data(); }
 
 private:
     /**
      * Move current position one symbol further.
      */
-    void advance() noexcept;
+    void advance(size_t n) noexcept;
 
     /**
      * Create a new token at the beginning of the input view.
      */
-    Token emit(Token::Type type, size_t n = 0, long double val = NAN);
+    Token emit(Token::Type type, size_t n, long double val = NAN);
 
     /**
      * Create a new token at the beginning of the input view, and move current position to the end of the token.
@@ -67,8 +58,6 @@ private:
 private:
     IssueManager& _im;
 
-    const std::string& _data;
+    const std::string_view _data;
     std::string_view _view;
 };
-
-#endif //CALC_LEXER_H
