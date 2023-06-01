@@ -28,8 +28,8 @@
 
 auto calc_tests()
 {
-	std::vector<std::pair<std::string, std::string>> tests = { //-V826
-		{"2 * 2", "4"},
+	const std::vector<std::pair<std::string, std::string>> tests = { //-V826
+		{"2 + 2", "4"},
 		{"2 * 2", "4"},
 		{"2 + 2 * 2", "6"},
 		{"(2 + 2) * 2", "8"},
@@ -39,6 +39,7 @@ auto calc_tests()
 		{"1(", "nan"},
 		{"1 / 0", "inf"},
 		{"sin( rad(0) )", "0"},
+		{"log(sh(42) + ch(42))", "42"},
 		{"pow( sin( pi / 2 ) / .001 + 24, 2 )", "1048576"},
 		{"- 4 ^ 2", "16"},
 		{"0 - 4 ^ 2", "-16"},
