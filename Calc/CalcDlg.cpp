@@ -59,7 +59,7 @@ inline void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
-	ON_BN_CLICKED(ID_SITE, &CAboutDlg::OnBnClickedSite)
+	ON_BN_CLICKED(ID_SITE, OnBnClickedSite)
 END_MESSAGE_MAP()
 
 CCalcDlg::CCalcDlg(CWnd* pParent /*=NULL*/)
@@ -78,7 +78,7 @@ BEGIN_MESSAGE_MAP(CCalcDlg, CDialog)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	//}}AFX_MSG_MAP
-	ON_EN_CHANGE(IDC_EDIT_INPUT, &CCalcDlg::OnEnChangeEditInput)
+	ON_EN_CHANGE(IDC_EDIT_INPUT, OnEnChangeEditInput)
 END_MESSAGE_MAP()
 
 

@@ -7,13 +7,15 @@
 #define VC_EXTRALEAN
 #endif
 
+// https://learn.microsoft.com/en-us/cpp/atl/reference/compiler-options-macros?view=msvc-170#_atl_free_threaded
+
 #define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS
 
-#define _ATL_ENABLE_PTM_WARNING
+#define _ATL_ALL_WARNINGS
 
 #define _AFX_ALL_WARNINGS
 
-//#define _ATL_SINGLE_THREADED
+#define _ATL_SINGLE_THREADED
 
 #define _ATL_NO_COM_SUPPORT
 

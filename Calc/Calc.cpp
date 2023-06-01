@@ -25,7 +25,7 @@
 #include "CalcDlg.h"
 
 BEGIN_MESSAGE_MAP(CCalcApp, CWinAppEx)
-	ON_COMMAND(ID_HELP, &CWinApp::OnHelp)
+	ON_COMMAND(ID_HELP, OnHelp)
 END_MESSAGE_MAP()
 
 CCalcApp::CCalcApp() noexcept
