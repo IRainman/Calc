@@ -29,15 +29,12 @@ struct Token {
     Type type;
 
     // Text of the token.
-    std::string_view span;
+    std::string_view text;
 
     // If token is a number, this is the parsed value of it.
-    [[deprecated("architectural error")]]
     long double val;
 };
 
-[[deprecated("it's issue_manager artefact")]]
 std::ostream& operator<<(std::ostream& os, const Token::Type token);
 
-[[deprecated("it's issue_manager artefact")]]
 std::ostream& operator<<(std::ostream& os, const Token& token);

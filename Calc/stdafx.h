@@ -46,3 +46,5 @@
 #include <functional>
 #include <span>
 #include <sstream>
+#include <array>
+#include <ranges>

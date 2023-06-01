@@ -1,4 +1,4 @@
-// This is an independent project of an individual developer. Dear PVS-Studio, please check it.
+﻿// This is an independent project of an individual developer. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 //
@@ -12,60 +12,141 @@
 
 #include "parser.h"
 
-#define _USE_MATH_DEFINES
-#include <math.h>
-
 namespace {
+    using Value = long double;
 
-    using Fn = std::function<long double(IssueManager&, Token functionName, std::span<const long double>)>;
-
-    template<typename... Ts, size_t... Is>
-    Fn make_fn_impl(long double(* inner)(Ts...), std::index_sequence<Is...>) {
-        return [=](IssueManager& im, Token functionName, std::span<const long double> params) -> long double {
-            if (params.size() != sizeof...(Ts)) {
-                im.error(0) // lex.get_position()
-                    << "function "
-                    << functionName.span
-                    << " requires "
-                    << sizeof...(Ts)
-                    << " argument"
-                    << (sizeof...(Ts) == 1 ? "" : "s")
-                    << ", got "
-                    << params.size();
-                return NAN;
-            } else {
-                return inner(params[Is]...);
-            }
-        };
-    }
-
-    template<typename... Ts>
-    Fn make_fn(long double(* inner)(Ts...)) {
-        return make_fn_impl(inner, std::index_sequence_for<Ts...>{});
-    }
-}
-
-namespace {
-    const std::unordered_map<std::string_view, long double> CONSTANTS = {
-        {"pi", M_PI},
-        {"e",  M_E},
-        {"inf", INFINITY},
+    struct Fn {
+        Value(*fn)(std::span<Value>); //-V122
+        size_t n; //-V122
     };
 
-    long double min(IssueManager&, Token, std::span<const long double> args) { return *std::min_element(args.begin(), args.end()); }
-    long double max(IssueManager&, Token, std::span<const long double> args) { return *std::max_element(args.begin(), args.end()); }
-    constexpr long double rad(long double x) noexcept { return x * M_PI / 180; }
-    constexpr long double deg(long double x) noexcept { return x * 180 / M_PI; }
+    template <size_t I>
+    using WrappedFnImplArg = Value;
+    template <size_t... Is>
+    auto WrappedFnImpl(std::index_sequence<Is...>) -> Value(*)(WrappedFnImplArg<Is>...);
+    template <size_t N>
+    using WrappedFn = decltype(WrappedFnImpl(std::make_index_sequence<N>()));
+    template <typename Fn, size_t... Is>
+    Value call_fn(Fn fn, std::span<Value> params, std::index_sequence<Is...>) {
+        return fn(params[Is]...);
+    }
+    template<size_t N, WrappedFn<N> wrappedFn>
+    Value function_pointer_impl(std::span<Value> params) {
+        if (N == params.size()) {
+            return call_fn(wrappedFn, params, std::make_index_sequence<N>());
+        }
+        else {
+            //_im.error(pos_of_function_start) << "for function \"" << name << "\" expected " << n << " paramethersm, got " << params.size();
+            return NAN;
+        }
+        
+    }
+
+    template<size_t N, WrappedFn<N> wrappedFn>
+    constexpr Fn function_pointer() {
+        return { function_pointer_impl<N, wrappedFn>, N };
+    }
+
+    template <Value value>
+    Value constant_impl(std::span<Value>) {
+        return value;
+    }
+
+    template <Value value>
+    constexpr Fn constant() {
+        return { constant_impl<value> };
+    }
+
+    Value min(std::span<Value> params) {
+        return std::ranges::min(params);
+    }
+
+    Value max(std::span<Value> params) {
+        return std::ranges::max(params);
+    }
+
+    constexpr Value rad(Value x) noexcept { return x * std::numbers::pi_v<Value> / 180; }
+    constexpr Value deg(Value x) noexcept { return x * 180 / std::numbers::pi_v<Value>; }
+
+    constexpr auto FUNCTIONS_unlimited_params = std::numeric_limits<size_t>::max();
+    constexpr auto FUNCTIONS_is_constant = std::numeric_limits<size_t>::min();
 
     const std::unordered_map<std::string_view, Fn> FUNCTIONS = {
-        {"sin", make_fn(&std::sinl)},
-        {"cos", make_fn(&std::cosl)},
-        {"pow", make_fn(&std::powl)},
-        {"sqrt", make_fn(&std::sqrtl)},
-        {"min", Fn(min)},
-        {"max", Fn(max)},
-        {"rad", make_fn(rad)},
-        {"deg", make_fn(deg)},
+        //---------------------------------------------------------------------------
+        // TODO https://en.cppreference.com/w/cpp/numeric/constants
+        {"pi", constant<std::numbers::pi_v<Value>>()},// Pi, Archimedes' constant or Ludolph's number
+        {"e", constant<std::numbers::e_v<Value>>()},// Euler's number
+        {"phi", constant<std::numbers::phi_v<Value>>()},// Golden ratio
+        //---------------------------------------------------------------------------
+        // TODO additional constant
+        {"c", constant<299792458.0L>()},// Speed of light in vacuum (m·s-1)
+        {"G", constant<6.674286767676767676767676767676767676e-11L>()},// Newtonian constant of gravitation (m3·kg−1·s−2), this constant valid on Earths only ;)
+        {"J", constant<3.058198247456354132564564787888767L>()},// Constants of Gauss fild
+        {"atm", constant<101325.0L>()},// Standard atmosphere (Pa), this constant valid on Earths only ;)
+        {"L", constant<6.022141510101010101010101010101010101e23L>()},// Avogadro's number (mol−1)
+        {"R", constant<8.314472151515151515151515151515151515L>()},// Gas constant (J·K−1·mol−1)
+        {"h", constant<6.626068963333333333333333333333333333e-34L>()},// Planck constant (J·s)
+        //---------------------------------------------------------------------------
+        // TODO https://en.cppreference.com/w/cpp/numeric/math
+        // TODO https://en.cppreference.com/w/cpp/numeric/special_math
+        {"sin", function_pointer<1, std::sin>()},// sinus
+        {"cos", function_pointer<1, std::cos>()},// cosinus
+        {"tan", function_pointer<1, std::tan>()},// tangens
+        {"arccos", function_pointer<1, std::acos>()},// arccosinus
+        {"arcsin", function_pointer<1, std::asin>()},// arcsinus
+        {"arctan", function_pointer<1, std::atan>()},// arctangens
+
+        // TODO merge this into one function
+        {"hypot2", function_pointer<2, std::hypot>()},
+        {"hypot3", function_pointer<3, std::hypot>()},// https://en.cppreference.com/w/cpp/numeric/math/hypot
+
+        {"exp", function_pointer<1, std::exp>()},// exponent function, on x=1 return value is e
+
+        {"sh", function_pointer<1, std::sinh>()},// https://en.cppreference.com/w/cpp/numeric/math/sinh
+        {"ch", function_pointer<1, std::cosh>()},// https://en.cppreference.com/w/cpp/numeric/math/cosh
+        {"tanh", function_pointer<1, std::tanh>()},// https://en.cppreference.com/w/cpp/numeric/math/tanh
+        {"asinh", function_pointer<1, std::asinh>()},// https://en.cppreference.com/w/cpp/numeric/math/asinh
+        {"acosh", function_pointer<1, std::acosh>()},// https://en.cppreference.com/w/cpp/numeric/math/acosh
+        {"atanh", function_pointer<1, std::atanh>()},// https://en.cppreference.com/w/cpp/numeric/math/atanh
+        
+        // TODO merge this into one function
+        {"log", function_pointer<1, std::log>()},// natural logarithm
+        {"log10", function_pointer<1, std::log10>()},// base-10 logarithm
+        {"log2", function_pointer<1, std::log2>()},// https://en.cppreference.com/w/cpp/numeric/math/log2
+        {"log1p", function_pointer<1, std::log1p>()},// https://en.cppreference.com/w/cpp/numeric/math/log1p
+
+        // TODO merge this into one function
+        {"sqrt", function_pointer<1, std::sqrt>()},// square root https://en.cppreference.com/w/cpp/numeric/math/sqrt
+        {"cbrt", function_pointer<1, std::cbrt>()},// https://en.cppreference.com/w/cpp/numeric/math/cbrt
+        {"pow", function_pointer<2, std::pow>()},// power
+
+        {"rad", function_pointer<1, rad>()},// One radian is equivalent to 180/PI degrees.
+        {"deg", function_pointer<1, deg>()},
+
+        {"min", {min, FUNCTIONS_unlimited_params}},
+        {"max", {max, FUNCTIONS_unlimited_params}},
+
+        {"abs", function_pointer<1, abs>()},// https://en.cppreference.com/w/cpp/numeric/math/fabs
+
+        {"tgamma", function_pointer<1, tgamma>()}, // https://en.cppreference.com/w/cpp/numeric/math/tgamma
+        {"lgamma", function_pointer<1, lgamma>()}, // https://en.cppreference.com/w/cpp/numeric/math/lgamma
+
+        {"trunc", function_pointer<1, trunc>()}, // https://en.cppreference.com/w/cpp/numeric/math/trunc
+        {"round", function_pointer<1, round>()}, // https://en.cppreference.com/w/cpp/numeric/math/round
+
+        //ceil,
+        //fabs,
+        //floor,
+        //ldexp,
+        //modf,
+        //atan2,
+        //modf,
+        //fmod,
+        //frexp,
+        //gcd,// https://en.cppreference.com/w/cpp/numeric/gcd
+        //lcm,// https://en.cppreference.com/w/cpp/numeric/lcm
+        // 
+        //---------------------------------------------------------------------------
     };
 }
 
@@ -170,19 +251,12 @@ long double Parser::parse_expr_0() {
             }
         }
         case Token::Type::NUM: {
-            const auto num = _current; //-V836
+            const auto num = _current.val; //-V836
             advance();
-            return num.val;
+            return num;
         }
         case Token::Type::IDENT: {
-            const auto ident = _current; //-V836
-            advance();
-            if (_current.type == Token::Type::LPAREN) {
-                advance();
-                return process_function(ident, parse_function_params());
-            } else {
-                return process_const(ident);
-            }
+            return parse_function();
         }
         default:
             _im.error(_lex.get_position()) << "unexpected " << _current;
@@ -190,40 +264,44 @@ long double Parser::parse_expr_0() {
     }
 }
 
-std::vector<long double> Parser::parse_function_params() {
-    std::vector<long double> params;
-
-    while (true) {
-        params.push_back(parse_expr_4());
-
-        if (_current.type == Token::Type::RPAREN) {
-            advance();
-            break;
-        } else if (_current.type == Token::Type::COMA) {
-            advance();
-            continue;
+long double Parser::parse_function() {
+    const auto name = _current.text; //-V836
+    const auto pos_of_function_start = _lex.get_position();
+    advance();
+    if (const auto i = FUNCTIONS.find(name); i != FUNCTIONS.end()) {
+        const auto [fn, n] = i->second;
+        if (n == FUNCTIONS_is_constant) {
+            return fn({});
         } else {
-            _im.error(_lex.get_position()) << "expected closing paren or coma, got " << _current;
-            break;
+            if (_current.type == Token::Type::LPAREN) {
+                advance();
+
+                std::vector<long double> params;
+
+                while (true) {
+                    params.push_back(parse_expr_4());
+
+                    if (_current.type == Token::Type::RPAREN) {
+                        advance();
+                        break;
+                    }
+                    else if (_current.type == Token::Type::COMA) {
+                        advance();
+                        continue;
+                    }
+                    else {
+                        _im.error(_lex.get_position()) << "expected closing paren or coma, got " << _current;
+                        break;
+                    }
+                }
+                return fn(params);
+            } else {
+                _im.error(_lex.get_position()) << "expected opening paren, got " << _current;
+                return NAN;
+            }
         }
-    }
-    return params;
-}
-
-long double Parser::process_function(const Token& functionName, const std::vector<long double>& params) {
-    if (const auto function = FUNCTIONS.find(functionName.span); function != FUNCTIONS.end()) {
-        return function->second(_im, functionName, params);
     } else {
-        _im.error(_lex.get_position()) << "unknown function " << functionName.span;
-        return NAN;
-    }
-}
-
-long double Parser::process_const(const Token& constName) {
-    if (auto constant = CONSTANTS.find(constName.span); constant != CONSTANTS.end()) {
-        return constant->second;
-    } else {
-        _im.error(_lex.get_position()) << "unknown constant " << constName.span;
+        _im.error(pos_of_function_start) << "unknown function or constant " << name;
         return NAN;
     }
 }

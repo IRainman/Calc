@@ -27,11 +27,10 @@ class Parser {
      *
      * expr_0 = '(' expr_4 ')'
      *        | NUM
-     *        | ID
-     *        | ID '(' function_params
+     *        | ID function_params?
      *        ;
      *
-     * function_params = expr_4 ( ',' expr_4 )* ')'
+     * function_params = '(' expr_4 ( ',' expr_4 )* ')'
      *
      */
 
@@ -62,11 +61,7 @@ private:
 
     long double parse_expr_0();
 
-    std::vector<long double> parse_function_params();
-
-    long double process_function(const Token& functionName, const std::vector<long double>& params);
-
-    long double process_const(const Token& constName);
+    long double parse_function();
 
 private:
     IssueManager& _im;

@@ -47,6 +47,6 @@ std::ostream& operator<<(std::ostream& os, const Token& token) {
         case Token::Type::END:
             return os << "end of expresion";
         default:
-            return os << std::quoted(token.span);
+            return os << std::quoted(token.text);
     }
 }

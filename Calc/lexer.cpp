@@ -73,14 +73,14 @@ Token Lexer::emit_and_advance(Token::Type type, size_t n, long double val) {
 Token Lexer::read_number() {
     long double val;
     const auto res = std::from_chars(_view.data(), _view.data() + _view.size(), val);
-    const auto size = res.ptr - _view.data();
+    const auto n = res.ptr - _view.data();
 
     if (res.ec != std::errc{}) {
         _im.error(get_position()) << "unable to parse number";
         return emit(Token::Type::NUM, 0, NAN);
     }
 
-    return emit_and_advance(Token::Type::NUM, size, val);
+    return emit_and_advance(Token::Type::NUM, n, val);
 }
 
 Token Lexer::read_ident() {

@@ -27,7 +27,7 @@ struct Issue {
         ERR,
 
         // Informational messages and comments to previous issues.
-        INF,
+        INFO,
 
         // Warnings that don't stop processing.
         WARN,
@@ -70,17 +70,17 @@ public:
     std::ostringstream& error(size_t pos);
 
     /**
-     * Indicate whether any errors have been reported so far.
+     * Indicate whether any messages have been reported so far.
      */
     bool has_errors() const noexcept {
         return _has_errors;
     }
 
     /**
-     * Return reference to the vector of all errors have been reported so far.
+     * Return reference to the vector of all messages have been reported so far.
      */
-    std::span<const Issue> errors() const {
-        return _errors;
+    const auto& messages() const {
+        return _messages;
     }
 
     /**
@@ -90,7 +90,7 @@ public:
 
 private:
     bool _has_errors = false;
-    std::vector<Issue> _errors;
+    std::vector<Issue> _messages;
 };
 
 std::ostream& operator<<(std::ostream& os, const Issue::Severity severity);

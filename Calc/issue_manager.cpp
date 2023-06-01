@@ -14,8 +14,8 @@
 
 std::ostringstream& IssueManager::report(Issue&& issue) {
     _has_errors |= issue.severity == Issue::Severity::ERR;
-    _errors.emplace_back(std::move(issue));
-    return _errors.back().message;
+    _messages.emplace_back(std::move(issue));
+    return _messages.back().message;
 }
 
 std::ostringstream& IssueManager::report(Issue::Severity severity, size_t pos) {
@@ -23,7 +23,7 @@ std::ostringstream& IssueManager::report(Issue::Severity severity, size_t pos) {
 }
 
 std::ostringstream& IssueManager::info(size_t pos) {
-    return report(Issue::Severity::INF, pos);
+    return report(Issue::Severity::INFO, pos);
 }
 
 std::ostringstream& IssueManager::warning(size_t pos) {
@@ -36,7 +36,7 @@ std::ostringstream& IssueManager::error(size_t pos) {
 
 std::ostream& operator<<(std::ostream& os, const Issue::Severity severity) {
     switch (severity) {
-        case Issue::Severity::INF:
+        case Issue::Severity::INFO:
             return os << "Info";
         case Issue::Severity::WARN:
             return os << "Warning";
@@ -51,16 +51,16 @@ std::ostream& operator<<(std::ostream& os, const Issue& issue) {
     return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const std::span<const Issue>& errors) {
+std::ostream& operator<<(std::ostream& os, const std::span<const Issue>& messages) {
     os << "Completed with " //-V128
-       << errors.size()
+       << messages.size()
        << " message"
-       << (errors.size() == 1 ? "" : "s")
-       << (errors.empty() ? "." : ":")
+       << (messages.size() == 1 ? "" : "s")
+       << (messages.empty() ? "." : ":")
        << "\n";
 
-    for (auto& error: errors) {
-        os << "  " << error << "\n";
+    for (auto& message: messages) {
+        os << "  " << message << "\n";
     }
 
     return os;
@@ -70,14 +70,14 @@ const std::string& IssueManager::to_string() const {
     static std::string out;
     out.clear();
     out += "Completed with "
-        + std::to_string(errors().size())
+        + std::to_string(messages().size())
         + " message"
-        + (errors().size() == 1 ? "" : "s")
-        + (errors().empty() ? "." : ":")
+        + (messages().size() == 1 ? "" : "s")
+        + (messages().empty() ? "." : ":")
         + "\n";
 
-    for (auto& error : errors()) {
-        out += "  " + error.message.str() + "\n";
+    for (auto& message : messages()) {
+        out += "  " + message.message.str() + "\n";
     }
 
     return out;
