@@ -80,7 +80,7 @@ auto calc_tests()
 	
 	for (auto& t : tests)
 	{
-		const std::string message = Calculate(t.first, result);
+		const auto& message = Calculate(t.first, result);
 		if (result != t.second)
 		{
 			output += "Test failed: " + t.first + " = " + t.second + " != " + result + ". " + message + "\r\n";
