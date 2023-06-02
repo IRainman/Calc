@@ -33,6 +33,8 @@ auto calc_tests()
 		{"2 + (", "nan"},
 		{"e(", "nan"},
 		{"1(", "nan"},
+		{"sin(0 ", "nan"},
+
 		
 		{"1.4e-3", "0.0014"},
 
@@ -68,27 +70,25 @@ auto calc_tests()
 		{"min(1, 2, 3)", "1"},
 		{"max(1, 2, 3)", "3"},
 		
-		//{"pi * sqrt(163)", "40.10916999113252"},
+		{"pi * sqrt(163)", "40.10916999113252"},
 		//{"640320 ^ 3 + 744", "262537412640768744"},
 		//{"e ^ (pi * sqrt(163))", "262537412640768744"},
 	};
 
-	std::string result, output;
+	std::string result;
+	std::string output;
 	
-	try
+	for (auto& t : tests)
 	{
-		for (auto& t : tests)
+		const std::string message = Calculate(t.first, result);
+		if (result != t.second)
 		{
-			Calculate(t.first, result);
-			if (result != t.second)
-			{
-				output += "Test failed: " + t.first + " = " + t.second + " != " + result + "                    ";
-			}
+			output += "Test failed: " + t.first + " = " + t.second + " != " + result + ". " + message + "\r\n";
 		}
 	}
-	catch (const std::exception& e)
+	if (output.empty())
 	{
-		output += "Test failed: " + std::string(e.what()) + "                    ";
+		output += "Tests passed!";
 	}
 	return output;
 }
