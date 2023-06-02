@@ -23,10 +23,12 @@
 //---------------------------------------------------------------------------
 #include "Flags.h"
 #include "Calculator.h"
+#ifndef CALC_VER2
 #include "Function.h"
 #include "Message.h"
 #include "Linear.h"
 #include "Constant.h"
+#endif
 
 //---------------------------------------------------------------------------
 
@@ -294,13 +296,15 @@ void ValidateInputString(const string& p_input_str)
 
 #include "lexer.h"
 #include "parser.h"
-const std::string& Calculate(const std::string_view p_input, std::string& p_output)
+#include "issue_manager.h"
+#include "MyTypes.h"
+
+const std::string& Calculate(const std::string_view input, std::string& output)
 {
-	IssueManager im;
-	Lexer l{ p_input, im };
-	Parser p{ im, l };
-	print_value(p_output, p.parse());
-	return im.to_string();
+	Lexer l{ input };
+	Parser p{ l };
+	print_value(output, p.parse());
+	return IssueManager::get_instance().create_summary_and_clear();
 }
 #else CALC_VER2
 const string& Calculate(string p_input, string& p_output)

@@ -10,68 +10,61 @@
 
 #include "stdafx.h"
 
+#include "issue_manager.h"
 #include "parser.h"
 
 namespace {
     using Value = long double;
 
     struct Fn {
-        Value(*fn)(std::span<Value>); //-V122
-        size_t n; //-V122
+        Value(*fn)(std::span<const Value>); //-V122
+        const size_t n; //-V122
     };
 
-    template <size_t I>
+    template <const size_t I>
     using WrappedFnImplArg = Value;
-    template <size_t... Is>
-    auto WrappedFnImpl(std::index_sequence<Is...>) -> Value(*)(WrappedFnImplArg<Is>...);
-    template <size_t N>
+    template <const size_t... Is>
+    auto WrappedFnImpl(std::index_sequence<Is...>) noexcept -> Value(*)(WrappedFnImplArg<Is>...);
+    template <const size_t N>
     using WrappedFn = decltype(WrappedFnImpl(std::make_index_sequence<N>()));
-    template <typename Fn, size_t... Is>
-    Value call_fn(Fn fn, std::span<Value> params, std::index_sequence<Is...>) {
+    template <typename Fn, const size_t... Is>
+    Value call_fn(Fn fn, std::span<const Value>& params, std::index_sequence<Is...>) noexcept {
         return fn(params[Is]...);
     }
-    template<size_t N, WrappedFn<N> wrappedFn>
-    Value function_pointer_impl(std::span<Value> params) {
-        if (N == params.size()) {
+    template<const size_t N, WrappedFn<N> wrappedFn>
+    Value function_pointer_impl(std::span<const Value> params) noexcept {
             return call_fn(wrappedFn, params, std::make_index_sequence<N>());
-        }
-        else {
-            //_im.error(pos_of_function_start) << "for function \"" << name << "\" expected " << n << " paramethersm, got " << params.size();
-            return NAN;
-        }
-        
     }
 
-    template<size_t N, WrappedFn<N> wrappedFn>
-    constexpr Fn function_pointer() {
+    template<const size_t N, WrappedFn<N> wrappedFn>
+    constexpr Fn function_pointer() noexcept {
         return { function_pointer_impl<N, wrappedFn>, N };
     }
 
-    template <Value value>
-    Value constant_impl(std::span<Value>) {
+    template <const Value value>
+    Value constant_impl(std::span<const Value>) noexcept {
         return value;
     }
 
-    template <Value value>
-    constexpr Fn constant() {
+    template <const Value value>
+    constexpr Fn constant() noexcept {
         return { constant_impl<value> };
     }
 
-    Value min(std::span<Value> params) {
+    constexpr Value min(std::span<const Value> params) noexcept {
         return std::ranges::min(params);
     }
 
-    Value max(std::span<Value> params) {
+    constexpr Value max(std::span<const Value> params) noexcept {
         return std::ranges::max(params);
     }
 
-    constexpr Value rad(Value x) noexcept { return x * std::numbers::pi_v<Value> / 180; }
-    constexpr Value deg(Value x) noexcept { return x * 180 / std::numbers::pi_v<Value>; }
+    constexpr Value rad(const Value x) noexcept { return x * std::numbers::pi_v<Value> / 180; }
+    constexpr Value deg(const Value x) noexcept { return x * 180 / std::numbers::pi_v<Value>; }
 
-    constexpr auto FUNCTIONS_unlimited_params = std::numeric_limits<size_t>::max();
-    constexpr auto FUNCTIONS_is_constant = std::numeric_limits<size_t>::min();
+    constexpr auto IDENTIFIERS_unlimited_params = std::numeric_limits<size_t>::max();
 
-    const std::unordered_map<std::string_view, Fn> FUNCTIONS = {
+    const std::unordered_map<std::string_view, Fn> IDENTIFIERS = {
         //---------------------------------------------------------------------------
         // TODO https://en.cppreference.com/w/cpp/numeric/constants
         {"pi", constant<std::numbers::pi_v<Value>>()},// Pi, Archimedes' constant or Ludolph's number
@@ -123,8 +116,8 @@ namespace {
         {"rad", function_pointer<1, rad>()},// One radian is equivalent to 180/PI degrees.
         {"deg", function_pointer<1, deg>()},
 
-        {"min", {min, FUNCTIONS_unlimited_params}},
-        {"max", {max, FUNCTIONS_unlimited_params}},
+        {"min", {min, IDENTIFIERS_unlimited_params}},
+        {"max", {max, IDENTIFIERS_unlimited_params}},
 
         {"abs", function_pointer<1, abs>()},// https://en.cppreference.com/w/cpp/numeric/math/fabs
 
@@ -153,7 +146,9 @@ namespace {
 [[nodiscard]] long double Parser::parse() {
     const auto result = parse_expr_4();
     if (_current.type != Token::Type::END) {
-        _im.error(_lex.get_position()) << "extraneous input at the end of expression: " << _current;
+        IssueManager::get_instance().report_error(_lex.get_position(), std::format("extraneous input at the end of expression: {}" , _current.text));
+        return NAN;
+    } else if (IssueManager::get_instance().has_errors()) {
         return NAN;
     } else {
         return result;
@@ -246,62 +241,66 @@ long double Parser::parse_expr_0() {
                 advance();
                 return result;
             } else {
-                _im.error(_lex.get_position()) << "expected closing paren, got " << _current;
+                IssueManager::get_instance().report_error(_lex.get_position(), std::format("expected closing paren, got {}", _current.text));
                 return NAN;
             }
         }
         case Token::Type::NUM: {
-            const auto num = _current.val; //-V836
+            const auto num = _current.val;
             advance();
             return num;
         }
         case Token::Type::IDENT: {
-            return parse_function();
+            return parse_function_or_constant();
         }
         default:
-            _im.error(_lex.get_position()) << "unexpected " << _current;
+            IssueManager::get_instance().report_error(_lex.get_position(), std::format("unexpected {}", _current.text));
             return NAN;
     }
 }
 
-long double Parser::parse_function() {
+long double Parser::parse_function_or_constant() {
     const auto name = _current.text; //-V836
-    const auto pos_of_function_start = _lex.get_position();
+    const auto pos_of_ident_start = _lex.get_position();
     advance();
-    if (const auto i = FUNCTIONS.find(name); i != FUNCTIONS.end()) {
-        const auto [fn, n] = i->second;
-        if (n == FUNCTIONS_is_constant) {
-            return fn({});
-        } else {
-            if (_current.type == Token::Type::LPAREN) {
-                advance();
+    if (_current.type == Token::Type::LPAREN) {
+        advance();
+        if (const auto i = IDENTIFIERS.find(name); i != IDENTIFIERS.end()) {
+            const auto [function, N] = i->second;
 
-                std::vector<long double> params;
+            std::vector<long double> params;
 
-                while (true) {
-                    params.push_back(parse_expr_4());
+            while (true) {
+                params.push_back(parse_expr_4());
 
-                    if (_current.type == Token::Type::RPAREN) {
-                        advance();
-                        break;
-                    }
-                    else if (_current.type == Token::Type::COMA) {
-                        advance();
-                        continue;
-                    }
-                    else {
-                        _im.error(_lex.get_position()) << "expected closing paren or coma, got " << _current;
-                        break;
-                    }
+                if (_current.type == Token::Type::RPAREN) {
+                    advance();
+                    break;
+                } else if (_current.type == Token::Type::COMA) {
+                    advance();
+                    continue;
+                } else {
+                    IssueManager::get_instance().report_error(_lex.get_position(), std::format("expected closing paren or coma, got {}", _current.text));
+                    params.clear();
+                    break;
                 }
-                return fn(params);
+            }
+            if (N == IDENTIFIERS_unlimited_params || N == params.size()) {
+                return function(params);
             } else {
-                _im.error(_lex.get_position()) << "expected opening paren, got " << _current;
+                IssueManager::get_instance().report_error(pos_of_ident_start, std::format("for function {} expected {} paramethers, got {}", name, N, params.size()));
                 return NAN;
             }
+        } else {
+            IssueManager::get_instance().report_error(pos_of_ident_start, std::format("unknown function {}", name));
+            return NAN;
         }
     } else {
-        _im.error(pos_of_function_start) << "unknown function or constant " << name;
-        return NAN;
+        if (const auto i = IDENTIFIERS.find(name); i != IDENTIFIERS.end()) {
+            return i->second.fn({});
+        } else {
+            IssueManager::get_instance().report_error(pos_of_ident_start, std::format("unknown constant {}", name));
+            return NAN;
+        }
     }
 }

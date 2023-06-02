@@ -17,10 +17,16 @@
  */
 
 #pragma once
+
+#include "Flags.h"
 // Deprecated
 //#ifdef _WIN32
 //#include "CalculatorWideAdapter.h"
 //#endif
 //---------------------------------------------------------------------------
+#ifdef CALC_VER2
 const std::string& Calculate(const std::string_view p_input, std::string& p_output);
+#else
+const std::string& Calculate(std::string p_input, std::string& p_output);
+#endif
 //---------------------------------------------------------------------------

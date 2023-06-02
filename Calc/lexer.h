@@ -14,8 +14,8 @@
 
 class Lexer {
 public:
-    Lexer(const std::string_view data, IssueManager& im) noexcept
-        : _data{data}, _view{_data}, _im{im} {
+    Lexer(const std::string_view data) noexcept
+        : _data{data}, _view{_data} {
     }
 
 public:
@@ -56,8 +56,6 @@ private:
     Token read_ident();
 
 private:
-    IssueManager& _im;
-
     const std::string_view _data;
     std::string_view _view;
 };

@@ -13,7 +13,7 @@
 
 class Parser {
     /*
-     * This a recursive descent parser with the following grammar:
+     * This is a recursive descent parser with the following grammar:
      *
      * expr   = expr_4 <END>
      *
@@ -27,15 +27,17 @@ class Parser {
      *
      * expr_0 = '(' expr_4 ')'
      *        | NUM
-     *        | ID function_params?
+     *        | function_or_constant
      *        ;
+     * 
+     * function_or_constant = IDENT ( '(' function_params )?
      *
-     * function_params = '(' expr_4 ( ',' expr_4 )* ')'
+     * function_params = expr_4 ( ',' expr_4 )* ')'
      *
      */
 
 public:
-    Parser(IssueManager& im, Lexer& lex) : _im(im), _lex(lex) {
+    Parser(Lexer& lex) : _lex(lex) {
         advance();
     }
 
@@ -61,10 +63,11 @@ private:
 
     long double parse_expr_0();
 
-    long double parse_function();
+    long double parse_function_or_constant();
 
 private:
-    IssueManager& _im;
+    std::vector<long double> parse_function_params();
+
     Lexer& _lex;
     Token _current;
 };

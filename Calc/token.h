@@ -35,6 +35,10 @@ struct Token {
     long double val;
 };
 
+#if 0
+
 std::ostream& operator<<(std::ostream& os, const Token::Type token);
 
 std::ostream& operator<<(std::ostream& os, const Token& token);
+
+#endif

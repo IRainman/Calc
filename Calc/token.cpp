@@ -12,6 +12,8 @@
 
 #include "token.h"
 
+#if 0
+
 std::ostream& operator<<(std::ostream& os, const Token::Type token_type) {
     switch (token_type) {
         case Token::Type::END:
@@ -50,3 +52,5 @@ std::ostream& operator<<(std::ostream& os, const Token& token) {
             return os << std::quoted(token.text);
     }
 }
+
+#endif

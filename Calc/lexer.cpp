@@ -10,6 +10,7 @@
 
 #include "stdafx.h"
 
+#include "issue_manager.h"
 #include "lexer.h"
 
 Token Lexer::next() {
@@ -45,7 +46,7 @@ Token Lexer::next() {
                     advance(1);
                 }
                 else {
-                    _im.error(get_position()) << "unknown character \"" << cur << '\"';
+                    IssueManager::get_instance().report_error(get_position(), std::format("unknown character {}", cur));
                     return emit(Token::Type::END, 0);
                 }
         }
@@ -76,8 +77,8 @@ Token Lexer::read_number() {
     const auto n = res.ptr - _view.data();
 
     if (res.ec != std::errc{}) {
-        _im.error(get_position()) << "unable to parse number";
-        return emit(Token::Type::NUM, 0, NAN);
+        IssueManager::get_instance().report_error(get_position(), "unable to parse number");
+        return emit(Token::Type::END, 0);
     }
 
     return emit_and_advance(Token::Type::NUM, n, val);

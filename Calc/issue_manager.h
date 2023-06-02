@@ -9,37 +9,34 @@
 
 #include "Flags.h"
 
-#ifndef CALC_ISSUE_MANAGER_H
-#define CALC_ISSUE_MANAGER_H
-
 #include "token.h"
 
 /**
  * Represents a message from the compiler.
  */
-struct Issue {
+struct Message {
     /**
-     * How severe is this issue?
+     * How severe is this message?
      */
-    enum class Severity:int {
+    enum class Severity:unsigned int {
 
         // Errors that do stop processing.
         ERR,
 
-        // Informational messages and comments to previous issues.
-        INFO,
-
         // Warnings that don't stop processing.
         WARN,
+
+        // Information and comments.
+        INFO,
     };
 
-    // Message describing the issue.
-    std::ostringstream message;
+    // Message describing of the the message.
+    std::string text;
 
-    // Issue severity.
+    // Message severity.
     Severity severity;
 
-    // Position withing the line at which the issue has occurred.
+    // Position withing the context at which the issue has occurred.
     size_t pos; //-V122
 };
 
@@ -48,26 +45,28 @@ struct Issue {
  */
 class IssueManager {
 public:
+
+    static IssueManager& get_instance();
     /**
      * Report a new issue.
      */
-    std::ostringstream& report(Issue&& issue);
-    std::ostringstream& report(Issue::Severity severity, size_t pos);
+    void report(Message&& issue);
+    void report(Message::Severity severity, size_t pos, std::string&& text);
 
     /**
      * Report a new info message.
      */
-    std::ostringstream& info(size_t pos);
+    void report_info(size_t pos, std::string&& text);
 
     /**
      * Report a new warning.
      */
-    std::ostringstream& warning(size_t pos);
+    void report_warning(size_t pos, std::string&& text);
 
     /**
      * Report a new error.
      */
-    std::ostringstream& error(size_t pos);
+    void report_error(size_t pos, std::string&& text);
 
     /**
      * Indicate whether any messages have been reported so far.
@@ -79,22 +78,25 @@ public:
     /**
      * Return reference to the vector of all messages have been reported so far.
      */
-    const auto& messages() const {
+    const auto& messages() const noexcept {
         return _messages;
     }
 
     /**
-     * Return full report of expression processing.
+     * Return full report of expression processing and clear the manager queue.
      */
-    const std::string& to_string() const;
+    [[nodiscard]] const std::string& create_summary_and_clear();
+
+    /**
+     * Clear the manager.
+     */
+    void clear() noexcept {
+        _messages.clear();
+        _has_errors = false;
+    }
 
 private:
     bool _has_errors = false;
-    std::vector<Issue> _messages;
+    std::vector<Message> _messages;
+    std::string _summary;
 };
-
-std::ostream& operator<<(std::ostream& os, const Issue::Severity severity);
-std::ostream& operator<<(std::ostream& os, const Issue& issue);
-std::ostream& operator<<(std::ostream& os, const std::span<const Issue>& manager);
-
-#endif //CALC_ISSUE_MANAGER_H
