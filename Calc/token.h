@@ -9,30 +9,32 @@
 
 #include "Flags.h"
 
-struct Token {
-    enum class Type : unsigned int {
-        END = 0,
-        ADD,
-        SUB,
-        MUL,
-        DIV,
-        POW,
-        REM,
-        LPAREN,
-        RPAREN,
-        COMA,
-        NUM,
-        IDENT,
-    };
-
-    // Type of this token.
-    Type type;
-
-    // Text of the token.
-    std::string_view text;
-
-    // If token is a number, this is the parsed value of it.
-    long double val;
+struct Token
+{
+	enum class Type : unsigned int
+	{
+	    END = 0,
+	    ADD,
+	    SUB,
+	    MUL,
+	    DIV,
+	    POW,
+	    REM,
+	    LPAREN,
+	    RPAREN,
+	    COMA,
+	    NUM,
+	    IDENT,
+	};
+	
+	// Type of this token.
+	Type type;
+	
+	// Text of the token.
+	std::string_view text;
+	
+	// If token is a number, this is the parsed value of it.
+	long double val;
 };
 
 #if 0

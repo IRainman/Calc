@@ -14,43 +14,47 @@
 
 #if 0
 
-std::ostream& operator<<(std::ostream& os, const Token::Type token_type) {
-    switch (token_type) {
-        case Token::Type::END:
-            return os << "END";
-        case Token::Type::ADD:
-            return os << "ADD";
-        case Token::Type::SUB:
-            return os << "SUB";
-        case Token::Type::MUL:
-            return os << "MUL";
-        case Token::Type::DIV:
-            return os << "DIV";
-        case Token::Type::POW:
-            return os << "POW";
-        case Token::Type::REM:
-            return os << "REM";
-        case Token::Type::LPAREN:
-            return os << "LPAREN";
-        case Token::Type::RPAREN:
-            return os << "RPAREN";
-        case Token::Type::COMA:
-            return os << "COMA";
-        case Token::Type::NUM:
-            return os << "NUM";
-        case Token::Type::IDENT:
-            return os << "IDENT";
-    }
-    return os;
+std::ostream& operator<<(std::ostream& os, const Token::Type token_type)
+{
+	switch (token_type)
+	{
+		case Token::Type::END:
+			return os << "END";
+		case Token::Type::ADD:
+			return os << "ADD";
+		case Token::Type::SUB:
+			return os << "SUB";
+		case Token::Type::MUL:
+			return os << "MUL";
+		case Token::Type::DIV:
+			return os << "DIV";
+		case Token::Type::POW:
+			return os << "POW";
+		case Token::Type::REM:
+			return os << "REM";
+		case Token::Type::LPAREN:
+			return os << "LPAREN";
+		case Token::Type::RPAREN:
+			return os << "RPAREN";
+		case Token::Type::COMA:
+			return os << "COMA";
+		case Token::Type::NUM:
+			return os << "NUM";
+		case Token::Type::IDENT:
+			return os << "IDENT";
+	}
+	return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const Token& token) {
-    switch (token.type) {
-        case Token::Type::END:
-            return os << "end of expresion";
-        default:
-            return os << std::quoted(token.text);
-    }
+std::ostream& operator<<(std::ostream& os, const Token& token)
+{
+	switch (token.type)
+	{
+		case Token::Type::END:
+			return os << "end of expresion";
+		default:
+			return os << std::quoted(token.text);
+	}
 }
 
 #endif

@@ -107,7 +107,7 @@ BOOL CCalcDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);
 	
 	CheckDlgButton(IDC_CHECK_AUTO_CALCULATE, TRUE);
-
+	
 #ifdef CALC_TESTS_ENABLED
 	SetDlgItemText(IDC_EDIT_MESSAGE, calc_tests().data());
 #endif

@@ -315,7 +315,7 @@ const string& Calculate(string p_input, string& p_output)
 #endif
 	m_message_string.clear();
 	m_no_error = true;
-	
+
 	// Replace all spaces on this expression
 	{
 		string::size_type l_count = 0;
@@ -332,7 +332,7 @@ const string& Calculate(string p_input, string& p_output)
 		}
 		while (true);
 	}
-	
+
 #ifdef ENABLE_INPUT_VALIDATION
 	ValidateInputString(p_input);
 	if (m_no_error)
