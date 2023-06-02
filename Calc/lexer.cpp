@@ -77,8 +77,13 @@ Token Lexer::read_number() {
     const auto n = res.ptr - _view.data();
 
     if (res.ec != std::errc{}) {
+        // result_out_of_range
+        // value_too_large
         IssueManager::get_instance().report_error(get_position(), "unable to parse number");
         return emit(Token::Type::END, 0);
+    }
+    if (n > std::numeric_limits<long double>::digits10) {
+        IssueManager::get_instance().report_warning(get_position(), std::format("the number has too many digits {} the maximum supported {}, the calculation can be performed with an error", n, std::numeric_limits<long double>::digits10));
     }
 
     return emit_and_advance(Token::Type::NUM, n, val);

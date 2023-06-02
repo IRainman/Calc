@@ -48,7 +48,7 @@ namespace {
 
     template <const Value value>
     constexpr Fn constant() noexcept {
-        return { constant_impl<value> };
+        return { constant_impl<value>, 0 };
     }
 
     constexpr Value min(std::span<const Value> params) noexcept {
@@ -267,6 +267,10 @@ long double Parser::parse_function_or_constant() {
         advance();
         if (const auto i = IDENTIFIERS.find(name); i != IDENTIFIERS.end()) {
             const auto [function, N] = i->second;
+            if (!N) {
+                IssueManager::get_instance().report_error(_lex.get_position(), std::format("identifier {} is a constant, not a function", name));
+                return NAN;
+            }
 
             std::vector<long double> params;
 
@@ -281,8 +285,7 @@ long double Parser::parse_function_or_constant() {
                     continue;
                 } else {
                     IssueManager::get_instance().report_error(_lex.get_position(), std::format("expected closing paren or coma, got {}", _current.text));
-                    params.clear();
-                    break;
+                    return NAN;
                 }
             }
             if (N == IDENTIFIERS_unlimited_params || N == params.size()) {
@@ -297,7 +300,13 @@ long double Parser::parse_function_or_constant() {
         }
     } else {
         if (const auto i = IDENTIFIERS.find(name); i != IDENTIFIERS.end()) {
-            return i->second.fn({});
+            const auto [constant, N] = i->second;
+            if (!N) {
+                return constant({});
+            } else {
+                IssueManager::get_instance().report_error(pos_of_ident_start, std::format("function needs paramethers {}", name));
+                return NAN;
+            }
         } else {
             IssueManager::get_instance().report_error(pos_of_ident_start, std::format("unknown constant {}", name));
             return NAN;

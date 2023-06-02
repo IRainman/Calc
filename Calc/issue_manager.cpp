@@ -49,7 +49,7 @@ void IssueManager::report_error(size_t pos, std::string&& text) {
         + "\r\n";
 
     for (auto& message : _messages) {
-        _summary += ' ' + std::move(message.text) + "\r\n";
+        _summary += "In position " + std::to_string(message.pos) + ": " + std::move(message.text) + "\r\n";
     }
     clear();
 
