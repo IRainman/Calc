@@ -116,7 +116,7 @@ constexpr Value hypot(std::span<const Value> params) noexcept
 
 constexpr Value log(Value x) noexcept
 {
-	if (x-- < 1)
+	if (1 < x && x < 2)
 	{
 		return std::log1p(--x);
 	}
@@ -366,7 +366,15 @@ long double Parser::parse_function_or_constant()
 					if (_current.type == Token::Type::RPAREN)
 					{
 						advance();
-						break;
+						if (check.params_count_is_valid(params.size()))
+						{
+							return function(params);
+						}
+						else
+						{
+							IssueManager::get_instance().report_error(pos_of_ident_start, std::format("for function {} expected minimum {} and maximum {} paramethers, got {}", name, check.min, check.max, params.size()));
+							return NAN;
+						}
 					}
 					else if (_current.type == Token::Type::COMA)
 					{
@@ -378,15 +386,6 @@ long double Parser::parse_function_or_constant()
 						IssueManager::get_instance().report_error(_lex.get_position(), std::format("expected closing paren or coma, got {}", _current.text));
 						return NAN;
 					}
-				}
-				if (check.params_count_is_valid(params.size()))
-				{
-					return function(params);
-				}
-				else
-				{
-					IssueManager::get_instance().report_error(pos_of_ident_start, std::format("for function {} expected minimum {} and maximum {} paramethers, got {}", name, check.min, check.max, params.size()));
-					return NAN;
 				}
 			}
 			else
