@@ -33,9 +33,6 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Modules</Filter>
     </ClCompile>
-    <ClCompile Include="CalculatorWideAdapter.cpp">
-      <Filter>Modules</Filter>
-    </ClCompile>
     <ClCompile Include="Linear.cpp">
       <Filter>Modules</Filter>
     </ClCompile>
@@ -84,9 +81,6 @@
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="targetver.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="CalculatorWideAdapter.h">
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="Linear.h">

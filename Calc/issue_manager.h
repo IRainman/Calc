@@ -1,8 +1,7 @@
 //
-// Created by Tamika Nomara on 28.05.2023.
+// Prototype writed by Tamika Nomara on 28.05.2023.
 //
-//
-// Manteined by Elle Solomina since 29.05.2023.
+// Full version implemented by Elle Solomina and maintained since 29.05.2023.
 //
 
 #pragma once
@@ -21,7 +20,6 @@ struct Message
 	 */
 	enum class Severity: unsigned int
 	{
-	
 	    // Errors that do stop processing.
 	    ERR,
 	    

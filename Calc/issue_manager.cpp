@@ -2,10 +2,9 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 //
-// Created by Tamika Nomara on 28.05.2023.
+// Prototype writed by Tamika Nomara on 28.05.2023.
 //
-//
-// Manteined by Elle Solomina since 29.05.2023.
+// Full version implemented by Elle Solomina and maintained since 29.05.2023.
 //
 
 #include "stdafx.h"
