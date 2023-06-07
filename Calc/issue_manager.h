@@ -49,7 +49,7 @@ class IssueManager
 {
 	public:
 	
-		static IssueManager& get_instance();
+		static IssueManager& get_instance() noexcept;
 		
 		/**
 		 * Report a new issue.
@@ -91,6 +91,7 @@ class IssueManager
 		/**
 		 * Return full report of expression processing and clear the manager queue.
 		 */
+		[[deprecated("needs to move from here to another new class, like formatter, or something like this")]]
 		[[nodiscard]] const std::string& create_summary_and_clear();
 		
 		/**

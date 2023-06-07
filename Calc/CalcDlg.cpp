@@ -28,13 +28,13 @@
 class CAboutDlg : public CDialog
 {
 	public:
-		CAboutDlg();
+		CAboutDlg() noexcept;
 		
 		enum { IDD = IDD_ABOUTBOX };
 		
 	protected:
-		virtual BOOL OnInitDialog();
-		virtual void DoDataExchange(CDataExchange* pDX);
+		virtual BOOL OnInitDialog() override;
+		virtual void DoDataExchange(CDataExchange* pDX) override;
 		
 	protected:
 		DECLARE_MESSAGE_MAP()
@@ -49,7 +49,7 @@ BOOL CAboutDlg::OnInitDialog()
 	return TRUE;
 }
 
-CAboutDlg::CAboutDlg() : CDialog(CAboutDlg::IDD)
+CAboutDlg::CAboutDlg() noexcept : CDialog(CAboutDlg::IDD)
 {
 }
 
@@ -62,7 +62,7 @@ BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
 	ON_BN_CLICKED(ID_SITE, OnBnClickedSite)
 END_MESSAGE_MAP()
 
-CCalcDlg::CCalcDlg(CWnd* pParent /*=NULL*/)
+CCalcDlg::CCalcDlg(CWnd* pParent /*=nullptr*/) noexcept
 	: CDialog(CCalcDlg::IDD, pParent)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
@@ -150,7 +150,7 @@ void CCalcDlg::OnEnChangeEditInput()
 		if ((IsDlgButtonChecked(IDC_CHECK_AUTO_CALCULATE) == BST_CHECKED))
 		{
 calculate_function_call:
-			auto& l_message = Calculate(m_input, m_result);
+			const auto& l_message = Calculate(m_input, m_result);
 			SetDlgItemText(IDC_EDIT_MESSAGE, l_message.data());
 			SetDlgItemText(IDC_EDIT_RESULT, m_result.data());
 		}

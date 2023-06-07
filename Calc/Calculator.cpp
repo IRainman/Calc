@@ -306,7 +306,7 @@ const std::string& Calculate(const std::string_view input, std::string& output)
 	print_value(output, p.parse());
 	return IssueManager::get_instance().create_summary_and_clear();
 }
-#else CALC_VER2
+#else
 const string& Calculate(string p_input, string& p_output)
 {
 	m_correct_count = 0;

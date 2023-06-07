@@ -39,8 +39,10 @@ struct Token
 
 #if 0
 
+[[deprecated("needs to move from here to another new class, like formatter, or something like this")]]
 std::ostream& operator<<(std::ostream& os, const Token::Type token);
 
+[[deprecated("needs to move from here to another new class, like formatter, or something like this")]]
 std::ostream& operator<<(std::ostream& os, const Token& token);
 
 #endif

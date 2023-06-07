@@ -14,7 +14,7 @@
 
 static IssueManager im;
 
-IssueManager& IssueManager::get_instance()
+IssueManager& IssueManager::get_instance() noexcept
 {
 	return im;
 }
@@ -44,6 +44,7 @@ void IssueManager::report_error(size_t pos, std::string&& text)
 	report(Message::Severity::ERR, pos, std::move(text));
 }
 
+[[deprecated("needs to move from here to another new class, like formatter, or something like this")]]
 [[nodiscard]] const std::string& IssueManager::create_summary_and_clear()
 {
 	_summary.clear();
@@ -54,7 +55,7 @@ void IssueManager::report_error(size_t pos, std::string&& text)
 	            + (_messages.empty() ? "." : ":")
 	            + "\r\n";
 	            
-for (auto& message : _messages)
+	for (auto& message : _messages)
 	{
 		_summary += "In position " + std::to_string(message.pos) + ": " + std::move(message.text) + "\r\n";
 	}
@@ -65,6 +66,7 @@ for (auto& message : _messages)
 
 #if 0
 
+[[deprecated("needs to move from here to another new class, like formatter, or something like this")]]
 std::ostream& operator<<(std::ostream& os, const Issue::Severity severity)
 {
 	switch (severity)
@@ -79,6 +81,7 @@ std::ostream& operator<<(std::ostream& os, const Issue::Severity severity)
 	__assume(false); // C++23 unreachable();
 }
 
+[[deprecated("needs to move from here to another new class, like formatter, or something like this")]]
 std::ostream& operator<<(std::ostream& os, const Issue& issue)
 {
 	os << issue.severity << " at pos:" << issue.pos << ": " << issue.message.str(); //-V128

@@ -21,7 +21,7 @@
 class CCalcDlg : public CDialog
 {
 	public:
-		CCalcDlg(CWnd* pParent = NULL);
+		CCalcDlg(CWnd* pParent = nullptr) noexcept;
 		
 		enum { IDD = IDD_CALC_DIALOG };
 		
