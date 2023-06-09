@@ -277,20 +277,7 @@ void ValidateInputString(const string& p_input_str)
 }
 #endif
 //---------------------------------------------------------------------------
-#ifdef CALC_VER2
-
-#include "lexer.h"
-#include "parser.h"
-#include "formatter.h"
-
-const std::string& Calculate(const std::string_view input, std::string& output)
-{
-	Lexer l{ input };
-	Parser p{ l };
-	print_value(output, p.parse());
-	return Formatter::get_instance().create_summary_and_clear_issue_manager();
-}
-#else
+#ifndef CALC_VER2
 const string& Calculate(string p_input, string& p_output)
 {
 	m_correct_count = 0;

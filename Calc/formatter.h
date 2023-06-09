@@ -4,8 +4,9 @@
 
 #pragma once
 
+// TODO use std::format
 template<typename S, typename V>
-inline constexpr S& print_value(S& p_str, const V p_val)
+inline constexpr S& format_output_value(S& p_str, const V p_val)
 {
 	// TODO concepts
 	p_str.resize(32); // TODO fix magic number... with what?
@@ -13,20 +14,16 @@ inline constexpr S& print_value(S& p_str, const V p_val)
 	return p_str;
 }
 
-class Formatter
+template <typename... Args>
+[[nodiscard]] std::string test_print(std::format_string<Args&&...> fmt, Args&&... args) {
+	return std::format(fmt, args...);
+}
+
+namespace Formatter
 {
-	public:
-		/**
-		 * Return the link to the static instance.
-		 */
-		static Formatter& get_instance() noexcept;
-
-		/**
-		 * Return full report of expression processing and clear the issue manager queue.
-		 */
-		[[nodiscard]] const std::string& create_summary_and_clear_issue_manager();
-
-	private:
-		std::string _summary;
+	/**
+	 * Return full report of expression processing and clear the issue manager queue.
+	 */
+	[[nodiscard]] std::string create_summary();
 };
 

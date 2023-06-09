@@ -8,7 +8,9 @@
 #include "stdafx.h"
 #include "Calc.h"
 #include "CalcDlg.h"
-#include "Calculator.h"
+#include "lexer.h"
+#include "parser.h"
+#include "formatter.h"
 #include "tests.h"
 
 class CAboutDlg : public CDialog
@@ -121,30 +123,37 @@ inline HCURSOR CCalcDlg::OnQueryDragIcon() noexcept
 
 void CCalcDlg::OnEnChangeEditInput()
 {
-	m_input.resize(c_max_edit_input_size);
-	const auto l_count = GetDlgItemText(IDC_EDIT_INPUT, m_input.data(), c_max_edit_input_size);
+	constexpr std::string::size_type c_max_edit_input_size = 4096;
+	std::string l_input;
+	l_input.resize(c_max_edit_input_size);
+	const auto l_count = GetDlgItemText(IDC_EDIT_INPUT, l_input.data(), c_max_edit_input_size);
 	if (l_count > 0)
 	{
-		m_input.resize(l_count); //-V106
+		l_input.resize(l_count); //-V106
 		
 		if (IsDlgButtonChecked(IDC_CHECK_AUTO_CALCULATE) == BST_UNCHECKED &&
-		        m_input.size() > 1 && m_input[m_input.size() - 1] == '=')
+		        l_input.size() > 1 && l_input[l_input.size() - 1] == '=')
 		{
-			m_input.erase(m_input.size() - 1);
+			l_input.erase(l_input.size() - 1);
 			goto calculate_function_call;
 		}
 		if ((IsDlgButtonChecked(IDC_CHECK_AUTO_CALCULATE) == BST_CHECKED))
 		{
-calculate_function_call:
-			const auto& l_message = Calculate(m_input, m_result);
-			SetDlgItemText(IDC_EDIT_MESSAGE, l_message.data());
-			SetDlgItemText(IDC_EDIT_RESULT, m_result.data());
+		calculate_function_call:
+
+			std::string l_result;
+			Lexer l{ l_input };
+			Parser p{ l };
+			format_output_value(l_result, p.parse());
+			SetDlgItemText(IDC_EDIT_RESULT, l_result.data());
+			SetDlgItemText(IDC_EDIT_MESSAGE, Formatter::create_summary().data());
+			IssueManager::get_instance().clear();
 		}
 	}
 	else
 	{
-		SetDlgItemText(IDC_EDIT_MESSAGE, "");
 		SetDlgItemText(IDC_EDIT_RESULT, "");
+		SetDlgItemText(IDC_EDIT_MESSAGE, "");
 	}
 }
 

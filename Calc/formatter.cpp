@@ -9,13 +9,6 @@
 #include "formatter.h"
 #include "issue_manager.h"
 
-static Formatter f;
-
-Formatter& Formatter::get_instance() noexcept
-{
-	return f;
-}
-
 namespace
 {
 	std::string format_severity(const Issue::Severity severity)
@@ -38,22 +31,20 @@ namespace
 	}
 };
 
-[[nodiscard]] const std::string& Formatter::create_summary_and_clear_issue_manager()
+[[nodiscard]] std::string Formatter::create_summary()
 {
 	const auto& messages = IssueManager::get_instance().messages();
-	_summary.clear();
-	_summary.append("Completed with "
+	std::string ret = "Completed with "
 		+ std::to_string(messages.size())
 		+ " message"
 		+ (messages.size() == 1 ? "" : "s")
 		+ (messages.empty() ? "." : ":")
-		+ "\r\n");
+		+ "\r\n";
 
 	for (const auto& message : messages)
 	{
-		_summary += format_issue(message);
+		ret += format_issue(message);
 	}
-	IssueManager::get_instance().clear();
 
-	return _summary;
+	return ret;
 }

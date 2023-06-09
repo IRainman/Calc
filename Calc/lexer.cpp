@@ -11,6 +11,11 @@
 #include "issue_manager.h"
 #include "lexer.h"
 
+namespace
+{
+	auto& im = IssueManager::get_instance();
+};
+
 Token Lexer::next()
 {
 	while (!_view.empty())
@@ -51,7 +56,7 @@ Token Lexer::next()
 				}
 				else
 				{
-					IssueManager::get_instance().report_error(get_position(), std::format("unknown character {}", cur));
+					im.report_error(get_position(), std::format("unknown character {}", cur));
 					return emit(Token::Type::END, 0);
 				}
 		}
@@ -91,13 +96,13 @@ Token Lexer::read_number()
 	{
 		// result_out_of_range
 		// value_too_large
-		IssueManager::get_instance().report_error(get_position(), "unable to parse number");
+		im.report_error(get_position(), "unable to parse number");
 		return emit(Token::Type::END, 0);
 	}
 #if 0 // TODO need fix for this code.
 	if (n > std::numeric_limits<long double>::digits10)
 	{
-		IssueManager::get_instance().report_warning(get_position(), std::format("the number has too many digits {} the maximum supported {}, the calculation can be performed with an error", n, std::numeric_limits<long double>::digits10));
+		im.report_warning(get_position(), std::format("the number has too many digits {} the maximum supported {}, the calculation can be performed with an error", n, std::numeric_limits<long double>::digits10));
 	}
 #endif
 	

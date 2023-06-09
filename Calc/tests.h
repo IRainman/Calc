@@ -10,8 +10,6 @@
 
 #ifdef CALC_TESTS_ENABLED
 
-#include "Calculator.h"
-
 auto calc_tests()
 {
 	const std::vector<std::pair<std::string, std::string>> tests =   //-V826
@@ -74,16 +72,18 @@ auto calc_tests()
 		{"max(1, 2, 3)", "3"},
 	};
 	
-	std::string result;
 	std::string output;
-	
 	for (auto& t : tests)
 	{
-		const auto& message = Calculate(t.first, result);
+		std::string result;
+		Lexer l{ t.first };
+		Parser p{ l };
+		format_output_value(result, p.parse());
 		if (result != t.second)
 		{
-			output += "Test failed: " + t.first + " = " + t.second + " != " + result + ". " + message + "\r\n";
+			output += "Test failed: " + t.first + " = " + t.second + " != " + result + ". " + Formatter::create_summary() + "\r\n";
 		}
+		IssueManager::get_instance().clear();
 	}
 	if (output.empty())
 	{

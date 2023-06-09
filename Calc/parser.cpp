@@ -8,9 +8,13 @@
 //
 
 #include "stdafx.h"
-
 #include "issue_manager.h"
 #include "parser.h"
+
+namespace
+{
+	auto& im = IssueManager::get_instance();
+};
 
 namespace
 {
@@ -191,7 +195,7 @@ static const /*TODO constinit*/ std::unordered_map<std::string_view, const Fn> I
 	
 	//---------------------------------------------------------------------------
 	// TODO https://en.cppreference.com/w/cpp/numeric/special_math
-	{"riemann_zeta", function_pointer<1, std::riemann_zeta>()},// https://en.cppreference.com/w/cpp/numeric/special_functions/riemann_zeta
+	{"riemann_zeta", function_pointer<1, std::riemann_zeta>()},
 	//---------------------------------------------------------------------------
 };
 }
@@ -201,10 +205,10 @@ static const /*TODO constinit*/ std::unordered_map<std::string_view, const Fn> I
 	const auto result = parse_expr_4();
 	if (_current.type != Token::Type::END)
 	{
-		IssueManager::get_instance().report_error(_lex.get_position(), std::format("extraneous input at the end of expression: {}" , _current.text));
+		im.report_error(_lex.get_position(), std::format("extraneous input at the end of expression: {}" , _current.text));
 		return NAN;
 	}
-	else if (IssueManager::get_instance().has_errors())
+	else if (im.has_errors())
 	{
 		return NAN;
 	}
@@ -321,7 +325,7 @@ long double Parser::parse_expr_0()
 			}
 			else
 			{
-				IssueManager::get_instance().report_error(_lex.get_position(), std::format("expected closing paren, got {}", _current.text));
+				im.report_error(_lex.get_position(), std::format("expected closing paren, got {}", _current.text));
 				return NAN;
 			}
 		}
@@ -337,7 +341,7 @@ long double Parser::parse_expr_0()
 		}
 		default:
 		{
-			IssueManager::get_instance().report_error(_lex.get_position(), std::format("unexpected {}", _current.text));
+			im.report_error(_lex.get_position(), std::format("unexpected {}", _current.text));
 			return NAN;
 		}
 	}
@@ -371,7 +375,7 @@ long double Parser::parse_function_or_constant()
 						}
 						else
 						{
-							IssueManager::get_instance().report_error(pos_of_ident_start, std::format("for function {} expected minimum {} and maximum {} paramethers, got {}", name, check.min, check.max, params.size()));
+							im.report_error(pos_of_ident_start, std::format("for function {} expected minimum {} and maximum {} paramethers, got {}", name, check.min, check.max, params.size()));
 							return NAN;
 						}
 					}
@@ -382,20 +386,20 @@ long double Parser::parse_function_or_constant()
 					}
 					else
 					{
-						IssueManager::get_instance().report_error(_lex.get_position(), std::format("expected closing paren or coma, got {}", _current.text));
+						im.report_error(_lex.get_position(), std::format("expected closing paren or coma, got {}", _current.text));
 						return NAN;
 					}
 				}
 			}
 			else
 			{
-				IssueManager::get_instance().report_error(pos_of_ident_start, std::format("identifier {} is not a function", name));
+				im.report_error(pos_of_ident_start, std::format("identifier {} is not a function", name));
 				return NAN;
 			}
 		}
 		else
 		{
-			IssueManager::get_instance().report_error(pos_of_ident_start, std::format("unknown function {}", name));
+			im.report_error(pos_of_ident_start, std::format("unknown function {}", name));
 			return NAN;
 		}
 	}
@@ -410,13 +414,13 @@ long double Parser::parse_function_or_constant()
 			}
 			else
 			{
-				IssueManager::get_instance().report_error(pos_of_ident_start, std::format("function {} needs paranthesis for call", name));
+				im.report_error(pos_of_ident_start, std::format("function {} needs paranthesis for call", name));
 				return NAN;
 			}
 		}
 		else
 		{
-			IssueManager::get_instance().report_error(pos_of_ident_start, std::format("unknown constant {}", name));
+			im.report_error(pos_of_ident_start, std::format("unknown constant {}", name));
 			return NAN;
 		}
 	}

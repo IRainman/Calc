@@ -23,8 +23,4 @@ class CCalcDlg : public CDialog
 		DECLARE_MESSAGE_MAP()
 	public:
 		afx_msg void OnEnChangeEditInput();
-	private:
-		static constexpr std::string::size_type c_max_edit_input_size = 4096;
-		std::string m_input;
-		std::string m_result;
 };
