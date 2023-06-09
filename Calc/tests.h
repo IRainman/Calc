@@ -23,10 +23,10 @@ auto calc_tests()
 		{"1(", "nan"},
 		{"sin(0 ", "nan"},
 		{"sin(", "nan"},
-		
+
 		// value parsing
 		{"1.4e-3", "0.0014"},
-		
+
 		// operation priority
 		{"2 + 2", "4"},
 		{"2 * 2", "4"},
@@ -36,6 +36,8 @@ auto calc_tests()
 		// precision
 		{"10000 / 540 * 3", "55.555555555556"},
 		{"1 / 3 * 3", "1"},
+		{"640320 ^ 3 + 744",   "2.6253741264077e+17"},
+		{"e^(pi * sqrt(163))", "2.6253741264077e+17"},
 		
 		// special value support
 		{"1 / 0", "inf"},
