@@ -4,8 +4,6 @@
 
 #pragma once
 
-#include "issue_manager.h"
-
 template<typename S, typename V>
 inline constexpr S& print_value(S& p_str, const V p_val)
 {
@@ -29,9 +27,6 @@ class Formatter
 		[[nodiscard]] const std::string& create_summary_and_clear_issue_manager();
 
 	private:
-		static std::string format_severity(const Issue::Severity severity);
-		static std::string format_issue(const Issue& issue);
-
 		std::string _summary;
 };
 

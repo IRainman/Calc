@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "Flags.h"
 //---------------------------------------------------------------------------
 #ifdef CALC_VER2
 const std::string& Calculate(const std::string_view p_input, std::string& p_output);
