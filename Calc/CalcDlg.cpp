@@ -10,6 +10,7 @@
 #include "CalcDlg.h"
 #include "lexer.h"
 #include "parser.h"
+#include "issue_manager.h"
 #include "formatter.h"
 #include "tests.h"
 
@@ -144,8 +145,7 @@ void CCalcDlg::OnEnChangeEditInput()
 			std::string l_result;
 			Lexer l{ l_input };
 			Parser p{ l };
-			format_output_value(l_result, p.parse());
-			SetDlgItemText(IDC_EDIT_RESULT, l_result.data());
+			SetDlgItemText(IDC_EDIT_RESULT, Formatter::format_output_value(p.parse()).data());
 			SetDlgItemText(IDC_EDIT_MESSAGE, Formatter::create_summary().data());
 			IssueManager::get_instance().clear();
 		}

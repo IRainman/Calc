@@ -73,15 +73,14 @@ auto calc_tests()
 	};
 	
 	std::string output;
-	for (auto& t : tests)
+	for (const auto& t : tests)
 	{
-		std::string result;
 		Lexer l{ t.first };
 		Parser p{ l };
-		format_output_value(result, p.parse());
+		const auto result = Formatter::format_output_value(p.parse());
 		if (result != t.second)
 		{
-			output += "Test failed: " + t.first + " = " + t.second + " != " + result + ". " + Formatter::create_summary() + "\r\n";
+			output += "Test failed:\r\n\t" + t.first + " = " + t.second + " != " + result + ". " + Formatter::create_summary() + "\r\n";
 		}
 		IssueManager::get_instance().clear();
 	}

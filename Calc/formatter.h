@@ -4,25 +4,27 @@
 
 #pragma once
 
-// TODO use std::format
-template<typename S, typename V>
-inline constexpr S& format_output_value(S& p_str, const V p_val)
-{
-	// TODO concepts
-	p_str.resize(32); // TODO fix magic number... with what?
-	p_str.resize(std::to_chars(p_str.data(), p_str.data() + p_str.size(), p_val, std::chars_format::general, std::numeric_limits<V>::digits10 - 1).ptr - p_str.data());
-	return p_str;
-}
-
-template <typename... Args>
-[[nodiscard]] std::string test_print(std::format_string<Args&&...> fmt, Args&&... args) {
-	return std::format(fmt, args...);
-}
-
 namespace Formatter
 {
 	/**
-	 * Return full report of expression processing and clear the issue manager queue.
+	 * Format output value of the expression returned.
+	 */
+	template<typename V>
+	[[nodiscard]] auto format_output_value(V v)
+	{
+		// TODO concepts
+		std::string s; s.resize(32); // TODO fix magic number... with what?
+		s.resize(std::to_chars(s.data(), s.data() + s.size(), v, std::chars_format::general, std::numeric_limits<V>::digits10 - 1).ptr - s.data());
+		return s;
+	}
+
+	template <typename... Args>
+	[[nodiscard]] auto test_format(std::format_string<Args&&...> fmt, Args&&... args) {
+		return std::format(fmt, args...);
+	}
+
+	/**
+	 * Create full report of expression processing.
 	 */
 	[[nodiscard]] std::string create_summary();
 };
