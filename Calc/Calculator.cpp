@@ -5,15 +5,14 @@
  * Copyright 2009-2023 Solomina Elle Leonovna, a.rainman on gmail point com
  */
 
-#include "stdafx.h"
+#include "pch.h"
 //---------------------------------------------------------------------------
-#include "Calculator.h"
 #ifndef CALC_VER2
+#include "Calculator.h"
 #include "Function.h"
 #include "Message.h"
 #include "Linear.h"
 #include "Constant.h"
-#endif
 
 //---------------------------------------------------------------------------
 
@@ -277,7 +276,6 @@ void ValidateInputString(const string& p_input_str)
 }
 #endif
 //---------------------------------------------------------------------------
-#ifndef CALC_VER2
 const string& Calculate(string p_input, string& p_output)
 {
 	m_correct_count = 0;

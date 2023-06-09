@@ -5,9 +5,8 @@
  * Copyright 2009-2023 Solomina Elle Leonovna, a.rainman on gmail point com
  */
 
-#include "stdafx.h"
+#include "pch.h"
 //---------------------------------------------------------------------------
-#include "Flags.h"
 #ifndef CALC_VER2
 #include "Linear.h"
 #include "Message.h"

@@ -30,7 +30,7 @@
     <ClCompile Include="Message.cpp">
       <Filter>Modules</Filter>
     </ClCompile>
-    <ClCompile Include="stdafx.cpp">
+    <ClCompile Include="pch.cpp">
       <Filter>Modules</Filter>
     </ClCompile>
     <ClCompile Include="Linear.cpp">
@@ -80,7 +80,7 @@
     <ClInclude Include="Resource.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="stdafx.h">
+    <ClInclude Include="pch.h">
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="targetver.h">

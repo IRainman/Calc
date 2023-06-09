@@ -6,8 +6,6 @@
 
 #pragma once
 
-#include "Flags.h"
-
 #include "issue_manager.h"
 #include "token.h"
 

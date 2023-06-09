@@ -5,7 +5,6 @@
 #pragma once
 //---------------------------------------------------------------------------
 using namespace std;
-#include "Flags.h"
 #include "MyTypes.h"
 //---------------------------------------------------------------------------
 enum class MessageEnum : unsigned int

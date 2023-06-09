@@ -5,7 +5,7 @@
  * Copyright 2023 Solomina Elle Leonovna, a.rainman on gmail point com
  */
 
-#include "stdafx.h"
+#include "pch.h"
 #include "formatter.h"
 #include "issue_manager.h"
 

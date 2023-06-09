@@ -5,7 +5,7 @@
  * Copyright 2009-2023 Solomina Elle Leonovna, a.rainman on gmail point com
  */
 
-#include "stdafx.h"
+#include "pch.h"
 #ifdef CALC_VER2
 //---------------------------------------------------------------------------
 #include "Message.h"

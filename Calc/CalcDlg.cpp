@@ -5,7 +5,7 @@
  * Copyright 2009-2023 Solomina Elle Leonovna, a.rainman on gmail point com
  */
 
-#include "stdafx.h"
+#include "pch.h"
 #include "Calc.h"
 #include "CalcDlg.h"
 #include "lexer.h"
@@ -142,7 +142,6 @@ void CCalcDlg::OnEnChangeEditInput()
 		{
 		calculate_function_call:
 
-			std::string l_result;
 			Lexer l{ l_input };
 			Parser p{ l };
 			SetDlgItemText(IDC_EDIT_RESULT, Formatter::format_output_value(p.parse()).data());

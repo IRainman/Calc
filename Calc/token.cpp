@@ -7,8 +7,7 @@
 // Full version implemented by Elle Solomina and maintained since 29.05.2023.
 //
 
-#include "stdafx.h"
-
+#include "pch.h"
 #include "token.h"
 
 #if 0

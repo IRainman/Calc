@@ -6,7 +6,7 @@
  */
 
 
-#include "stdafx.h"
+#include "pch.h"
 #include "Calc.h"
 #include "CalcDlg.h"
 

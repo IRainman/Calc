@@ -6,8 +6,6 @@
 
 #pragma once
 
-#include "Flags.h"
-
 #include "lexer.h"
 
 class Parser

@@ -5,7 +5,6 @@
 //
 
 #pragma once
-#include "token.h"
 
 /**
  * Represents a message from the compiler.
