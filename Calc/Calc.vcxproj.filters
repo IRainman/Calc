@@ -51,6 +51,9 @@
     <ClCompile Include="token.cpp">
       <Filter>Modules</Filter>
     </ClCompile>
+    <ClCompile Include="formatter.cpp">
+      <Filter>Modules</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Calc.h">
@@ -62,7 +65,7 @@
     <ClInclude Include="Calculator.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Flags.h">
+    <ClInclude Include="flags.h">
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="Function.h">
@@ -102,6 +105,9 @@
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="token.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="formatter.h">
       <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>

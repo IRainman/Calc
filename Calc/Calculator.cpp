@@ -7,7 +7,6 @@
 
 #include "stdafx.h"
 //---------------------------------------------------------------------------
-#include "Flags.h"
 #include "Calculator.h"
 #ifndef CALC_VER2
 #include "Function.h"
@@ -282,15 +281,14 @@ void ValidateInputString(const string& p_input_str)
 
 #include "lexer.h"
 #include "parser.h"
-#include "issue_manager.h"
-#include "MyTypes.h"
+#include "formatter.h"
 
 const std::string& Calculate(const std::string_view input, std::string& output)
 {
 	Lexer l{ input };
 	Parser p{ l };
 	print_value(output, p.parse());
-	return IssueManager::get_instance().create_summary_and_clear();
+	return Formatter::get_instance().create_summary_and_clear_issue_manager();
 }
 #else
 const string& Calculate(string p_input, string& p_output)

@@ -5,15 +5,12 @@
 //
 
 #pragma once
-
-#include "Flags.h"
-
 #include "token.h"
 
 /**
  * Represents a message from the compiler.
  */
-struct Message
+struct Issue
 {
 	/**
 	 * How severe is this message?
@@ -30,10 +27,10 @@ struct Message
 	    INFO,
 	};
 	
-	// Message describing of the the message.
+	// Issue describing of the the message.
 	std::string text;
 	
-	// Message severity.
+	// Issue severity.
 	Severity severity;
 	
 	// Position withing the context at which the issue has occurred.
@@ -46,14 +43,16 @@ struct Message
 class IssueManager
 {
 	public:
-	
+		/**
+		 * Return the link to the static instance.
+		 */
 		static IssueManager& get_instance() noexcept;
 		
 		/**
 		 * Report a new issue.
 		 */
-		void report(Message&& issue);
-		void report(Message::Severity severity, size_t pos, std::string&& text);
+		void report(Issue&& issue);
+		void report(Issue::Severity severity, size_t pos, std::string&& text);
 		
 		/**
 		 * Report a new info message.
@@ -87,12 +86,6 @@ class IssueManager
 		}
 		
 		/**
-		 * Return full report of expression processing and clear the manager queue.
-		 */
-		[[deprecated("needs to move from here to another new class, like formatter, or something like this")]]
-		[[nodiscard]] const std::string& create_summary_and_clear();
-		
-		/**
 		 * Clear the manager.
 		 */
 		void clear() noexcept
@@ -103,6 +96,5 @@ class IssueManager
 		
 	private:
 		bool _has_errors = false;
-		std::vector<Message> _messages;
-		std::string _summary;
+		std::vector<Issue> _messages;
 };

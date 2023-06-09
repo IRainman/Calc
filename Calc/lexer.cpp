@@ -8,7 +8,6 @@
 //
 
 #include "stdafx.h"
-
 #include "issue_manager.h"
 #include "lexer.h"
 
@@ -95,10 +94,12 @@ Token Lexer::read_number()
 		IssueManager::get_instance().report_error(get_position(), "unable to parse number");
 		return emit(Token::Type::END, 0);
 	}
+#if 0 // TODO need fix for this code.
 	if (n > std::numeric_limits<long double>::digits10)
 	{
 		IssueManager::get_instance().report_warning(get_position(), std::format("the number has too many digits {} the maximum supported {}, the calculation can be performed with an error", n, std::numeric_limits<long double>::digits10));
 	}
+#endif
 	
 	return emit_and_advance(Token::Type::NUM, n, val);
 }

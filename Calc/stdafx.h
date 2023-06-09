@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include "flags.h"
+
 #include "targetver.h"
 
 #ifndef VC_EXTRALEAN
@@ -21,6 +23,7 @@
 
 #include <afxwinappex.h>
 
+// use functions from std
 #ifdef max
 #undef max
 #endif

@@ -327,6 +327,7 @@
     <ClCompile Include="CalcDlg.cpp" />
     <ClCompile Include="Calculator.cpp" />
     <ClCompile Include="Constant.cpp" />
+    <ClCompile Include="formatter.cpp" />
     <ClCompile Include="Function.cpp" />
     <ClCompile Include="issue_manager.cpp" />
     <ClCompile Include="lexer.cpp" />
@@ -346,7 +347,8 @@
     <ClInclude Include="CalcDlg.h" />
     <ClInclude Include="Calculator.h" />
     <ClInclude Include="Constant.h" />
-    <ClInclude Include="Flags.h" />
+    <ClInclude Include="flags.h" />
+    <ClInclude Include="formatter.h" />
     <ClInclude Include="Function.h" />
     <ClInclude Include="issue_manager.h" />
     <ClInclude Include="lexer.h" />
