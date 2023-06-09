@@ -6,6 +6,7 @@
  */
 
 #include "stdafx.h"
+#ifndef CALC_VER2
 //---------------------------------------------------------------------------
 #include "Linear.h"
 #include "Message.h"
@@ -246,3 +247,4 @@ inline void FinalizeOnLineExpression(stack<char>& p_operations, stack<calc_varia
 	return NAN;
 }
 //---------------------------------------------------------------------------
+#endif

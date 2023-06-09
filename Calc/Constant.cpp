@@ -8,6 +8,7 @@
 #include "stdafx.h"
 //---------------------------------------------------------------------------
 #include "Flags.h"
+#ifndef CALC_VER2
 #include "Constant.h"
 #include "Message.h"
 #include "Linear.h"
@@ -94,3 +95,4 @@ void ReplaceConstants(string& p_io_str)
 	AddMessage(p_io_str);
 }
 //---------------------------------------------------------------------------
+#endif

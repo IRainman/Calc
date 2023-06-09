@@ -3,6 +3,7 @@
  */
 
 #pragma once
+#ifndef CALC_VER2
 using namespace std;
 #include "MyTypes.h"
 //---------------------------------------------------------------------------
@@ -26,3 +27,4 @@ const calc_variable& GetConstant(const Constants p_const_ind) noexcept;
 //---------------------------------------------------------------------------
 void ReplaceConstants(string& p_io_str);
 //---------------------------------------------------------------------------
+#endif

@@ -8,6 +8,7 @@
 #include "stdafx.h"
 //---------------------------------------------------------------------------
 #include "Flags.h"
+#ifndef CALC_VER2
 #include "Linear.h"
 #include "Message.h"
 #include "Function.h"
@@ -367,3 +368,4 @@ void ProcessFunctions(string& p_io_str
 #endif
 }
 //---------------------------------------------------------------------------
+#endif

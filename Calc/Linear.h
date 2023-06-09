@@ -3,6 +3,7 @@
  */
 
 #pragma once
+#ifndef CALC_VER2
 //---------------------------------------------------------------------------
 using namespace std;
 #include "Flags.h"
@@ -59,3 +60,4 @@ constexpr inline Priority GetPriority(const char p_sym)
 //---------------------------------------------------------------------------
 extern [[nodiscard]] calc_variable CalculateLineExpression(const string_view p_input_str, string_view::size_type p_mes_pos_shift = 0);
 //---------------------------------------------------------------------------
+#endif

@@ -3,6 +3,7 @@
  */
 
 #pragma once
+#ifndef CALC_VER2
 //---------------------------------------------------------------------------
 // TODO 128 bit is hardware supported on x86 and ARM. Need fix from compiler.
 typedef long double calc_variable;
@@ -17,3 +18,4 @@ inline constexpr T& print_value(T& p_str, const calc_variable p_val)
 	return p_str;
 }
 //---------------------------------------------------------------------------
+#endif
