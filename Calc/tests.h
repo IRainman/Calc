@@ -1,8 +1,7 @@
+#pragma once
 /*
  * Copyright 2023 Solomina Elle Leonovna, a.rainman on gmail point com
  */
-
-#pragma once
 
 #ifdef _DEBUG
 	#define CALC_TESTS_ENABLED

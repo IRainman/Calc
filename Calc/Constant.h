@@ -1,8 +1,8 @@
-﻿/*
+﻿#pragma once
+/*
  * Copyright 2009-2023 Solomina Elle Leonovna, a.rainman on gmail point com
  */
 
-#pragma once
 #ifndef CALC_VER2
 using namespace std;
 #include "MyTypes.h"

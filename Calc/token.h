@@ -1,10 +1,9 @@
+#pragma once
 //
 // Prototype writed by Tamika Nomara on 28.05.2023.
 //
 // Full version implemented by Elle Solomina and maintained since 29.05.2023.
 //
-
-#pragma once
 
 struct Token
 {

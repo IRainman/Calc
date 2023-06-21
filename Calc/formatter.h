@@ -1,8 +1,7 @@
+#pragma once
 /*
  * Copyright 2023 Solomina Elle Leonovna, a.rainman on gmail point com
  */
-
-#pragma once
 
 namespace Formatter
 {

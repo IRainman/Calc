@@ -1,8 +1,6 @@
-
 #pragma once
 
 #include "flags.h"
-
 #include "targetver.h"
 
 #ifndef VC_EXTRALEAN

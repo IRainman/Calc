@@ -1,8 +1,8 @@
+#pragma once
 /*
  * Copyright 2009-2023 Solomina Elle Leonovna, a.rainman on gmail point com
  */
 
-#pragma once
 //---------------------------------------------------------------------------
 // TODO: Add support for all blocks and delete this header from project
 //---------------------------------------------------------------------------

@@ -1,8 +1,9 @@
+#pragma once
 /*
  * Copyright 2009-2023 Solomina Elle Leonovna, a.rainman on gmail point com
  */
 
-#pragma once
+#ifndef CALC_VER2
 //---------------------------------------------------------------------------
 using namespace std;
 #include "MyTypes.h"
@@ -82,3 +83,4 @@ extern void AddWarning(const MessageEnum p_message);
 extern void AddWarning(const MessageEnum p_message, string::size_type p_1, string::size_type p_2);
 extern void AddError(const MessageEnum p_message, string::size_type p_count = string::npos, string::size_type p_1 = 0, string::size_type p_2 = 0);
 //---------------------------------------------------------------------------
+#endif

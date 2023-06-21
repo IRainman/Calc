@@ -110,6 +110,9 @@
     <ClInclude Include="formatter.h">
       <Filter>Headers</Filter>
     </ClInclude>
+    <ClInclude Include="identifiers_definition.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\C.ico">
