@@ -5,7 +5,6 @@
  * Copyright 2009-2023 Solomina Elle Leonovna, a.rainman on gmail point com
  */
 
-
 #include "pch.h"
 #include "Calc.h"
 #include "CalcDlg.h"
