@@ -3,9 +3,8 @@
  * Copyright 2023 Solomina Elle Leonovna, a.rainman on gmail point com
  */
 
-class Identifiers
+namespace Identifiers
 {
-public:
 	/*
 	 * Type using as a type for calculation. 
 	 */
@@ -43,13 +42,9 @@ public:
 		Value(*fn)(std::span<const Value>); //-V122
 	};
 
-
 	using map = std::unordered_map<std::string_view, const Fn>;
 	/**
-	 * Return the link to the static collection of identifiers.
+	 * Return the link to the global static collection of identifiers.
 	 */
-	[[nodiscard]] static const map& get() noexcept;
-
-private:
-	static const map ids;
+	[[nodiscard]] const map& get() noexcept;
 };
