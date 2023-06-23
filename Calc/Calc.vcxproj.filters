@@ -54,6 +54,9 @@
     <ClCompile Include="formatter.cpp">
       <Filter>Modules</Filter>
     </ClCompile>
+    <ClCompile Include="identifiers.cpp">
+      <Filter>Modules</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Calc.h">
@@ -110,7 +113,7 @@
     <ClInclude Include="formatter.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="identifiers_definition.h">
+    <ClInclude Include="identifiers.h">
       <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>

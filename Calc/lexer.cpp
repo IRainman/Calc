@@ -16,7 +16,7 @@ namespace
 	auto& im = IssueManager::get_instance();
 };
 
-Token Lexer::next()
+[[nodiscard]] Token Lexer::next()
 {
 	while (!_view.empty())
 	{

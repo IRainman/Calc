@@ -51,17 +51,17 @@ class Parser
 		 */
 		void advance();
 		
-		long double parse_expr_4();
+		[[nodiscard]] long double parse_expr_4();
 		
-		long double parse_expr_3();
+		[[nodiscard]] long double parse_expr_3();
 		
-		long double parse_expr_2();
+		[[nodiscard]] long double parse_expr_2();
 		
-		long double parse_expr_1();
+		[[nodiscard]] long double parse_expr_1();
 		
-		long double parse_expr_0();
+		[[nodiscard]] long double parse_expr_0();
 		
-		long double parse_function_or_constant();
+		[[nodiscard]] long double parse_function_or_constant();
 		
 	private:
 		std::vector<long double> parse_function_params();

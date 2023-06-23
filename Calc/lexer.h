@@ -20,12 +20,12 @@ class Lexer
 		/**
 		 * Return the next token.
 		 */
-		Token next();
+		[[nodiscard]] Token next();
 		
 		/**
 		 * Return the current position.
 		 */
-		size_t get_position() const noexcept
+		[[nodiscard]] size_t get_position() const noexcept
 		{
 		    return _view.data() - _data.data();
 		}
@@ -39,22 +39,22 @@ class Lexer
 		/**
 		 * Create a new token at the beginning of the input view.
 		 */
-		Token emit(Token::Type type, size_t n, long double val = NAN);
+		[[nodiscard]] Token emit(Token::Type type, size_t n, long double val = NAN);
 		
 		/**
 		 * Create a new token at the beginning of the input view, and move current position to the end of the token.
 		 */
-		Token emit_and_advance(Token::Type type, size_t n, long double val = NAN);
+		[[nodiscard]] Token emit_and_advance(Token::Type type, size_t n, long double val = NAN);
 		
 		/**
 		 * Read number at the beginning of the input view.
 		 */
-		Token read_number();
+		[[nodiscard]] Token read_number();
 		
 		/**
 		 * Read identifier at the beginning of the input view.
 		 */
-		Token read_ident();
+		[[nodiscard]] Token read_ident();
 		
 	private:
 		const std::string_view _data;

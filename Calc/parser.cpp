@@ -10,11 +10,12 @@
 #include "pch.h"
 #include "issue_manager.h"
 #include "parser.h"
-#include "identifiers_definition.h"
+#include "identifiers.h"
 
 namespace
 {
 	auto& im = IssueManager::get_instance();
+	const auto& ids = Identifiers::get();
 };
 
 [[nodiscard]] long double Parser::parse()
@@ -172,7 +173,7 @@ long double Parser::parse_function_or_constant()
 	if (_current.type == Token::Type::LPAREN)
 	{
 		advance();
-		if (const auto i = IDENTIFIERS.find(name); i != IDENTIFIERS.end())
+		if (const auto i = ids.find(name); i != ids.end())
 		{
 			const auto [check, function] = i->second;
 			if (check.is_function())
@@ -222,7 +223,7 @@ long double Parser::parse_function_or_constant()
 	}
 	else
 	{
-		if (const auto i = IDENTIFIERS.find(name); i != IDENTIFIERS.end())
+		if (const auto i = ids.find(name); i != ids.end())
 		{
 			const auto [check, constant] = i->second;
 			if (check.is_constant())

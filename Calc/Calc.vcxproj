@@ -333,6 +333,7 @@
     <ClCompile Include="Constant.cpp" />
     <ClCompile Include="formatter.cpp" />
     <ClCompile Include="Function.cpp" />
+    <ClCompile Include="identifiers.cpp" />
     <ClCompile Include="issue_manager.cpp" />
     <ClCompile Include="lexer.cpp" />
     <ClCompile Include="Message.cpp" />
@@ -365,7 +366,7 @@
     <ClInclude Include="targetver.h" />
     <ClInclude Include="tests.h" />
     <ClInclude Include="token.h" />
-    <ClInclude Include="identifiers_definition.h" />
+    <ClInclude Include="identifiers.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\C.ico" />

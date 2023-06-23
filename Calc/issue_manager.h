@@ -26,13 +26,13 @@ struct Issue
 	};
 	
 	// Issue describing of the the message.
-	std::string text;
+	const std::string text;
 	
 	// Issue severity.
-	Severity severity;
+	const Severity severity;
 	
 	// Position withing the context at which the issue has occurred.
-	size_t pos; //-V122
+	const size_t pos; //-V122
 };
 
 /**
@@ -44,13 +44,7 @@ class IssueManager
 		/**
 		 * Return the link to the static instance.
 		 */
-		static IssueManager& get_instance() noexcept;
-		
-		/**
-		 * Report a new issue.
-		 */
-		void report(Issue&& issue);
-		void report(Issue::Severity severity, size_t pos, std::string&& text);
+		[[nodiscard]] static IssueManager& get_instance() noexcept;
 		
 		/**
 		 * Report a new info message.
@@ -70,7 +64,7 @@ class IssueManager
 		/**
 		 * Indicate whether any messages have been reported so far.
 		 */
-		bool has_errors() const noexcept
+		[[nodiscard]] bool has_errors() const noexcept
 		{
 		    return _has_errors;
 		}
@@ -78,7 +72,7 @@ class IssueManager
 		/**
 		 * Return reference to the vector of all messages have been reported so far.
 		 */
-		const auto& messages() const noexcept
+		[[nodiscard]] const auto& messages() const noexcept
 		{
 		    return _messages;
 		}
@@ -93,6 +87,12 @@ class IssueManager
 		}
 		
 	private:
+		/**
+		 * Report a new issue.
+		 */
+		void report(Issue&& issue);
+		void report(Issue::Severity severity, size_t pos, std::string&& text);
+
 		bool _has_errors = false;
 		std::vector<Issue> _messages;
 };

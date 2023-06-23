@@ -11,7 +11,7 @@
 
 namespace
 {
-	std::string format_severity(const Issue::Severity severity)
+	[[nodiscard]] std::string format_severity(const Issue::Severity severity)
 	{
 		switch (severity)
 		{
@@ -25,7 +25,7 @@ namespace
 		__assume(false); // C++23 unreachable();
 	}
 
-	std::string format_issue(const Issue & issue)
+	[[nodiscard]] std::string format_issue(const Issue& issue)
 	{
 		return format_severity(issue.severity) + " at pos " + std::to_string(issue.pos) + ": " + issue.text;
 	}
