@@ -52,13 +52,24 @@ namespace
 		return { { 0, 0 }, constant_impl<value> };
 	}
 
+	[[nodiscard]] Value power(std::span<const Value> params) noexcept
+	{
+		if (std::fabs(params[0] - 2) < std::numeric_limits<Value>::epsilon())
+		{
+			return std::exp2(params[1]);
+		}
+		else
+		{
+			return std::pow(params[0], params[1]);
+		}
+	}
 
-	[[nodiscard]] constexpr Value min(std::span<const Value> params) noexcept
+	[[nodiscard]] constexpr Value minimum(std::span<const Value> params) noexcept
 	{
 		return std::ranges::min(params);
 	}
 
-	[[nodiscard]] constexpr Value max(std::span<const Value> params) noexcept
+	[[nodiscard]] constexpr Value maximum(std::span<const Value> params) noexcept
 	{
 		return std::ranges::max(params);
 	}
@@ -66,7 +77,7 @@ namespace
 	[[nodiscard]] constexpr Value rad(const Value x) noexcept { return x * std::numbers::pi_v<Value> / 180; }
 	[[nodiscard]] constexpr Value deg(const Value x) noexcept { return x * 180 / std::numbers::pi_v<Value>; }
 
-	[[nodiscard]] constexpr Value hypot(std::span<const Value> params) noexcept
+	[[nodiscard]] constexpr Value hypotenuse(std::span<const Value> params) noexcept
 	{
 		switch (params.size())
 		{
@@ -74,9 +85,8 @@ namespace
 			return std::hypot(params[0], params[1]);
 		case 3:
 			return std::hypot(params[0], params[1], params[2]);
-		default:
-			return NAN;
 		};
+		std::unreachable();
 	}
 
 	[[nodiscard]] constexpr Value logarithm(Value x) noexcept
@@ -155,7 +165,7 @@ namespace
 		{"arcsin", function_pointer<1, std::asin>()},
 		{"arctan", function_pointer<1, std::atan>()},
 
-		{"hypot", {{2, 3}, hypot}},
+		{"hypot", {{2, 3}, hypotenuse}},
 
 		{"exp", function_pointer<1, std::exp>()},
 
@@ -177,15 +187,20 @@ namespace
 
 		{"sqrt", function_pointer<1, std::sqrt>()},
 		{"cbrt", function_pointer<1, std::cbrt>()},
-		{"pow", function_pointer<2, std::pow>()},
+		{"pow", {{2, 0}, power}},
+
+		{"fma", function_pointer<3, std::fma>()},
 
 		{"rad", function_pointer<1, rad>()},
 		{"deg", function_pointer<1, deg>()},
 
-		{"min", {{1, Fn::P::unlim}, min}},
-		{"max", {{1, Fn::P::unlim}, max}},
+		{"min", {{1, Fn::P::unlim}, minimum}},
+		{"max", {{1, Fn::P::unlim}, maximum}},
 
-		{"abs", function_pointer<1, abs>()},
+		{"abs", function_pointer<1, std::abs>()},
+
+		{"erf", function_pointer<1, std::erf>()},
+		{"erfc", function_pointer<1, std::erfc>()},
 
 		{"tgamma", function_pointer<1, tgamma>()},
 		{"lgamma", function_pointer<1, lgamma>()},

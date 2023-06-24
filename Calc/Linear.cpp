@@ -46,7 +46,7 @@ inline void CalculateOnLineExpression(stack<char>& p_operations, stack<calc_vari
 #ifdef _DEBUG
 					AddError(MessageEnum::INTERNAL_PROCESSING_ERROR_CalculateOnLineExpression_p_operands_is_unknown);
 #else
-					__assume(false); // C++23 unreachable();
+					std::unreachable();
 #endif
 			}
 			p_operands.push(res); //-V614

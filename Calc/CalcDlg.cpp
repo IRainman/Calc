@@ -94,9 +94,7 @@ BOOL CCalcDlg::OnInitDialog()
 	
 	SetIcon(m_hIcon, TRUE);
 	SetIcon(m_hIcon, FALSE);
-	
-	CheckDlgButton(IDC_CHECK_AUTO_CALCULATE, TRUE);
-	
+
 #ifdef CALC_TESTS_ENABLED
 	SetDlgItemText(IDC_EDIT_MESSAGE, calc_tests().data());
 #endif
@@ -124,30 +122,16 @@ inline HCURSOR CCalcDlg::OnQueryDragIcon() noexcept
 
 void CCalcDlg::OnEnChangeEditInput()
 {
-	constexpr std::string::size_type c_max_edit_input_size = 4096;
-	std::string l_input;
-	l_input.resize(c_max_edit_input_size);
-	const auto l_count = GetDlgItemText(IDC_EDIT_INPUT, l_input.data(), c_max_edit_input_size);
-	if (l_count > 0)
+	std::array<char, 4096> buf;
+	const auto count = GetDlgItemText(IDC_EDIT_INPUT, buf.data(), static_cast<int>(buf.size()));
+	if (count > 0)
 	{
-		l_input.resize(l_count); //-V106
-		
-		if (IsDlgButtonChecked(IDC_CHECK_AUTO_CALCULATE) == BST_UNCHECKED &&
-		        l_input.size() > 1 && l_input[l_input.size() - 1] == '=')
-		{
-			l_input.erase(l_input.size() - 1);
-			goto calculate_function_call;
-		}
-		if ((IsDlgButtonChecked(IDC_CHECK_AUTO_CALCULATE) == BST_CHECKED))
-		{
-		calculate_function_call:
-
-			Lexer l{ l_input };
-			Parser p{ l };
-			SetDlgItemText(IDC_EDIT_RESULT, Formatter::format_output_value(p.parse()).data());
-			SetDlgItemText(IDC_EDIT_MESSAGE, Formatter::create_summary().data());
-			IssueManager::get_instance().clear();
-		}
+		const std::string_view input(buf.data(), static_cast<unsigned int>(count));
+		Lexer l{ input };
+		Parser p{ l };
+		SetDlgItemText(IDC_EDIT_RESULT, Formatter::format_output_value(p.parse()).data());
+		SetDlgItemText(IDC_EDIT_MESSAGE, Formatter::create_summary().data());
+		IssueManager::get_instance().clear();
 	}
 	else
 	{

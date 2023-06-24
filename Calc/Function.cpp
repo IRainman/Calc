@@ -158,7 +158,7 @@ constexpr inline calc_variable CalculateParametrs(const size_t p_number_of_param
 			AddError(MessageEnum::INTERNAL_PROCESSING_ERROR_CalculateFunction);
 			return 0;
 #else
-			__assume(false); // C++23 unreachable();
+			std::unreachable();
 #endif
 	}
 }

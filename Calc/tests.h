@@ -69,6 +69,9 @@ auto calc_tests()
 		{"min(1)", "1"},
 		{"min(1, 2, 3)", "1"},
 		{"max(1, 2, 3)", "3"},
+
+		// hardware provided
+		{"fma(2, 2, 2)", "6"},
 	};
 	
 	std::string output;

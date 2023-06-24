@@ -22,7 +22,7 @@ namespace
 		case Issue::Severity::ERR:
 			return "Error";
 		}
-		__assume(false); // C++23 unreachable();
+		std::unreachable();
 	}
 
 	[[nodiscard]] std::string format_issue(const Issue& issue)
