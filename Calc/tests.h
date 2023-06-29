@@ -89,4 +89,4 @@ auto calc_tests()
 	return output;
 }
 
-#endif // CALC_TESTS_ENABLED
+#endif

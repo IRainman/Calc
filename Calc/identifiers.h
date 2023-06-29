@@ -30,7 +30,7 @@ namespace Identifiers
 				return !is_constant();
 			}
 			/**
-			 * Test interval of paramethers count.
+			 * Test interval of parameters count.
 			 */
 			[[nodiscard]] constexpr bool params_count_is_valid(const size_t count) const noexcept
 			{

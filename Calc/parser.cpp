@@ -143,7 +143,7 @@ long double Parser::parse_expr_0()
 			}
 			else
 			{
-				im.report_error(_lex.get_position(), std::format("expected closing paren, got {}", _current.text));
+				im.report_error(_lex.get_position(), std::format("expected closing parenthesis, got {}", _current.text));
 				return NAN;
 			}
 		}
@@ -193,7 +193,7 @@ long double Parser::parse_function_or_constant()
 						}
 						else
 						{
-							im.report_error(pos_of_ident_start, std::format("for function {} expected minimum {} and maximum {} paramethers, got {}", name, check.min, check.max, params.size()));
+							im.report_error(pos_of_ident_start, std::format("for function {} expected minimum {} and maximum {} parameters, got {}", name, check.min, check.max, params.size()));
 							return NAN;
 						}
 					}
@@ -204,7 +204,7 @@ long double Parser::parse_function_or_constant()
 					}
 					else
 					{
-						im.report_error(_lex.get_position(), std::format("expected closing paren or coma, got {}", _current.text));
+						im.report_error(_lex.get_position(), std::format("expected closing parenthesis or coma, got {}", _current.text));
 						return NAN;
 					}
 				}
@@ -232,7 +232,7 @@ long double Parser::parse_function_or_constant()
 			}
 			else
 			{
-				im.report_error(pos_of_ident_start, std::format("function {} needs paranthesis for call", name));
+				im.report_error(pos_of_ident_start, std::format("function {} needs parenthesis for call", name));
 				return NAN;
 			}
 		}

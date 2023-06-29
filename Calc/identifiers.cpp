@@ -151,7 +151,7 @@ namespace
 		// TODO additional constant
 		{"c", constant<299792458.0L>()},// Speed of light in vacuum (m·s-1)
 		{"G", constant<6.674286767676767676767676767676767676e-11L>()},// Newtonian constant of gravitation (m3·kg−1·s−2), this constant valid on Earths only ;)
-		{"J", constant<3.058198247456354132564564787888767L>()},// Constants of Gauss fild
+		{"J", constant<3.058198247456354132564564787888767L>()},// Constants of Gauss field
 		{"atm", constant<101325.0L>()},// Standard atmosphere (Pa), this constant valid on Earths only ;)
 		{"L", constant<6.022141510101010101010101010101010101e23L>()},// Avogadro's number (mol−1)
 		{"R", constant<8.314472151515151515151515151515151515L>()},// Gas constant (J·K−1·mol−1)

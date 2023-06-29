@@ -25,7 +25,7 @@ struct Issue
 	    INFO,
 	};
 	
-	// Issue describing of the the message.
+	// Issue describing of the message.
 	const std::string text;
 	
 	// Issue severity.

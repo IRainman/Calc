@@ -41,7 +41,7 @@ class Parser
 		
 	public:
 		/**
-		 * Parse and eval an expression. Return nullopt in case of an error.
+		 * Parse and eval an expression. Return nan in case of an error.
 		 */
 		[[nodiscard]] long double parse();
 		
