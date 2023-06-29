@@ -20,4 +20,8 @@
 	#endif // _DEBUG
 	#endif // ENABLE_LOG
 #endif
+
+#ifdef _DEBUG
+#define CALC_TESTS_ENABLED
+#endif
 //---------------------------------------------------------------------------

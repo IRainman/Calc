@@ -39,7 +39,8 @@
 #include <limits>
 #include <stack>
 #include <ranges>
+#ifdef CALC_TESTS_ENABLED
 #include <vector>
+#endif
 #include <format>
 #include <span>
-#include <array>

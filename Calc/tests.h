@@ -3,10 +3,6 @@
  * Copyright 2023 Solomina Elle Leonovna, a.rainman on gmail point com
  */
 
-#ifdef _DEBUG
-	#define CALC_TESTS_ENABLED
-#endif
-
 #ifdef CALC_TESTS_ENABLED
 
 auto calc_tests()
