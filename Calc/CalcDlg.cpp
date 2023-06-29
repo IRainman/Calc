@@ -79,18 +79,10 @@ BOOL CCalcDlg::OnInitDialog()
 	ASSERT(IDM_ABOUTBOX < 0xF000);
 	
 	CMenu* pSysMenu = GetSystemMenu(FALSE);
-	if (pSysMenu != NULL)
-	{
-		BOOL bNameValid;
-		CString strAboutMenu;
-		bNameValid = strAboutMenu.LoadString(IDS_ABOUTBOX);
-		ASSERT(bNameValid);
-		if (!strAboutMenu.IsEmpty())
-		{
-			pSysMenu->AppendMenu(MF_SEPARATOR);
-			pSysMenu->AppendMenu(MF_STRING, IDM_ABOUTBOX, strAboutMenu);
-		}
-	}
+	CString strAboutMenu;
+	strAboutMenu.LoadString(IDS_ABOUTBOX);
+	pSysMenu->AppendMenu(MF_SEPARATOR);
+	pSysMenu->AppendMenu(MF_STRING, IDM_ABOUTBOX, strAboutMenu);
 	
 	SetIcon(m_hIcon, TRUE);
 	SetIcon(m_hIcon, FALSE);
