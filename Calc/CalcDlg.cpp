@@ -122,8 +122,9 @@ inline HCURSOR CCalcDlg::OnQueryDragIcon() noexcept
 
 void CCalcDlg::OnEnChangeEditInput()
 {
-	std::array<char, 4096> buf;
-	const auto count = GetDlgItemText(IDC_EDIT_INPUT, buf.data(), static_cast<int>(buf.size()));
+	//const auto len = GetWindowTextLength(GetDlgItem(IDC_EDIT_INPUT));
+	std::array<char, 4096> buf; // https://devblogs.microsoft.com/oldnewthing/20210510-00/?p=105200
+	const auto count = GetDlgItemText(IDC_EDIT_INPUT, buf.data(), static_cast<int>(buf.size())); //-V202
 	if (count > 0)
 	{
 		const std::string_view input(buf.data(), static_cast<unsigned int>(count));
