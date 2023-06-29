@@ -122,23 +122,14 @@ inline HCURSOR CCalcDlg::OnQueryDragIcon() noexcept
 
 void CCalcDlg::OnEnChangeEditInput()
 {
-	//const auto len = GetWindowTextLength(GetDlgItem(IDC_EDIT_INPUT));
-	std::array<char, 4096> buf; // https://devblogs.microsoft.com/oldnewthing/20210510-00/?p=105200
-	const auto count = GetDlgItemText(IDC_EDIT_INPUT, buf.data(), static_cast<int>(buf.size())); //-V202
-	if (count > 0)
-	{
-		const std::string_view input(buf.data(), static_cast<unsigned int>(count));
-		Lexer l{ input };
-		Parser p{ l };
-		SetDlgItemText(IDC_EDIT_RESULT, Formatter::format_output_value(p.parse()).data());
-		SetDlgItemText(IDC_EDIT_MESSAGE, Formatter::create_summary().data());
-		IssueManager::get_instance().clear();
-	}
-	else
-	{
-		SetDlgItemText(IDC_EDIT_RESULT, "");
-		SetDlgItemText(IDC_EDIT_MESSAGE, "");
-	}
+	CString str;
+	GetDlgItemText(IDC_EDIT_INPUT, str);
+	const std::string_view input(str, static_cast<unsigned int>(str.GetLength()));
+	Lexer l{ input };
+	Parser p{ l };
+	SetDlgItemText(IDC_EDIT_RESULT, Formatter::format_output_value(p.parse()).data());
+	SetDlgItemText(IDC_EDIT_MESSAGE, Formatter::create_summary().data());
+	IssueManager::get_instance().clear();
 }
 
 void CAboutDlg::OnBnClickedSite() noexcept
