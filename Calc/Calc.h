@@ -8,7 +8,10 @@
 class CCalcApp : public CWinAppEx
 {
 	public:
-		CCalcApp() noexcept;
+		explicit CCalcApp() noexcept;
+		CCalcApp(const CCalcApp&) = delete;
+		CCalcApp(CCalcApp&&) = delete;
+
 		
 	public:
 		virtual BOOL InitInstance();

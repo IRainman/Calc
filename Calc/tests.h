@@ -80,7 +80,7 @@ auto calc_tests()
 		{
 			output += "Test failed:\r\n\t" + t.first + " = " + t.second + " != " + result + ". " + Formatter::create_summary() + "\r\n";
 		}
-		IssueManager::get_instance().clear();
+		IssueManager::clear();
 	}
 	if (output.empty())
 	{

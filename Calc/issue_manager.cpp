@@ -10,12 +10,8 @@
 #include "pch.h"
 #include "issue_manager.h"
 
-static IssueManager im;
-
-IssueManager& IssueManager::get_instance() noexcept
-{
-	return im;
-}
+bool IssueManager::_has_errors = false;
+std::vector<Issue> IssueManager::_messages;
 
 void IssueManager::report(Issue&& issue)
 {

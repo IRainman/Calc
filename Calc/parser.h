@@ -34,12 +34,13 @@ class Parser
 		 */
 		
 	public:
-		Parser(Lexer& lex) : _lex(lex)
+		explicit Parser(Lexer& lex) : _lex(lex)
 		{
 			advance();
 		}
+		Parser(const Parser&) = delete;
+		Parser(Parser&&) = default;
 		
-	public:
 		/**
 		 * Parse and eval an expression. Return nan in case of an error.
 		 */
@@ -63,7 +64,6 @@ class Parser
 		
 		[[nodiscard]] long double parse_function_or_constant();
 		
-	private:
 		std::vector<long double> parse_function_params();
 		
 		Lexer& _lex;

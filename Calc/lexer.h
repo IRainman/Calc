@@ -11,12 +11,13 @@
 class Lexer
 {
 	public:
-		Lexer(const std::string_view data) noexcept
+		explicit Lexer(const std::string_view data) noexcept
 			: _data {data}, _view {_data}
 		{
 		}
-		
-	public:
+		Lexer(const Lexer&) = delete;
+		Lexer(Lexer&&) = default;
+
 		/**
 		 * Return the next token.
 		 */
@@ -55,8 +56,7 @@ class Lexer
 		 * Read identifier at the beginning of the input view.
 		 */
 		[[nodiscard]] Token read_ident();
-		
-	private:
+
 		const std::string_view _data;
 		std::string_view _view;
 };

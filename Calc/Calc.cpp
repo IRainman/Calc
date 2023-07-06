@@ -15,7 +15,6 @@ END_MESSAGE_MAP()
 
 CCalcApp::CCalcApp() noexcept
 {
-
 }
 
 CCalcApp theApp;

@@ -11,11 +11,6 @@
 #include "issue_manager.h"
 #include "lexer.h"
 
-namespace
-{
-	auto& im = IssueManager::get_instance();
-};
-
 [[nodiscard]] Token Lexer::next()
 {
 	while (!_view.empty())
@@ -56,7 +51,7 @@ namespace
 				}
 				else
 				{
-					im.report_error(get_position(), std::format("unknown character {}", cur));
+					IssueManager::report_error(get_position(), std::format("unknown character {}", cur));
 					return emit(Token::Type::END, 0);
 				}
 		}
@@ -96,7 +91,7 @@ Token Lexer::read_number()
 	{
 		// result_out_of_range
 		// value_too_large
-		im.report_error(get_position(), "unable to parse number");
+		IssueManager::report_error(get_position(), "unable to parse number");
 		return emit(Token::Type::END, 0);
 	}
 #if 0 // TODO need fix for this code.

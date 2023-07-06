@@ -14,7 +14,6 @@
 
 namespace
 {
-	auto& im = IssueManager::get_instance();
 	const auto& ids = Identifiers::get();
 };
 
@@ -23,10 +22,10 @@ namespace
 	const auto result = parse_expr_4();
 	if (_current.type != Token::Type::END)
 	{
-		im.report_error(_lex.get_position(), std::format("extraneous input at the end of expression: {}" , _current.text));
+		IssueManager::report_error(_lex.get_position(), std::format("extraneous input at the end of expression: {}" , _current.text));
 		return NAN;
 	}
-	else if (im.has_errors())
+	else if (IssueManager::has_errors())
 	{
 		return NAN;
 	}
@@ -143,7 +142,7 @@ long double Parser::parse_expr_0()
 			}
 			else
 			{
-				im.report_error(_lex.get_position(), std::format("expected closing parenthesis, got {}", _current.text));
+				IssueManager::report_error(_lex.get_position(), std::format("expected closing parenthesis, got {}", _current.text));
 				return NAN;
 			}
 		}
@@ -159,7 +158,7 @@ long double Parser::parse_expr_0()
 		}
 		default:
 		{
-			im.report_error(_lex.get_position(), std::format("unexpected {}", _current.text));
+			IssueManager::report_error(_lex.get_position(), std::format("unexpected {}", _current.text));
 			return NAN;
 		}
 	}
@@ -193,7 +192,7 @@ long double Parser::parse_function_or_constant()
 						}
 						else
 						{
-							im.report_error(pos_of_ident_start, std::format("for function {} expected minimum {} and maximum {} parameters, got {}", name, check.min, check.max, params.size()));
+							IssueManager::report_error(pos_of_ident_start, std::format("for function {} expected minimum {} and maximum {} parameters, got {}", name, check.min, check.max, params.size()));
 							return NAN;
 						}
 					}
@@ -204,20 +203,20 @@ long double Parser::parse_function_or_constant()
 					}
 					else
 					{
-						im.report_error(_lex.get_position(), std::format("expected closing parenthesis or coma, got {}", _current.text));
+						IssueManager::report_error(_lex.get_position(), std::format("expected closing parenthesis or coma, got {}", _current.text));
 						return NAN;
 					}
 				}
 			}
 			else
 			{
-				im.report_error(pos_of_ident_start, std::format("identifier {} is not a function", name));
+				IssueManager::report_error(pos_of_ident_start, std::format("identifier {} is not a function", name));
 				return NAN;
 			}
 		}
 		else
 		{
-			im.report_error(pos_of_ident_start, std::format("unknown function {}", name));
+			IssueManager::report_error(pos_of_ident_start, std::format("unknown function {}", name));
 			return NAN;
 		}
 	}
@@ -232,13 +231,13 @@ long double Parser::parse_function_or_constant()
 			}
 			else
 			{
-				im.report_error(pos_of_ident_start, std::format("function {} needs parenthesis for call", name));
+				IssueManager::report_error(pos_of_ident_start, std::format("function {} needs parenthesis for call", name));
 				return NAN;
 			}
 		}
 		else
 		{
-			im.report_error(pos_of_ident_start, std::format("unknown constant {}", name));
+			IssueManager::report_error(pos_of_ident_start, std::format("unknown constant {}", name));
 			return NAN;
 		}
 	}

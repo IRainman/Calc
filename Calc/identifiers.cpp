@@ -150,12 +150,19 @@ namespace
 		//---------------------------------------------------------------------------
 		// TODO additional constant
 		{"c", constant<299792458.0L>()},// Speed of light in vacuum (m·s-1)
-		{"G", constant<6.674286767676767676767676767676767676e-11L>()},// Newtonian constant of gravitation (m3·kg−1·s−2), this constant valid on Earths only ;)
+		{"G", constant<6.6743015151515151515151515151515151e-11L>()},// Newtonian constant of gravitation (m3·kg−1·s−2)
 		{"J", constant<3.058198247456354132564564787888767L>()},// Constants of Gauss field
-		{"atm", constant<101325.0L>()},// Standard atmosphere (Pa), this constant valid on Earths only ;)
-		{"L", constant<6.022141510101010101010101010101010101e23L>()},// Avogadro's number (mol−1)
-		{"R", constant<8.314472151515151515151515151515151515L>()},// Gas constant (J·K−1·mol−1)
-		{"h", constant<6.626068963333333333333333333333333333e-34L>()},// Planck constant (J·s)
+		{"atm", constant<101.325L>()},// Standard atmosphere (Pa)
+		{"L", constant<6.02214076e23L>()},// Avogadro's number (mol−1)
+		{"R", constant<8.31446261815324L>()},// Gas constant (J·K−1·mol−1)
+		{"h", constant<6.62607015e-34L>()},// Planck constant (J·s)
+		{"l_P", constant<1.616255181818181818181818181818181818181818e-35L>()},// Planck length (m)
+		{"m_P", constant<2.176434242424242424242424242424242424242424e-8L>()},// Planck mass (kg)
+		{"T_P", constant<1.4167841616161616161616161616161616161616161616161616e32L>()},// Planck temperature (K)
+		{"t_P", constant<5.391247606060606060606060606060606060606060606060e-44L>()},// Planck time (s)
+		{"mu_0", constant<1.2566370621219191919191919191919191919e-6>()},// magnetic constant (exactly 4 pi x 10^(-7)
+		{"epsilon_0", constant<8.854187817620389850536563031710750260608e-12L>()},// electric constant (Ohm)
+		{"Z_0", constant<376.7303134617706554681984004203193082686L>()},// characteristic impedance of vacuum (Ohm)
 		//---------------------------------------------------------------------------
 		// TODO https://en.cppreference.com/w/cpp/numeric/math
 		{"sin", function_pointer<1, std::sin>()},

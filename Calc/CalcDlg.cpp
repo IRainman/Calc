@@ -17,7 +17,9 @@
 class CAboutDlg : public CDialog
 {
 	public:
-		CAboutDlg() noexcept;
+		explicit CAboutDlg() noexcept;
+		CAboutDlg(const CAboutDlg&) = delete;
+		CAboutDlg(CAboutDlg&&) = delete;
 		
 		enum { IDD = IDD_ABOUTBOX };
 		
@@ -121,7 +123,7 @@ void CCalcDlg::OnEnChangeEditInput()
 	Parser p{ l };
 	SetDlgItemText(IDC_EDIT_RESULT, Formatter::format_output_value(p.parse()).data());
 	SetDlgItemText(IDC_EDIT_MESSAGE, Formatter::create_summary().data());
-	IssueManager::get_instance().clear();
+	IssueManager::clear();
 }
 
 void CAboutDlg::OnBnClickedSite() noexcept

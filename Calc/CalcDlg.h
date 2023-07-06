@@ -6,7 +6,9 @@
 class CCalcDlg : public CDialog
 {
 	public:
-		CCalcDlg(CWnd* pParent = nullptr) noexcept;
+		explicit CCalcDlg(CWnd* pParent = nullptr) noexcept;
+		CCalcDlg(const CCalcDlg&) = delete;
+		CCalcDlg(CCalcDlg&&) = delete;
 		
 		enum { IDD = IDD_CALC_DIALOG };
 		

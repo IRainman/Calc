@@ -11,7 +11,7 @@
 
 namespace
 {
-	[[nodiscard]] std::string format_severity(const Issue::Severity severity)
+	[[nodiscard]] std::string format_severity(const Issue::Severity severity) noexcept
 	{
 		switch (severity)
 		{
@@ -33,7 +33,7 @@ namespace
 
 [[nodiscard]] std::string Formatter::create_summary()
 {
-	const auto& messages = IssueManager::get_instance().messages();
+	const auto& messages = IssueManager::messages();
 	std::string ret = "Completed with "
 		+ std::to_string(messages.size())
 		+ " message"

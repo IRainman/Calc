@@ -13,24 +13,24 @@ struct Issue
 	/**
 	 * How severe is this message?
 	 */
-	enum class Severity: unsigned int
+	enum class Severity : unsigned int
 	{
-	    // Errors that do stop processing.
-	    ERR,
-	    
-	    // Warnings that don't stop processing.
-	    WARN,
-	    
-	    // Information and comments.
-	    INFO,
+		// Errors that do stop processing.
+		ERR,
+
+		// Warnings that don't stop processing.
+		WARN,
+
+		// Information and comments.
+		INFO,
 	};
-	
+
 	// Issue describing of the message.
 	const std::string text;
-	
+
 	// Issue severity.
 	const Severity severity;
-	
+
 	// Position withing the context at which the issue has occurred.
 	const size_t pos; //-V122
 };
@@ -42,29 +42,24 @@ class IssueManager
 {
 	public:
 		/**
-		 * Return the link to the static instance.
-		 */
-		[[nodiscard]] static IssueManager& get_instance() noexcept;
-		
-		/**
 		 * Report a new info message.
 		 */
-		void report_info(size_t pos, std::string&& text);
+		static void report_info(size_t pos, std::string&& text);
 		
 		/**
 		 * Report a new warning.
 		 */
-		void report_warning(size_t pos, std::string&& text);
+		static void report_warning(size_t pos, std::string&& text);
 		
 		/**
 		 * Report a new error.
 		 */
-		void report_error(size_t pos, std::string&& text);
+		static void report_error(size_t pos, std::string&& text);
 		
 		/**
 		 * Indicate whether any messages have been reported so far.
 		 */
-		[[nodiscard]] bool has_errors() const noexcept
+		[[nodiscard]] static bool has_errors() noexcept
 		{
 		    return _has_errors;
 		}
@@ -72,7 +67,7 @@ class IssueManager
 		/**
 		 * Return reference to the vector of all messages have been reported so far.
 		 */
-		[[nodiscard]] const auto& messages() const noexcept
+		[[nodiscard]] static const auto& messages() noexcept
 		{
 		    return _messages;
 		}
@@ -80,7 +75,7 @@ class IssueManager
 		/**
 		 * Clear the manager.
 		 */
-		void clear() noexcept
+		static void clear() noexcept
 		{
 			_messages.clear();
 			_has_errors = false;
@@ -90,9 +85,9 @@ class IssueManager
 		/**
 		 * Report a new issue.
 		 */
-		void report(Issue&& issue);
-		void report(Issue::Severity severity, size_t pos, std::string&& text);
+		static void report(Issue&& issue);
+		static void report(Issue::Severity severity, size_t pos, std::string&& text);
 
-		bool _has_errors = false;
-		std::vector<Issue> _messages;
+		static bool _has_errors;
+		static std::vector<Issue> _messages;
 };
