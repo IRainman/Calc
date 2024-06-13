@@ -85,5 +85,5 @@ class Lexer
 		[[nodiscard]] Token read_ident();
 
 		std::string_view _view;
-		const std::string_view::const_pointer _begin;
+		const std::string_view::const_pointer _begin; //-V122
 };
