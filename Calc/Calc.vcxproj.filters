@@ -21,22 +21,7 @@
     <ClCompile Include="CalcDlg.cpp">
       <Filter>Modules</Filter>
     </ClCompile>
-    <ClCompile Include="Calculator.cpp">
-      <Filter>Modules</Filter>
-    </ClCompile>
-    <ClCompile Include="Function.cpp">
-      <Filter>Modules</Filter>
-    </ClCompile>
-    <ClCompile Include="Message.cpp">
-      <Filter>Modules</Filter>
-    </ClCompile>
     <ClCompile Include="pch.cpp">
-      <Filter>Modules</Filter>
-    </ClCompile>
-    <ClCompile Include="Linear.cpp">
-      <Filter>Modules</Filter>
-    </ClCompile>
-    <ClCompile Include="Constant.cpp">
       <Filter>Modules</Filter>
     </ClCompile>
     <ClCompile Include="issue_manager.cpp">
@@ -62,19 +47,7 @@
     <ClInclude Include="CalcDlg.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Calculator.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
     <ClInclude Include="flags.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Function.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Message.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="MyTypes.h">
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="Resource.h">
@@ -84,12 +57,6 @@
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="targetver.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Linear.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Constant.h">
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="tests.h">

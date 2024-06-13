@@ -325,15 +325,10 @@
   <ItemGroup>
     <ClCompile Include="Calc.cpp" />
     <ClCompile Include="CalcDlg.cpp" />
-    <ClCompile Include="Calculator.cpp" />
-    <ClCompile Include="Constant.cpp" />
     <ClCompile Include="formatter.cpp" />
-    <ClCompile Include="Function.cpp" />
     <ClCompile Include="identifiers.cpp" />
     <ClCompile Include="issue_manager.cpp" />
     <ClCompile Include="lexer.cpp" />
-    <ClCompile Include="Message.cpp" />
-    <ClCompile Include="Linear.cpp" />
     <ClCompile Include="parser.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -345,18 +340,12 @@
   <ItemGroup>
     <ClInclude Include="Calc.h" />
     <ClInclude Include="CalcDlg.h" />
-    <ClInclude Include="Calculator.h" />
-    <ClInclude Include="Constant.h" />
     <ClInclude Include="flags.h" />
     <ClInclude Include="formatter.h" />
-    <ClInclude Include="Function.h" />
     <ClInclude Include="issue_manager.h" />
     <ClInclude Include="lexer.h" />
-    <ClInclude Include="Message.h" />
-    <ClInclude Include="MyTypes.h" />
     <ClInclude Include="parser.h" />
     <ClInclude Include="Resource.h" />
-    <ClInclude Include="Linear.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="tests.h" />
