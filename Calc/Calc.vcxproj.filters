@@ -48,9 +48,6 @@
     <ClCompile Include="parser.cpp">
       <Filter>Modules</Filter>
     </ClCompile>
-    <ClCompile Include="token.cpp">
-      <Filter>Modules</Filter>
-    </ClCompile>
     <ClCompile Include="formatter.cpp">
       <Filter>Modules</Filter>
     </ClCompile>
@@ -105,9 +102,6 @@
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="parser.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="token.h">
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="formatter.h">

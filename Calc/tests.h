@@ -38,6 +38,8 @@ auto calc_tests()
 		// trigonometric functions
 		{"sin( rad(0) )", "0"},
 		{"87 * tan(pi) - 7", "-7"},
+		{"tan(-pi)", "0"},
+		{"tan(inf)", "-nan"},
 		
 		{"log(sh(42) + ch(42))", "42"},
 		

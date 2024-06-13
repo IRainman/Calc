@@ -6,13 +6,40 @@
 //
 
 #include "issue_manager.h"
-#include "token.h"
+
+struct Token
+{
+	enum class Type : unsigned int
+	{
+	    END = 0,
+	    ADD,
+	    SUB,
+	    MUL,
+	    DIV,
+	    POW,
+	    REM,
+	    LPAREN,
+	    RPAREN,
+	    COMA,
+	    NUM,
+	    IDENT,
+	};
+	
+	// Type of this token.
+	Type type;
+	
+	// Text of the token.
+	std::string_view text;
+	
+	// If token is a number, this is the parsed value of it.
+	long double val;
+};
 
 class Lexer
 {
 	public:
 		explicit Lexer(const std::string_view data) noexcept
-			: _data {data}, _view {_data}
+			: _view{data}, _begin{data.data()}
 		{
 		}
 		Lexer(const Lexer&) = delete;
@@ -28,7 +55,7 @@ class Lexer
 		 */
 		[[nodiscard]] size_t get_position() const noexcept
 		{
-		    return _view.data() - _data.data();
+		    return _view.data() - _begin;
 		}
 		
 	private:
@@ -57,6 +84,6 @@ class Lexer
 		 */
 		[[nodiscard]] Token read_ident();
 
-		const std::string_view _data;
 		std::string_view _view;
+		const std::string_view::const_pointer _begin;
 };
