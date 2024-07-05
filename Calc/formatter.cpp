@@ -27,7 +27,7 @@ namespace
 
 	[[nodiscard]] std::string format_issue(const Issue& issue)
 	{
-		return format_severity(issue.severity) + " at pos " + std::to_string(issue.pos) + ": " + issue.text;
+		return format_severity(issue.severity) + " at pos " + std::to_string(issue.pos) + ": " + issue.text; //-V107
 	}
 };
 
@@ -35,7 +35,7 @@ namespace
 {
 	const auto& messages = IssueManager::messages();
 	std::string ret = "Completed with "
-		+ std::to_string(messages.size())
+		+ std::to_string(messages.size()) //-V107
 		+ " message"
 		+ (messages.size() == 1 ? "" : "s")
 		+ (messages.empty() ? "." : ":")

@@ -144,12 +144,12 @@
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <OpenMPSupport>false</OpenMPSupport>
       <SupportJustMyCode>true</SupportJustMyCode>
-      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <FloatingPointExceptions>true</FloatingPointExceptions>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <BuildStlModules>false</BuildStlModules>
       <SmallerTypeCheck>false</SmallerTypeCheck>
       <CompileAsManaged>false</CompileAsManaged>
-      <FloatingPointModel>Fast</FloatingPointModel>
+      <FloatingPointModel>Precise</FloatingPointModel>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <ResourceCompile>
@@ -186,11 +186,11 @@
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <OpenMPSupport>false</OpenMPSupport>
       <SupportJustMyCode>true</SupportJustMyCode>
-      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <FloatingPointExceptions>true</FloatingPointExceptions>
       <BuildStlModules>false</BuildStlModules>
       <SmallerTypeCheck>false</SmallerTypeCheck>
       <CompileAsManaged>false</CompileAsManaged>
-      <FloatingPointModel>Fast</FloatingPointModel>
+      <FloatingPointModel>Precise</FloatingPointModel>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <ResourceCompile>
@@ -224,13 +224,11 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnablePREfast>false</EnablePREfast>
       <OptimizeForWindowsApplication>true</OptimizeForWindowsApplication>
-      <UseProcessorExtensions>SSE3</UseProcessorExtensions>
       <EnableMatrixMultiplyLibraryCall>Yes</EnableMatrixMultiplyLibraryCall>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <Parallelization>true</Parallelization>
       <UseIntelOptimizedHeaders>true</UseIntelOptimizedHeaders>
-      <GenerateAlternateCodePaths>SSE3</GenerateAlternateCodePaths>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>Full</Optimization>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <OpenMPSupport>false</OpenMPSupport>
       <FunctionLevelLinking>false</FunctionLevelLinking>
@@ -247,6 +245,7 @@
       <DebugInformationFormat>None</DebugInformationFormat>
       <SDLCheck>false</SDLCheck>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <ExceptionHandling>false</ExceptionHandling>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -283,13 +282,11 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnablePREfast>false</EnablePREfast>
       <OptimizeForWindowsApplication>true</OptimizeForWindowsApplication>
-      <UseProcessorExtensions>SSE3</UseProcessorExtensions>
       <EnableMatrixMultiplyLibraryCall>Yes</EnableMatrixMultiplyLibraryCall>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <Parallelization>true</Parallelization>
       <UseIntelOptimizedHeaders>true</UseIntelOptimizedHeaders>
-      <GenerateAlternateCodePaths>SSE42</GenerateAlternateCodePaths>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>Full</Optimization>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <OpenMPSupport>false</OpenMPSupport>
       <FunctionLevelLinking>false</FunctionLevelLinking>
@@ -305,6 +302,7 @@
       <DebugInformationFormat>None</DebugInformationFormat>
       <SDLCheck>false</SDLCheck>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <ExceptionHandling>false</ExceptionHandling>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
