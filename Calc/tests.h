@@ -62,6 +62,7 @@ auto calc_tests()
 		{"7 % 2 ^ 2", "3"},
 		{"6 / 3 % 2", "0"},
 		{"6 % 4 / 2", "1"},
+		{"mod(3.5, 2)", "1.5"},
 		
 		// min max functions
 		{"min(1)", "1"},
@@ -70,6 +71,8 @@ auto calc_tests()
 
 		// hardware provided
 		{"fma(2, 2, 2)", "6"},
+
+		{"minkowski_distance(1, 1, 2, 3)", "6"},
 	};
 	
 	std::string output;

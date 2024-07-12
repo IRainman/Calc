@@ -138,15 +138,34 @@ namespace
 	{
 		return std::sph_neumann(static_cast<const unsigned int>(params[0]), params[1]); //-V2004
 	}
+	[[nodiscard]] Value minkowski_distance(std::span<const Value> params) noexcept
+	{
+		// params contains p all other parameters is distances d[i] = v[i] - w[i] for two vectors v and w
+		Value ex = 0.0;
+		Value min_d = std::numeric_limits<Value>::infinity();
+		Value max_d = -std::numeric_limits<Value>::infinity();
+		for (auto i : params.subspan(1))
+		{
+			Value d = std::fabs(i);
+			ex += std::pow(d, params[0]);
+			min_d = std::min(min_d, d);
+			max_d = std::max(max_d, d);
+		}
+
+		return std::isnan(ex) ? ex
+			: !std::isnormal(ex) && std::signbit(params[0]) ? min_d
+			: !std::isnormal(ex) && !std::signbit(params[0]) ? max_d
+			: std::pow(ex, 1.0 / params[0]);
+	}
 
 	static const Identifiers::map ids =
 	{
 		//---------------------------------------------------------------------------
-		// TODO https://en.cppreference.com/w/cpp/numeric/constants
-		{"pi", constant<std::numbers::pi>()},
-		{"e", constant<std::numbers::e>()},
-		{"phi", constant<std::numbers::phi>()},
-		{"egamma", constant<std::numbers::egamma>()},
+		// https://en.cppreference.com/w/cpp/numeric/constants
+		{"pi", constant<std::numbers::pi_v<Value>>()},
+		{"e", constant<std::numbers::e_v<Value>>()},
+		{"phi", constant<std::numbers::phi_v<Value>>()},
+		{"egamma", constant<std::numbers::egamma_v<Value>>()},
 		//---------------------------------------------------------------------------
 		// TODO additional constant
 		{"c", constant<299792458.0L>()},// Speed of light in vacuum (m·s-1)
@@ -160,11 +179,11 @@ namespace
 		{"m_P", constant<2.176434242424242424242424242424242424242424e-8L>()},// Planck mass (kg)
 		{"T_P", constant<1.4167841616161616161616161616161616161616161616161616e32L>()},// Planck temperature (K)
 		{"t_P", constant<5.391247606060606060606060606060606060606060606060e-44L>()},// Planck time (s)
-		{"mu_0", constant<1.2566370621219191919191919191919191919e-6>()},// magnetic constant (exactly 4 pi x 10^(-7)
+		{"mu_0", constant<1.2566370621219191919191919191919191919e-6L>()},// magnetic constant (exactly 4 pi x 10^(-7)
 		{"epsilon_0", constant<8.854187817620389850536563031710750260608e-12L>()},// electric constant (Ohm)
 		{"Z_0", constant<376.7303134617706554681984004203193082686L>()},// characteristic impedance of vacuum (Ohm)
 		//---------------------------------------------------------------------------
-		// TODO https://en.cppreference.com/w/cpp/numeric/math
+		// https://en.cppreference.com/w/cpp/numeric/math
 		{"sin", function_pointer<1, std::sin>()},
 		{"cos", function_pointer<1, std::cos>()},
 		{"tan", function_pointer<1, std::tan>()},
@@ -215,6 +234,8 @@ namespace
 		{"trunc", function_pointer<1, trunc>()},
 		{"round", function_pointer<1, round>()},
 
+		{"mod", function_pointer<2, fmod>()},
+
 		//---------------------------------------------------------------------------
 		// TODO https://en.cppreference.com/w/cpp/numeric/special_math
 		{"assoc_legendre", {{3, 0}, assoc_legendre}},
@@ -246,6 +267,7 @@ namespace
 		{"hermite", {{2, 0}, hermite}},
 
 		{"riemann_zeta", function_pointer<1, std::riemann_zeta>()},
+		{"minkowski_distance", {{2, Fn::P::unlim}, minkowski_distance}},
 		//---------------------------------------------------------------------------
 	};
 }

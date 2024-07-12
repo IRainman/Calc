@@ -144,12 +144,11 @@
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <OpenMPSupport>false</OpenMPSupport>
       <SupportJustMyCode>true</SupportJustMyCode>
-      <FloatingPointExceptions>true</FloatingPointExceptions>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <BuildStlModules>false</BuildStlModules>
       <SmallerTypeCheck>false</SmallerTypeCheck>
       <CompileAsManaged>false</CompileAsManaged>
-      <FloatingPointModel>Precise</FloatingPointModel>
+      <FloatingPointModel>Fast</FloatingPointModel>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <ResourceCompile>
@@ -186,11 +185,10 @@
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <OpenMPSupport>false</OpenMPSupport>
       <SupportJustMyCode>true</SupportJustMyCode>
-      <FloatingPointExceptions>true</FloatingPointExceptions>
       <BuildStlModules>false</BuildStlModules>
       <SmallerTypeCheck>false</SmallerTypeCheck>
       <CompileAsManaged>false</CompileAsManaged>
-      <FloatingPointModel>Precise</FloatingPointModel>
+      <FloatingPointModel>Fast</FloatingPointModel>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <ResourceCompile>
@@ -237,7 +235,6 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
-      <FloatingPointExceptions>false</FloatingPointExceptions>
       <BuildStlModules>false</BuildStlModules>
       <CompileAsManaged>false</CompileAsManaged>
       <FloatingPointModel>Fast</FloatingPointModel>
@@ -294,7 +291,6 @@
       <ControlFlowGuard>false</ControlFlowGuard>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <FloatingPointExceptions>false</FloatingPointExceptions>
       <BuildStlModules>false</BuildStlModules>
       <CompileAsManaged>false</CompileAsManaged>
       <FloatingPointModel>Fast</FloatingPointModel>
