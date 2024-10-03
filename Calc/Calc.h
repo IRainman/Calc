@@ -14,9 +14,11 @@ class CCalcApp : public CWinAppEx
 
 		
 	public:
-		virtual BOOL InitInstance();
+		BOOL InitInstance() override;
 		
 		DECLARE_MESSAGE_MAP()
+
+		afx_msg void OnHelp();
 };
 
 extern CCalcApp theApp;

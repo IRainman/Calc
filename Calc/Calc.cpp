@@ -10,10 +10,14 @@
 #include "CalcDlg.h"
 
 BEGIN_MESSAGE_MAP(CCalcApp, CWinAppEx)
-	ON_COMMAND(ID_HELP, OnHelp)
+	ON_COMMAND(ID_HELP, &CCalcApp::OnHelp)
 END_MESSAGE_MAP()
 
 CCalcApp::CCalcApp() noexcept
+{
+}
+
+void CCalcApp::OnHelp()
 {
 }
 

@@ -30,7 +30,7 @@ class CAboutDlg : public CDialog
 	protected:
 		DECLARE_MESSAGE_MAP()
 	public:
-		afx_msg void OnBnClickedSite() noexcept;
+		afx_msg void OnBnClickedSite();
 };
 
 BOOL CAboutDlg::OnInitDialog()
@@ -50,7 +50,7 @@ inline void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
-	ON_BN_CLICKED(ID_SITE, OnBnClickedSite)
+	ON_BN_CLICKED(ID_SITE, &CAboutDlg::OnBnClickedSite)
 END_MESSAGE_MAP()
 
 CCalcDlg::CCalcDlg(CWnd* pParent /*=nullptr*/) noexcept
@@ -69,7 +69,7 @@ BEGIN_MESSAGE_MAP(CCalcDlg, CDialog)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	//}}AFX_MSG_MAP
-	ON_EN_CHANGE(IDC_EDIT_INPUT, OnEnChangeEditInput)
+	ON_EN_CHANGE(IDC_EDIT_INPUT, &CCalcDlg::OnEnChangeEditInput)
 END_MESSAGE_MAP()
 
 
@@ -109,7 +109,7 @@ inline void CCalcDlg::OnSysCommand(UINT nID, LPARAM lParam)
 	}
 }
 
-inline HCURSOR CCalcDlg::OnQueryDragIcon() noexcept
+HCURSOR CCalcDlg::OnQueryDragIcon()
 {
 	return m_hIcon;
 }
@@ -126,7 +126,7 @@ void CCalcDlg::OnEnChangeEditInput()
 	IssueManager::clear();
 }
 
-void CAboutDlg::OnBnClickedSite() noexcept
+void CAboutDlg::OnBnClickedSite()
 {
 	::ShellExecute(nullptr, nullptr, "http://studio2000.xyz/txt/calc.shtml", nullptr, nullptr, SW_SHOWNORMAL); //-V2001
 }

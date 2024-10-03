@@ -85,7 +85,6 @@
     <None Include="res\Calc.rc2">
       <Filter>Resources</Filter>
     </None>
-    <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Calc.rc">

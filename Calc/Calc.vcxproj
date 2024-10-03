@@ -34,20 +34,21 @@
     <UseIntelTBB>false</UseIntelTBB>
     <InstrumentIntelTBB>false</InstrumentIntelTBB>
     <UseIntelMKL>No</UseIntelMKL>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>ClangCL</PlatformToolset>
     <UseOfMfc>Dynamic</UseOfMfc>
+    <LLVMToolsVersion>19</LLVMToolsVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>Dynamic</UseOfMfc>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>ClangCL</PlatformToolset>
     <UseIntelIPP>false</UseIntelIPP>
     <UseIntelTBB>false</UseIntelTBB>
     <InstrumentIntelTBB>false</InstrumentIntelTBB>
     <UseIntelMKL>No</UseIntelMKL>
-    <EnableASAN>true</EnableASAN>
     <UseDebugLibraries>true</UseDebugLibraries>
     <EnableFuzzer>false</EnableFuzzer>
+    <LLVMToolsVersion>19</LLVMToolsVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -58,16 +59,17 @@
     <UseIntelTBB>false</UseIntelTBB>
     <InstrumentIntelTBB>false</InstrumentIntelTBB>
     <UseIntelMKL>No</UseIntelMKL>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>ClangCL</PlatformToolset>
     <UseOfMfc>Dynamic</UseOfMfc>
+    <LLVMToolsVersion>19</LLVMToolsVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>Dynamic</UseOfMfc>
-    <PlatformToolset>v143</PlatformToolset>
-    <EnableASAN>true</EnableASAN>
+    <PlatformToolset>ClangCL</PlatformToolset>
     <UseDebugLibraries>true</UseDebugLibraries>
     <EnableFuzzer>false</EnableFuzzer>
+    <LLVMToolsVersion>19</LLVMToolsVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -245,7 +247,6 @@
       <DebugInformationFormat>None</DebugInformationFormat>
       <SDLCheck>false</SDLCheck>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <ExceptionHandling>false</ExceptionHandling>
       <GuardEHContMetadata>false</GuardEHContMetadata>
       <AssemblerOutput>All</AssemblerOutput>
       <UseUnicodeForAssemblerListing>true</UseUnicodeForAssemblerListing>
@@ -303,7 +304,6 @@
       <DebugInformationFormat>None</DebugInformationFormat>
       <SDLCheck>false</SDLCheck>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <ExceptionHandling>false</ExceptionHandling>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <GuardEHContMetadata>false</GuardEHContMetadata>
       <AssemblerOutput>All</AssemblerOutput>
@@ -357,7 +357,6 @@
   <ItemGroup>
     <None Include="res\C.ico" />
     <None Include="res\Calc.rc2" />
-    <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Calc.rc" />
