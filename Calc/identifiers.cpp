@@ -214,9 +214,9 @@ namespace
 		{"sqrt", function_pointer<1, std::sqrt>()},
 		{"cbrt", function_pointer<1, std::cbrt>()},
 		{"pow", {{2, 0}, power}},
-
+#if 0
 		{"fma", function_pointer<3, std::fma>()},
-
+#endif
 		{"rad", function_pointer<1, rad>()},
 		{"deg", function_pointer<1, deg>()},
 
