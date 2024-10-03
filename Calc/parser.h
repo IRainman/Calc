@@ -64,8 +64,6 @@ class Parser
 		
 		[[nodiscard]] long double parse_function_or_constant();
 		
-		std::vector<long double> parse_function_params();
-		
 		Lexer& _lex;
 		Token _current;
 };

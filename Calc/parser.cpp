@@ -166,7 +166,7 @@ long double Parser::parse_expr_0()
 
 long double Parser::parse_function_or_constant()
 {
-	const auto name = _current.text; //-V836
+	const auto name = _current.text;
 	const auto pos_of_ident_start = _lex.get_position();
 	advance();
 	if (_current.type == Token::Type::LPAREN)
@@ -203,7 +203,7 @@ long double Parser::parse_function_or_constant()
 					}
 					else
 					{
-						IssueManager::report_error(_lex.get_position(), std::format("expected closing parenthesis or coma, got {}", _current.text));
+						IssueManager::report_error(_lex.get_position(), std::format("expected closing parenthesis or coma, got {}", name));
 						return NAN;
 					}
 				}

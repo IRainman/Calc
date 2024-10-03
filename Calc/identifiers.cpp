@@ -267,7 +267,10 @@ namespace
 		{"hermite", {{2, 0}, hermite}},
 
 		{"riemann_zeta", function_pointer<1, std::riemann_zeta>()},
+
+		//---------------------------------------------------------------------------
 		{"minkowski_distance", {{2, Fn::P::unlim}, minkowski_distance}},
+
 		//---------------------------------------------------------------------------
 	};
 }
