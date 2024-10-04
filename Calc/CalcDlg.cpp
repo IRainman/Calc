@@ -23,13 +23,9 @@ class CAboutDlg : public CDialog
 		
 		enum { IDD = IDD_ABOUTBOX };
 		
-	protected:
 		virtual BOOL OnInitDialog() override;
-		virtual void DoDataExchange(CDataExchange* pDX) override;
 		
-	protected:
 		DECLARE_MESSAGE_MAP()
-	public:
 		afx_msg void OnBnClickedSite();
 };
 
@@ -44,26 +40,14 @@ CAboutDlg::CAboutDlg() noexcept : CDialog(CAboutDlg::IDD)
 {
 }
 
-inline void CAboutDlg::DoDataExchange(CDataExchange* pDX)
-{
-	CDialog::DoDataExchange(pDX);
-}
-
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
-	ON_BN_CLICKED(ID_SITE, &CAboutDlg::OnBnClickedSite)
+	ON_BN_CLICKED(ID_SITE, &ThisClass::OnBnClickedSite)
 END_MESSAGE_MAP()
 
 CCalcDlg::CCalcDlg(CWnd* pParent /*=nullptr*/) noexcept
 	: CDialog(CCalcDlg::IDD, pParent)
 {
-	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
-
-inline void CCalcDlg::DoDataExchange(CDataExchange* pDX)
-{
-	CDialog::DoDataExchange(pDX);
-}
-
 BEGIN_MESSAGE_MAP(CCalcDlg, CDialog)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
@@ -86,6 +70,7 @@ BOOL CCalcDlg::OnInitDialog()
 	pSysMenu->AppendMenu(MF_SEPARATOR);
 	pSysMenu->AppendMenu(MF_STRING, IDM_ABOUTBOX, strAboutMenu);
 	
+	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 	SetIcon(m_hIcon, TRUE);
 	SetIcon(m_hIcon, FALSE);
 

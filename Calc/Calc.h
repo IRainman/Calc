@@ -8,17 +8,7 @@
 class CCalcApp : public CWinAppEx
 {
 	public:
-		explicit CCalcApp() noexcept;
-		CCalcApp(const CCalcApp&) = delete;
-		CCalcApp(CCalcApp&&) = delete;
-
-		
-	public:
-		BOOL InitInstance() override;
-		
+		virtual BOOL InitInstance() override;
 		DECLARE_MESSAGE_MAP()
-
 		afx_msg void OnHelp();
 };
-
-extern CCalcApp theApp;

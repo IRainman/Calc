@@ -10,12 +10,8 @@
 #include "CalcDlg.h"
 
 BEGIN_MESSAGE_MAP(CCalcApp, CWinAppEx)
-	ON_COMMAND(ID_HELP, &CCalcApp::OnHelp)
+	ON_COMMAND(ID_HELP, &ThisClass::OnHelp)
 END_MESSAGE_MAP()
-
-CCalcApp::CCalcApp() noexcept
-{
-}
 
 void CCalcApp::OnHelp()
 {
@@ -25,16 +21,16 @@ CCalcApp theApp;
 
 BOOL CCalcApp::InitInstance()
 {
+	CWinAppEx::InitInstance();
+
 	INITCOMMONCONTROLSEX InitCtrls;
 	InitCtrls.dwSize = sizeof(InitCtrls);
 	
 	InitCtrls.dwICC = ICC_STANDARD_CLASSES;
 	InitCommonControlsEx(&InitCtrls);
 	
-	CWinAppEx::InitInstance();
-	
 	CCalcDlg dlg;
 	m_pMainWnd = &dlg;
 	dlg.DoModal();
-	return FALSE;
+	return TRUE;
 }
