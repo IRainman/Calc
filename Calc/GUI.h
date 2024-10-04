@@ -6,10 +6,12 @@
 #include "targetver.h"
 #include "resource.h"
 
-#ifndef VC_EXTRALEAN
 #define VC_EXTRALEAN
-#endif
-
+#define WIN32_LEAN_AND_MEAN
+#define _AFX_NO_OLE_SUPPORT
+#define _AFX_NO_DB_SUPPORT
+#define _AFX_NO_DAO_SUPPORT
+#define _AFX_NO_AFXCMN_SUPPORT
 #define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS
 #define _ATL_CSTRING_NO_CRT
 #define _ATL_ALL_WARNINGS
@@ -17,7 +19,11 @@
 #define _ATL_NO_COM_SUPPORT
 #define _AFX_MINREBUILD
 #define _AFX_ALL_WARNINGS
-#define _AFXDLL
+#define NOGDI
+#define NOSOUND
+#define NOCOMM
+#define NOCRYPT
+#define NOMINMAX  
 #include <afxwinappex.h>
 
 class CCalcApp : public CWinAppEx
