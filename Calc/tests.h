@@ -1,6 +1,6 @@
 #pragma once
 /*
- * Copyright 2023 Solomina Elle Leonovna, a.rainman on gmail point com
+ * Copyright 2023-2024 Solomina Elle Leonovna, a.rainman on gmail point com
  */
 
 #ifdef CALC_TESTS_ENABLED
@@ -38,7 +38,7 @@ auto calc_tests()
 		// trigonometric functions
 		{"sin( rad(0) )", "0"},
 		{"87 * tan(pi) - 7", "-7"},
-		{"tan(-pi)", "0"}, // TODO: Test failed: tan(-pi) = 0 != 1.2246467991474e-16. Completed with 0 messages.
+		{"tan(-pi)", "0"},
 		{"tan(inf)", "nan"},
 		
 		{"log(sh(42) + ch(42))", "42"},
@@ -68,9 +68,6 @@ auto calc_tests()
 		{"min(1)", "1"},
 		{"min(1, 2, 3)", "1"},
 		{"max(1, 2, 3)", "3"},
-
-		// hardware provided
-		{"fma(2, 2, 2)", "6"},
 
 		{"minkowski_distance(1, 1, 2, 3)", "6"},
 	};

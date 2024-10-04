@@ -1,9 +1,7 @@
 #pragma once
-//
-// Prototype writed by Tamika Nomara on 28.05.2023.
-//
-// Full version implemented by Elle Solomina and maintained since 29.05.2023.
-//
+/*
+ * Copyright 2023-2024 Solomina Elle Leonovna, a.rainman on gmail point com
+ */
 
 #include "lexer.h"
 

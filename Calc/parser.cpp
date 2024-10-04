@@ -1,11 +1,9 @@
 ﻿// This is an independent project of an individual developer. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
-//
-// Prototype writed by Tamika Nomara on 28.05.2023.
-//
-// Full version implemented by Elle Solomina and maintained since 29.05.2023.
-//
+/*
+ * Copyright 2023-2024 Solomina Elle Leonovna, a.rainman on gmail point com
+ */
 
 #include "pch.h"
 #include "issue_manager.h"

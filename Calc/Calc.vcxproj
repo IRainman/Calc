@@ -133,7 +133,6 @@
       <OpenMPSupport>false</OpenMPSupport>
       <SupportJustMyCode>true</SupportJustMyCode>
       <BuildStlModules>false</BuildStlModules>
-      <SmallerTypeCheck>true</SmallerTypeCheck>
       <CompileAsManaged>false</CompileAsManaged>
       <FloatingPointModel>Fast</FloatingPointModel>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -142,7 +141,6 @@
       <StringPooling>true</StringPooling>
       <ControlFlowGuard>Guard</ControlFlowGuard>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <GuardEHContMetadata>true</GuardEHContMetadata>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -179,7 +177,6 @@
       <OpenMPSupport>false</OpenMPSupport>
       <SupportJustMyCode>true</SupportJustMyCode>
       <BuildStlModules>false</BuildStlModules>
-      <SmallerTypeCheck>true</SmallerTypeCheck>
       <CompileAsManaged>false</CompileAsManaged>
       <FloatingPointModel>Fast</FloatingPointModel>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -188,7 +185,6 @@
       <StringPooling>true</StringPooling>
       <ControlFlowGuard>Guard</ControlFlowGuard>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <GuardEHContMetadata>true</GuardEHContMetadata>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -316,7 +312,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Calc.cpp" />
-    <ClCompile Include="CalcDlg.cpp" />
     <ClCompile Include="formatter.cpp" />
     <ClCompile Include="identifiers.cpp" />
     <ClCompile Include="issue_manager.cpp" />
@@ -330,8 +325,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Calc.h" />
-    <ClInclude Include="CalcDlg.h" />
+    <ClInclude Include="GUI.h" />
     <ClInclude Include="flags.h" />
     <ClInclude Include="formatter.h" />
     <ClInclude Include="issue_manager.h" />
