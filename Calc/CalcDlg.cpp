@@ -44,10 +44,14 @@ BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
 	ON_BN_CLICKED(ID_SITE, &ThisClass::OnBnClickedSite)
 END_MESSAGE_MAP()
 
+extern CCalcApp theApp;
+
 CCalcDlg::CCalcDlg(CWnd* pParent /*=nullptr*/) noexcept
 	: CDialog(CCalcDlg::IDD, pParent)
 {
+	m_hIcon = theApp.LoadIcon(IDR_MAINFRAME);
 }
+
 BEGIN_MESSAGE_MAP(CCalcDlg, CDialog)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
@@ -55,7 +59,6 @@ BEGIN_MESSAGE_MAP(CCalcDlg, CDialog)
 	//}}AFX_MSG_MAP
 	ON_EN_CHANGE(IDC_EDIT_INPUT, &CCalcDlg::OnEnChangeEditInput)
 END_MESSAGE_MAP()
-
 
 BOOL CCalcDlg::OnInitDialog()
 {
@@ -70,7 +73,6 @@ BOOL CCalcDlg::OnInitDialog()
 	pSysMenu->AppendMenu(MF_SEPARATOR);
 	pSysMenu->AppendMenu(MF_STRING, IDM_ABOUTBOX, strAboutMenu);
 	
-	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 	SetIcon(m_hIcon, TRUE);
 	SetIcon(m_hIcon, FALSE);
 
