@@ -24,8 +24,8 @@ class CCalcApp : public CWinAppEx
 {
 	public:
 		virtual BOOL InitInstance() override;
-		DECLARE_MESSAGE_MAP()
 		afx_msg void OnHelp();
+		DECLARE_MESSAGE_MAP()
 };
 
 class CCalcDlg : public CDialog
@@ -36,8 +36,8 @@ class CCalcDlg : public CDialog
 		CCalcDlg(CCalcDlg&&) = delete;
 		enum { IDD = IDD_CALC_DIALOG };
 		afx_msg void OnEnChangeEditInput();
-		HICON m_hIcon;//-V122_NOPTR
-		BOOL OnInitDialog() override;
+		HICON m_hIcon; //-V122
+		virtual BOOL OnInitDialog() override;
 		afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
 		afx_msg HCURSOR OnQueryDragIcon();
 		DECLARE_MESSAGE_MAP()

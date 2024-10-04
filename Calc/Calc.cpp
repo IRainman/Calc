@@ -55,7 +55,7 @@ void CCalcApp::OnHelp()
 
 
 
-CCalcDlg::CCalcDlg(CWnd* pParent /*=nullptr*/) noexcept
+CCalcDlg::CCalcDlg(CWnd* pParent /*=nullptr*/) noexcept //-V730
 	: CDialog(CCalcDlg::IDD, pParent)
 {
 }
