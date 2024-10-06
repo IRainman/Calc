@@ -130,14 +130,17 @@ namespace
 	{
 		return std::sph_bessel(static_cast<const unsigned int>(params[0]), params[1]); //-V2004
 	}
+
 	[[nodiscard]] Value sph_legendre(std::span<const Value> params) noexcept
 	{
 		return std::sph_legendre(static_cast<const unsigned int>(params[0]), static_cast<const unsigned int>(params[1]), params[2]); //-V2004
 	}
+
 	[[nodiscard]] Value sph_neumann(std::span<const Value> params) noexcept
 	{
 		return std::sph_neumann(static_cast<const unsigned int>(params[0]), params[1]); //-V2004
 	}
+#ifdef CALC_TESTS_ENABLED
 	[[nodiscard]] Value minkowski_distance(std::span<const Value> params) noexcept
 	{
 		// params contains p all other parameters is distances d[i] = v[i] - w[i] for two vectors v and w
@@ -157,6 +160,7 @@ namespace
 			: !std::isnormal(ex) && !std::signbit(params[0]) ? max_d
 			: std::pow(ex, 1.0 / params[0]);
 	}
+#endif
 
 	static const Identifiers::map ids =
 	{
@@ -214,7 +218,7 @@ namespace
 		{"sqrt", function_pointer<1, std::sqrt>()},
 		{"cbrt", function_pointer<1, std::cbrt>()},
 		{"pow", {{2, 0}, power}},
-#if 0
+#ifdef CALC_TESTS_ENABLED
 		{"fma", function_pointer<3, std::fma>()},
 #endif
 		{"rad", function_pointer<1, rad>()},
@@ -269,7 +273,9 @@ namespace
 		{"riemann_zeta", function_pointer<1, std::riemann_zeta>()},
 
 		//---------------------------------------------------------------------------
+#ifdef CALC_TESTS_ENABLED
 		{"minkowski_distance", {{2, Fn::P::unlim}, minkowski_distance}},
+#endif
 
 		//---------------------------------------------------------------------------
 	};

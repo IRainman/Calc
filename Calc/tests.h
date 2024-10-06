@@ -69,6 +69,8 @@ auto calc_tests()
 		{"min(1, 2, 3)", "1"},
 		{"max(1, 2, 3)", "3"},
 
+		{"fma(2, 2, 2)", "6"},
+
 		{"minkowski_distance(1, 1, 2, 3)", "6"},
 	};
 	
