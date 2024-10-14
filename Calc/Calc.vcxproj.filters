@@ -18,9 +18,6 @@
     <ClCompile Include="Calc.cpp">
       <Filter>Modules</Filter>
     </ClCompile>
-    <ClCompile Include="CalcDlg.cpp">
-      <Filter>Modules</Filter>
-    </ClCompile>
     <ClCompile Include="pch.cpp">
       <Filter>Modules</Filter>
     </ClCompile>
@@ -41,12 +38,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Calc.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="CalcDlg.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
     <ClInclude Include="flags.h">
       <Filter>Headers</Filter>
     </ClInclude>
@@ -75,6 +66,9 @@
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="identifiers.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI.h">
       <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>

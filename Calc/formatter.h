@@ -1,6 +1,6 @@
 #pragma once
 /*
- * Copyright 2023 Solomina Elle Leonovna, a.rainman on gmail point com
+ * Copyright 2023-2024 Solomina Elle Leonovna, a.rainman on gmail point com
  */
 
 namespace Formatter
@@ -12,8 +12,7 @@ namespace Formatter
 	[[nodiscard]] constexpr auto format_output_value(const V v)
 	{
 		std::string s;
-		s.resize(24);
-		//s.resize(std::bit_ceil(static_cast<size_t>(std::numeric_limits<V>::max_digits10)));
+		s.resize(24); //s.resize(std::bit_ceil(static_cast<size_t>(std::numeric_limits<V>::max_digits10)));
 		s.resize(std::to_chars(s.data(), s.data() + s.size(),
 			v, std::chars_format::general, std::numeric_limits<V>::digits10 - 1).ptr - s.data());
 		return s;

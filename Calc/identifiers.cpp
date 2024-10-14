@@ -100,7 +100,7 @@ namespace
 			return std::log(x);
 		}
 	}
-
+#ifdef CALC_TESTS_ENABLED
 	[[nodiscard]] Value assoc_legendre(std::span<const Value> params) noexcept
 	{
 		return std::assoc_legendre(static_cast<const unsigned int>(params[0]), static_cast<const unsigned int>(params[1]), params[2]); //-V2004
@@ -140,7 +140,7 @@ namespace
 	{
 		return std::sph_neumann(static_cast<const unsigned int>(params[0]), params[1]); //-V2004
 	}
-#ifdef CALC_TESTS_ENABLED
+
 	[[nodiscard]] Value minkowski_distance(std::span<const Value> params) noexcept
 	{
 		// params contains p all other parameters is distances d[i] = v[i] - w[i] for two vectors v and w
@@ -232,14 +232,15 @@ namespace
 		{"erf", function_pointer<1, std::erf>()},
 		{"erfc", function_pointer<1, std::erfc>()},
 
-		{"tgamma", function_pointer<1, tgamma>()},
-		{"lgamma", function_pointer<1, lgamma>()},
+		{"tgamma", function_pointer<1, std::tgamma>()},
+		{"lgamma", function_pointer<1, std::lgamma>()},
 
-		{"trunc", function_pointer<1, trunc>()},
-		{"round", function_pointer<1, round>()},
+		{"trunc", function_pointer<1, std::trunc>()},
+		{"round", function_pointer<1, std::round>()},
 
-		{"mod", function_pointer<2, fmod>()},
+		{"mod", function_pointer<2, std::fmod>()},
 
+#ifdef CALC_TESTS_ENABLED
 		//---------------------------------------------------------------------------
 		// TODO https://en.cppreference.com/w/cpp/numeric/special_math
 		{"assoc_legendre", {{3, 0}, assoc_legendre}},
@@ -273,7 +274,6 @@ namespace
 		{"riemann_zeta", function_pointer<1, std::riemann_zeta>()},
 
 		//---------------------------------------------------------------------------
-#ifdef CALC_TESTS_ENABLED
 		{"minkowski_distance", {{2, Fn::P::unlim}, minkowski_distance}},
 #endif
 

@@ -1,4 +1,7 @@
 #pragma once
+/*
+ * Copyright 2009-2024 Solomina Elle Leonovna, a.rainman on gmail point com
+ */
 
 #include "flags.h"
 
