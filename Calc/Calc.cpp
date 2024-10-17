@@ -55,7 +55,7 @@ void CCalcApp::OnHelp()
 
 
 
-CCalcDlg::CCalcDlg(CWnd* pParent /*=nullptr*/) noexcept //-V730
+CCalcDlg::CCalcDlg(CWnd* pParent /*=nullptr*/) //-V730
 	: CDialog(CCalcDlg::IDD, pParent)
 {
 }
@@ -106,7 +106,7 @@ void CCalcDlg::OnSysCommand(UINT nID, LPARAM lParam)
 	}
 }
 
-HCURSOR CCalcDlg::OnQueryDragIcon()
+HCURSOR CCalcDlg::OnQueryDragIcon() noexcept
 {
 	return m_hIcon;
 }
@@ -129,7 +129,7 @@ void CCalcDlg::OnEnChangeEditInput()
 
 
 
-CAboutDlg::CAboutDlg() noexcept : CDialog(CAboutDlg::IDD)
+CAboutDlg::CAboutDlg() : CDialog(CAboutDlg::IDD)
 {
 }
 
@@ -144,7 +144,7 @@ BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
 	ON_BN_CLICKED(ID_SITE, &ThisClass::OnBnClickedSite)
 END_MESSAGE_MAP()
 
-void CAboutDlg::OnBnClickedSite()
+void CAboutDlg::OnBnClickedSite() noexcept
 {
 	::ShellExecute(nullptr, nullptr, "http://studio2000.xyz/txt/calc.shtml", nullptr, nullptr, SW_SHOWNORMAL); //-V2001
 }
