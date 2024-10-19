@@ -3,38 +3,11 @@
  * Copyright 2023-2024 Solomina Elle Leonovna, a.rainman on gmail point com
  */
 
-#include "issue_manager.h"
-
-struct Token
-{
-	enum class Type : unsigned int
-	{
-	    END = 0,
-	    ADD,
-	    SUB,
-	    MUL,
-	    DIV,
-	    POW,
-	    REM,
-	    LPAREN,
-	    RPAREN,
-	    COMA,
-	    NUM,
-	    IDENT,
-	};
-	
-	// Type of this token.
-	Type type;
-	
-	// Text of the token.
-	std::string_view text;
-	
-	// If token is a number, this is the parsed value of it.
-	long double val;
-};
+#include "token.h"
 
 class Lexer
 {
+	using Value = Token::Value;
 	public:
 		explicit Lexer(const std::string_view data) noexcept
 			: _view{data}, _begin{data.data()}
@@ -65,12 +38,12 @@ class Lexer
 		/**
 		 * Create a new token at the beginning of the input view.
 		 */
-		[[nodiscard]] Token emit(Token::Type type, size_t n, long double val = NAN);
+		[[nodiscard]] Token emit(Token::Type type, size_t n, Value val = NAN);
 		
 		/**
 		 * Create a new token at the beginning of the input view, and move current position to the end of the token.
 		 */
-		[[nodiscard]] Token emit_and_advance(Token::Type type, size_t n, long double val = NAN);
+		[[nodiscard]] Token emit_and_advance(Token::Type type, size_t n, Value val = NAN);
 		
 		/**
 		 * Read number at the beginning of the input view.

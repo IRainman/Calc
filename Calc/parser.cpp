@@ -15,7 +15,7 @@ namespace
 	const auto& ids = Identifiers::get();
 };
 
-[[nodiscard]] long double Parser::parse()
+[[nodiscard]] Parser::Value Parser::parse()
 {
 	const auto result = parse_expr_4();
 	if (_current.type != Token::Type::END)
@@ -38,7 +38,7 @@ void Parser::advance()
 	_current = _lex.next();
 }
 
-long double Parser::parse_expr_4()
+Parser::Value Parser::parse_expr_4()
 {
 	auto result = parse_expr_3();
 	while (true)
@@ -59,7 +59,7 @@ long double Parser::parse_expr_4()
 	}
 }
 
-long double Parser::parse_expr_3()
+Parser::Value Parser::parse_expr_3()
 {
 	auto result = parse_expr_2();
 	while (true)
@@ -84,9 +84,9 @@ long double Parser::parse_expr_3()
 	}
 }
 
-long double Parser::parse_expr_2()
+Parser::Value Parser::parse_expr_2()
 {
-	std::vector<long double> values;
+	std::vector<Parser::Value> values;
 	
 	while (true)
 	{
@@ -102,7 +102,7 @@ long double Parser::parse_expr_2()
 		}
 	}
 	
-	long double result = values.back();
+	Parser::Value result = values.back();
 	for (auto value: std::ranges::reverse_view(values) | std::views::drop(1))
 	{
 		result = std::pow(value, result);
@@ -110,7 +110,7 @@ long double Parser::parse_expr_2()
 	return result;
 }
 
-long double Parser::parse_expr_1()
+Parser::Value Parser::parse_expr_1()
 {
 	switch (_current.type)
 	{
@@ -125,7 +125,7 @@ long double Parser::parse_expr_1()
 	}
 }
 
-long double Parser::parse_expr_0()
+Parser::Value Parser::parse_expr_0()
 {
 	switch (_current.type)
 	{
@@ -162,7 +162,7 @@ long double Parser::parse_expr_0()
 	}
 }
 
-long double Parser::parse_function_or_constant()
+Parser::Value Parser::parse_function_or_constant()
 {
 	const auto name = _current.text;
 	const auto pos_of_ident_start = _lex.get_position();
@@ -175,7 +175,7 @@ long double Parser::parse_function_or_constant()
 			const auto [check, function] = i->second;
 			if (check.is_function())
 			{
-				std::vector<long double> params;
+				std::vector<Parser::Value> params;
 
 				while (true)
 				{

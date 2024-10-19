@@ -348,6 +348,7 @@
     <ClInclude Include="targetver.h" />
     <ClInclude Include="tests.h" />
     <ClInclude Include="identifiers.h" />
+    <ClInclude Include="token.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\C.ico" />

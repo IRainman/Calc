@@ -3,18 +3,17 @@
  * Copyright 2023-2024 Solomina Elle Leonovna, a.rainman on gmail point com
  */
 
+#include "token.h"
+
 namespace Identifiers
 {
-	/*
-	 * Type using as a type for calculation. 
-	 */
-	using Value = long double;
-
+	using Value = Token::Value;
+	using ParamCount = Token::ParamCount;
 	struct Fn
 	{
 		struct P
 		{
-			constexpr static auto unlim = std::numeric_limits<size_t>::max();
+			constexpr static auto unlim = std::numeric_limits<ParamCount>::max();
 			/**
 			 * Test is Fn is a constant and no needs arguments.
 			 */
@@ -36,8 +35,8 @@ namespace Identifiers
 			{
 				return min <= count || count <= max;
 			}
-			const size_t min; //-V122
-			const size_t max; //-V122
+			const ParamCount min;
+			const ParamCount max;
 		} check;
 		Value(*fn)(std::span<const Value>); //-V122
 	};

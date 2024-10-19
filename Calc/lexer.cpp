@@ -62,7 +62,7 @@ void Lexer::advance(size_t n) noexcept
 	_view.remove_prefix(n);
 }
 
-Token Lexer::emit(Token::Type type, size_t n, long double val)
+Token Lexer::emit(Token::Type type, size_t n,Value val)
 {
 	return Token
 	{
@@ -72,7 +72,7 @@ Token Lexer::emit(Token::Type type, size_t n, long double val)
 	};
 }
 
-Token Lexer::emit_and_advance(Token::Type type, size_t n, long double val)
+Token Lexer::emit_and_advance(Token::Type type, size_t n,Value val)
 {
 	auto token = emit(type, n, val);
 	advance(n);
@@ -81,7 +81,7 @@ Token Lexer::emit_and_advance(Token::Type type, size_t n, long double val)
 
 Token Lexer::read_number()
 {
-	long double val;
+	Value val;
 	const auto res = std::from_chars(_view.data(), _view.data() + _view.size(), val);
 	const auto n = res.ptr - _view.data();
 	
@@ -93,9 +93,9 @@ Token Lexer::read_number()
 		return emit(Token::Type::END, 0);
 	}
 #if 0 // TODO need fix for this code.
-	if (n > std::numeric_limits<long double>::digits10)
+	if (n >= std::numeric_limits<Value>::digits10)
 	{
-		im.report_warning(get_position(), std::format("the number has too many digits {} the maximum supported {}, the calculation can be performed with an error", n, std::numeric_limits<long double>::digits10));
+		IssueManager::report_warning(get_position(), std::format("the number has too many digits {} the maximum supported {}, the calculation can be performed with an error", n, std::numeric_limits<Value>::digits10));
 	}
 #endif
 	

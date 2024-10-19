@@ -10,31 +10,32 @@
 
 namespace
 {
-	using Value = Identifiers::Value;
+	using Value = Token::Value;
+	using ParamCount = Token::ParamCount;
 	using Fn = Identifiers::Fn;
 
-	template <const size_t>
+	template <const ParamCount>
 	using WrappedFnImplArg = Value;
 
-	template <const size_t... Is>
+	template <const ParamCount... Is>
 	consteval auto WrappedFnImpl(std::index_sequence<Is...>) noexcept -> Value(*)(WrappedFnImplArg<Is>...);
 
-	template <const size_t N>
+	template <const ParamCount N>
 	using WrappedFn = decltype(WrappedFnImpl(std::make_index_sequence<N>()));
 
-	template <typename Fn, const size_t... Is>
+	template <typename Fn, const ParamCount... Is>
 	[[nodiscard]] constexpr auto call_fn(Fn fn, std::span<const Value> params, std::index_sequence<Is...>) noexcept
 	{
 		return fn(params[Is]...);
 	}
 
-	template<const size_t N, WrappedFn<N> wrappedFn>
+	template<const ParamCount N, WrappedFn<N> wrappedFn>
 	[[nodiscard]] constexpr auto function_pointer_impl(std::span<const Value> params) noexcept
 	{
 		return call_fn(wrappedFn, params, std::make_index_sequence<N>());
 	}
 
-	template<const size_t N, WrappedFn<N> wrappedFn>
+	template<const ParamCount N, WrappedFn<N> wrappedFn>
 	[[nodiscard]] consteval Fn function_pointer() noexcept
 	{
 		return { { N, 0 }, function_pointer_impl<N, wrappedFn> };

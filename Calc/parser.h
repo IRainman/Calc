@@ -3,6 +3,7 @@
  * Copyright 2023-2024 Solomina Elle Leonovna, a.rainman on gmail point com
  */
 
+#include "token.h"
 #include "lexer.h"
 
 class Parser
@@ -39,10 +40,11 @@ class Parser
 		Parser(const Parser&) = delete;
 		Parser(Parser&&) = default;
 		
+		using Value = Token::Value;
 		/**
 		 * Parse and eval an expression. Return nan in case of an error.
 		 */
-		[[nodiscard]] long double parse();
+		[[nodiscard]] Value parse();
 		
 	private:
 		/**
@@ -50,17 +52,17 @@ class Parser
 		 */
 		void advance();
 		
-		[[nodiscard]] long double parse_expr_4();
+		[[nodiscard]] Value parse_expr_4();
 		
-		[[nodiscard]] long double parse_expr_3();
+		[[nodiscard]] Value parse_expr_3();
 		
-		[[nodiscard]] long double parse_expr_2();
+		[[nodiscard]] Value parse_expr_2();
 		
-		[[nodiscard]] long double parse_expr_1();
+		[[nodiscard]] Value parse_expr_1();
 		
-		[[nodiscard]] long double parse_expr_0();
+		[[nodiscard]] Value parse_expr_0();
 		
-		[[nodiscard]] long double parse_function_or_constant();
+		[[nodiscard]] Value parse_function_or_constant();
 		
 		Lexer& _lex;
 		Token _current;
