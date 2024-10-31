@@ -141,7 +141,6 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
       <OmitFramePointers>false</OmitFramePointers>
-      <StringPooling>true</StringPooling>
       <ControlFlowGuard>Guard</ControlFlowGuard>
       <FunctionLevelLinking>true</FunctionLevelLinking>
     </ClCompile>
@@ -151,10 +150,7 @@
       <Culture>0x0009</Culture>
     </ResourceCompile>
     <Link>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
-      <TargetMachine>MachineX86</TargetMachine>
-      <AssemblyDebug>true</AssemblyDebug>
     </Link>
     <ProjectReference>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
@@ -187,7 +183,6 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
       <OmitFramePointers>false</OmitFramePointers>
-      <StringPooling>true</StringPooling>
       <ControlFlowGuard>Guard</ControlFlowGuard>
       <FunctionLevelLinking>true</FunctionLevelLinking>
     </ClCompile>
@@ -197,10 +192,7 @@
       <Culture>0x0009</Culture>
     </ResourceCompile>
     <Link>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
-      <TargetMachine>MachineX64</TargetMachine>
-      <AssemblyDebug>true</AssemblyDebug>
     </Link>
     <ProjectReference>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
@@ -217,7 +209,6 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
@@ -228,7 +219,7 @@
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <Parallelization>true</Parallelization>
       <UseIntelOptimizedHeaders>true</UseIntelOptimizedHeaders>
-      <Optimization>Full</Optimization>
+      <Optimization>MaxSpeed</Optimization>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <OpenMPSupport>false</OpenMPSupport>
       <FunctionLevelLinking>false</FunctionLevelLinking>
@@ -239,11 +230,10 @@
       <CompileAsManaged>false</CompileAsManaged>
       <FloatingPointModel>Fast</FloatingPointModel>
       <OmitFramePointers>true</OmitFramePointers>
-      <DebugInformationFormat>None</DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <SDLCheck>false</SDLCheck>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <GuardEHContMetadata>false</GuardEHContMetadata>
-      <AssemblerOutput>All</AssemblerOutput>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -251,14 +241,11 @@
       <Culture>0x0009</Culture>
     </ResourceCompile>
     <Link>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <TargetMachine>MachineX86</TargetMachine>
       <SetChecksum>true</SetChecksum>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
-      <AssemblyDebug>false</AssemblyDebug>
     </Link>
     <ProjectReference>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
@@ -275,7 +262,6 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
@@ -286,7 +272,7 @@
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <Parallelization>true</Parallelization>
       <UseIntelOptimizedHeaders>true</UseIntelOptimizedHeaders>
-      <Optimization>Full</Optimization>
+      <Optimization>MaxSpeed</Optimization>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <OpenMPSupport>false</OpenMPSupport>
       <FunctionLevelLinking>false</FunctionLevelLinking>
@@ -297,11 +283,10 @@
       <CompileAsManaged>false</CompileAsManaged>
       <FloatingPointModel>Fast</FloatingPointModel>
       <OmitFramePointers>true</OmitFramePointers>
-      <DebugInformationFormat>None</DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <SDLCheck>false</SDLCheck>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <GuardEHContMetadata>false</GuardEHContMetadata>
-      <AssemblerOutput>All</AssemblerOutput>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -309,21 +294,18 @@
       <Culture>0x0009</Culture>
     </ResourceCompile>
     <Link>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <TargetMachine>MachineX64</TargetMachine>
       <SetChecksum>true</SetChecksum>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
-      <AssemblyDebug>false</AssemblyDebug>
     </Link>
     <ProjectReference>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Calc.cpp" />
+    <ClCompile Include="GUI.cpp" />
     <ClCompile Include="formatter.cpp" />
     <ClCompile Include="identifiers.cpp" />
     <ClCompile Include="issue_manager.cpp" />

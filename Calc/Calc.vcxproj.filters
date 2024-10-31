@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Calc.cpp">
+    <ClCompile Include="GUI.cpp">
       <Filter>Modules</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp">
