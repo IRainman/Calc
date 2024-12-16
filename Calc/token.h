@@ -8,10 +8,10 @@ struct Token
 	/*
 	 * Type using as a type for calculation.
 	 */
-	using Value = long double;
+	using Value = double;
 	using ParamCount = unsigned short;
 
-	enum class Type : unsigned int
+	enum class Type : unsigned short
 	{
 		END = 0,
 		ADD,

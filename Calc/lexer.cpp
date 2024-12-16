@@ -89,13 +89,13 @@ Token Lexer::read_number()
 	{
 		// result_out_of_range
 		// value_too_large
-		IssueManager::report_error(get_position(), "unable to parse number");
+		IssueManager::report_error(get_position(), "value is out of range");
 		return emit(Token::Type::END, 0);
 	}
 #if 0 // TODO need fix for this code.
 	if (n >= std::numeric_limits<Value>::digits10)
 	{
-		IssueManager::report_warning(get_position(), std::format("the number has too many digits {} the maximum supported {}, the calculation can be performed with an error", n, std::numeric_limits<Value>::digits10));
+		IssueManager::report_warning(get_position(), std::format("the number has too many digits {} the maximum supported {}, the calculation can be performed with an error", n, std::numeric_limits<Value>::digits10 - 1));
 	}
 #endif
 	
