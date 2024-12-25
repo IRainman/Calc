@@ -18,7 +18,7 @@ void IssueManager::report(Issue&& issue)
 
 void IssueManager::report(Issue::Severity severity, size_t pos, std::string&& text)
 {
-	report(Issue{std::move(text), severity, pos});
+	report(Issue{std::move(text), pos, severity});
 }
 
 void IssueManager::report_info(size_t pos, std::string&& text)

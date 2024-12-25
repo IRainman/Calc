@@ -26,11 +26,11 @@ struct Issue
 	// Issue describing of the message.
 	const std::string text;
 
-	// Issue severity.
-	const Severity severity;
-
 	// Position withing the context at which the issue has occurred.
 	const size_t pos; //-V122
+
+	// Issue severity.
+	const Severity severity;
 };
 
 /**
