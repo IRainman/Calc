@@ -10,10 +10,18 @@ auto calc_tests()
 	const std::vector<std::pair<std::string, std::string>> tests =   //-V826
 	{
 		// syntax errors
-		{"2 + )", "nan"},
+		{"2 + )", "nan"
+#ifdef _WIN64
+		"(snan)"
+#endif
+		},
 		{"2 + (", "nan"},
 		{"e(", "nan"},
-		{"1(", "nan"},
+		{"1(", "nan"
+#ifdef _WIN64
+		"(snan)"
+#endif
+		},
 		{"sin(0 ", "nan"},
 		{"sin(", "nan"},
 
@@ -27,10 +35,10 @@ auto calc_tests()
 		{"(2 + 2) * 2", "8"},
 
 		// precision
-		{"10000 / 540 * 3", "55.555555555556"},
+		{"10000 / 540 * 3", "55.5555555555556"},
 		{"1 / 3 * 3", "1"},
-		{"640320 ^ 3 + 744",   "2.6253741264077e+17"},
-		{"e^(pi * sqrt(163))", "2.6253741264077e+17"},
+		{"640320 ^ 3 + 744",   "2.62537412640769e+17"},
+		{"e^(pi * sqrt(163))", "2.62537412640768e+17"},
 		
 		// special value support
 		{"1 / 0", "inf"},
@@ -39,9 +47,11 @@ auto calc_tests()
 		{"sin( rad(0) )", "0"},
 		{"87 * tan(pi) - 7", "-7"},
 		{"tan(-pi)", "0"},
-		{"tan(inf)", "nan"},
+		{"tan(inf)", "-nan(ind)"},
 		
 		{"log(sh(42) + ch(42))", "42"},
+
+		{"ln(e)", "1"},
 		
 		// power and root functions
 		{"pow( sin( pi / 2 ) / .001 + 24, 2 )", "1048576"},

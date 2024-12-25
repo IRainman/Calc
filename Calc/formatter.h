@@ -14,7 +14,7 @@ namespace Formatter
 		std::string s;
 		s.resize(std::bit_ceil(static_cast<size_t>(std::numeric_limits<V>::max_digits10))); //-V201
 		s.resize(std::to_chars(s.data(), s.data() + s.size(),
-			v, std::chars_format::general, std::numeric_limits<V>::digits10 - 1).ptr - s.data());
+			v, std::chars_format::general, std::numeric_limits<V>::digits10).ptr - s.data());
 		return s;
 	}
 
