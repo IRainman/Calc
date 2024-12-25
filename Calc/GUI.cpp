@@ -17,6 +17,8 @@
 // ================= GUI ===============
 #include "GUI.h"
 
+#ifdef _WIN32
+
 CCalcApp theCalcApp;
 
 CCalcDlg dlg;
@@ -148,3 +150,9 @@ void CAboutDlg::OnBnClickedSite() noexcept
 {
 	::ShellExecute(nullptr, nullptr, "http://studio2000.xyz/txt/calc.shtml", nullptr, nullptr, SW_SHOWNORMAL); //-V2001
 }
+
+#else
+
+// add other platforms here.
+
+#endif // _WIN32

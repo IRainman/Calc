@@ -3,6 +3,8 @@
  * Copyright 2009-2024 Solomina Elle Leonovna, a.rainman on gmail point com
  */
 
+#ifdef _WIN32
+
 #include "targetver.h"
 #include "resource.h"
 
@@ -56,3 +58,9 @@ class CAboutDlg : public CDialog
 		afx_msg void OnBnClickedSite() noexcept;
 		DECLARE_MESSAGE_MAP()
 };
+
+#else
+
+// add other platforms here.
+
+#endif // _WIN32
