@@ -5,25 +5,6 @@
 
 #ifdef _WIN32
 
-#include "targetver.h"
-#include "resource.h"
-
-#define VC_EXTRALEAN
-#define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
-#define _AFX_NO_OLE_SUPPORT
-#define _AFX_NO_DB_SUPPORT
-#define _AFX_NO_DAO_SUPPORT
-#define _AFX_NO_AFXCMN_SUPPORT
-#define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS
-#define _ATL_CSTRING_NO_CRT
-#define _ATL_ALL_WARNINGS
-#define _ATL_SINGLE_THREADED
-#define _ATL_NO_COM_SUPPORT
-#define _AFX_MINREBUILD
-#define _AFX_ALL_WARNINGS
-#include <afxwinappex.h>
-
 class CCalcApp : public CWinAppEx
 {
 	public:

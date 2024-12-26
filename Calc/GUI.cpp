@@ -7,25 +7,56 @@
 
 #include "pch.h"
 
+#include "flags.h"
 #include "lexer.h"
 #include "parser.h"
 #include "issue_manager.h"
 #include "formatter.h"
+#ifdef CALC_TESTS_ENABLED
 #include "tests.h"
-
+#endif
 
 // ================= GUI ===============
-#include "GUI.h"
 
 #ifdef _WIN32
+
+#include "targetver.h"
+
+
+
+#define VC_EXTRALEAN
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#define _AFX_NO_OLE_SUPPORT
+#define _AFX_NO_DB_SUPPORT
+#define _AFX_NO_DAO_SUPPORT
+#define _AFX_NO_AFXCMN_SUPPORT
+#define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS
+#define _ATL_CSTRING_NO_CRT
+#define _ATL_ALL_WARNINGS
+#define _ATL_SINGLE_THREADED
+#define _ATL_NO_COM_SUPPORT
+#define _AFX_MINREBUILD
+#define _AFX_ALL_WARNINGS
+#include <afxwin.h>
+#include <afxwinappex.h>
+#include <tchar.h>
+#include <libloaderapi.h>
+#include <shellapi.h>
+#include <WinUser.h>
+#include <afx.h>
+#include <CommCtrl.h>
+#include <afxmsg_.h>
+#include <afxres.h>
+#include <afxstr.h>
+
+
+#include "resource.h"
+#include "GUI.h"
 
 CCalcApp theCalcApp;
 
 CCalcDlg dlg;
-
-
-
-
 
 BOOL CCalcApp::InitInstance()
 {
