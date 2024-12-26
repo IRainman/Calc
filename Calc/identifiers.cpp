@@ -6,6 +6,13 @@
  */
 
 #include "pch.h"
+#include <cmath>
+#include <cstdlib>
+#include <limits>
+#include <numbers>
+#include <span>
+#include <utility>
+#include "token.h"
 #include "identifiers.h"
 
 namespace
@@ -17,7 +24,7 @@ namespace
 	template <const ParamCount>
 	using WrappedFnImplArg = Value;
 
-	template <const ParamCount... Is>
+	template<const ParamCount ...Is>
 	consteval auto WrappedFnImpl(std::index_sequence<Is...>) noexcept -> Value(*)(WrappedFnImplArg<Is>...);
 
 	template <const ParamCount N>
@@ -144,7 +151,7 @@ namespace
 
 	[[nodiscard]] Value minkowski_distance(std::span<const Value> params) noexcept
 	{
-		// params contains p all other parameters is distances d[i] = v[i] - w[i] for two vectors v and w
+		// parameters contains p all other parameters is distances d[i] = v[i] - w[i] for two vectors v and w
 		Value ex = 0.0;
 		Value min_d = std::numeric_limits<Value>::infinity();
 		Value max_d = -std::numeric_limits<Value>::infinity();
@@ -282,7 +289,7 @@ namespace
 	};
 }
 
-const Identifiers::map& Identifiers::get() noexcept
+[[nodiscard]] const Identifiers::map& Identifiers::get() noexcept
 {
 	return ids;
 }

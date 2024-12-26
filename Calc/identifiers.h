@@ -3,6 +3,10 @@
  * Copyright 2023-2024 Solomina Elle Leonovna, a.rainman on gmail point com
  */
 
+#include <limits>
+#include <span>
+#include <unordered_map>
+#include <string_view>
 #include "token.h"
 
 namespace Identifiers
