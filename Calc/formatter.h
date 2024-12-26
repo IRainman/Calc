@@ -1,4 +1,10 @@
 #pragma once
+
+#include <bit>
+#include <charconv>
+#include <format>
+#include <limits>
+#include <string>
 /*
  * Copyright 2023-2024 Solomina Elle Leonovna, a.rainman on gmail point com
  */

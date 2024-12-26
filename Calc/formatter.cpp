@@ -8,10 +8,12 @@
 #include "pch.h"
 #include "formatter.h"
 #include "issue_manager.h"
+#include <string>
+#include <utility>
 
 namespace
 {
-	[[nodiscard]] std::string format_severity(const Issue::Severity severity) noexcept
+	[[nodiscard]] constexpr std::string format_severity(const Issue::Severity severity) noexcept
 	{
 		switch (severity)
 		{
