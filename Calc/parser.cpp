@@ -6,9 +6,14 @@
  */
 
 #include "pch.h"
+#include <cmath>
+#include <format>
+#include <ranges>
+#include <vector>
 #include "issue_manager.h"
 #include "parser.h"
 #include "identifiers.h"
+#include "token.h"
 
 namespace
 {
@@ -21,11 +26,11 @@ namespace
 	if (_current.type != Token::Type::END)
 	{
 		IssueManager::report_error(_lex.get_position(), std::format("extraneous input at the end of expression: {}" , _current.text));
-		return NAN;
+		return _current.val;
 	}
 	else if (IssueManager::has_errors())
 	{
-		return NAN;
+		return _current.val;
 	}
 	else
 	{
@@ -141,7 +146,7 @@ Parser::Value Parser::parse_expr_0()
 			else
 			{
 				IssueManager::report_error(_lex.get_position(), std::format("expected closing parenthesis, got {}", _current.text));
-				return NAN;
+				return _current.val;
 			}
 		}
 		case Token::Type::NUM:
@@ -157,7 +162,7 @@ Parser::Value Parser::parse_expr_0()
 		default:
 		{
 			IssueManager::report_error(_lex.get_position(), std::format("unexpected {}", _current.text));
-			return NAN;
+			return _current.val;
 		}
 	}
 }
@@ -167,7 +172,7 @@ Parser::Value Parser::parse_function_or_constant()
 	const auto name = _current.text;
 	const auto pos_of_ident_start = _lex.get_position();
 	advance();
-	if (_current.type == Token::Type::LPAREN)
+	if (_current.type == Token::Type::LPAREN) // function
 	{
 		advance();
 		if (const auto i = ids.find(name); i != ids.end())
@@ -191,7 +196,7 @@ Parser::Value Parser::parse_function_or_constant()
 						else
 						{
 							IssueManager::report_error(pos_of_ident_start, std::format("for function {} expected minimum {} and maximum {} parameters, got {}", name, check.min, check.max, params.size()));
-							return NAN;
+							return _current.val;
 						}
 					}
 					else if (_current.type == Token::Type::COMA)
@@ -202,23 +207,23 @@ Parser::Value Parser::parse_function_or_constant()
 					else
 					{
 						IssueManager::report_error(_lex.get_position(), std::format("expected closing parenthesis or coma, got {}", name));
-						return NAN;
+						return _current.val;
 					}
 				}
 			}
 			else
 			{
 				IssueManager::report_error(pos_of_ident_start, std::format("identifier {} is not a function", name));
-				return NAN;
+				return _current.val;
 			}
 		}
 		else
 		{
 			IssueManager::report_error(pos_of_ident_start, std::format("unknown function {}", name));
-			return NAN;
+			return _current.val;
 		}
 	}
-	else
+	else // constant
 	{
 		if (const auto i = ids.find(name); i != ids.end())
 		{
@@ -230,13 +235,13 @@ Parser::Value Parser::parse_function_or_constant()
 			else
 			{
 				IssueManager::report_error(pos_of_ident_start, std::format("function {} needs parenthesis for call", name));
-				return NAN;
+				return _current.val;
 			}
 		}
 		else
 		{
 			IssueManager::report_error(pos_of_ident_start, std::format("unknown constant {}", name));
-			return NAN;
+			return _current.val;
 		}
 	}
 }

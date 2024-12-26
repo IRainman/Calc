@@ -9,30 +9,30 @@ struct Token
 	 * Type using as a type for calculation.
 	 */
 	using Value = double;
-	using ParamCount = unsigned short;
+	using ParamCount = unsigned char;
 
-	enum class Type : unsigned short
+	enum class Type : unsigned char
 	{
-		END = 0,
-		ADD,
-		SUB,
-		MUL,
-		DIV,
-		POW,
-		REM,
-		LPAREN,
-		RPAREN,
-		COMA,
-		NUM,
-		IDENT,
+		END = '\0',
+		ADD = '+',
+		SUB = '-',
+		MUL = '*',
+		DIV = '/',
+		POW = '^',
+		REM = '%',
+		LPAREN = '(',
+		RPAREN = ')',
+		COMA = ',',
+		NUM = '.',
+		IDENT = '_',
 	};
-
-	// Type of this token.
-	Type type;
 
 	// Text of the token.
 	std::string_view text;
 
 	// If token is a number, this is the parsed value of it.
 	Value val;
+
+	// Type of this token.
+	Type type;
 };

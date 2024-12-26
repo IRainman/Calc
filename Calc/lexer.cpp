@@ -8,53 +8,62 @@
 #include "pch.h"
 #include "issue_manager.h"
 #include "lexer.h"
+#include <charconv>
+#include <format>
+#include <limits>
+#include <system_error>
+#include "token.h"
 
 [[nodiscard]] Token Lexer::next()
 {
 	while (!_view.empty())
 	{
 		const auto& cur = _view.front();
-		switch (cur)
+
+		if ((cur >= '0' && cur <= '9') ||
+			cur == '.' /* for numbers like ".054" */ ||
+			cur == 'i' /* for inf */)
 		{
-			case '+':
-				return emit_and_advance(Token::Type::ADD, 1);
-			case '-':
-				return emit_and_advance(Token::Type::SUB, 1);
-			case '*':
-				return emit_and_advance(Token::Type::MUL, 1);
-			case '/':
-				return emit_and_advance(Token::Type::DIV, 1);
-			case '^':
-				return emit_and_advance(Token::Type::POW, 1);
-			case '%':
-				return emit_and_advance(Token::Type::REM, 1);
-			case '(':
-				return emit_and_advance(Token::Type::LPAREN, 1);
-			case ')':
-				return emit_and_advance(Token::Type::RPAREN, 1);
-			case ',':
-				return emit_and_advance(Token::Type::COMA, 1);
-			default:
-				if (std::isdigit(cur) || cur == '.')
-				{
-					return read_number();
-				}
-				else if (std::isalpha(cur) || cur == '_')
-				{
-					return read_ident();
-				}
-				else if (std::isspace(cur))
-				{
-					advance(1);
-				}
-				else
-				{
-					IssueManager::report_error(get_position(), std::format("unknown character {}", cur));
-					return emit(Token::Type::END, 0);
-				}
+			return read_number();
+		}
+		
+		if ((cur >= 'a' && cur <= 'z') ||
+			(cur >= 'A' && cur <= 'Z') ||
+			cur == '_' /* for identification like "_something" */)
+		{
+			return read_ident();
+		}
+		
+		if (cur == '+' ||
+			cur == '-' ||
+			cur == '*' ||
+			cur == '/' ||
+			cur == '^' ||
+			cur == '%' ||
+			cur == '(' ||
+			cur == ')' ||
+			cur == ',')
+		{
+			return emit_and_advance(static_cast<Token::Type>(cur), 1, std::numeric_limits<Value>::quiet_NaN());
+		}
+
+		if (cur == ' ' ||
+			cur == '\t' ||
+			cur == '\n' ||
+			cur == '\v' ||
+			cur == '\f' ||
+			cur == '\r') // skip any spices
+		{
+			advance(1);
+			continue;
+		}
+		else
+		{
+			IssueManager::report_error(get_position(), std::format("unknown character {}", cur));
+			break;
 		}
 	}
-	return emit(Token::Type::END, 0);
+	return emit(Token::Type::END, 1, std::numeric_limits<Value>::quiet_NaN());
 }
 
 void Lexer::advance(size_t n) noexcept
@@ -62,24 +71,24 @@ void Lexer::advance(size_t n) noexcept
 	_view.remove_prefix(n);
 }
 
-Token Lexer::emit(Token::Type type, size_t n,Value val)
+[[nodiscard]] Token Lexer::emit(Token::Type type, size_t n, Value val) noexcept
 {
 	return Token
 	{
-		type,
 		_view.substr(0, n),
-		val
+		val,
+		type
 	};
 }
 
-Token Lexer::emit_and_advance(Token::Type type, size_t n,Value val)
+[[nodiscard]] Token Lexer::emit_and_advance(Token::Type type, size_t n, Value val) noexcept
 {
 	auto token = emit(type, n, val);
 	advance(n);
 	return token;
 }
 
-Token Lexer::read_number()
+[[nodiscard]] Token Lexer::read_number()
 {
 	Value val;
 	const auto res = std::from_chars(_view.data(), _view.data() + _view.size(), val);
@@ -90,7 +99,7 @@ Token Lexer::read_number()
 		// result_out_of_range
 		// value_too_large
 		IssueManager::report_error(get_position(), "value is out of range");
-		return emit(Token::Type::END, 0);
+		return emit(Token::Type::END, n, std::numeric_limits<Value>::quiet_NaN());
 	}
 #if 0 // TODO need fix for this code.
 	if (n >= std::numeric_limits<Value>::digits10)
@@ -102,16 +111,17 @@ Token Lexer::read_number()
 	return emit_and_advance(Token::Type::NUM, n, val);
 }
 
-Token Lexer::read_ident()
+[[nodiscard]] Token Lexer::read_ident() noexcept
 {
-	size_t n = 0;
+	size_t n = 1;
+
 	for (; n < _view.size(); ++n)
 	{
-		if (!(std::isalnum(_view[n]) || _view[n] == '_'))
+		if (!((_view[n] >= 'a' && _view[n] <= 'z') || (_view[n] >= 'A' && _view[n] <= 'Z') || (_view[n] >= '0' && _view[n] <= '9') || _view[n] == '_'))
 		{
 			break;
 		}
 	}
-	
-	return emit_and_advance(Token::Type::IDENT, n);
+
+	return emit_and_advance(Token::Type::IDENT, n, std::numeric_limits<Value>::quiet_NaN());
 }

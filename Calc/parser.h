@@ -37,6 +37,7 @@ class Parser
 		{
 			advance();
 		}
+		Parser() = delete;
 		Parser(const Parser&) = delete;
 		Parser(Parser&&) = default;
 		
