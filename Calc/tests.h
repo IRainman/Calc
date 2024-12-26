@@ -10,18 +10,10 @@ auto calc_tests()
 	const std::vector<std::pair<std::string, std::string>> tests =   //-V826
 	{
 		// syntax errors
-		{"2 + )", "nan"
-#ifdef _WIN64
-		"(snan)"
-#endif
-		},
+		{"2 + )", "nan"},
 		{"2 + (", "nan"},
 		{"e(", "nan"},
-		{"1(", "nan"
-#ifdef _WIN64
-		"(snan)"
-#endif
-		},
+		{"1(", "nan"},
 		{"sin(0 ", "nan"},
 		{"sin(", "nan"},
 
