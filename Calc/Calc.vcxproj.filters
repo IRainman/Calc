@@ -36,6 +36,9 @@
     <ClCompile Include="identifiers.cpp">
       <Filter>Modules</Filter>
     </ClCompile>
+    <ClCompile Include="tests.cpp">
+      <Filter>Modules</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="flags.h">
