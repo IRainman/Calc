@@ -98,7 +98,7 @@ void Lexer::advance(size_t n) noexcept
 	{
 		// result_out_of_range
 		// value_too_large
-		IssueManager::report_error(get_position(), "value is out of range");
+		IssueManager::report_error(get_position(), "value is out of range or too large");
 		return emit(Token::Type::END, n, std::numeric_limits<Value>::quiet_NaN());
 	}
 #if 0 // TODO need fix for this code.

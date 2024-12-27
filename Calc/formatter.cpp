@@ -29,7 +29,7 @@ namespace
 
 	[[nodiscard]] std::string format_issue(const Issue& issue)
 	{
-		return format_severity(issue.severity) + " at pos " + std::to_string(issue.pos) + ": " + issue.text; //-V107
+		return format_severity(issue.severity) + " at pos " + std::to_string(issue.pos) + ": " + issue.text + "\r\n"; //-V107
 	}
 };
 
