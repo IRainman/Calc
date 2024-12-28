@@ -60,18 +60,6 @@ namespace
 		return { { 0, 0 }, constant_impl<value> };
 	}
 
-	[[nodiscard]] Value power(std::span<const Value> params) noexcept
-	{
-		if (std::fabs(params[0] - 2) < std::numeric_limits<Value>::epsilon())
-		{
-			return std::exp2(params[1]);
-		}
-		else
-		{
-			return std::pow(params[0], params[1]);
-		}
-	}
-
 	[[nodiscard]] constexpr Value minimum(std::span<const Value> params) noexcept
 	{
 		return std::ranges::min(params);
@@ -82,8 +70,8 @@ namespace
 		return std::ranges::max(params);
 	}
 
-	[[nodiscard]] constexpr Value rad(const Value x) noexcept { return x * std::numbers::pi_v<Value> / 180; }
-	[[nodiscard]] constexpr Value deg(const Value x) noexcept { return x * 180 / std::numbers::pi_v<Value>; }
+	[[nodiscard]] constexpr Value rad(const Value x) noexcept { return x * std::numbers::pi_v<Value> / 180.0; }
+	[[nodiscard]] constexpr Value deg(const Value x) noexcept { return x * 180.0 / std::numbers::pi_v<Value>; }
 
 	[[nodiscard]] constexpr Value hypotenuse(std::span<const Value> params) noexcept
 	{
@@ -99,8 +87,9 @@ namespace
 
 	[[nodiscard]] constexpr Value logarithm(Value x) noexcept
 	{
-		if (1 < x && x < 2)
+		if (1.0 < x && x < 2.0)
 		{
+			// for better precision
 			return std::log1p(--x);
 		}
 		else
@@ -180,20 +169,20 @@ namespace
 		{"egamma", constant<std::numbers::egamma_v<Value>>()},
 		//---------------------------------------------------------------------------
 		// TODO additional constant
-		{"c", constant<299792458.0L>()},// Speed of light in vacuum (m·s-1)
-		{"G", constant<6.6743015151515151515151515151515151e-11L>()},// Newtonian constant of gravitation (m3·kg−1·s−2)
-		{"J", constant<3.058198247456354132564564787888767L>()},// Constants of Gauss field
-		{"atm", constant<101.325L>()},// Standard atmosphere (Pa)
-		{"L", constant<6.02214076e23L>()},// Avogadro's number (mol−1)
-		{"R", constant<8.31446261815324L>()},// Gas constant (J·K−1·mol−1)
-		{"h", constant<6.62607015e-34L>()},// Planck constant (J·s)
-		{"l_P", constant<1.616255181818181818181818181818181818181818e-35L>()},// Planck length (m)
-		{"m_P", constant<2.176434242424242424242424242424242424242424e-8L>()},// Planck mass (kg)
-		{"T_P", constant<1.4167841616161616161616161616161616161616161616161616e32L>()},// Planck temperature (K)
-		{"t_P", constant<5.391247606060606060606060606060606060606060606060e-44L>()},// Planck time (s)
-		{"mu_0", constant<1.2566370621219191919191919191919191919e-6L>()},// magnetic constant (exactly 4 pi x 10^(-7)
-		{"epsilon_0", constant<8.854187817620389850536563031710750260608e-12L>()},// electric constant (Ohm)
-		{"Z_0", constant<376.7303134617706554681984004203193082686L>()},// characteristic impedance of vacuum (Ohm)
+		{"c", constant<299792458.0>()},// Speed of light in vacuum (m·s-1)
+		{"G", constant<6.6743015151515151515151515151515151e-11>()},// Newtonian constant of gravitation (m3·kg−1·s−2)
+		{"J", constant<3.058198247456354132564564787888767>()},// Constants of Gauss field
+		{"atm", constant<101.325>()},// Standard atmosphere (Pa)
+		{"L", constant<6.02214076e23>()},// Avogadro's number (mol−1)
+		{"R", constant<8.31446261815324>()},// Gas constant (J·K−1·mol−1)
+		{"h", constant<6.62607015e-34>()},// Planck constant (J·s)
+		{"l_P", constant<1.616255181818181818181818181818181818181818e-35>()},// Planck length (m)
+		{"m_P", constant<2.176434242424242424242424242424242424242424e-8>()},// Planck mass (kg)
+		{"T_P", constant<1.4167841616161616161616161616161616161616161616161616e32>()},// Planck temperature (K)
+		{"t_P", constant<5.391247606060606060606060606060606060606060606060e-44>()},// Planck time (s)
+		{"mu_0", constant<1.2566370621219191919191919191919191919e-6>()},// magnetic constant (exactly 4 pi x 10^(-7)
+		{"epsilon_0", constant<8.854187817620389850536563031710750260608e-12>()},// electric constant (Ohm)
+		{"Z_0", constant<376.7303134617706554681984004203193082686>()},// characteristic impedance of vacuum (Ohm)
 		//---------------------------------------------------------------------------
 		// https://en.cppreference.com/w/cpp/numeric/math
 		{"sin", function_pointer<1, std::sin>()},
@@ -225,7 +214,7 @@ namespace
 
 		{"sqrt", function_pointer<1, std::sqrt>()},
 		{"cbrt", function_pointer<1, std::cbrt>()},
-		{"pow", {{2, 0}, power}},
+		{"pow", function_pointer<2, std::pow>()},
 #ifdef CALC_TESTS_ENABLED
 		{"fma", function_pointer<3, std::fma>()},
 #endif
