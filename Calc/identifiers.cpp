@@ -221,8 +221,8 @@ namespace
 		{"rad", function_pointer<1, rad>()},
 		{"deg", function_pointer<1, deg>()},
 
-		{"min", {{1, Fn::P::unlim}, minimum}},
-		{"max", {{1, Fn::P::unlim}, maximum}},
+		{"min", {{1, std::numeric_limits<ParamCount>::max()}, minimum}},
+		{"max", {{1, std::numeric_limits<ParamCount>::max()}, maximum}},
 
 		{"abs", function_pointer<1, std::abs>()},
 
@@ -271,7 +271,7 @@ namespace
 		{"riemann_zeta", function_pointer<1, std::riemann_zeta>()},
 
 		//---------------------------------------------------------------------------
-		{"minkowski_distance", {{2, Fn::P::unlim}, minkowski_distance}},
+		{"minkowski_distance", {{2, std::numeric_limits<ParamCount>::max()}, minkowski_distance}},
 #endif
 
 		//---------------------------------------------------------------------------

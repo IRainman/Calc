@@ -17,7 +17,6 @@ namespace Identifiers
 	{
 		struct P
 		{
-			constexpr static auto unlim = std::numeric_limits<ParamCount>::max();
 			/**
 			 * Test is Fn is a constant and no needs arguments.
 			 */
@@ -35,7 +34,7 @@ namespace Identifiers
 			/**
 			 * Test interval of parameters count.
 			 */
-			[[nodiscard]] constexpr bool params_count_is_valid(const size_t count) const noexcept
+			[[nodiscard]] constexpr bool params_count_is_valid(const ParamCount count) const noexcept
 			{
 				return min <= count || count <= max;
 			}
