@@ -19,9 +19,9 @@ class Lexer
 		Lexer(Lexer&&) = default;
 
 		/**
-		 * Return the next token.
+		 * Write the next token to the link.
 		 */
-		[[nodiscard]] Token next();
+		void next(Token& token) noexcept;
 		
 		/**
 		 * Return the current position.
@@ -35,27 +35,32 @@ class Lexer
 		/**
 		 * Move current position n symbols further.
 		 */
-		void advance(size_t n) noexcept;
+		void advance(const auto n) noexcept;
+
+		/**
+		 * Read an operator at the beginning of the input view and return size of it.
+		 */
+		[[nodiscard]] auto read_operator(const auto type, Token& token) const noexcept;
 		
 		/**
-		 * Create a new token at the beginning of the input view.
+		 * Read a number at the beginning of the input view and return size of it.
 		 */
-		[[nodiscard]] Token emit(Token::Type type, size_t n, Value val) noexcept;
+		[[nodiscard]] auto read_number(Token& token) const noexcept;
 		
 		/**
-		 * Create a new token at the beginning of the input view, and move current position to the end of the token.
+		 * Read an identifier at the beginning of the input view and return size of it.
 		 */
-		[[nodiscard]] Token emit_and_advance(Token::Type type, size_t n, Value val) noexcept;
-		
+		[[nodiscard]] auto read_ident(Token& token) const noexcept;
+
 		/**
-		 * Read number at the beginning of the input view.
+		 * Read the normal end at the beginning of the input view.
 		 */
-		[[nodiscard]] Token read_number();
-		
+		void read_end(Token& token) const noexcept;
+
 		/**
-		 * Read identifier at the beginning of the input view.
+		 * Read an unknown symbol at the beginning of the input view and return size of it.
 		 */
-		[[nodiscard]] Token read_ident() noexcept;
+		[[nodiscard]] auto read_unknown(Token& token) const noexcept;
 
 		std::string_view _view;
 		const std::string_view::const_pointer _begin; //-V122

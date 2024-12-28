@@ -19,7 +19,7 @@ class Parser
 		 *
 		 * expr_2 = expr_1 ( '^' expr_1 )*;
 		 *
-		 * expr_1 = expr_0 | '-' expr_0 | '+' expr_0;
+		 * expr_1 = expr_0 | '-' expr_0 | expr_0;
 		 *
 		 * expr_0 = '(' expr_4 ')'
 		 *        | NUM
@@ -33,7 +33,7 @@ class Parser
 		 */
 		
 	public:
-		explicit Parser(Lexer& lex) : _lex(lex)
+		explicit Parser(Lexer& lex) noexcept : _lex(lex)
 		{
 			advance();
 		}
@@ -42,28 +42,29 @@ class Parser
 		Parser(Parser&&) = default;
 		
 		using Value = Token::Value;
+		using ParamCount = Token::ParamCount;
 		/**
 		 * Parse and eval an expression. Return nan in case of an error.
 		 */
-		[[nodiscard]] Value parse();
+		[[nodiscard]] Value parse() noexcept;
 		
 	private:
 		/**
 		 * Move current position one token further.
 		 */
-		void advance();
+		void advance() noexcept;
 		
-		[[nodiscard]] Value parse_expr_4();
+		[[nodiscard]] Value parse_expr_4() noexcept;
 		
-		[[nodiscard]] Value parse_expr_3();
+		[[nodiscard]] Value parse_expr_3() noexcept;
 		
-		[[nodiscard]] Value parse_expr_2();
+		[[nodiscard]] Value parse_expr_2() noexcept;
 		
-		[[nodiscard]] Value parse_expr_1();
+		[[nodiscard]] Value parse_expr_1() noexcept;
 		
-		[[nodiscard]] Value parse_expr_0();
+		[[nodiscard]] Value parse_expr_0() noexcept;
 		
-		[[nodiscard]] Value parse_function_or_constant();
+		[[nodiscard]] Value parse_function_or_constant() noexcept;
 		
 		Lexer& _lex;
 		Token _current;

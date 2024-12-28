@@ -20,30 +20,30 @@ namespace
 	const auto& ids = Identifiers::get();
 };
 
-[[nodiscard]] Parser::Value Parser::parse()
+[[nodiscard]] Parser::Value Parser::parse() noexcept
 {
 	const auto result = parse_expr_4();
-	if (_current.type != Token::Type::END)
+	if (_current.type != Token::Type::END) [[unlikely]]
 	{
-		IssueManager::report_error(_lex.get_position(), std::format("extraneous input at the end of expression: {}" , _current.text));
+		IssueManager::report_error(_lex.get_position(), std::format("extraneous input: {}" , _current.text));
 		return _current.val;
 	}
-	else if (IssueManager::has_errors())
+	else if (IssueManager::has_errors()) [[unlikely]]
 	{
 		return _current.val;
 	}
-	else
+	else [[likely]]
 	{
 		return result;
 	}
 }
 
-void Parser::advance()
+inline void Parser::advance() noexcept
 {
-	_current = _lex.next();
+	 _lex.next(_current);
 }
 
-Parser::Value Parser::parse_expr_4()
+Parser::Value Parser::parse_expr_4() noexcept
 {
 	auto result = parse_expr_3();
 	while (true)
@@ -64,7 +64,7 @@ Parser::Value Parser::parse_expr_4()
 	}
 }
 
-Parser::Value Parser::parse_expr_3()
+Parser::Value Parser::parse_expr_3() noexcept
 {
 	auto result = parse_expr_2();
 	while (true)
@@ -89,13 +89,14 @@ Parser::Value Parser::parse_expr_3()
 	}
 }
 
-Parser::Value Parser::parse_expr_2()
+Parser::Value Parser::parse_expr_2() noexcept
 {
-	std::vector<Parser::Value> values;
+	std::array<Value, std::numeric_limits<ParamCount>::max()> values;
 	
-	while (true)
+	ParamCount count;
+	for (count = 0; count != values.size(); ++count)
 	{
-		values.push_back(parse_expr_1());
+		values[count] = parse_expr_1();
 		
 		if (_current.type == Token::Type::POW)
 		{
@@ -107,21 +108,24 @@ Parser::Value Parser::parse_expr_2()
 		}
 	}
 	
-	Parser::Value result = values.back();
-	for (auto value: std::ranges::reverse_view(values) | std::views::drop(1))
+	if (count == values.size()) [[unlikely]]
+	{
+		IssueManager::report_error(_lex.get_position(), std::format("too many ^ in one expression, the maximum is {}", values.size()));
+		return _current.val;
+	}
+	
+	Parser::Value result = values[count];
+	for (const auto& value: std::ranges::reverse_view(values) | std::views::drop(values.size() - count))
 	{
 		result = std::pow(value, result);
 	}
 	return result;
 }
 
-Parser::Value Parser::parse_expr_1()
+Parser::Value Parser::parse_expr_1() noexcept
 {
 	switch (_current.type)
 	{
-		case Token::Type::ADD:
-			advance();
-			return +parse_expr_0();
 		case Token::Type::SUB:
 			advance();
 			return -parse_expr_0();
@@ -130,36 +134,36 @@ Parser::Value Parser::parse_expr_1()
 	}
 }
 
-Parser::Value Parser::parse_expr_0()
+Parser::Value Parser::parse_expr_0() noexcept
 {
 	switch (_current.type)
 	{
-		case Token::Type::LPAREN:
+		case Token::Type::LPAREN: [[likely]]
 		{
 			advance();
 			const auto result = parse_expr_4();
-			if (_current.type == Token::Type::RPAREN)
+			if (_current.type == Token::Type::RPAREN) [[likely]]
 			{
 				advance();
 				return result;
 			}
-			else
+			else [[unlikely]]
 			{
 				IssueManager::report_error(_lex.get_position(), std::format("expected closing parenthesis, got {}", _current.text));
 				return _current.val;
 			}
 		}
-		case Token::Type::NUM:
+		case Token::Type::NUM: [[likely]]
 		{
 			const auto num = _current.val;
 			advance();
 			return num;
 		}
-		case Token::Type::IDENT:
+		case Token::Type::IDENT: [[likely]]
 		{
 			return parse_function_or_constant();
 		}
-		default:
+		default: [[unlikely]]
 		{
 			IssueManager::report_error(_lex.get_position(), std::format("unexpected {}", _current.text));
 			return _current.val;
@@ -167,7 +171,7 @@ Parser::Value Parser::parse_expr_0()
 	}
 }
 
-Parser::Value Parser::parse_function_or_constant()
+Parser::Value Parser::parse_function_or_constant() noexcept
 {
 	const auto name = _current.text;
 	const auto pos_of_ident_start = _lex.get_position();
@@ -175,49 +179,54 @@ Parser::Value Parser::parse_function_or_constant()
 	if (_current.type == Token::Type::LPAREN) // function
 	{
 		advance();
-		if (const auto i = ids.find(name); i != ids.end())
+		if (const auto i = ids.find(name); i != ids.end()) [[likely]]
 		{
 			const auto [check, function] = i->second;
-			if (check.is_function())
+			if (check.is_function()) [[likely]]
 			{
-				std::vector<Parser::Value> params;
+				std::array<Value, std::numeric_limits<ParamCount>::max()> params;
 
-				while (true)
+				for (ParamCount count = 0; count != params.size(); ++count)
 				{
-					params.push_back(parse_expr_4());
+					params[count] = parse_expr_4();
 
-					if (_current.type == Token::Type::RPAREN)
+					if (_current.type == Token::Type::RPAREN) [[likely]]
 					{
 						advance();
-						if (check.params_count_is_valid(params.size()))
+						if (check.params_count_is_valid(count)) [[likely]]
 						{
-							return function(params);
+							return function({params.begin(), params.begin() + count + 1});
 						}
-						else
+						else [[unlikely]]
 						{
-							IssueManager::report_error(pos_of_ident_start, std::format("for function {} expected minimum {} and maximum {} parameters, got {}", name, check.min, check.max, params.size()));
+							IssueManager::report_error(pos_of_ident_start, std::format("for function {} expected minimum {} and maximum {} parameters, got {}", name, check.min, check.max, count + 1));
 							return _current.val;
 						}
 					}
-					else if (_current.type == Token::Type::COMA)
+					else if (_current.type == Token::Type::COMA) [[likely]]
 					{
 						advance();
 						continue;
 					}
-					else
+					else [[unlikely]]
 					{
 						IssueManager::report_error(_lex.get_position(), std::format("expected closing parenthesis or coma, got {}", name));
 						return _current.val;
 					}
 				}
+				{
+					[[unlikely]]
+					IssueManager::report_error(pos_of_ident_start, std::format("maximum supported parameters is {}", params.size()));
+					return _current.val;
+				}
 			}
-			else
+			else [[unlikely]]
 			{
 				IssueManager::report_error(pos_of_ident_start, std::format("identifier {} is not a function", name));
 				return _current.val;
 			}
 		}
-		else
+		else [[unlikely]]
 		{
 			IssueManager::report_error(pos_of_ident_start, std::format("unknown function {}", name));
 			return _current.val;
@@ -225,20 +234,20 @@ Parser::Value Parser::parse_function_or_constant()
 	}
 	else // constant
 	{
-		if (const auto i = ids.find(name); i != ids.end())
+		if (const auto i = ids.find(name); i != ids.end()) [[likely]]
 		{
 			const auto [check, constant] = i->second;
-			if (check.is_constant())
+			if (check.is_constant()) [[likely]]
 			{
 				return constant({});
 			}
-			else
+			else [[unlikely]]
 			{
 				IssueManager::report_error(pos_of_ident_start, std::format("function {} needs parenthesis for call", name));
 				return _current.val;
 			}
 		}
-		else
+		else [[unlikely]]
 		{
 			IssueManager::report_error(pos_of_ident_start, std::format("unknown constant {}", name));
 			return _current.val;

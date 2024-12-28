@@ -14,104 +14,54 @@
 #include <system_error>
 #include "token.h"
 
-[[nodiscard]] Token Lexer::next()
-{
-	while (!_view.empty())
-	{
-		const auto& cur = _view.front();
-
-		if ((cur >= '0' && cur <= '9') ||
-			cur == '.' /* for numbers like ".054" */ ||
-			cur == 'i' /* for inf */)
-		{
-			return read_number();
-		}
-		
-		if ((cur >= 'a' && cur <= 'z') ||
-			(cur >= 'A' && cur <= 'Z') ||
-			cur == '_' /* for identification like "_something" */)
-		{
-			return read_ident();
-		}
-		
-		if (cur == '+' ||
-			cur == '-' ||
-			cur == '*' ||
-			cur == '/' ||
-			cur == '^' ||
-			cur == '%' ||
-			cur == '(' ||
-			cur == ')' ||
-			cur == ',')
-		{
-			return emit_and_advance(static_cast<Token::Type>(cur), 1, std::numeric_limits<Value>::quiet_NaN());
-		}
-
-		if (cur == ' ' ||
-			cur == '\t' ||
-			cur == '\n' ||
-			cur == '\v' ||
-			cur == '\f' ||
-			cur == '\r') // skip any spices
-		{
-			advance(1);
-			continue;
-		}
-		else
-		{
-			IssueManager::report_error(get_position(), std::format("unknown character {}", cur));
-			break;
-		}
-	}
-	return emit(Token::Type::END, 1, std::numeric_limits<Value>::quiet_NaN());
-}
-
-void Lexer::advance(size_t n) noexcept
+inline void Lexer::advance(const auto n) noexcept
 {
 	_view.remove_prefix(n);
 }
 
-[[nodiscard]] Token Lexer::emit(Token::Type type, size_t n, Value val) noexcept
+[[nodiscard]] inline auto Lexer::read_unknown(Token& token) const noexcept
 {
-	return Token
-	{
-		_view.substr(0, n),
-		val,
-		type
-	};
+	token.text = _view.substr(0, 1);
+	token.type = Token::Type::END;
+	token.val = std::numeric_limits<Value>::quiet_NaN();
+	return 0;
 }
 
-[[nodiscard]] Token Lexer::emit_and_advance(Token::Type type, size_t n, Value val) noexcept
+[[nodiscard]] inline auto Lexer::read_operator(const auto type, Token& token) const noexcept
 {
-	auto token = emit(type, n, val);
-	advance(n);
-	return token;
+	token.text = _view.substr(0, 1);
+	token.type = static_cast<Token::Type>(type);
+	token.val = std::numeric_limits<Value>::quiet_NaN();
+	return 1;
 }
 
-[[nodiscard]] Token Lexer::read_number()
+[[nodiscard]] inline auto Lexer::read_number(Token& token) const noexcept
 {
 	Value val;
 	const auto res = std::from_chars(_view.data(), _view.data() + _view.size(), val);
 	const auto n = res.ptr - _view.data();
-	
-	if (res.ec != std::errc{})
+
+	token.text = _view.substr(0, n);
+
+	if (res.ec == std::errc{}) [[likely]]
+	{
+		token.type = Token::Type::NUM;
+		token.val = val;
+	}
+	else [[unlikely]]
 	{
 		// result_out_of_range
 		// value_too_large
-		IssueManager::report_error(get_position(), "value is out of range or too large");
-		return emit(Token::Type::END, n, std::numeric_limits<Value>::quiet_NaN());
+		// invalid_argument
+		IssueManager::report_error(get_position(), "invalid number");
+		token.type = Token::Type::END;
+		token.val = std::numeric_limits<Value>::quiet_NaN();
 	}
-#if 0 // TODO need fix for this code.
-	if (n >= std::numeric_limits<Value>::digits10)
-	{
-		IssueManager::report_warning(get_position(), std::format("the number has too many digits {} the maximum supported {}, the calculation can be performed with an error", n, std::numeric_limits<Value>::digits10 - 1));
-	}
-#endif
-	
-	return emit_and_advance(Token::Type::NUM, n, val);
+
+	return n;
 }
 
-[[nodiscard]] Token Lexer::read_ident() noexcept
+[[nodiscard]] inline auto Lexer::read_ident(Token& token) const noexcept
 {
 	size_t n = 1;
 
@@ -123,5 +73,73 @@ void Lexer::advance(size_t n) noexcept
 		}
 	}
 
-	return emit_and_advance(Token::Type::IDENT, n, std::numeric_limits<Value>::quiet_NaN());
+	token.text = _view.substr(0, n);
+	token.type = Token::Type::IDENT;
+	token.val = std::numeric_limits<Value>::quiet_NaN();
+
+	return n;
+}
+
+void inline Lexer::read_end(Token& token) const noexcept
+{
+	token.text = _view;
+	token.type = Token::Type::END;
+	token.val = std::numeric_limits<Value>::quiet_NaN();
+}
+
+void Lexer::next(Token& token) noexcept
+{
+	while (!_view.empty()) [[likely]]
+	{
+		const auto& cur = _view.front();
+		if (cur == '+' ||
+			cur == '-' ||
+			cur == '*' ||
+			cur == '/' ||
+			cur == '^' ||
+			cur == '%' ||
+			cur == '(' ||
+			cur == ')' ||
+			cur == ',') [[likely]]
+		{
+			advance(read_operator(cur, token));
+			return;
+			
+		}
+		else if ((cur >= '0' && cur <= '9') ||
+			cur == '.' /* for numbers like ".054" */ ||
+			cur == 'i' /* for inf */ ||
+			cur == 'n' /**/
+			) [[likely]]
+		{
+			advance(read_number(token));
+			return;
+		}
+		else if ((cur >= 'a' && cur <= 'z') ||
+			(cur >= 'A' && cur <= 'Z') ||
+			cur == '_' /* for identifications like "_something" */) [[likely]]
+		{
+			advance(read_ident(token));
+			return;
+		}
+		else if (cur == ' ' ||
+			cur == '\t' ||
+			cur == '\n' ||
+			cur == '\v' ||
+			cur == '\f' ||
+			cur == '\r') [[unlikely]]
+		{
+			// skip any spices
+			advance(1);
+			continue;
+		}
+		else [[unlikely]]
+		{
+			IssueManager::report_error(get_position(), std::format("unknown character {}", cur));
+			advance(read_unknown(token));
+			return;
+		}
+	}
+
+	read_end(token);
 }
