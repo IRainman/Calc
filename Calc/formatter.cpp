@@ -9,7 +9,6 @@
 #include "formatter.h"
 #include "issue_manager.h"
 #include <string>
-#include <utility>
 
 [[nodiscard]] std::string Formatter::create_summary() noexcept
 {

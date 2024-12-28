@@ -6,6 +6,7 @@
  */
 
 #include "pch.h"
+#include "flags.h"
 #include <cmath>
 #include <cstdlib>
 #include <limits>
@@ -162,11 +163,15 @@ namespace
 	static const Identifiers::map ids =
 	{
 		//---------------------------------------------------------------------------
-		// https://en.cppreference.com/w/cpp/numeric/constants
-		{"pi", constant<std::numbers::pi_v<Value>>()},
-		{"e", constant<std::numbers::e_v<Value>>()},
-		{"phi", constant<std::numbers::phi_v<Value>>()},
+		// https://en.cppreference.com/w/cpp/numeric/constants 
+		{"pi", constant<std::numbers::pi_v<Value>>()}, // https://en.wikipedia.org/wiki/Pi_(mathematical_constant)
+		{"e", constant<std::numbers::e_v<Value>>()}, // https://en.wikipedia.org/wiki/Euler%27s_constant
+		{"phi", constant<std::numbers::phi_v<Value>>()}, // https://en.wikipedia.org/wiki/Golden_ratio
 		{"egamma", constant<std::numbers::egamma_v<Value>>()},
+		// TODO add more precision values to wrappers:
+		//log2e
+		//log10e
+		// ...
 		//---------------------------------------------------------------------------
 		// TODO additional constant
 		{"c", constant<299792458.0>()},// Speed of light in vacuum (m·s-1)
