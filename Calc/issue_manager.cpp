@@ -6,6 +6,7 @@
  */
 
 #include "pch.h"
+#include <vector>
 #include "issue_manager.h"
 
 bool IssueManager::_has_errors = false;

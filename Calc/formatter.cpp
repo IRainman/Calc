@@ -11,33 +11,11 @@
 #include <string>
 #include <utility>
 
-namespace
-{
-	[[nodiscard]] constexpr std::string format_severity(const Issue::Severity severity) noexcept
-	{
-		switch (severity)
-		{
-		case Issue::Severity::INFO:
-			return "Info";
-		case Issue::Severity::WARN:
-			return "Warning";
-		case Issue::Severity::ERR:
-			return "Error";
-		}
-		std::unreachable();
-	}
-
-	[[nodiscard]] std::string format_issue(const Issue& issue) noexcept
-	{
-		return format_severity(issue.severity) + " at pos " + std::to_string(issue.pos) + ": " + issue.text + "\r\n"; //-V107
-	}
-};
-
 [[nodiscard]] std::string Formatter::create_summary() noexcept
 {
 	const auto& messages = IssueManager::messages();
 	std::string ret = "Completed with "
-		+ std::to_string(messages.size()) //-V107
+		+ std::to_string(messages.size())
 		+ " message"
 		+ (messages.size() == 1 ? "" : "s")
 		+ (messages.empty() ? "." : ":")
@@ -45,7 +23,7 @@ namespace
 
 	for (const auto& message : messages)
 	{
-		ret += format_issue(message);
+		ret += format(message);
 	}
 
 	return ret;

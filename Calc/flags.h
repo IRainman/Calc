@@ -6,6 +6,6 @@
 //---------------------------------------------------------------------------
 #ifdef _DEBUG
 #define CALC_TESTS_ENABLED
-//#define CALC_TESTS_DEV_ENABLED
+#define CALC_TESTS_DEV_ENABLED
 #endif
 //---------------------------------------------------------------------------

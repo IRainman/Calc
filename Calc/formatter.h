@@ -5,6 +5,7 @@
 #include <format>
 #include <limits>
 #include <string>
+#include "issue_manager.h"
 /*
  * Copyright 2023-2024 Solomina Elle Leonovna, a.rainman on gmail point com
  */
@@ -27,6 +28,25 @@ namespace Formatter
 	template <typename... Args>
 	[[nodiscard]] constexpr auto format(const std::format_string<Args&&...> fmt, Args&&... args) noexcept {
 		return std::format(fmt, args...);
+	}
+
+	[[nodiscard]] constexpr std::string format(const Issue::Severity severity) noexcept
+	{
+		switch (severity)
+		{
+			case Issue::Severity::INFO: [[unlikely]]
+				return "Info";
+			case Issue::Severity::WARN: [[unlikely]]
+				return "Warning";
+			case Issue::Severity::ERR: [[likely]]
+				return "Error";
+		}
+		std::unreachable();
+	}
+
+	[[nodiscard]] constexpr std::string format(const Issue& issue) noexcept
+	{
+		return format(issue.severity) + " at pos " + std::to_string(issue.pos) + ": " + issue.text + "\r\n";
 	}
 
 	/**

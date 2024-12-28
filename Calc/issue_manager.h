@@ -13,20 +13,20 @@ struct Issue
 	 */
 	enum class Severity : unsigned int
 	{
-		// Errors that do stop processing.
-		ERR,
+		// Information and comments.
+		INFO = 0,
 
 		// Warnings that don't stop processing.
-		WARN,
+		WARN = 1,
 
-		// Information and comments.
-		INFO,
+		// Errors that do stop processing.
+		ERR = 1 << 1,
 	};
 
 	// Issue describing of the message.
 	const std::string text;
 
-	// Position withing the context at which the issue has occurred.
+	// Position within the context at which the issue has occurred.
 	const size_t pos; //-V122
 
 	// Issue severity.
@@ -39,6 +39,14 @@ struct Issue
 class IssueManager
 {
 	public:
+		/**
+		 * Speedup the manager if needed.
+		 */
+		static void speedup() noexcept
+		{
+			_messages.reserve(10);
+		}
+
 		/**
 		 * Report a new info message.
 		 */

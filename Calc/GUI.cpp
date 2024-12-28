@@ -22,7 +22,6 @@
 
 #include "targetver.h"
 
-#define WINDOWS_ENABLE_CPLUSPLUS
 #define VC_EXTRALEAN
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
@@ -38,6 +37,13 @@
 #define _AFX_MINREBUILD
 #define _AFX_ALL_WARNINGS
 #include <afxwinappex.h>
+#include <afxwin.h>
+#include <tchar.h>
+#include <CommCtrl.h>
+#include <libloaderapi.h>
+#include <WinUser.h>
+#include <afx.h>
+#include <afxstr.h>
 
 #include "resource.h"
 #include "GUI.h"
@@ -58,6 +64,7 @@ BOOL CCalcApp::InitInstance()
 
 	m_pMainWnd = &dlg;
 	dlg.DoModal();
+
 	return FALSE;
 }
 
@@ -79,6 +86,7 @@ void CCalcApp::OnHelp()
 CCalcDlg::CCalcDlg(CWnd* pParent /*=nullptr*/) //-V730
 	: CDialog(CCalcDlg::IDD, pParent)
 {
+	IssueManager::speedup();
 }
 
 BOOL CCalcDlg::OnInitDialog()
@@ -98,10 +106,6 @@ BOOL CCalcDlg::OnInitDialog()
 
 	SetIcon(m_hIcon, TRUE);
 	SetIcon(m_hIcon, FALSE);
-
-#ifdef CALC_TESTS_ENABLED
-	SetDlgItemText(IDC_EDIT_MESSAGE, calc_tests().data());
-#endif
 
 	return TRUE;
 }
@@ -137,11 +141,23 @@ void CCalcDlg::OnEnChangeEditInput()
 	CString str;
 	GetDlgItemText(IDC_EDIT_INPUT, str);
 	const std::string_view input(str, static_cast<unsigned int>(str.GetLength()));
-	Lexer l{ input };
-	Parser p{ l };
-	SetDlgItemText(IDC_EDIT_RESULT, Formatter::format_output_value(p.parse()).data());
-	SetDlgItemText(IDC_EDIT_MESSAGE, Formatter::create_summary().data());
-	IssueManager::clear();
+	
+#ifdef CALC_TESTS_ENABLED
+	if (input.data()[0] == '\r')
+	{
+		SetDlgItemText(IDC_EDIT_MESSAGE, calc_tests().data());
+	}
+	else
+#endif
+	{
+		Lexer l{ input };
+		Parser p{ l };
+
+		SetDlgItemText(IDC_EDIT_RESULT, Formatter::format_output_value(p.parse()).data());
+		SetDlgItemText(IDC_EDIT_MESSAGE, Formatter::create_summary().data());
+
+		IssueManager::clear();
+	}
 }
 
 
