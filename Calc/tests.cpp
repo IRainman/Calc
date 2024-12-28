@@ -13,6 +13,7 @@
 #include "formatter.h"
 #ifdef CALC_TESTS_ENABLED
 #include "tests.h"
+#include <chrono>
 
 std::string calc_tests()
 {
@@ -149,22 +150,33 @@ std::string calc_tests()
 		{"minkowski_distance(1, 1, 2, 3)", 6.0 }
 	};
 
+
 	std::string output;
-	for (const auto& t : tests)
+
+	const auto start = std::chrono::steady_clock::now();
+
+#ifndef CALC_TESTS_DEV_ENABLED
+	for (auto i =0; i < 100000; ++i)
+#endif
 	{
-		Lexer l{ t.first };
-		Parser p{ l };
-		auto result = p.parse();
-		if (result - t.second > std::numeric_limits<Value>::epsilon())
+		for (const auto& t : tests)
 		{
-			output += "Test failed:\r\n " + t.first + " = " + Formatter::format_output_value(t.second) + " != " + Formatter::format_output_value(result) + ". " + Formatter::create_summary() + "\r\n";
+
+			Lexer l{ t.first };
+			Parser p{ l };
+			const auto result = p.parse();
+
+			if (result - t.second > std::numeric_limits<Value>::epsilon())
+			{
+				output += "Test failed:\r\n " + t.first + " = " + Formatter::format_output_value(t.second) + " != " + Formatter::format_output_value(result) + ". " + Formatter::create_summary() + "\r\n";
+			}
+			IssueManager::clear();
 		}
-		IssueManager::clear();
 	}
-	if (output.empty())
-	{
-		output += "Tests passed!\r\n";
-	}
+
+	const auto end = std::chrono::steady_clock::now();
+	const std::chrono::duration<double> diff = end - start;
+	output += std::format("Tests {}ed!\r\n Time is: {}.\r\n", output.empty() ? "pass" : "fail", diff);
 	return output;
 }
 
