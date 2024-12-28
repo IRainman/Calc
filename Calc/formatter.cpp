@@ -27,13 +27,13 @@ namespace
 		std::unreachable();
 	}
 
-	[[nodiscard]] std::string format_issue(const Issue& issue)
+	[[nodiscard]] std::string format_issue(const Issue& issue) noexcept
 	{
 		return format_severity(issue.severity) + " at pos " + std::to_string(issue.pos) + ": " + issue.text + "\r\n"; //-V107
 	}
 };
 
-[[nodiscard]] std::string Formatter::create_summary()
+[[nodiscard]] std::string Formatter::create_summary() noexcept
 {
 	const auto& messages = IssueManager::messages();
 	std::string ret = "Completed with "

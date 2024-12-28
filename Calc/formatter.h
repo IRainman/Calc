@@ -15,23 +15,23 @@ namespace Formatter
 	 * Format output value of the expression returned.
 	 */
 	template<typename V>
-	[[nodiscard]] constexpr auto format_output_value(const V v)
+	[[nodiscard]] constexpr auto format_output_value(const V v) noexcept
 	{
 		std::string s;
 		s.resize(std::bit_ceil(static_cast<size_t>(std::numeric_limits<V>::max_digits10))); //-V201
 		s.resize(std::to_chars(s.data(), s.data() + s.size(),
-			v, std::chars_format::general, std::numeric_limits<V>::digits10).ptr - s.data());
+			v, std::chars_format::general, std::numeric_limits<V>::max_digits10).ptr - s.data());
 		return s;
 	}
 
 	template <typename... Args>
-	[[nodiscard]] constexpr auto format(const std::format_string<Args&&...> fmt, Args&&... args) {
+	[[nodiscard]] constexpr auto format(const std::format_string<Args&&...> fmt, Args&&... args) noexcept {
 		return std::format(fmt, args...);
 	}
 
 	/**
 	 * Create full report of expression processing.
 	 */
-	[[nodiscard]] std::string create_summary();
+	[[nodiscard]] std::string create_summary() noexcept;
 };
 
