@@ -42,17 +42,17 @@ class IssueManager
 		/**
 		 * Report a new info message.
 		 */
-		static void report_info(size_t pos, std::string&& text);
+		static void report_info(size_t pos, std::string&& text) noexcept;
 		
 		/**
 		 * Report a new warning.
 		 */
-		static void report_warning(size_t pos, std::string&& text);
+		static void report_warning(size_t pos, std::string&& text) noexcept;
 		
 		/**
 		 * Report a new error.
 		 */
-		static void report_error(size_t pos, std::string&& text);
+		static void report_error(size_t pos, std::string&& text) noexcept;
 		
 		/**
 		 * Indicate whether any messages have been reported so far.
@@ -83,8 +83,8 @@ class IssueManager
 		/**
 		 * Report a new issue.
 		 */
-		static void report(Issue&& issue);
-		static void report(Issue::Severity severity, size_t pos, std::string&& text);
+		static void report(Issue&& issue) noexcept;
+		static void report(Issue::Severity severity, size_t pos, std::string&& text) noexcept;
 
 		static bool _has_errors;
 		static std::vector<Issue> _messages;
