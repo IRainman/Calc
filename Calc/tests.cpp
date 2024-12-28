@@ -7,11 +7,11 @@
 
 #include "pch.h"
 #include "flags.h"
+#ifdef CALC_TESTS_ENABLED
 #include "lexer.h"
 #include "parser.h"
 #include "issue_manager.h"
 #include "formatter.h"
-#ifdef CALC_TESTS_ENABLED
 #include "tests.h"
 #include <chrono>
 
@@ -19,10 +19,10 @@ std::string calc_tests()
 {
 	using Value = Token::Value;
 
-	std::vector<std::pair<const std::string, const Value>> tests =   //-V826
+	std::array<std::pair<const std::string, const Value>, 93> tests =
 	{
 		// syntax errors
-		{"2 + )", std::numeric_limits<Value>::quiet_NaN()},
+		std::make_pair("2 + )", std::numeric_limits<Value>::quiet_NaN()),
 		{"2 + (", std::numeric_limits<Value>::quiet_NaN()},
 		{"e(", std::numeric_limits<Value>::quiet_NaN()},
 		{"1(", std::numeric_limits<Value>::quiet_NaN()},
@@ -51,7 +51,6 @@ std::string calc_tests()
 		{"mu_0", 1.2566370621219191919191919191919191919e-6},// magnetic constant (exactly 4 pi x 10^(-7)
 		{"epsilon_0", 8.854187817620389850536563031710750260608e-12},// electric constant (Ohm)
 		{"Z_0", 376.7303134617706554681984004203193082686},// characteristic impedance of vacuum (Ohm)
-
 
 		// logarithmic functions
 		{"ln(e)",1.0},
@@ -156,7 +155,7 @@ std::string calc_tests()
 	const auto start = std::chrono::steady_clock::now();
 
 #ifndef CALC_TESTS_DEV_ENABLED
-	for (auto i =0; i < 100000; ++i)
+	for (auto i = 0; i < 100000; ++i)
 #endif
 	{
 		for (const auto& t : tests)
@@ -170,6 +169,7 @@ std::string calc_tests()
 			{
 				output += "Test failed:\r\n " + t.first + " = " + Formatter::format_output_value(t.second) + " != " + Formatter::format_output_value(result) + ". " + Formatter::create_summary() + "\r\n";
 			}
+
 			IssueManager::clear();
 		}
 	}
