@@ -36,7 +36,7 @@ class CAboutDlg : public CDialog
 		CAboutDlg(CAboutDlg&&) = delete;
 		enum { IDD = IDD_ABOUTBOX };
 		virtual BOOL OnInitDialog() override;
-		afx_msg void OnBnClickedSite() noexcept;
+		afx_msg void OnBnClickedCancel() noexcept;
 		DECLARE_MESSAGE_MAP()
 };
 

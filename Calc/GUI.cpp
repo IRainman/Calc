@@ -22,8 +22,7 @@
 
 #include "targetver.h"
 
-
-
+#define WINDOWS_ENABLE_CPLUSPLUS
 #define VC_EXTRALEAN
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
@@ -38,18 +37,7 @@
 #define _ATL_NO_COM_SUPPORT
 #define _AFX_MINREBUILD
 #define _AFX_ALL_WARNINGS
-#include <afxwin.h>
 #include <afxwinappex.h>
-#include <tchar.h>
-#include <libloaderapi.h>
-#include <shellapi.h>
-#include <WinUser.h>
-#include <afx.h>
-#include <CommCtrl.h>
-#include <afxmsg_.h>
-#include <afxres.h>
-#include <afxstr.h>
-
 
 #include "resource.h"
 #include "GUI.h"
@@ -174,12 +162,14 @@ BOOL CAboutDlg::OnInitDialog()
 }
 
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
-	ON_BN_CLICKED(ID_SITE, &ThisClass::OnBnClickedSite)
+	ON_WM_SYSCOMMAND()
+	ON_WM_PAINT()
+	ON_BN_CLICKED(ID_CANCEL, &CAboutDlg::OnBnClickedCancel)
 END_MESSAGE_MAP()
 
-void CAboutDlg::OnBnClickedSite() noexcept
+void CAboutDlg::OnBnClickedCancel() noexcept
 {
-	::ShellExecute(nullptr, nullptr, "http://studio2000.xyz/txt/calc.shtml", nullptr, nullptr, SW_SHOWNORMAL); //-V2001
+	EndDialog(FALSE);
 }
 
 #else
