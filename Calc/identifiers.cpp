@@ -201,6 +201,8 @@ namespace
 
 		{"exp", function_pointer<1, std::exp>()},
 
+		{"exp2", function_pointer<1, std::exp2>()},
+
 		{"sh", function_pointer<1, std::sinh>()},
 		{"ch", function_pointer<1, std::cosh>()},
 		{"tanh", function_pointer<1, std::tanh>()},
@@ -236,20 +238,20 @@ namespace
 
 		{"tgamma", function_pointer<1, std::tgamma>()},
 		{"lgamma", function_pointer<1, std::lgamma>()},
-
+#ifdef CALC_TESTS_ENABLED
 		{"trunc", function_pointer<1, std::trunc>()},
 		{"round", function_pointer<1, std::round>()},
-
+#endif
 		{"mod", function_pointer<2, std::fmod>()},
 
 #ifdef CALC_TESTS_ENABLED
 		//---------------------------------------------------------------------------
 		// TODO https://en.cppreference.com/w/cpp/numeric/special_math
-		{"assoc_legendre", {{3, 0}, assoc_legendre}},
-		{"assoc_laguerre", {{3, 0}, assoc_laguerre}},
+		{"assoc_legendre", {{3, 3}, assoc_legendre}},
+		{"assoc_laguerre", {{3, 3}, assoc_laguerre}},
 
-		{"legendre", {{2, 0}, legendre}},
-		{"laguerre", {{2, 0}, laguerre}},
+		{"legendre", {{2, 2}, legendre}},
+		{"laguerre", {{2, 2}, laguerre}},
 
 		{"beta", function_pointer<2, std::beta>()},
 
@@ -261,9 +263,9 @@ namespace
 		{"cyl_bessel_k", function_pointer<2, std::cyl_bessel_k>()},
 		{"cyl_neumann", function_pointer<2, std::cyl_neumann>()},
 
-		{"sph_bessel", {{2, 0}, sph_bessel}},
-		{"sph_legendre", {{3, 0}, sph_legendre}},
-		{"sph_neumann", {{2, 0}, sph_neumann}},
+		{"sph_bessel", {{2, 2}, sph_bessel}},
+		{"sph_legendre", {{3, 3}, sph_legendre}},
+		{"sph_neumann", {{2, 2}, sph_neumann}},
 
 		{"ellint_1", function_pointer<2, std::ellint_1>()},
 		{"ellint_2", function_pointer<2, std::ellint_2>()},
@@ -271,7 +273,7 @@ namespace
 
 		{"expint", function_pointer<1, std::expint>()},
 
-		{"hermite", {{2, 0}, hermite}},
+		{"hermite", {{2, 2}, hermite}},
 
 		{"riemann_zeta", function_pointer<1, std::riemann_zeta>()},
 

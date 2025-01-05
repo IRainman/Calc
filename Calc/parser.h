@@ -44,7 +44,7 @@ class Parser
 		using Value = Token::Value;
 		using ParamCount = Token::ParamCount;
 		/**
-		 * Parse and eval an expression. Return nan in case of an error.
+		 * Parse and evaluate an expression. Return nan in case of an error.
 		 */
 		[[nodiscard]] Value parse() noexcept;
 		

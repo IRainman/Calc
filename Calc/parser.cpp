@@ -9,7 +9,6 @@
 #include <cmath>
 #include <format>
 #include <ranges>
-#include <vector>
 #include "issue_manager.h"
 #include "parser.h"
 #include "identifiers.h"
@@ -26,11 +25,11 @@ namespace
 	if (_current.type != Token::Type::END) [[unlikely]]
 	{
 		IssueManager::report_error(_lex.get_position(), std::format("extraneous input: {}" , _current.text));
-		return _current.val;
+		return std::numeric_limits<Value>::quiet_NaN();
 	}
 	else if (IssueManager::has_errors()) [[unlikely]]
 	{
-		return _current.val;
+		return std::numeric_limits<Value>::quiet_NaN();
 	}
 	else [[likely]]
 	{
@@ -43,7 +42,7 @@ inline void Parser::advance() noexcept
 	 _lex.next(_current);
 }
 
-Parser::Value Parser::parse_expr_4() noexcept
+[[nodiscard]] Parser::Value Parser::parse_expr_4() noexcept
 {
 	auto result = parse_expr_3();
 	while (true)
@@ -64,7 +63,7 @@ Parser::Value Parser::parse_expr_4() noexcept
 	}
 }
 
-Parser::Value Parser::parse_expr_3() noexcept
+[[nodiscard]] Parser::Value Parser::parse_expr_3() noexcept
 {
 	auto result = parse_expr_2();
 	while (true)
@@ -89,7 +88,7 @@ Parser::Value Parser::parse_expr_3() noexcept
 	}
 }
 
-Parser::Value Parser::parse_expr_2() noexcept
+[[nodiscard]] Parser::Value Parser::parse_expr_2() noexcept
 {
 	std::array<Value, std::numeric_limits<ParamCount>::max()> values;
 	
@@ -122,7 +121,7 @@ Parser::Value Parser::parse_expr_2() noexcept
 	return result;
 }
 
-Parser::Value Parser::parse_expr_1() noexcept
+[[nodiscard]] Parser::Value Parser::parse_expr_1() noexcept
 {
 	switch (_current.type)
 	{
@@ -134,7 +133,7 @@ Parser::Value Parser::parse_expr_1() noexcept
 	}
 }
 
-Parser::Value Parser::parse_expr_0() noexcept
+[[nodiscard]] Parser::Value Parser::parse_expr_0() noexcept
 {
 	switch (_current.type)
 	{
@@ -171,12 +170,12 @@ Parser::Value Parser::parse_expr_0() noexcept
 	}
 }
 
-Parser::Value Parser::parse_function_or_constant() noexcept
+[[nodiscard]] Parser::Value Parser::parse_function_or_constant() noexcept
 {
 	const auto name = _current.text;
 	const auto pos_of_ident_start = _lex.get_position();
 	advance();
-	if (_current.type == Token::Type::LPAREN) // function
+	if (_current.type == Token::Type::LPAREN) [[likely]] // function
 	{
 		advance();
 		if (const auto i = ids.find(name); i != ids.end()) [[likely]]
@@ -233,7 +232,7 @@ Parser::Value Parser::parse_function_or_constant() noexcept
 			return _current.val;
 		}
 	}
-	else // constant
+	else [[likely]] // constant
 	{
 		if (const auto i = ids.find(name); i != ids.end()) [[likely]]
 		{
