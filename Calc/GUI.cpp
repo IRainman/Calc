@@ -42,6 +42,10 @@
 #include <CommCtrl.h>
 #include <libloaderapi.h>
 #include <WinUser.h>
+#include <minwindef.h>
+#include <windef.h>
+#include <afxmsg_.h>
+#include <afxres.h>
 #include <afx.h>
 #include <afxstr.h>
 

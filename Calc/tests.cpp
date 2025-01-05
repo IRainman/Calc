@@ -19,7 +19,7 @@ std::string calc_tests()
 {
 	using Value = Token::Value;
 
-	std::array<std::pair<const std::string, const Value>, 96> tests =
+	std::array<std::pair<const std::string, const Value>, 100> tests =
 	{
 		// syntax errors
 		std::make_pair("2 + )", std::numeric_limits<Value>::quiet_NaN()),
@@ -28,6 +28,8 @@ std::string calc_tests()
 		{ "1(", std::numeric_limits<Value>::quiet_NaN() },
 		{ "sin(0 ", std::numeric_limits<Value>::quiet_NaN() },
 		{ "sin(", std::numeric_limits<Value>::quiet_NaN() },
+		{ "1+1 1", std::numeric_limits<Value>::quiet_NaN() },
+		{ "1+1;", std::numeric_limits<Value>::quiet_NaN() },
 
 		// value parsing
 		{ "1.4e-3", 0.0014 },
@@ -51,7 +53,10 @@ std::string calc_tests()
 		{ "mu_0", 1.2566370621219191919191919191919191919e-6 }, // magnetic constant (exactly 4 pi x 10^(-7)
 		{ "epsilon_0", 8.854187817620389850536563031710750260608e-12 }, // electric constant (Ohm)
 		{ "Z_0", 376.7303134617706554681984004203193082686 }, // characteristic impedance of vacuum (Ohm)
+
+		// check additional constants
 		{ "e ^ pi", 23.1406926327792690057 }, // Gelfond's constant https://en.wikipedia.org/wiki/Gelfond%27s_constant
+		{ "exp(pi)", 23.1406926327792690057 }, // Gelfond's constant https://en.wikipedia.org/wiki/Gelfond%27s_constant
 
 		// logarithmic functions
 		{ "ln(e)",1.0 },
@@ -84,7 +89,6 @@ std::string calc_tests()
 		{ "(1+2)*3", 9.0 },
 		{ "2*(3+4)", 14.0 },
 		{ "pow(2,1/3)", std::pow(2.0, 1.0 / 3.0) },
-		{ "1.4e-3",0.0014 },
 		{ "pow( sin( pi / 2 ) / .001 + 24, 2 )", 1048576.0 },
 
 		// operation priority
@@ -94,10 +98,11 @@ std::string calc_tests()
 		{ "(2 + 2) * 2", 8.0 },
 
 		// precision
-		{ "10000 / 540 * 3", 55.5555555555556 },
+		{ "10000 / 540 * 3", 55.5555555555555555555555555555555 },
 		{ "1 / 3 * 3", 1.0 },
 		{ "640320 ^ 3 + 744",   2.62537412640769e+17 },
 		{ "e^(pi * sqrt(163))", 2.62537412640768e+17 },
+		{"245850922 / 78256779", std::numbers::pi_v<Value> }, // https://en.wikipedia.org/wiki/Pi#Approximate_value_and_digits
 
 		// special value support
 		{ "1 / 0", std::numeric_limits<Value>::infinity() },
@@ -141,6 +146,7 @@ std::string calc_tests()
 		{ "round(3.14159)", 3.0 },
 		{ "trunc(3.14159)", 3.0 },
 		{ "hypot(3,4)", 5.0 },
+		{ "hypot(1,2,2)", 3.0 },
 		{ "min(1)", 1.0 },
 		{ "min(1, 2, 3)", 1.0 },
 		{ "max(1, 2, 3)", 3.0 },
@@ -171,7 +177,7 @@ std::string calc_tests()
 			if (std::isnan(result) && std::isnan(t.second))
 			{
 #ifdef CALC_TESTS_DEV_ENABLED
-				output += "Test OK:\r\n " + t.first + " not return a result.\r\n " + Formatter::create_summary() + "\r\n";
+				output += "Test OK:\r\n " + t.first + " not return a result, must return nan.\r\n " + Formatter::create_summary() + "\r\n";
 #endif
 			}
 			else if (std::abs(result - t.second) <= std::numeric_limits<Value>::epsilon())
