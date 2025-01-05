@@ -46,7 +46,7 @@ namespace
 	template<const ParamCount N, WrappedFn<N> wrappedFn>
 	[[nodiscard]] consteval Fn function_pointer() noexcept
 	{
-		return { { N, 0 }, function_pointer_impl<N, wrappedFn> };
+		return { { N, N }, function_pointer_impl<N, wrappedFn> };
 	}
 
 	template <const Value value>

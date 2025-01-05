@@ -193,13 +193,14 @@ Parser::Value Parser::parse_function_or_constant() noexcept
 					if (_current.type == Token::Type::RPAREN) [[likely]]
 					{
 						advance();
+						++count;
 						if (check.params_count_is_valid(count)) [[likely]]
 						{
-							return function({params.begin(), params.begin() + count + 1});
+							return function({params.begin(), params.begin() + count});
 						}
 						else [[unlikely]]
 						{
-							IssueManager::report_error(pos_of_ident_start, std::format("for function {} expected minimum {} and maximum {} parameters, got {}", name, check.min, check.max, count + 1));
+							IssueManager::report_error(pos_of_ident_start, std::format("for function {} expected minimum {} and maximum {} parameters, got {}", name, check.min, check.max, count));
 							return _current.val;
 						}
 					}

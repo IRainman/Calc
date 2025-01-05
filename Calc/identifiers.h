@@ -36,7 +36,7 @@ namespace Identifiers
 			 */
 			[[nodiscard]] constexpr bool params_count_is_valid(const ParamCount count) const noexcept
 			{
-				return min <= count || count <= max;
+				return min <= count && count <= max;
 			}
 			const ParamCount min;
 			const ParamCount max;
