@@ -8,17 +8,34 @@
 #include "pch.h"
 #include "flags.h"
 #ifdef CALC_TESTS_ENABLED
+#include <chrono>
+#include <array>
+#include <cmath>
+#include <cstdlib>
+#include <format>
+#include <limits>
+#include <numbers>
+#include <string>
+#include <utility>
 #include "lexer.h"
 #include "parser.h"
 #include "issue_manager.h"
 #include "formatter.h"
 #include "tests.h"
-#include <chrono>
+#include "token.h"
+
+namespace {
+
+	using Value = Token::Value;
+	bool areAlmostEqual(const Value a, const Value b)
+	{
+		const Value tolerance = std::numeric_limits<Value>::epsilon() * std::max(std::abs(a), std::abs(b));
+		return std::abs(a - b) <= tolerance;
+	}
+}
 
 std::string calc_tests()
 {
-	using Value = Token::Value;
-
 	std::array<std::pair<const std::string, const Value>, 100> tests =
 	{
 		// syntax errors
@@ -134,11 +151,11 @@ std::string calc_tests()
 		{ "5 % -3", 2.0 },
 		{ "-5 % -3", -2.0 },
 		{ "4 % 1.5", 1.0 },
-		{ "3.5 % 2", 1.5},
 		{ "7 % 3 % 2", 1.0 },
 		{ "7 % 2 ^ 2", 3.0 },
 		{ "6 / 3 % 2", 0.0 },
 		{ "6 % 4 / 2", 1.0 },
+		{ "3.5 % 2", 1.5 },
 		{ "mod(3.5, 2)", 1.5},
 
 		// min max functions
@@ -180,15 +197,23 @@ std::string calc_tests()
 				output += "Test OK:\r\n " + t.first + " not return a result, must return nan.\r\n " + Formatter::create_summary() + "\r\n";
 #endif
 			}
-			else if (std::abs(result - t.second) <= std::numeric_limits<Value>::epsilon())
+			else if (result == t.second)
 			{
 #ifdef CALC_TESTS_DEV_ENABLED
-				output += "Test OK:\r\n " + t.first + " = " + Formatter::format(t.second, true) + " == " + Formatter::format(result) + ".\r\n " + Formatter::create_summary() + "\r\n";
+				output += "Test OK:\r\n " + t.first + " = " + Formatter::format(t.second, true) + " exactly equal " + Formatter::format(result) + ".\r\n " + Formatter::create_summary() + "\r\n";
+#endif
+			}
+			else if (areAlmostEqual(result, t.second))
+			{
+#ifdef CALC_TESTS_DEV_ENABLED
+				output += "Test OK:\r\n " + t.first + " = " + Formatter::format(t.second, true) + " almost equal " + Formatter::format(result) + ".\r\n " + Formatter::create_summary() + "\r\n";
 #endif
 			}
 			else
 			{
-				output += "Test failed:\r\n " + t.first + " = " + Formatter::format(t.second, true) + " != " + Formatter::format(result) + ".\r\n " + Formatter::create_summary() + "\r\n";
+#ifdef CALC_TESTS_DEV_ENABLED
+				output += "Test failed:\r\n " + t.first + " = " + Formatter::format(t.second, true) + " != " + Formatter::format(result, true) + ".\r\n " + Formatter::create_summary() + "\r\n";
+#endif
 			}
 
 			IssueManager::clear();
