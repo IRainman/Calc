@@ -17,3 +17,5 @@
 #include <vector>
 #include <format>
 #include <span>
+#include <bit>
+#include <type_traits>

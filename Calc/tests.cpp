@@ -168,9 +168,21 @@ std::string calc_tests()
 			Parser p{ l };
 			const auto result = p.parse();
 
-			if (result - t.second > std::numeric_limits<Value>::epsilon())
+			if (std::isnan(result) && std::isnan(t.second))
 			{
-				output += "Test failed:\r\n " + t.first + " = " + Formatter::format_output_value(t.second) + " != " + Formatter::format_output_value(result) + ". " + Formatter::create_summary() + "\r\n";
+#ifdef CALC_TESTS_DEV_ENABLED
+				output += "Test OK:\r\n " + t.first + " not return a result.\r\n " + Formatter::create_summary() + "\r\n";
+#endif
+			}
+			else if (std::abs(result - t.second) <= std::numeric_limits<Value>::epsilon())
+			{
+#ifdef CALC_TESTS_DEV_ENABLED
+				output += "Test OK:\r\n " + t.first + " = " + Formatter::format(t.second, true) + " == " + Formatter::format(result) + ".\r\n " + Formatter::create_summary() + "\r\n";
+#endif
+			}
+			else
+			{
+				output += "Test failed:\r\n " + t.first + " = " + Formatter::format(t.second, true) + " != " + Formatter::format(result) + ".\r\n " + Formatter::create_summary() + "\r\n";
 			}
 
 			IssueManager::clear();

@@ -102,10 +102,10 @@ BOOL CCalcDlg::OnInitDialog()
 	pSysMenu->AppendMenu(MF_SEPARATOR);
 	pSysMenu->AppendMenu(MF_STRING, IDM_ABOUTBOX, strAboutMenu);
 
-	m_hIcon = theCalcApp.LoadIcon(IDR_MAINFRAME);
+	HICON hIcon = theCalcApp.LoadIcon(IDR_MAINFRAME);
 
-	SetIcon(m_hIcon, TRUE);
-	SetIcon(m_hIcon, FALSE);
+	SetIcon(hIcon, TRUE);
+	SetIcon(hIcon, FALSE);
 
 	return TRUE;
 }
@@ -131,32 +131,33 @@ void CCalcDlg::OnSysCommand(UINT nID, LPARAM lParam)
 	}
 }
 
-HCURSOR CCalcDlg::OnQueryDragIcon() noexcept
-{
-	return m_hIcon;
-}
-
 void CCalcDlg::OnEnChangeEditInput()
 {
-	CString str;
-	GetDlgItemText(IDC_EDIT_INPUT, str);
-	const std::string_view input(str, static_cast<unsigned int>(str.GetLength()));
-	
-#ifdef CALC_TESTS_ENABLED
-	if (input.data()[0] == '\r')
+	if (GetDlgItemText(IDC_EDIT_INPUT, m_str) >= 1)
 	{
-		SetDlgItemText(IDC_EDIT_MESSAGE, calc_tests().data());
+		const std::string_view input(m_str, static_cast<unsigned int>(m_str.GetLength()));
+
+#ifdef CALC_TESTS_ENABLED
+		if (input.data()[0] == '\r')
+		{
+			SetDlgItemText(IDC_EDIT_MESSAGE, calc_tests().data());
+		}
+		else
+#endif
+		{
+			Lexer l{ input };
+			Parser p{ l };
+
+			SetDlgItemText(IDC_EDIT_RESULT, Formatter::format(p.parse()).data());
+			SetDlgItemText(IDC_EDIT_MESSAGE, Formatter::create_summary().data());
+
+			IssueManager::clear();
+		}
 	}
 	else
-#endif
 	{
-		Lexer l{ input };
-		Parser p{ l };
-
-		SetDlgItemText(IDC_EDIT_RESULT, Formatter::format_output_value(p.parse()).data());
-		SetDlgItemText(IDC_EDIT_MESSAGE, Formatter::create_summary().data());
-
-		IssueManager::clear();
+		SetDlgItemText(IDC_EDIT_RESULT, "");
+		SetDlgItemText(IDC_EDIT_MESSAGE, "");
 	}
 }
 

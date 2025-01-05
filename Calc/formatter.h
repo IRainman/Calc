@@ -5,7 +5,10 @@
 #include <format>
 #include <limits>
 #include <string>
+#include <type_traits>
+#include <utility>
 #include "issue_manager.h"
+
 /*
  * Copyright 2023-2024 Solomina Elle Leonovna, a.rainman on gmail point com
  */
@@ -16,13 +19,14 @@ namespace Formatter
 	 * Format output value of the expression returned.
 	 */
 	template<typename V>
-	[[nodiscard]] constexpr auto format_output_value(const V v) noexcept
+	[[nodiscard]] constexpr auto format(const V value, const bool is_constant = false) noexcept
 	{
-		std::string s;
-		s.resize(std::bit_ceil(static_cast<size_t>(std::numeric_limits<V>::max_digits10))); //-V201
-		s.resize(std::to_chars(s.data(), s.data() + s.size(),
-			v, std::chars_format::general, std::numeric_limits<V>::max_digits10).ptr - s.data());
-		return s;
+		static_assert(std::is_floating_point_v<V>);
+		std::string out;
+		out.resize(std::bit_ceil(static_cast<size_t>(std::numeric_limits<V>::max_digits10))); //-V201
+		out.resize(std::to_chars(out.data(), out.data() + out.size(),
+			value, std::chars_format::general, is_constant ? std::numeric_limits<V>::max_digits10 : std::numeric_limits<V>::digits10).ptr - out.data());
+		return out;
 	}
 
 	template <typename... Args>
