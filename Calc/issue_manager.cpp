@@ -9,30 +9,21 @@
 #include <vector>
 #include "issue_manager.h"
 
-bool IssueManager::_has_errors = false;
 std::vector<Issue> IssueManager::_messages;
-
-void IssueManager::report(Issue&& issue) noexcept
-{
-	_has_errors |= _messages.emplace_back(std::move(issue)).severity == Issue::Severity::ERR;
-}
-
-void IssueManager::report(Issue::Severity severity, size_t pos, std::string&& text) noexcept
-{
-	report(Issue{std::move(text), pos, severity});
-}
+bool IssueManager::_has_errors = false;
 
 void IssueManager::report_info(size_t pos, std::string&& text) noexcept
 {
-	report(Issue::Severity::INFO, pos, std::move(text));
+	_messages.emplace_back(Issue(std::move(text), pos, Issue::Severity::INFO));
 }
 
 void IssueManager::report_warning(size_t pos, std::string&& text) noexcept
 {
-	report(Issue::Severity::WARN, pos, std::move(text));
+	_messages.emplace_back(Issue(std::move(text), pos, Issue::Severity::WARN));
 }
 
 void IssueManager::report_error(size_t pos, std::string&& text) noexcept
 {
-	report(Issue::Severity::ERR, pos, std::move(text));
+	_messages.emplace_back(Issue(std::move(text), pos, Issue::Severity::ERR));
+	_has_errors = true;
 }

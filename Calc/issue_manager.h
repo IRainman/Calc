@@ -6,31 +6,37 @@
 /**
  * Represents a message from the compiler.
  */
-struct Issue
+class Issue
 {
-	/**
-	 * How severe is this message?
-	 */
-	enum class Severity : unsigned int
-	{
-		// Information and comments.
-		INFO = 0,
+	public:
+		/**
+		 * How severe is this message?
+		 */
+		enum class Severity : unsigned int
+		{
+			// Information and comments.
+			INFO = 0,
 
-		// Warnings that don't stop processing.
-		WARN = 1,
+			// Warnings that don't stop processing.
+			WARN = 1,
 
-		// Errors that do stop processing.
-		ERR = 1 << 1,
-	};
+			// Errors that do stop processing.
+			ERR = 1 << 1,
+		};
+		Issue(std::string&& t, size_t p, Severity s) : text(t), pos(p), severity(s) {};
+		Issue(const Issue&) = delete;
+		Issue(Issue&&) = default;
+	private:
+		// Issue describing of the message.
+		const std::string text;
 
-	// Issue describing of the message.
-	const std::string text;
+		// Position within the context at which the issue has occurred.
+		const size_t pos; //-V122
 
-	// Position within the context at which the issue has occurred.
-	const size_t pos; //-V122
+		// Issue severity.
+		const Severity severity;
 
-	// Issue severity.
-	const Severity severity;
+		friend class Formatter;
 };
 
 /**
@@ -91,9 +97,6 @@ class IssueManager
 		/**
 		 * Report a new issue.
 		 */
-		static void report(Issue&& issue) noexcept;
-		static void report(Issue::Severity severity, size_t pos, std::string&& text) noexcept;
-
 		static bool _has_errors;
 		static std::vector<Issue> _messages;
 };
