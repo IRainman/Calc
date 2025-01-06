@@ -36,7 +36,7 @@ namespace {
 
 std::string calc_tests()
 {
-	std::array<std::pair<const std::string, const Value>, 100> tests =
+	std::array<std::pair<const std::string, const Value>, 96> tests =
 	{
 		// syntax errors
 		std::make_pair("2 + )", std::numeric_limits<Value>::quiet_NaN()),
@@ -87,10 +87,11 @@ std::string calc_tests()
 		{ "tanh(1)", std::tanh(1) },
 
 		// misc functions
-		{ "abs(-42)",42.0 },
-		{ "round(3.14159)",3.0 },
-		{ "trunc(3.14159)",3.0 },
-		{ "hypot(3,4)",5.0 },
+		{ "abs(-42)", 42.0 },
+		{ "round(3.14159)", 3.0 },
+		{ "trunc(3.14159)", 3.0 },
+		{ "hypot(3,4)", 5.0 },
+		{ "hypot(1,2,2)", 3.0 },
 		{ "max(1,2,3)",3.0 },
 		{ "min(1,2,3)",1.0 },
 
@@ -159,11 +160,6 @@ std::string calc_tests()
 		{ "mod(3.5, 2)", 1.5},
 
 		// min max functions
-		{ "abs(-42)", 42.0 },
-		{ "round(3.14159)", 3.0 },
-		{ "trunc(3.14159)", 3.0 },
-		{ "hypot(3,4)", 5.0 },
-		{ "hypot(1,2,2)", 3.0 },
 		{ "min(1)", 1.0 },
 		{ "min(1, 2, 3)", 1.0 },
 		{ "max(1, 2, 3)", 3.0 },
