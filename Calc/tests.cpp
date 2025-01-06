@@ -36,7 +36,7 @@ namespace {
 
 std::string calc_tests()
 {
-	std::array<std::pair<const std::string, const Value>, 99> tests =
+	std::array<std::pair<const std::string, const Value>, 100> tests =
 	{
 		// syntax errors
 		std::make_pair("2 + )", std::numeric_limits<Value>::quiet_NaN()),
@@ -110,8 +110,9 @@ std::string calc_tests()
 		// parentheses and complex expressions
 		{ "(1+2)*3", 9.0 },
 		{ "2*(3+4)", 14.0 },
-		{ "pow(2,1/3)", std::pow(2.0, 1.0 / 3.0) },
+		{ "pow(8, 1/3)", 2.0 },
 		{ "pow( sin( pi / 2 ) / .001 + 24, 2 )", 1048576.0 },
+		{ "pow(exp2(32), 1/4)", 256.0 },
 
 		// operation priority
 		{ "2 + 2", 4.0 },
