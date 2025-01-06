@@ -114,10 +114,10 @@ inline void Parser::advance() noexcept
 	}
 	
 	Parser::Value result = values[count];
-	for (const auto& value: std::ranges::reverse_view(values) | std::views::drop(values.size() - count))
+	while (--count != values.size())
 	{
-		result = std::pow(value, result);
-	}
+		result = std::pow(values[count], result);
+	};
 	return result;
 }
 
