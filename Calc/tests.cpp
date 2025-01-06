@@ -36,12 +36,15 @@ namespace {
 
 std::string calc_tests()
 {
-	std::array<std::pair<const std::string, const Value>, 96> tests =
+	std::array<std::pair<const std::string, const Value>, 99> tests =
 	{
 		// syntax errors
 		std::make_pair("2 + )", std::numeric_limits<Value>::quiet_NaN()),
 		{ "2 + (", std::numeric_limits<Value>::quiet_NaN() },
 		{ "e(", std::numeric_limits<Value>::quiet_NaN() },
+		{ "pi(e)", std::numeric_limits<Value>::quiet_NaN() },
+		{ "pi(sin)", std::numeric_limits<Value>::quiet_NaN() },
+		{ "sin + 12", std::numeric_limits<Value>::quiet_NaN() },
 		{ "1(", std::numeric_limits<Value>::quiet_NaN() },
 		{ "sin(0 ", std::numeric_limits<Value>::quiet_NaN() },
 		{ "sin(", std::numeric_limits<Value>::quiet_NaN() },
@@ -72,8 +75,9 @@ std::string calc_tests()
 		{ "Z_0", 376.7303134617706554681984004203193082686 }, // characteristic impedance of vacuum (Ohm)
 
 		// check additional constants
-		{ "e ^ pi", 23.1406926327792690057 }, // Gelfond's constant https://en.wikipedia.org/wiki/Gelfond%27s_constant
-		{ "exp(pi)", 23.1406926327792690057 }, // Gelfond's constant https://en.wikipedia.org/wiki/Gelfond%27s_constant
+		// Gelfond's constant https://en.wikipedia.org/wiki/Gelfond%27s_constant
+		{ "e ^ pi", 23.1406926327792690057 }, 
+		{ "exp(pi)", 23.1406926327792690057 },
 
 		// logarithmic functions
 		{ "ln(e)",1.0 },
@@ -82,9 +86,9 @@ std::string calc_tests()
 		{ "log(sh(42) + ch(42))", 42},
 
 		// hyperbolic functions
-		{ "sh(0)", 0 },
-		{ "ch(0)", 1 },
-		{ "tanh(1)", std::tanh(1) },
+		{ "sh(0)", 0.0 },
+		{ "ch(0)", 1.0 },
+		{ "tanh(0)", 0.0 },
 
 		// misc functions
 		{ "abs(-42)", 42.0 },
@@ -118,17 +122,19 @@ std::string calc_tests()
 		// precision
 		{ "10000 / 540 * 3", 55.5555555555555555555555555555555 },
 		{ "1 / 3 * 3", 1.0 },
-		{ "640320 ^ 3 + 744",   2.62537412640769e+17 },
-		{ "e^(pi * sqrt(163))", 2.62537412640768e+17 },
-		{"245850922 / 78256779", std::numbers::pi_v<Value> }, // https://en.wikipedia.org/wiki/Pi#Approximate_value_and_digits
+		// https://en.wikipedia.org/wiki/Heegner_number
+		{ "640320 ^ 3 + 744 - .00000000000075", 262537412640768743.99999999999999925252525252525252525252525 },
+		{ "e ^ (pi * sqrt(163))",               262537412640768743.99999999999999925252525252525252525252525 },
+		{ "87 * tan(pi) - 7", -7.0 },
+		{ "tan(-pi)", 0.0 },
+		// https://en.wikipedia.org/wiki/Pi#Approximate_value_and_digits
+		{"245850922 / 78256779", std::numbers::pi_v<Value> },
 
 		// special value support
 		{ "1 / 0", std::numeric_limits<Value>::infinity() },
 
 		// trigonometric functions
 		{ "sin( rad(0) )", 0.0 },
-		{ "87 * tan(pi) - 7", -7.0 },
-		{ "tan(-pi)", 0.0 },
 		{ "tan(inf)", std::numeric_limits<Value>::quiet_NaN() },
 		{ "sin(rad(30))", 0.5 },
 		{ "cos(rad(60))", 0.5 },
