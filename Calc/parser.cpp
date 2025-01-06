@@ -113,7 +113,7 @@ inline void Parser::advance() noexcept
 		return _current.val;
 	}
 	
-	Parser::Value result = values[count];
+	Parser::Value& result = values[count];
 	while (--count != values.size())
 	{
 		result = std::pow(values[count], result);
