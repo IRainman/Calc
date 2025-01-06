@@ -111,6 +111,10 @@ BOOL CCalcDlg::OnInitDialog()
 	SetIcon(hIcon, TRUE);
 	SetIcon(hIcon, FALSE);
 
+#ifdef CALC_TESTS_ENABLED
+	SetDlgItemText(IDC_EDIT_MESSAGE, calc_tests().data());
+#endif
+
 	return TRUE;
 }
 
@@ -141,14 +145,6 @@ void CCalcDlg::OnEnChangeEditInput()
 	{
 		const std::string_view input(m_str, static_cast<unsigned int>(m_str.GetLength()));
 
-#ifdef CALC_TESTS_ENABLED
-		if (input.data()[0] == '\r')
-		{
-			SetDlgItemText(IDC_EDIT_MESSAGE, calc_tests().data());
-		}
-		else
-#endif
-		{
 			Lexer l{ input };
 			Parser p{ l };
 
@@ -156,7 +152,6 @@ void CCalcDlg::OnEnChangeEditInput()
 			SetDlgItemText(IDC_EDIT_MESSAGE, Formatter::create_summary().data());
 
 			IssueManager::clear();
-		}
 	}
 	else
 	{
