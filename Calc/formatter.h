@@ -5,8 +5,7 @@
 #include <format>
 #include <limits>
 #include <string>
-#include <type_traits>
-#include <utility>
+#include "token.h"
 #include "issue_manager.h"
 
 /*
@@ -15,43 +14,49 @@
 
 class Formatter
 {
+	using Value = Token::Value;
 	public:
 		/**
 		 * Format output value of the expression returned.
 		 */
-		template<typename V>
-		[[nodiscard]] constexpr static auto format(const V value, const bool is_constant = false) noexcept
+		[[nodiscard]] static std::string format(Value value) noexcept
 		{
-			static_assert(std::is_floating_point_v<V>);
 			std::string out;
-			out.resize(std::bit_ceil(static_cast<size_t>(std::numeric_limits<V>::max_digits10))); //-V201
-			out.resize(std::to_chars(out.data(), out.data() + out.size(),
-				value, std::chars_format::general, is_constant ? std::numeric_limits<V>::max_digits10 : std::numeric_limits<V>::digits10).ptr - out.data());
+			out.resize(std::bit_ceil(static_cast<size_t>(std::numeric_limits<Value>::max_digits10))); //-V201
+			out.resize(std::to_chars(out.data(), out.data() + out.size(), value, std::chars_format::general, std::numeric_limits<Value>::max_digits10).ptr - out.data());
 			return out;
 		}
 
 		template <typename... Args>
-		[[nodiscard]] constexpr static auto format(const std::format_string<Args&&...> fmt, Args&&... args) noexcept {
+		[[nodiscard]] constexpr static inline auto format(const std::format_string<Args&&...> fmt, Args&&... args) noexcept {
 			return std::format(fmt, args...);
 		}
 
-		[[nodiscard]] constexpr static std::string format(const Issue::Severity severity) noexcept
+#ifdef ISSUE_MANAGER_HAVE_SEVERITY
+		[[nodiscard]] constexpr static inline std::string format(const Issue::Severity severity) noexcept
 		{
 			switch (severity)
 			{
-				case Issue::Severity::INFO: [[unlikely]]
+				case Issue::Severity::INFO:
 					return "Info";
-				case Issue::Severity::WARN: [[unlikely]]
+				case Issue::Severity::WARN:
 					return "Warning";
-				case Issue::Severity::ERR: [[likely]]
+				case Issue::Severity::ERR:
 					return "Error";
 			}
 			std::unreachable();
 		}
+#endif
 
-		[[nodiscard]] constexpr static std::string format(const Issue& issue) noexcept
+		[[nodiscard]] constexpr static inline std::string format(const Issue& issue) noexcept
 		{
-			return format(issue.severity) + " at pos " + std::to_string(issue.pos) + ": " + issue.text + "\r\n";
+			return 
+#ifdef ISSUE_MANAGER_HAVE_SEVERITY
+				format(issue.severity) +
+#else
+				"Error"
+#endif
+				" at pos " + std::to_string(issue.pos) + ": " + issue.text + "\r\n";
 		}
 
 		/**
