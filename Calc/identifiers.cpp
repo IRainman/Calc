@@ -7,21 +7,10 @@
 
 #include "pch.h"
 #include "flags.h"
-#include <cmath>
-#include <cstdlib>
-#include <limits>
-#include <numbers>
-#include <span>
-#include <utility>
-#include "token.h"
 #include "identifiers.h"
 
-namespace
+namespace Identifiers
 {
-	using Value = Token::Value;
-	using ParamCount = Token::ParamCount;
-	using Fn = Identifiers::Fn;
-
 	template <const ParamCount>
 	using WrappedFnImplArg = Value;
 
@@ -38,7 +27,7 @@ namespace
 	}
 
 	template<const ParamCount N, WrappedFn<N> wrappedFn>
-	[[nodiscard]] constexpr auto function_pointer_impl(std::span<const Value> params) noexcept
+	[[nodiscard]] constexpr auto function_pointer_impl(std::span<Value> params) noexcept
 	{
 		return call_fn(wrappedFn, params, std::make_index_sequence<N>());
 	}
@@ -49,32 +38,37 @@ namespace
 		return { { N, N }, function_pointer_impl<N, wrappedFn> };
 	}
 
-	template <const Value value>
-	[[nodiscard]] constexpr auto constant_impl(std::span<const Value>) noexcept
+	template <Value value>
+	[[nodiscard]] constexpr auto constant_impl(std::span<Value>) noexcept
 	{
 		return value;
 	}
 
-	template <const Value value>
+	template <Value value>
 	[[nodiscard]] consteval Fn constant() noexcept
 	{
 		return { { 0, 0 }, constant_impl<value> };
 	}
 
-	[[nodiscard]] constexpr Value minimum(std::span<const Value> params) noexcept
+	[[nodiscard]] constexpr Value minimum(std::span<Value> params) noexcept
 	{
 		return std::ranges::min(params);
 	}
 
-	[[nodiscard]] constexpr Value maximum(std::span<const Value> params) noexcept
+	[[nodiscard]] constexpr Value maximum(std::span<Value> params) noexcept
 	{
 		return std::ranges::max(params);
 	}
 
-	[[nodiscard]] constexpr Value rad(const Value x) noexcept { return x * std::numbers::pi_v<Value> / 180.0; }
-	[[nodiscard]] constexpr Value deg(const Value x) noexcept { return x * 180.0 / std::numbers::pi_v<Value>; }
+	[[nodiscard]] bool are_almost_equal(const Value a, const Value b) noexcept
+	{
+		return std::abs(a - b) <= std::numeric_limits<Value>::epsilon() * std::max(std::abs(a), std::abs(b));
+	}
 
-	[[nodiscard]] constexpr Value hypotenuse(std::span<const Value> params) noexcept
+	[[nodiscard]] constexpr Value to_rad(Value x) noexcept { return x * std::numbers::pi_v<Value> / 180.0; }
+	[[nodiscard]] constexpr Value to_deg(Value x) noexcept { return x * 180.0 / std::numbers::pi_v<Value>; }
+
+	[[nodiscard]] constexpr Value hypotenuse(std::span<Value> params) noexcept
 	{
 		switch (params.size())
 		{
@@ -86,100 +80,113 @@ namespace
 		std::unreachable();
 	}
 
-	[[nodiscard]] constexpr Value logarithm(Value x) noexcept
+	[[nodiscard]] Value calc_pow(Value x, Value y) noexcept
 	{
-		if (1.0 < x && x < 2.0)
+		if (are_almost_equal(x, std::numbers::e_v<Value>))
 		{
 			// for better precision
-			return std::log1p(--x);
+			return std::exp(y);
+		}
+		else if (are_almost_equal(y, 1.0 / 2.0))
+		{
+			// for better precision
+			return std::sqrt(x);
+		}
+		else if (are_almost_equal(y, 1.0 / 3.0))
+		{
+			// for better precision
+			return std::cbrt(x);
 		}
 		else
 		{
-			return std::log(x);
+			return std::pow(x, y);
 		}
 	}
+
 #ifdef CALC_TESTS_ENABLED
-	[[nodiscard]] Value assoc_legendre(std::span<const Value> params) noexcept
+	[[nodiscard]] static Value assoc_legendre(std::span<Value> params) noexcept
 	{
-		return std::assoc_legendre(static_cast<const unsigned int>(params[0]), static_cast<const unsigned int>(params[1]), params[2]); //-V2004
+		return std::assoc_legendre(static_cast<unsigned int>(params[0]), static_cast<unsigned int>(params[1]), params[2]); //-V2004
 	}
 
-	[[nodiscard]] Value assoc_laguerre(std::span<const Value> params) noexcept
+	[[nodiscard]] static Value assoc_laguerre(std::span<Value> params) noexcept
 	{
-		return std::assoc_laguerre(static_cast<const unsigned int>(params[0]), static_cast<const unsigned int>(params[1]), params[2]); //-V2004
+		return std::assoc_laguerre(static_cast<unsigned int>(params[0]), static_cast<unsigned int>(params[1]), params[2]); //-V2004
 	}
 
-	[[nodiscard]] Value hermite(std::span<const Value> params) noexcept
+	[[nodiscard]] static Value hermite(std::span<Value> params) noexcept
 	{
-		return std::hermite(static_cast<const unsigned int>(params[0]), params[1]); //-V2004
+		return std::hermite(static_cast<unsigned int>(params[0]), params[1]); //-V2004
 	}
 
-	[[nodiscard]] Value legendre(std::span<const Value> params) noexcept
+	[[nodiscard]] static Value legendre(std::span<Value> params) noexcept
 	{
-		return std::legendre(static_cast<const unsigned int>(params[0]), params[1]); //-V2004
+		return std::legendre(static_cast<unsigned int>(params[0]), params[1]); //-V2004
 	}
 
-	[[nodiscard]] Value laguerre(std::span<const Value> params) noexcept
+	[[nodiscard]] static Value laguerre(std::span<Value> params) noexcept
 	{
-		return std::laguerre(static_cast<const unsigned int>(params[0]), params[1]); //-V2004
+		return std::laguerre(static_cast<unsigned int>(params[0]), params[1]); //-V2004
 	}
 
-	[[nodiscard]] Value sph_bessel(std::span<const Value> params) noexcept
+	[[nodiscard]] static Value sph_bessel(std::span<Value> params) noexcept
 	{
-		return std::sph_bessel(static_cast<const unsigned int>(params[0]), params[1]); //-V2004
+		return std::sph_bessel(static_cast<unsigned int>(params[0]), params[1]); //-V2004
 	}
 
-	[[nodiscard]] Value sph_legendre(std::span<const Value> params) noexcept
+	[[nodiscard]] static Value sph_legendre(std::span<Value> params) noexcept
 	{
-		return std::sph_legendre(static_cast<const unsigned int>(params[0]), static_cast<const unsigned int>(params[1]), params[2]); //-V2004
+		return std::sph_legendre(static_cast<unsigned int>(params[0]), static_cast<unsigned int>(params[1]), params[2]); //-V2004
 	}
 
-	[[nodiscard]] Value sph_neumann(std::span<const Value> params) noexcept
+	[[nodiscard]] static Value sph_neumann(std::span<Value> params) noexcept
 	{
-		return std::sph_neumann(static_cast<const unsigned int>(params[0]), params[1]); //-V2004
+		return std::sph_neumann(static_cast<unsigned int>(params[0]), params[1]); //-V2004
 	}
 
-	[[nodiscard]] Value minkowski_distance(std::span<const Value> params) noexcept
+	[[nodiscard]] static Value minkowski_distance(std::span<Value> params) noexcept
 	{
 		// parameters contains p all other parameters is distances d[i] = v[i] - w[i] for two vectors v and w
 		Value ex = 0.0;
 		Value min_d = std::numeric_limits<Value>::infinity();
 		Value max_d = -std::numeric_limits<Value>::infinity();
-		for (auto i : params.subspan(1))
+		for (auto& i : params.subspan(1))
 		{
-			Value d = std::fabs(i);
-			ex += std::pow(d, params[0]);
-			min_d = std::min(min_d, d);
-			max_d = std::max(max_d, d);
+			i = std::abs(i);
+			ex += calc_pow(i, params[0]);
+			min_d = std::min(min_d, i);
+			max_d = std::max(max_d, i);
 		}
 
 		return std::isnan(ex) ? ex
 			: !std::isnormal(ex) && std::signbit(params[0]) ? min_d
 			: !std::isnormal(ex) && !std::signbit(params[0]) ? max_d
-			: std::pow(ex, 1.0 / params[0]);
+			: calc_pow(ex, 1.0 / params[0]);
 	}
 #endif
 
-	static const Identifiers::map ids =
+	static const map ids =
 	{
 		//---------------------------------------------------------------------------
 		// https://en.cppreference.com/w/cpp/numeric/constants 
 		{"pi", constant<std::numbers::pi_v<Value>>()}, // https://en.wikipedia.org/wiki/Pi_(mathematical_constant)
-		{"e", constant<std::numbers::e_v<Value>>()}, // https://en.wikipedia.org/wiki/Euler%27s_constant
+		{"e", constant<std::numbers::e_v<Value>>()}, // https://en.wikipedia.org/wiki/E_(mathematical_constant)
 		{"phi", constant<std::numbers::phi_v<Value>>()}, // https://en.wikipedia.org/wiki/Golden_ratio
-		{"egamma", constant<std::numbers::egamma_v<Value>>()},
+		{"egamma", constant<std::numbers::egamma_v<Value>>()}, // https://en.wikipedia.org/wiki/Euler%27s_constant
 		// TODO add more precision values to wrappers:
 		//log2e
 		//log10e
 		// ...
+
 		//---------------------------------------------------------------------------
 		// TODO additional constant
 		{"c", constant<299792458.0>()},// Speed of light in vacuum (m·s-1)
 		{"G", constant<6.6743015151515151515151515151515151e-11>()},// Newtonian constant of gravitation (m3·kg−1·s−2)
 		{"J", constant<3.058198247456354132564564787888767>()},// Constants of Gauss field
 		{"atm", constant<101.325>()},// Standard atmosphere (Pa)
-		{"L", constant<6.02214076e23>()},// Avogadro's number (mol−1)
-		{"R", constant<8.31446261815324>()},// Gas constant (J·K−1·mol−1)
+		{"N_A", constant<6.02214076e23>()},// Avogadro's number (mol−1)
+		{"F", constant<9.64853321233100184e4>()},// Faraday constant (C⋅mol−1)
+		{"R", constant<8.31446261815324>()},// Molar gas constant (J·K−1·mol−1)
 		{"h", constant<6.62607015e-34>()},// Planck constant (J·s)
 		{"l_P", constant<1.616255181818181818181818181818181818181818e-35>()},// Planck length (m)
 		{"m_P", constant<2.176434242424242424242424242424242424242424e-8>()},// Planck mass (kg)
@@ -188,6 +195,7 @@ namespace
 		{"mu_0", constant<1.2566370621219191919191919191919191919e-6>()},// magnetic constant (exactly 4 pi x 10^(-7)
 		{"epsilon_0", constant<8.854187817620389850536563031710750260608e-12>()},// electric constant (Ohm)
 		{"Z_0", constant<376.7303134617706554681984004203193082686>()},// characteristic impedance of vacuum (Ohm)
+
 		//---------------------------------------------------------------------------
 		// https://en.cppreference.com/w/cpp/numeric/math
 		{"sin", function_pointer<1, std::sin>()},
@@ -199,10 +207,6 @@ namespace
 
 		{"hypot", {{2, 3}, hypotenuse}},
 
-		{"exp", function_pointer<1, std::exp>()},
-
-		{"exp2", function_pointer<1, std::exp2>()},
-
 		{"sh", function_pointer<1, std::sinh>()},
 		{"ch", function_pointer<1, std::cosh>()},
 		{"tanh", function_pointer<1, std::tanh>()},
@@ -210,8 +214,9 @@ namespace
 		{"acosh", function_pointer<1, std::acosh>()},
 		{"atanh", function_pointer<1, std::atanh>()},
 
-		{"ln", function_pointer<1, logarithm>()},
-		{"log", function_pointer<1, logarithm>()},
+		{"ln", function_pointer<1, std::log>()},
+		{"log", function_pointer<1, std::log>()},
+		{"log1p", function_pointer<1, std::log1p>()},
 
 		{"lg", function_pointer<1, std::log10>()},
 		{"log10", function_pointer<1, std::log10>()},
@@ -221,12 +226,17 @@ namespace
 
 		{"sqrt", function_pointer<1, std::sqrt>()},
 		{"cbrt", function_pointer<1, std::cbrt>()},
-		{"pow", function_pointer<2, std::pow>()},
+		{"pow", function_pointer<2, calc_pow>()},
+#ifdef CALC_TESTS_ENABLED
+		{"exp", function_pointer<1, std::exp>()},
+		{"exp2", function_pointer<1, std::exp2>()},
+#endif		
+
 #ifdef CALC_TESTS_ENABLED
 		{"fma", function_pointer<3, std::fma>()},
 #endif
-		{"rad", function_pointer<1, rad>()},
-		{"deg", function_pointer<1, deg>()},
+		{"rad", function_pointer<1, to_rad>()},
+		{"deg", function_pointer<1, to_deg>()},
 
 		{"min", {{1, std::numeric_limits<ParamCount>::max()}, minimum}},
 		{"max", {{1, std::numeric_limits<ParamCount>::max()}, maximum}},
@@ -283,9 +293,9 @@ namespace
 
 		//---------------------------------------------------------------------------
 	};
-}
 
-[[nodiscard]] const Identifiers::map& Identifiers::get() noexcept
-{
-	return ids;
+	[[nodiscard]] const map& get() noexcept
+	{
+		return ids;
+	}
 }

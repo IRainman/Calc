@@ -6,12 +6,9 @@
  */
 
 #include "pch.h"
-#include <cmath>
-#include <format>
-#include <ranges>
+#include "identifiers.h"
 #include "issue_manager.h"
 #include "parser.h"
-#include "identifiers.h"
 #include "token.h"
 
 namespace
@@ -116,7 +113,7 @@ inline void Parser::advance() noexcept
 	Parser::Value& result = values[count];
 	while (--count != values.size())
 	{
-		result = std::pow(values[count], result);
+		result = Identifiers::calc_pow(values[count], result);
 	};
 	return result;
 }
@@ -185,7 +182,7 @@ inline void Parser::advance() noexcept
 			{
 				std::array<Value, std::numeric_limits<ParamCount>::max()> params;
 
-				for (ParamCount count = 0; count != params.size(); ++count)
+				for (ParamCount count = 0; count != params.size(); ++count) [[likely]]
 				{
 					params[count] = parse_expr_4();
 

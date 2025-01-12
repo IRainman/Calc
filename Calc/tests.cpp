@@ -8,35 +8,18 @@
 #include "pch.h"
 #include "flags.h"
 #ifdef CALC_TESTS_ENABLED
-#include <chrono>
-#include <array>
-#include <cmath>
-#include <cstdlib>
-#include <format>
-#include <limits>
-#include <numbers>
-#include <string>
-#include <utility>
 #include "lexer.h"
 #include "parser.h"
 #include "issue_manager.h"
 #include "formatter.h"
+#include "identifiers.h"
 #include "tests.h"
 #include "token.h"
 
-namespace {
-
-	using Value = Token::Value;
-	bool areAlmostEqual(const Value a, const Value b)
-	{
-		const Value tolerance = std::numeric_limits<Value>::epsilon() * std::max(std::abs(a), std::abs(b));
-		return std::abs(a - b) <= tolerance;
-	}
-}
-
 std::string calc_tests()
 {
-	std::array<std::pair<const std::string, const Value>, 100> tests =
+	using Value = Token::Value;
+	std::array<std::pair<const std::string, const Value>, 102> tests =
 	{
 		// syntax errors
 		std::make_pair("2 + )", std::numeric_limits<Value>::quiet_NaN()),
@@ -56,14 +39,14 @@ std::string calc_tests()
 
 		// check constants
 		{ "pi", std::numbers::pi_v<Value> },
-		{ "e", std::numbers::e_v<Value> },
+		{ "e", std::numbers::e_v<Value> }, // https://en.wikipedia.org/wiki/E_(mathematical_constant)
 		{ "phi", std::numbers::phi_v<Value> },
-		{ "egamma", std::numbers::egamma_v<Value> },
+		{ "egamma", std::numbers::egamma_v<Value> }, // https://en.wikipedia.org/wiki/E_(mathematical_constant)
 		{ "c", 299792458.0 }, // Speed of light in vacuum (m·s-1)
 		{ "G", 6.6743015151515151515151515151515151e-11 }, // Newtonian constant of gravitation (m3·kg−1·s−2)
 		{ "J", 3.058198247456354132564564787888767 }, // Constants of Gauss field
 		{ "atm", 101.325 }, // Standard atmosphere (Pa)
-		{ "L", 6.02214076e23 }, // Avogadro's number (mol−1)
+		{ "N_A", 6.02214076e23 }, // Avogadro's number (mol−1)
 		{ "R", 8.31446261815324 }, // Gas constant (J·K−1·mol−1)
 		{ "h", 6.62607015e-34 }, // Planck constant (J·s)
 		{ "l_P", 1.616255181818181818181818181818181818181818e-35 }, // Planck length (m)
@@ -84,6 +67,8 @@ std::string calc_tests()
 		{ "log10(1000)",3.0 },
 		{ "log2(8)",3.0 },
 		{ "log(sh(42) + ch(42))", 42},
+		{ "log( 1 + 1e-16 )", 1.0e-16 },
+		{ "log1p(1e-16)", 1.0e-16 },
 
 		// hyperbolic functions
 		{ "sh(0)", 0.0 },
@@ -194,30 +179,36 @@ std::string calc_tests()
 			Parser p{ l };
 			const auto result = p.parse();
 
+#ifdef CALC_TESTS_DEV_ENABLED
+			output += "Test ";
+#endif
 			if (std::isnan(result) && std::isnan(t.second))
 			{
 #ifdef CALC_TESTS_DEV_ENABLED
-				output += "Test OK:\r\n " + t.first + " not return a result, must return nan.\r\n " + Formatter::create_summary() + "\r\n";
+				output += "OK:\r\n " + t.first + " not return a result, must return nan.\r\n ";
 #endif
 			}
 			else if (result == t.second)
 			{
 #ifdef CALC_TESTS_DEV_ENABLED
-				output += "Test OK:\r\n " + t.first + " = " + Formatter::format(t.second, true) + " exactly equal " + Formatter::format(result) + ".\r\n " + Formatter::create_summary() + "\r\n";
+				output += "OK:\r\n " + t.first + " = " + Formatter::format(t.second) + " exactly equal " + Formatter::format(result) + ".\r\n ";
 #endif
 			}
-			else if (areAlmostEqual(result, t.second))
+			else if (Identifiers::are_almost_equal(result, t.second))
 			{
 #ifdef CALC_TESTS_DEV_ENABLED
-				output += "Test OK:\r\n " + t.first + " = " + Formatter::format(t.second, true) + " almost equal " + Formatter::format(result) + ".\r\n " + Formatter::create_summary() + "\r\n";
+				output += "OK:\r\n " + t.first + " = " + Formatter::format(t.second) + " almost equal " + Formatter::format(result) + ".\r\n ";
 #endif
 			}
 			else
 			{
 #ifdef CALC_TESTS_DEV_ENABLED
-				output += "Test failed:\r\n " + t.first + " = " + Formatter::format(t.second, true) + " != " + Formatter::format(result, true) + ".\r\n " + Formatter::create_summary() + "\r\n";
+				output += "Test failed:\r\n " + t.first + " = " + Formatter::format(t.second) + " NOT equal " + Formatter::format(result) + ".\r\n ";
 #endif
 			}
+#ifdef CALC_TESTS_DEV_ENABLED
+			output += Formatter::create_summary() + "\r\n";
+#endif
 
 			IssueManager::clear();
 		}

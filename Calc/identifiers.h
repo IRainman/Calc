@@ -3,16 +3,13 @@
  * Copyright 2023-2024 Solomina Elle Leonovna, a.rainman on gmail point com
  */
 
-#include <limits>
-#include <span>
-#include <unordered_map>
-#include <string_view>
 #include "token.h"
 
 namespace Identifiers
 {
 	using Value = Token::Value;
 	using ParamCount = Token::ParamCount;
+
 	struct Fn
 	{
 		struct P
@@ -41,7 +38,7 @@ namespace Identifiers
 			const ParamCount min;
 			const ParamCount max;
 		} check;
-		Value(*fn)(std::span<const Value>); //-V122
+		Value(*fn)(std::span<Value>); //-V122
 	};
 
 	using map = std::unordered_map<std::string_view, const Fn>;
@@ -49,4 +46,12 @@ namespace Identifiers
 	 * Return the link to the global static collection of identifiers.
 	 */
 	[[nodiscard]] const map& get() noexcept;
+
+	[[nodiscard]] Value calc_pow(Value x, Value y) noexcept;
+
+	[[nodiscard]] constexpr Value to_rad(Value x) noexcept;
+
+	[[nodiscard]] constexpr Value to_deg(Value x) noexcept;
+
+	[[nodiscard]] bool are_almost_equal(const Value a, const Value b) noexcept;
 };

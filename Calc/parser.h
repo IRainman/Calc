@@ -3,8 +3,8 @@
  * Copyright 2023-2024 Solomina Elle Leonovna, a.rainman on gmail point com
  */
 
-#include "token.h"
 #include "lexer.h"
+#include "token.h"
 
 class Parser
 {
