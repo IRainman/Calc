@@ -3,12 +3,14 @@
  * Copyright 2023-2024 Solomina Elle Leonovna, a.rainman on gmail point com
  */
 
+#include "flags.h"
 /**
  * Represents a message from the compiler.
  */
 class Issue
 {
 	public:
+#ifdef ISSUE_MANAGER_HAVE_SEVERITY
 		/**
 		 * How severe is this message?
 		 */
@@ -23,7 +25,16 @@ class Issue
 			// Errors that do stop processing.
 			ERR = 1 << 1,
 		};
-		Issue(std::string&& t, size_t p, Severity s) : text(t), pos(p), severity(s) {};
+#endif
+		Issue(std::string&& t, size_t p
+#ifdef ISSUE_MANAGER_HAVE_SEVERITY
+			, Severity s
+#endif
+		) : text(t), pos(p)
+#ifdef ISSUE_MANAGER_HAVE_SEVERITY
+			, severity(s)
+#endif
+		{};
 		Issue(const Issue&) = delete;
 		Issue(Issue&&) = default;
 	private:
@@ -33,8 +44,10 @@ class Issue
 		// Position within the context at which the issue has occurred.
 		const size_t pos; //-V122
 
+#ifdef ISSUE_MANAGER_HAVE_SEVERITY
 		// Issue severity.
 		const Severity severity;
+#endif
 
 		friend class Formatter;
 };
@@ -53,6 +66,7 @@ class IssueManager
 			_messages.reserve(10);
 		}
 
+#ifdef ISSUE_MANAGER_HAVE_SEVERITY
 		/**
 		 * Report a new info message.
 		 */
@@ -62,7 +76,7 @@ class IssueManager
 		 * Report a new warning.
 		 */
 		static void report_warning(size_t pos, std::string&& text) noexcept;
-		
+#endif
 		/**
 		 * Report a new error.
 		 */
@@ -73,15 +87,11 @@ class IssueManager
 		 */
 		[[nodiscard]] static bool has_errors() noexcept
 		{
+#ifdef ISSUE_MANAGER_HAVE_SEVERITY
 		    return _has_errors;
-		}
-		
-		/**
-		 * Return reference to the vector of all messages have been reported so far.
-		 */
-		[[nodiscard]] static const auto& messages() noexcept
-		{
-		    return _messages;
+#else
+			return !_messages.empty();
+#endif
 		}
 		
 		/**
@@ -90,13 +100,18 @@ class IssueManager
 		static void clear() noexcept
 		{
 			_messages.clear();
+#ifdef ISSUE_MANAGER_HAVE_SEVERITY
 			_has_errors = false;
+#endif
 		}
 		
 	private:
 		/**
 		 * Report a new issue.
 		 */
-		static bool _has_errors;
 		static std::vector<Issue> _messages;
+#ifdef ISSUE_MANAGER_HAVE_SEVERITY
+		static bool _has_errors;
+#endif
+		friend class Formatter;
 };

@@ -6,10 +6,11 @@
  */
 
 #include "pch.h"
-#include <vector>
 #include "issue_manager.h"
 
 std::vector<Issue> IssueManager::_messages;
+
+#ifdef ISSUE_MANAGER_HAVE_SEVERITY
 bool IssueManager::_has_errors = false;
 
 void IssueManager::report_info(size_t pos, std::string&& text) noexcept
@@ -22,8 +23,16 @@ void IssueManager::report_warning(size_t pos, std::string&& text) noexcept
 	_messages.emplace_back(Issue(std::move(text), pos, Issue::Severity::WARN));
 }
 
+#endif
+
 void IssueManager::report_error(size_t pos, std::string&& text) noexcept
 {
-	_messages.emplace_back(Issue(std::move(text), pos, Issue::Severity::ERR));
+	_messages.emplace_back(Issue(std::move(text), pos
+#ifdef ISSUE_MANAGER_HAVE_SEVERITY
+		, Issue::Severity::ERR
+#endif
+	));
+#ifdef ISSUE_MANAGER_HAVE_SEVERITY
 	_has_errors = true;
+#endif
 }
