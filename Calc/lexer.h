@@ -4,7 +4,6 @@
  */
 
 #include "token.h"
-#include <string_view>
 
 class Lexer
 {
@@ -28,6 +27,7 @@ class Lexer
 		 */
 		[[nodiscard]] size_t get_position() const noexcept
 		{
+			[[assume(_view.data() - _begin >= 0)]];
 		    return _view.data() - _begin;
 		}
 		
@@ -35,22 +35,22 @@ class Lexer
 		/**
 		 * Move current position n symbols further.
 		 */
-		void advance(const auto n) noexcept;
+		void advance(size_t n) noexcept;
 
 		/**
 		 * Read an operator at the beginning of the input view and return size of it.
 		 */
-		[[nodiscard]] auto read_operator(const auto type, Token& token) const noexcept;
+		[[nodiscard]] size_t read_operator(const auto type, Token& token) const noexcept;
 		
 		/**
 		 * Read a number at the beginning of the input view and return size of it.
 		 */
-		[[nodiscard]] auto read_number(Token& token) const noexcept;
+		[[nodiscard]] size_t read_number(Token& token) const noexcept;
 		
 		/**
 		 * Read an identifier at the beginning of the input view and return size of it.
 		 */
-		[[nodiscard]] auto read_ident(Token& token) const noexcept;
+		[[nodiscard]] size_t read_ident(Token& token) const noexcept;
 
 		/**
 		 * Read the normal end at the beginning of the input view.
@@ -60,7 +60,7 @@ class Lexer
 		/**
 		 * Read an unknown symbol at the beginning of the input view and return size of it.
 		 */
-		[[nodiscard]] auto read_unknown(Token& token) const noexcept;
+		[[nodiscard]] size_t read_unknown(Token& token) const noexcept;
 
 		std::string_view _view;
 		const std::string_view::const_pointer _begin; //-V122

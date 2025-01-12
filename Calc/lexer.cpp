@@ -8,18 +8,14 @@
 #include "pch.h"
 #include "issue_manager.h"
 #include "lexer.h"
-#include <charconv>
-#include <format>
-#include <limits>
-#include <system_error>
 #include "token.h"
 
-inline void Lexer::advance(const auto n) noexcept
+inline void Lexer::advance(size_t n) noexcept
 {
 	_view.remove_prefix(n);
 }
 
-[[nodiscard]] inline auto Lexer::read_unknown(Token& token) const noexcept
+[[nodiscard]] inline size_t Lexer::read_unknown(Token& token) const noexcept
 {
 	token.text = _view.substr(0, 1);
 	token.type = Token::Type::END;
@@ -27,7 +23,7 @@ inline void Lexer::advance(const auto n) noexcept
 	return 0;
 }
 
-[[nodiscard]] inline auto Lexer::read_operator(const auto type, Token& token) const noexcept
+[[nodiscard]] inline size_t Lexer::read_operator(const auto type, Token& token) const noexcept
 {
 	token.text = _view.substr(0, 1);
 	token.type = static_cast<Token::Type>(type);
@@ -35,11 +31,12 @@ inline void Lexer::advance(const auto n) noexcept
 	return 1;
 }
 
-[[nodiscard]] inline auto Lexer::read_number(Token& token) const noexcept
+[[nodiscard]] inline size_t Lexer::read_number(Token& token) const noexcept
 {
 	Value val;
 	const auto res = std::from_chars(_view.data(), _view.data() + _view.size(), val);
-	const auto n = res.ptr - _view.data();
+	[[assume(res.ptr - _view.data() >= 0)]];
+	const size_t n = res.ptr - _view.data();
 
 	token.text = _view.substr(0, n);
 
@@ -61,7 +58,7 @@ inline void Lexer::advance(const auto n) noexcept
 	return n;
 }
 
-[[nodiscard]] inline auto Lexer::read_ident(Token& token) const noexcept
+[[nodiscard]] inline size_t Lexer::read_ident(Token& token) const noexcept
 {
 	size_t n = 1;
 
