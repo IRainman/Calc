@@ -89,11 +89,11 @@ inline void Parser::advance() noexcept
 {
 	std::array<Value, std::numeric_limits<ParamCount>::max()> values;
 	
-	ParamCount count;
-	for (count = 0; count != values.size(); ++count)
+	ParamCount count = 0;
+	do
 	{
 		values[count] = parse_expr_1();
-		
+
 		if (_current.type == Token::Type::POW)
 		{
 			advance();
@@ -103,6 +103,7 @@ inline void Parser::advance() noexcept
 			break;
 		}
 	}
+	while (++count != values.size());
 	
 	if (count == values.size()) [[unlikely]]
 	{
