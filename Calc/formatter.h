@@ -19,16 +19,15 @@ class Formatter
 		/**
 		 * Format output value of the expression returned.
 		 */
-		[[nodiscard]] static std::string format(Value value) noexcept
+		[[nodiscard]] static inline auto format(Value value) noexcept
 		{
-			std::string out;
-			out.resize(std::bit_ceil(static_cast<size_t>(std::numeric_limits<Value>::max_digits10))); //-V201
-			out.resize(std::to_chars(out.data(), out.data() + out.size(), value, std::chars_format::general, std::numeric_limits<Value>::max_digits10).ptr - out.data());
-			return out;
+			return std::format("{}", value);
 		}
+		
 
 		template <typename... Args>
-		[[nodiscard]] constexpr static inline auto format(const std::format_string<Args&&...> fmt, Args&&... args) noexcept {
+		[[nodiscard]] constexpr static inline auto format(const std::format_string<Args&&...> fmt, Args&&... args) noexcept
+		{
 			return std::format(fmt, args...);
 		}
 
