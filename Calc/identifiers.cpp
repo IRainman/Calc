@@ -87,20 +87,17 @@ namespace Identifiers
 			// for better precision
 			return std::exp(y);
 		}
-		else if (are_almost_equal(y, 1.0 / 2.0))
+		if (are_almost_equal(y, 1.0 / 2.0))
 		{
 			// for better precision
 			return std::sqrt(x);
 		}
-		else if (are_almost_equal(y, 1.0 / 3.0))
+		if (are_almost_equal(y, 1.0 / 3.0))
 		{
 			// for better precision
 			return std::cbrt(x);
 		}
-		else
-		{
-			return std::pow(x, y);
-		}
+		return std::pow(x, y);
 	}
 
 #ifdef CALC_TESTS_ENABLED
