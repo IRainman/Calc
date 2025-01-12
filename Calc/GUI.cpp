@@ -36,6 +36,7 @@
 #define _ATL_NO_COM_SUPPORT
 #define _AFX_MINREBUILD
 #define _AFX_ALL_WARNINGS
+#define _CSTRING_DISABLE_NARROW_WIDE_CONVERSION
 #include <afxwinappex.h>
 #include <afxwin.h>
 #include <tchar.h>
@@ -90,15 +91,14 @@ void CCalcApp::OnHelp()
 CCalcDlg::CCalcDlg(CWnd* pParent /*=nullptr*/) //-V730
 	: CDialog(CCalcDlg::IDD, pParent)
 {
-	IssueManager::speedup();
 }
 
 BOOL CCalcDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
-	ASSERT((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
-	ASSERT(IDM_ABOUTBOX < 0xF000);
+	static_assert((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
+	static_assert(IDM_ABOUTBOX < 0xF000);
 
 	CMenu* pSysMenu = GetSystemMenu(FALSE);
 	CString strAboutMenu;
@@ -110,6 +110,8 @@ BOOL CCalcDlg::OnInitDialog()
 
 	SetIcon(hIcon, TRUE);
 	SetIcon(hIcon, FALSE);
+
+	IssueManager::speedup();
 
 #ifdef CALC_TESTS_ENABLED
 	SetDlgItemText(IDC_EDIT_MESSAGE, calc_tests().data());
@@ -145,18 +147,27 @@ void CCalcDlg::OnEnChangeEditInput()
 	{
 		const std::string_view input(m_str, static_cast<unsigned int>(m_str.GetLength()));
 
-			Lexer l{ input };
-			Parser p{ l };
+		Lexer l{ input };
+		Parser p{ l };
 
-			SetDlgItemText(IDC_EDIT_RESULT, Formatter::format(p.parse()).data());
+		const auto result = p.parse();
+
+		if (std::isnan(result))
+		{
+			SetDlgItemText(IDC_EDIT_RESULT, "");
 			SetDlgItemText(IDC_EDIT_MESSAGE, Formatter::create_summary().data());
-
 			IssueManager::clear();
+		}
+		else
+		{
+			SetDlgItemText(IDC_EDIT_RESULT, Formatter::format(result).data());
+			SetDlgItemText(IDC_EDIT_MESSAGE, "");
+		}
 	}
 	else
 	{
-		SetDlgItemText(IDC_EDIT_RESULT, "");
-		SetDlgItemText(IDC_EDIT_MESSAGE, "");
+		SetDlgItemText(IDC_EDIT_RESULT, m_str);
+		SetDlgItemText(IDC_EDIT_MESSAGE, m_str);
 	}
 }
 
