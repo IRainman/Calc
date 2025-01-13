@@ -164,12 +164,11 @@ namespace Identifiers
 
 	static const map ids =
 	{
-		//---------------------------------------------------------------------------
 		// https://en.cppreference.com/w/cpp/numeric/constants 
-		{"pi", constant<std::numbers::pi_v<Value>>()}, // https://en.wikipedia.org/wiki/Pi_(mathematical_constant)
-		{"e", constant<std::numbers::e_v<Value>>()}, // https://en.wikipedia.org/wiki/E_(mathematical_constant)
-		{"phi", constant<std::numbers::phi_v<Value>>()}, // https://en.wikipedia.org/wiki/Golden_ratio
-		{"egamma", constant<std::numbers::egamma_v<Value>>()}, // https://en.wikipedia.org/wiki/Euler%27s_constant
+		{ "pi", constant<std::numbers::pi_v<Value>>() }, // https://en.wikipedia.org/wiki/Pi_(mathematical_constant)
+		{ "e", constant<std::numbers::e_v<Value>>() }, // https://en.wikipedia.org/wiki/E_(mathematical_constant)
+		{ "phi", constant<std::numbers::phi_v<Value>>() }, // https://en.wikipedia.org/wiki/Golden_ratio
+		{ "egamma", constant<std::numbers::egamma_v<Value>>() }, // https://en.wikipedia.org/wiki/Euler%27s_constant
 		// TODO add more precision values to wrappers:
 		//log2e
 		//log10e
@@ -177,21 +176,26 @@ namespace Identifiers
 
 		//---------------------------------------------------------------------------
 		// TODO additional constant
-		{"c", constant<299792458.0>()},// Speed of light in vacuum (m·s-1)
-		{"G", constant<6.6743015151515151515151515151515151e-11>()},// Newtonian constant of gravitation (m3·kg−1·s−2)
-		{"J", constant<3.058198247456354132564564787888767>()},// Constants of Gauss field
-		{"atm", constant<101.325>()},// Standard atmosphere (Pa)
-		{"N_A", constant<6.02214076e23>()},// Avogadro's number (mol−1)
-		{"F", constant<9.64853321233100184e4>()},// Faraday constant (C⋅mol−1)
-		{"R", constant<8.31446261815324>()},// Molar gas constant (J·K−1·mol−1)
-		{"h", constant<6.62607015e-34>()},// Planck constant (J·s)
-		{"l_P", constant<1.616255181818181818181818181818181818181818e-35>()},// Planck length (m)
-		{"m_P", constant<2.176434242424242424242424242424242424242424e-8>()},// Planck mass (kg)
-		{"T_P", constant<1.4167841616161616161616161616161616161616161616161616e32>()},// Planck temperature (K)
-		{"t_P", constant<5.391247606060606060606060606060606060606060606060e-44>()},// Planck time (s)
-		{"mu_0", constant<1.2566370621219191919191919191919191919e-6>()},// magnetic constant (exactly 4 pi x 10^(-7)
-		{"epsilon_0", constant<8.854187817620389850536563031710750260608e-12>()},// electric constant (Ohm)
-		{"Z_0", constant<376.7303134617706554681984004203193082686>()},// characteristic impedance of vacuum (Ohm)
+		{ "c", constant<299792458.0>() }, // Speed of light in vacuum (m*s^-1)
+		{ "G", constant<6.6743015151515151515151515151515151e-11>() }, // Newtonian constant of gravitation (m^3*kg^−1*s^−2)
+		{ "J", constant<3.058198247456354132564564787888767>() }, // Constants of Gauss field
+		{ "atm", constant<101.325>() }, // Standard atmosphere (Pa)
+		{ "g_n", constant<9.80665>() }, // Standard acceleration of gravity (m*s^-2)
+		{ "N_A", constant<6.02214076e23>() }, // Avogadro's number (mol^−1)
+		{ "k", constant<1.380649e-23>() }, // Boltzmann constant (J*K−1)
+		{ "F", constant<9.64853321233100184e4>() }, // Faraday constant (C*mol^−1)
+		{ "R", constant<8.31446261815324>() }, // Molar gas constant (J*K^−1*mol^−1)
+		{ "h", constant<6.62607015e-34>() }, // Planck constant (J*s)
+		{ "G_0", constant<7.748091729729729729729729729729729729729729729729729e-5>() }, // Conductance quantum (S)
+		{ "l_P", constant<1.616255181818181818181818181818181818181818e-35>() }, // Planck length (m)
+		{ "m_P", constant<2.176434242424242424242424242424242424242424e-8>() }, // Planck mass (kg)
+		{ "T_P", constant<1.4167841616161616161616161616161616161616161616161616e32>() }, // Planck temperature (K)
+		{ "t_P", constant<5.391247606060606060606060606060606060606060606060e-44>() }, // Planck time (s)
+		{ "mu_0", constant<1.2566370621219191919191919191919191919e-6>() }, // magnetic constant (exactly 4 pi * 10^-7)
+		{ "eps_0", constant<8.854187817620389850536563031710750260608e-12>() }, // electric constant (Ohm) (F*m^-1)
+		{ "Z_0", constant<376.7303134617706554681984004203193082686>() }, // characteristic impedance of vacuum (Ohm)
+		{ "e_0", constant<1.602176634e-19>() }, // Elementary charge (C)
+		{ "eV",  constant<1.602176634e-19>() }, // Electronvolt (J)
 
 		//---------------------------------------------------------------------------
 		// https://en.cppreference.com/w/cpp/numeric/math
@@ -285,7 +289,7 @@ namespace Identifiers
 		{"riemann_zeta", function_pointer<1, std::riemann_zeta>()},
 
 		//---------------------------------------------------------------------------
-		{"minkowski_distance", {{2, std::numeric_limits<ParamCount>::max()}, minkowski_distance}},
+		{"minkowski_dist", {{2, std::numeric_limits<ParamCount>::max()}, minkowski_distance}},
 #endif
 
 		//---------------------------------------------------------------------------

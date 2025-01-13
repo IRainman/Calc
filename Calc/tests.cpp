@@ -16,10 +16,46 @@
 #include "tests.h"
 #include "token.h"
 
-std::string calc_tests()
+namespace
 {
 	using Value = Token::Value;
-	std::array<std::pair<const std::string, const Value>, 102> tests =
+
+	enum class result : int
+	{
+		bit_to_bit = 0,
+		less_than_epsilon = 1,
+		both_nan = 2,
+		failed = -1,
+	};
+	constexpr static bool is_ok(result r)
+	{
+		return r >= static_cast<result>(0);
+	}
+	constexpr static  bool failed(result r)
+	{
+		return !is_ok(r);
+	}
+	[[nodiscard]] static auto compare(const Value a, const Value b) noexcept
+	{
+		if (a == b)
+		{
+			return result::bit_to_bit;
+		}
+		if (Identifiers::are_almost_equal(a, b))
+		{
+			return result::less_than_epsilon;
+		}
+		if (std::isnan(a) && std::isnan(b))
+		{
+			return result::both_nan;
+		}
+		return result::failed;
+	}
+}
+
+std::string calc_tests()
+{
+	const std::array<std::pair<const std::string, const Value>, 108> tests =
 	{
 		// syntax errors
 		std::make_pair("2 + )", std::numeric_limits<Value>::quiet_NaN()),
@@ -38,28 +74,37 @@ std::string calc_tests()
 		{ "1.4e-3", 0.0014 },
 
 		// check constants
-		{ "pi", std::numbers::pi_v<Value> },
-		{ "e", std::numbers::e_v<Value> }, // https://en.wikipedia.org/wiki/E_(mathematical_constant)
-		{ "phi", std::numbers::phi_v<Value> },
-		{ "egamma", std::numbers::egamma_v<Value> }, // https://en.wikipedia.org/wiki/E_(mathematical_constant)
-		{ "c", 299792458.0 }, // Speed of light in vacuum (m·s-1)
-		{ "G", 6.6743015151515151515151515151515151e-11 }, // Newtonian constant of gravitation (m3·kg−1·s−2)
+		// https://en.cppreference.com/w/cpp/numeric/constants 
+		{ "pi",                   3.14159265358979323846264338327950288 }, // https://en.wikipedia.org/wiki/Pi_(mathematical_constant)
+		{ "245850922 / 78256779", 3.14159265358979323846264338327950288 }, // https://en.wikipedia.org/wiki/Pi#Approximate_value_and_digits
+		{ "e", 2.718281828459045235360287471352 }, // https://en.wikipedia.org/wiki/E_(mathematical_constant)
+		{ "phi", 1.6180339887498948482045868343656381177203091798057628621 }, // https://en.wikipedia.org/wiki/Golden_ratio
+		{ "egamma", 0.57721566490153286060651209008240243104215933593992 }, // https://en.wikipedia.org/wiki/Euler%27s_constant
+		//---------------------------------------------------------------------------
+		{ "c", 299792458.0 }, // Speed of light in vacuum (m*s^-1)
+		{ "G", 6.6743015151515151515151515151515151e-11 }, // Newtonian constant of gravitation (m^3*kg^−1*s^−2)
 		{ "J", 3.058198247456354132564564787888767 }, // Constants of Gauss field
 		{ "atm", 101.325 }, // Standard atmosphere (Pa)
-		{ "N_A", 6.02214076e23 }, // Avogadro's number (mol−1)
-		{ "R", 8.31446261815324 }, // Gas constant (J·K−1·mol−1)
-		{ "h", 6.62607015e-34 }, // Planck constant (J·s)
+		{ "g_n", 9.80665 }, // standard acceleration of gravity (m*s^-2)
+		{ "N_A", 6.02214076e23 }, // Avogadro's number (mol^−1)
+		{ "k", 1.380649e-23 }, // Boltzmann constant (J*K−1)
+		{ "F", 9.64853321233100184e4 }, // Faraday constant (C*mol^−1)
+		{ "R", 8.31446261815324 }, // Molar gas constant (J*K^−1*mol^−1)
+		{ "h", 6.62607015e-34 }, // Planck constant (J*s)
+		{ "G_0", 7.748091729729729729729729729729729729729729729729729e-5 }, // Conductance quantum (S)
 		{ "l_P", 1.616255181818181818181818181818181818181818e-35 }, // Planck length (m)
 		{ "m_P", 2.176434242424242424242424242424242424242424e-8 }, // Planck mass (kg)
 		{ "T_P", 1.4167841616161616161616161616161616161616161616161616e32 }, // Planck temperature (K)
 		{ "t_P", 5.391247606060606060606060606060606060606060606060e-44 }, // Planck time (s)
-		{ "mu_0", 1.2566370621219191919191919191919191919e-6 }, // magnetic constant (exactly 4 pi x 10^(-7)
-		{ "epsilon_0", 8.854187817620389850536563031710750260608e-12 }, // electric constant (Ohm)
+		{ "mu_0", 1.2566370621219191919191919191919191919e-6 }, // magnetic constant (exactly 4 pi * 10^-7)
+		{ "eps_0", 8.854187817620389850536563031710750260608e-12 }, // electric constant (Ohm) (F*m^-1)
 		{ "Z_0", 376.7303134617706554681984004203193082686 }, // characteristic impedance of vacuum (Ohm)
+		{ "e_0", 1.602176634e-19 }, // Elementary charge (C)
+		{ "eV",  1.602176634e-19 }, // Electronvolt (J)
 
 		// check additional constants
 		// Gelfond's constant https://en.wikipedia.org/wiki/Gelfond%27s_constant
-		{ "e ^ pi", 23.1406926327792690057 }, 
+		{ "e ^ pi",  23.1406926327792690057 }, 
 		{ "exp(pi)", 23.1406926327792690057 },
 
 		// logarithmic functions
@@ -108,13 +153,15 @@ std::string calc_tests()
 		// precision
 		{ "10000 / 540 * 3", 55.5555555555555555555555555555555 },
 		{ "1 / 3 * 3", 1.0 },
+
+		// trigonometric precision especially with pi
+		{ "87 * tan(pi) - 7", -7.0 },
+		{ "tan(-pi)", 0.0 },
+
+		// big numbers
 		// https://en.wikipedia.org/wiki/Heegner_number
 		{ "640320 ^ 3 + 744 - .00000000000075", 262537412640768743.99999999999999925252525252525252525252525 },
 		{ "e ^ (pi * sqrt(163))",               262537412640768743.99999999999999925252525252525252525252525 },
-		{ "87 * tan(pi) - 7", -7.0 },
-		{ "tan(-pi)", 0.0 },
-		// https://en.wikipedia.org/wiki/Pi#Approximate_value_and_digits
-		{"245850922 / 78256779", std::numbers::pi_v<Value> },
 
 		// special value support
 		{ "1 / 0", std::numeric_limits<Value>::infinity() },
@@ -156,15 +203,16 @@ std::string calc_tests()
 		{ "min(1, 2, 3)", 1.0 },
 		{ "max(1, 2, 3)", 3.0 },
 
-		// hardware present
+		// hardware and library present
 		{ "fma(2, 2, 2)", 6.0 },
 
 		// additional special
-		{ "minkowski_distance(1, 1, 2, 3)", 6.0 }
+		{ "minkowski_dist(1, 1, 2, 3)", 6.0 }
 	};
 
 
 	std::string output;
+	unsigned int ok = 0;
 
 	const auto start = std::chrono::steady_clock::now();
 
@@ -174,40 +222,24 @@ std::string calc_tests()
 	{
 		for (const auto& t : tests)
 		{
-
 			Lexer l{ t.first };
 			Parser p{ l };
-			const auto result = p.parse();
+			const auto value = p.parse();
 
-#ifdef CALC_TESTS_DEV_ENABLED
-			output += "Test ";
-#endif
-			if (std::isnan(result) && std::isnan(t.second))
+			const auto result = compare(value, t.second);
+
+			if (is_ok(result))
 			{
-#ifdef CALC_TESTS_DEV_ENABLED
-				output += "OK:\r\n " + t.first + " not return a result, must return nan.\r\n ";
-#endif
-			}
-			else if (result == t.second)
-			{
-#ifdef CALC_TESTS_DEV_ENABLED
-				output += "OK:\r\n " + t.first + " = " + Formatter::format(t.second) + " exactly equal " + Formatter::format(result) + ".\r\n ";
-#endif
-			}
-			else if (Identifiers::are_almost_equal(result, t.second))
-			{
-#ifdef CALC_TESTS_DEV_ENABLED
-				output += "OK:\r\n " + t.first + " = " + Formatter::format(t.second) + " almost equal " + Formatter::format(result) + ".\r\n ";
-#endif
-			}
-			else
-			{
-#ifdef CALC_TESTS_DEV_ENABLED
-				output += "Test failed:\r\n " + t.first + " = " + Formatter::format(t.second) + " NOT equal " + Formatter::format(result) + ".\r\n ";
-#endif
+				++ok;
 			}
 #ifdef CALC_TESTS_DEV_ENABLED
-			output += Formatter::create_summary() + "\r\n";
+			output += "Test " +
+				std::string{ is_ok(result) ? "OK" : "failed" } + ":\r\n " + t.first +
+				std::string{ result == result::both_nan ? " not return a result, must return nan.\r\n" : " = " + Formatter::format(value) + " and it's " +
+				std::string{ failed(result) ? "NOT" :
+				             result == result::bit_to_bit ? "exactly" : "almost" }
+					+ " equal to " + Formatter::format(t.second) + "\r\n" }
+				+ Formatter::create_summary() + "\r\n";
 #endif
 
 			IssueManager::clear();
@@ -216,7 +248,7 @@ std::string calc_tests()
 
 	const auto end = std::chrono::steady_clock::now();
 	const std::chrono::duration<double> diff = end - start;
-	output += std::format("Tests {}ed!\r\n Time is: {}.\r\n", output.empty() ? "pass" : "fail", diff);
+	output += std::format("Tests:\r\n passed: {},\r\n failed: {},\r\n time is: {}.\r\n", ok, tests.size() - ok, diff);
 	return output;
 }
 
