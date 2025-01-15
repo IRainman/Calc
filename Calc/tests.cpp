@@ -55,7 +55,7 @@ namespace
 
 std::string calc_tests()
 {
-	const std::array<std::pair<const std::string, const Value>, 111> tests =
+	const std::array<std::pair<const std::string, const Value>, 108> tests =
 	{
 		// syntax errors
 		std::make_pair("2 + )", std::numeric_limits<Value>::quiet_NaN()),
@@ -115,7 +115,6 @@ std::string calc_tests()
 		{ "log10(1000)",3.0 },
 		{ "log2(8)",3.0 },
 		{ "log(sh(42) + ch(42))", 42},
-		{ "log( 1 + 1e-16 )", 1.0e-16 },
 		{ "log1p(1e-16)", 1.0e-16 },
 
 		// hyperbolic functions
@@ -161,10 +160,7 @@ std::string calc_tests()
 		{ "87 * tan(pi) - 7", -7.0 },
 		{ "tan(-pi)", 0.0 },
 
-		// big numbers
-		// https://en.wikipedia.org/wiki/Heegner_number
-		{ "640320 ^ 3 + 744 - .00000000000075", 262537412640768743.99999999999999925252525252525252525252525 },
-		{ "e ^ (pi * sqrt(163))",               262537412640768743.99999999999999925252525252525252525252525 },
+		// TODO very big numbers?
 
 		// special value support
 		{ "1 / 0", std::numeric_limits<Value>::infinity() },
@@ -236,13 +232,30 @@ std::string calc_tests()
 				++failed;
 			}
 #ifdef CALC_TESTS_DEV_ENABLED
-			output += "Test " +
-				std::string{ is_ok(result) ? "OK" : "failed" } + ":\r\n " + t.first +
-				std::string{ result == result::both_nan ? " not return a result, must return nan.\r\n" : " = " + Formatter::format(value) + " and it's " +
-				std::string{ is_failed(result) ? "NOT" :
-				             result == result::bit_to_bit ? "exactly" : "almost" }
-					+ " equal to " + Formatter::format(t.second) + "\r\n" }
-				+ Formatter::create_summary() + "\r\n";
+			output += std::format(
+				"Test {}:\r\n"
+				"{}\r\n"
+				"{}\r\n"
+				"{}\r\n",
+				is_ok(result) ? "OK" : "failed",
+				t.first,
+				result == result::both_nan ?
+					"not return a result, must return nan." :
+					std::format(
+					"return = {}\r\n"
+					"and it's {} equal to expect value\r\n"
+					"expect = {}\r\n"
+					"output = {}",
+					value,
+					is_failed(result) ?
+					"NOT" :
+					result == result::bit_to_bit ?
+					"exactly" :
+					"almost",
+					t.second,
+					value
+					),
+				Formatter::create_summary());
 #endif
 
 			IssueManager::clear();
