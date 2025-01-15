@@ -31,7 +31,7 @@ namespace
 	{
 		return r >= static_cast<result>(0);
 	}
-	constexpr static  bool failed(result r)
+	constexpr static  bool is_failed(result r)
 	{
 		return !is_ok(r);
 	}
@@ -55,7 +55,7 @@ namespace
 
 std::string calc_tests()
 {
-	const std::array<std::pair<const std::string, const Value>, 108> tests =
+	const std::array<std::pair<const std::string, const Value>, 111> tests =
 	{
 		// syntax errors
 		std::make_pair("2 + )", std::numeric_limits<Value>::quiet_NaN()),
@@ -101,6 +101,9 @@ std::string calc_tests()
 		{ "Z_0", 376.7303134617706554681984004203193082686 }, // characteristic impedance of vacuum (Ohm)
 		{ "e_0", 1.602176634e-19 }, // Elementary charge (C)
 		{ "eV",  1.602176634e-19 }, // Electronvolt (J)
+		{ "m_e", 9.1093837139282828282828282828282828282828282828282828282828282828e-31 }, // Electron mass (kg)
+		{ "m_p", 1.67262192595525252525252525252525252525252525252525252525252525252e-27 }, // Proton mass (kg)
+		{ "m_u", 1.66053906892e-27 }, // Atomic mass constant (kg)
 
 		// check additional constants
 		// Gelfond's constant https://en.wikipedia.org/wiki/Gelfond%27s_constant
@@ -212,7 +215,7 @@ std::string calc_tests()
 
 
 	std::string output;
-	unsigned int ok = 0;
+	unsigned int failed = 0;
 
 	const auto start = std::chrono::steady_clock::now();
 
@@ -228,15 +231,15 @@ std::string calc_tests()
 
 			const auto result = compare(value, t.second);
 
-			if (is_ok(result))
+			if (is_failed(result))
 			{
-				++ok;
+				++failed;
 			}
 #ifdef CALC_TESTS_DEV_ENABLED
 			output += "Test " +
 				std::string{ is_ok(result) ? "OK" : "failed" } + ":\r\n " + t.first +
 				std::string{ result == result::both_nan ? " not return a result, must return nan.\r\n" : " = " + Formatter::format(value) + " and it's " +
-				std::string{ failed(result) ? "NOT" :
+				std::string{ is_failed(result) ? "NOT" :
 				             result == result::bit_to_bit ? "exactly" : "almost" }
 					+ " equal to " + Formatter::format(t.second) + "\r\n" }
 				+ Formatter::create_summary() + "\r\n";
@@ -248,7 +251,7 @@ std::string calc_tests()
 
 	const auto end = std::chrono::steady_clock::now();
 	const std::chrono::duration<double> diff = end - start;
-	output += std::format("Tests:\r\n passed: {},\r\n failed: {},\r\n time is: {}.\r\n", ok, tests.size() - ok, diff);
+	output += std::format("Tests:\r\n passed: {},\r\n failed: {},\r\n time is: {}.\r\n", tests.size() - failed, failed, diff);
 	return output;
 }
 

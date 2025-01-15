@@ -196,6 +196,9 @@ namespace Identifiers
 		{ "Z_0", constant<376.7303134617706554681984004203193082686>() }, // characteristic impedance of vacuum (Ohm)
 		{ "e_0", constant<1.602176634e-19>() }, // Elementary charge (C)
 		{ "eV",  constant<1.602176634e-19>() }, // Electronvolt (J)
+		{ "m_e", constant<9.1093837139282828282828282828282828282828282828282828282828282828e-31>() }, // Electron mass (kg)
+		{ "m_p", constant<1.67262192595525252525252525252525252525252525252525252525252525252e-27>() }, // Proton mass (kg)
+		{ "m_u", constant<1.66053906892e-27>() }, // Atomic mass constant (kg)
 
 		//---------------------------------------------------------------------------
 		// https://en.cppreference.com/w/cpp/numeric/math
