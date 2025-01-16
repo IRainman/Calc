@@ -65,8 +65,8 @@ namespace Identifiers
 		return std::abs(a - b) <= std::numeric_limits<Value>::epsilon() * std::max(std::abs(a), std::abs(b));
 	}
 
-	[[nodiscard]] constexpr Value to_rad(Value x) noexcept { return x * std::numbers::pi_v<Value> / 180.0; }
-	[[nodiscard]] constexpr Value to_deg(Value x) noexcept { return x * 180.0 / std::numbers::pi_v<Value>; }
+	[[nodiscard]] constexpr Value rad(Value x) noexcept { return x * std::numbers::pi_v<Value> / 180.0; }
+	[[nodiscard]] constexpr Value deg(Value x) noexcept { return x * 180.0 / std::numbers::pi_v<Value>; }
 
 	[[nodiscard]] constexpr Value hypotenuse(std::span<Value> params) noexcept
 	{
@@ -202,97 +202,100 @@ namespace Identifiers
 
 		//---------------------------------------------------------------------------
 		// https://en.cppreference.com/w/cpp/numeric/math
-		{"sin", function_pointer<1, std::sin>()},
-		{"cos", function_pointer<1, std::cos>()},
-		{"tan", function_pointer<1, std::tan>()},
-		{"arccos", function_pointer<1, std::acos>()},
-		{"arcsin", function_pointer<1, std::asin>()},
-		{"arctan", function_pointer<1, std::atan>()},
+		{ "sin", function_pointer<1, std::sin>() },
+		{ "cos", function_pointer<1, std::cos>() },
+		{ "tan", function_pointer<1, std::tan>() },
+		{ "arccos", function_pointer<1, std::acos>() },
+		{ "arcsin", function_pointer<1, std::asin>() },
+		{ "arctan", function_pointer<1, std::atan>() },
 
-		{"hypot", {{2, 3}, hypotenuse}},
+		{ "hypot", {{2, 3}, hypotenuse} },
 
-		{"sh", function_pointer<1, std::sinh>()},
-		{"ch", function_pointer<1, std::cosh>()},
-		{"tanh", function_pointer<1, std::tanh>()},
-		{"asinh", function_pointer<1, std::asinh>()},
-		{"acosh", function_pointer<1, std::acosh>()},
-		{"atanh", function_pointer<1, std::atanh>()},
+		{ "sh", function_pointer<1, std::sinh>() },
+		{ "ch", function_pointer<1, std::cosh>() },
+		{ "tanh", function_pointer<1, std::tanh>() },
+		{ "asinh", function_pointer<1, std::asinh>() },
+		{ "acosh", function_pointer<1, std::acosh>() },
+		{ "atanh", function_pointer<1, std::atanh>() },
 
-		{"ln", function_pointer<1, std::log>()},
-		{"log", function_pointer<1, std::log>()},
-		{"log1p", function_pointer<1, std::log1p>()},
+		{ "ln", function_pointer<1, std::log>() },
+		{ "log", function_pointer<1, std::log>() },
+		{ "log1p", function_pointer<1, std::log1p>() },
 
-		{"lg", function_pointer<1, std::log10>()},
-		{"log10", function_pointer<1, std::log10>()},
+		{ "lg", function_pointer<1, std::log10>() },
+		{ "log10", function_pointer<1, std::log10>() },
 
-		{"lb", function_pointer<1, std::log2>()},
-		{"log2", function_pointer<1, std::log2>()},
+		{ "lb", function_pointer<1, std::log2>() },
+		{ "log2", function_pointer<1, std::log2>() },
 
-		{"sqrt", function_pointer<1, std::sqrt>()},
-		{"cbrt", function_pointer<1, std::cbrt>()},
-		{"pow", function_pointer<2, calc_pow>()},
+		{ "sqrt", function_pointer<1, std::sqrt>() },
+		{ "cbrt", function_pointer<1, std::cbrt>() },
+		{ "pow", function_pointer<2, calc_pow>() },
 #ifdef CALC_TESTS_ENABLED
-		{"exp", function_pointer<1, std::exp>()},
-		{"exp2", function_pointer<1, std::exp2>()},
+		{ "exp", function_pointer<1, std::exp>() },
+		{ "exp2", function_pointer<1, std::exp2>() },
 #endif		
 
 #ifdef CALC_TESTS_ENABLED
-		{"fma", function_pointer<3, std::fma>()},
+		{ "fma", function_pointer<3, std::fma>() },
 #endif
-		{"rad", function_pointer<1, to_rad>()},
-		{"deg", function_pointer<1, to_deg>()},
+		{ "rad", function_pointer<1, rad>() },
+		{ "deg", function_pointer<1, deg>() },
 
-		{"min", {{1, std::numeric_limits<ParamCount>::max()}, minimum}},
-		{"max", {{1, std::numeric_limits<ParamCount>::max()}, maximum}},
+		{ "min", {{1, std::numeric_limits<ParamCount>::max()}, minimum} },
+		{ "max", {{1, std::numeric_limits<ParamCount>::max()}, maximum} },
 
-		{"abs", function_pointer<1, std::abs>()},
+		{ "abs", function_pointer<1, std::abs>() },
 
-		{"erf", function_pointer<1, std::erf>()},
-		{"erfc", function_pointer<1, std::erfc>()},
+		{ "erf", function_pointer<1, std::erf>() },
+		{ "erfc", function_pointer<1, std::erfc>() },
 
-		{"tgamma", function_pointer<1, std::tgamma>()},
-		{"lgamma", function_pointer<1, std::lgamma>()},
+		{ "tgamma", function_pointer<1, std::tgamma>() },
+		{ "lgamma", function_pointer<1, std::lgamma>() },
 #ifdef CALC_TESTS_ENABLED
-		{"trunc", function_pointer<1, std::trunc>()},
-		{"round", function_pointer<1, std::round>()},
+		{ "trunc", function_pointer<1, std::trunc>() },
+		{ "round", function_pointer<1, std::round>() },
 #endif
-		{"mod", function_pointer<2, std::fmod>()},
+		{ "mod", function_pointer<2, std::fmod>() },
 
-#ifdef CALC_TESTS_ENABLED
 		//---------------------------------------------------------------------------
 		// TODO https://en.cppreference.com/w/cpp/numeric/special_math
-		{"assoc_legendre", {{3, 3}, assoc_legendre}},
-		{"assoc_laguerre", {{3, 3}, assoc_laguerre}},
+		{ "beta", function_pointer<2, std::beta>() },
 
-		{"legendre", {{2, 2}, legendre}},
-		{"laguerre", {{2, 2}, laguerre}},
+#ifdef CALC_TESTS_ENABLED
+		{ "assoc_legendre", {{3, 3}, assoc_legendre} },
+		{ "assoc_laguerre", {{3, 3}, assoc_laguerre} },
 
-		{"beta", function_pointer<2, std::beta>()},
+		{ "legendre", {{2, 2}, legendre} },
+		{ "laguerre", {{2, 2}, laguerre} },
 
-		{"comp_ellint_1", function_pointer<1, std::comp_ellint_1>()},
-		{"comp_ellint_2", function_pointer<1, std::comp_ellint_2>()},
-		{"comp_ellint_3", function_pointer<2, std::comp_ellint_3>()},
+		
 
-		{"cyl_bessel_i", function_pointer<2, std::cyl_bessel_i>()},
-		{"cyl_bessel_k", function_pointer<2, std::cyl_bessel_k>()},
-		{"cyl_neumann", function_pointer<2, std::cyl_neumann>()},
+		{ "comp_ellint_1", function_pointer<1, std::comp_ellint_1>() },
+		{ "comp_ellint_2", function_pointer<1, std::comp_ellint_2>() },
+		{ "comp_ellint_3", function_pointer<2, std::comp_ellint_3>() },
 
-		{"sph_bessel", {{2, 2}, sph_bessel}},
-		{"sph_legendre", {{3, 3}, sph_legendre}},
-		{"sph_neumann", {{2, 2}, sph_neumann}},
+		{ "cyl_bessel_i", function_pointer<2, std::cyl_bessel_i>() },
+		{ "cyl_bessel_j", function_pointer<2, std::cyl_bessel_j>() },
+		{ "cyl_bessel_k", function_pointer<2, std::cyl_bessel_k>() },
+		{ "cyl_neumann", function_pointer<2, std::cyl_neumann>() },
 
-		{"ellint_1", function_pointer<2, std::ellint_1>()},
-		{"ellint_2", function_pointer<2, std::ellint_2>()},
-		{"ellint_3", function_pointer<3, std::ellint_3>()},
+		{ "sph_bessel", {{2, 2}, sph_bessel}},
+		{ "sph_legendre", {{3, 3}, sph_legendre}},
+		{ "sph_neumann", {{2, 2}, sph_neumann}},
 
-		{"expint", function_pointer<1, std::expint>()},
+		{ "ellint_1", function_pointer<2, std::ellint_1>() },
+		{ "ellint_2", function_pointer<2, std::ellint_2>() },
+		{ "ellint_3", function_pointer<3, std::ellint_3>() },
 
-		{"hermite", {{2, 2}, hermite}},
+		{ "expint", function_pointer<1, std::expint>() },
 
-		{"riemann_zeta", function_pointer<1, std::riemann_zeta>()},
+		{ "hermite", {{2, 2}, hermite} },
+
+		{ "riemann_zeta", function_pointer<1, std::riemann_zeta>() },
 
 		//---------------------------------------------------------------------------
-		{"minkowski_dist", {{2, std::numeric_limits<ParamCount>::max()}, minkowski_distance}},
+		{ "minkowski_dist", {{2, std::numeric_limits<ParamCount>::max()}, minkowski_distance} },
 #endif
 
 		//---------------------------------------------------------------------------
