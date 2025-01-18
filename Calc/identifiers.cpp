@@ -60,7 +60,7 @@ namespace Identifiers
 		return std::ranges::max(params);
 	}
 
-	[[nodiscard]] bool are_almost_equal(const Value a, const Value b) noexcept
+	[[nodiscard]] bool compare(const Value a, const Value b) noexcept
 	{
 		return std::abs(a - b) <= std::numeric_limits<Value>::epsilon() * std::max(std::abs(a), std::abs(b));
 	}
@@ -82,17 +82,17 @@ namespace Identifiers
 
 	[[nodiscard]] Value calc_pow(Value x, Value y) noexcept
 	{
-		if (are_almost_equal(x, std::numbers::e_v<Value>))
+		if (compare(x, std::numbers::e_v<Value>))
 		{
 			// for better precision
 			return std::exp(y);
 		}
-		if (are_almost_equal(y, 1.0 / 2.0))
+		if (compare(y, 1.0 / 2.0))
 		{
 			// for better precision
 			return std::sqrt(x);
 		}
-		if (are_almost_equal(y, 1.0 / 3.0))
+		if (compare(y, 1.0 / 3.0))
 		{
 			// for better precision
 			return std::cbrt(x);

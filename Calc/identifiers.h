@@ -53,5 +53,5 @@ namespace Identifiers
 
 	[[nodiscard]] constexpr Value to_deg(Value x) noexcept;
 
-	[[nodiscard]] bool are_almost_equal(const Value a, const Value b) noexcept;
+	[[nodiscard]] bool compare(const Value a, const Value b) noexcept;
 };
