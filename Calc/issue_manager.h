@@ -4,37 +4,15 @@
  */
 
 #include "flags.h"
+#include "token.h"
 /**
  * Represents a message from the compiler.
  */
 class Issue
 {
+	using EquationSize = Token::EquationSize;
 	public:
-#ifdef ISSUE_MANAGER_HAVE_SEVERITY
-		/**
-		 * How severe is this message?
-		 */
-		enum class Severity : unsigned int
-		{
-			// Information and comments.
-			INFO = 0,
-
-			// Warnings that don't stop processing.
-			WARN = 1,
-
-			// Errors that do stop processing.
-			ERR = 1 << 1,
-		};
-#endif
-		Issue(std::string&& t, size_t p
-#ifdef ISSUE_MANAGER_HAVE_SEVERITY
-			, Severity s
-#endif
-		) : text(t), pos(p)
-#ifdef ISSUE_MANAGER_HAVE_SEVERITY
-			, severity(s)
-#endif
-		{};
+		Issue(std::string&& t, EquationSize p) noexcept : text(t), pos(p) {};
 		Issue(const Issue&) = delete;
 		Issue(Issue&&) = default;
 	private:
@@ -42,12 +20,7 @@ class Issue
 		const std::string text;
 
 		// Position within the context at which the issue has occurred.
-		const size_t pos; //-V122
-
-#ifdef ISSUE_MANAGER_HAVE_SEVERITY
-		// Issue severity.
-		const Severity severity;
-#endif
+		const EquationSize pos; //-V122
 
 		friend class Formatter;
 };
@@ -57,61 +30,70 @@ class Issue
  */
 class IssueManager
 {
+	using EquationSize = Token::EquationSize;
 	public:
 		/**
 		 * Speedup the manager if needed.
 		 */
 		static void speedup() noexcept
 		{
-			_messages.reserve(10);
+			_errors.reserve(10);
+#ifdef ISSUE_MANAGER_HAVE_SEVERITY
+			_warnings.reserve(10);
+			_infos.reserve(10);
+#endif
 		}
 
 #ifdef ISSUE_MANAGER_HAVE_SEVERITY
 		/**
 		 * Report a new info message.
 		 */
-		static void report_info(size_t pos, std::string&& text) noexcept;
+		static void report_info(EquationSize pos, std::string&& text) noexcept
+		{
+			_infos.emplace_back(Issue(std::move(text), pos));
+		}
 		
 		/**
 		 * Report a new warning.
 		 */
-		static void report_warning(size_t pos, std::string&& text) noexcept;
+		static void report_warning(EquationSize pos, std::string&& text) noexcept
+		{
+			_warnings.emplace_back(Issue(std::move(text), pos));
+		}
 #endif
 		/**
 		 * Report a new error.
 		 */
-		static void report_error(size_t pos, std::string&& text) noexcept;
+		static void report_error(EquationSize pos, std::string&& text) noexcept
+		{
+			_errors.emplace_back(std::move(Issue(std::move(text), pos)));
+		}
 		
 		/**
 		 * Indicate whether any messages have been reported so far.
 		 */
 		[[nodiscard]] static bool has_errors() noexcept
 		{
-#ifdef ISSUE_MANAGER_HAVE_SEVERITY
-		    return _has_errors;
-#else
-			return !_messages.empty();
-#endif
+			return !_errors.empty();
 		}
-		
+
 		/**
 		 * Clear the manager.
 		 */
 		static void clear() noexcept
 		{
-			_messages.clear();
+			_errors.clear();
 #ifdef ISSUE_MANAGER_HAVE_SEVERITY
-			_has_errors = false;
+			_warnings.clear();
+			_infos.clear();
 #endif
 		}
 		
 	private:
-		/**
-		 * Report a new issue.
-		 */
-		static std::vector<Issue> _messages;
+		static std::vector<Issue> _errors; // Errors that do stop processing.
 #ifdef ISSUE_MANAGER_HAVE_SEVERITY
-		static bool _has_errors;
+		static std::vector<Issue> _warnings; // Warnings that don't stop processing.
+		static std::vector<Issue> _infos; // Information and comments.
 #endif
 		friend class Formatter;
 };
