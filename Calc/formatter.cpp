@@ -7,21 +7,3 @@
 
 #include "pch.h"
 #include "formatter.h"
-
-[[nodiscard]] std::string Formatter::create_summary() noexcept
-{
-	const auto& messages = IssueManager::_messages;
-	std::string ret = "Completed with "
-		+ std::to_string(messages.size())
-		+ " message"
-		+ (messages.size() == 1 ? "" : "s")
-		+ (messages.empty() ? "." : ":")
-		+ "\r\n";
-
-	for (const auto& message : messages)
-	{
-		ret += format(message);
-	}
-
-	return ret;
-}
