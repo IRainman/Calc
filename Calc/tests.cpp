@@ -37,11 +37,11 @@ namespace
 	}
 	[[nodiscard]] static auto compare(const Value a, const Value b) noexcept
 	{
-		if (a == b)
+		if (a == b) //-V550
 		{
 			return result::bit_to_bit;
 		}
-		if (Identifiers::are_almost_equal(a, b))
+		if (Identifiers::compare(a, b))
 		{
 			return result::less_than_epsilon;
 		}
@@ -55,7 +55,7 @@ namespace
 
 std::string calc_tests()
 {
-	const std::array<std::pair<const std::string, const Value>, 108> tests =
+	const std::array<const std::pair<const std::string_view, const Value>, 108> tests =
 	{
 		// syntax errors
 		std::make_pair("2 + )", std::numeric_limits<Value>::quiet_NaN()),
@@ -211,7 +211,7 @@ std::string calc_tests()
 
 
 	std::string output;
-	unsigned int failed = 0;
+	size_t failed = 0;
 
 	const auto start = std::chrono::steady_clock::now();
 
@@ -222,7 +222,9 @@ std::string calc_tests()
 		for (const auto& t : tests)
 		{
 			Lexer l{ t.first };
+
 			Parser p{ l };
+
 			const auto value = p.parse();
 
 			const auto result = compare(value, t.second);
@@ -264,7 +266,15 @@ std::string calc_tests()
 
 	const auto end = std::chrono::steady_clock::now();
 	const std::chrono::duration<double> diff = end - start;
-	output += std::format("Tests:\r\n passed: {},\r\n failed: {},\r\n time is: {}.\r\n", tests.size() - failed, failed, diff);
+	output += std::format("Tests:"
+#ifdef CALC_TESTS_DEV_ENABLED
+		"\r\n passed: {},\r\n failed: {},"
+#endif
+		"\r\n time is: {}.\r\n",
+#ifdef CALC_TESTS_DEV_ENABLED
+		tests.size() - failed, failed,
+#endif
+		diff);
 	return output;
 }
 
