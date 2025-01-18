@@ -10,12 +10,12 @@
 #include "lexer.h"
 #include "token.h"
 
-inline void Lexer::advance(size_t n) noexcept
+inline void Lexer::advance(Lexer::EquationSize n) noexcept
 {
 	_view.remove_prefix(n);
 }
 
-[[nodiscard]] inline size_t Lexer::read_unknown(Token& token) const noexcept
+[[nodiscard]] inline Lexer::EquationSize Lexer::read_unknown(Token& token) const noexcept
 {
 	token.text = _view.substr(0, 1);
 	token.type = Token::Type::END;
@@ -23,7 +23,7 @@ inline void Lexer::advance(size_t n) noexcept
 	return 0;
 }
 
-[[nodiscard]] inline size_t Lexer::read_operator(const auto type, Token& token) const noexcept
+[[nodiscard]] inline Lexer::EquationSize Lexer::read_operator(const auto type, Token& token) const noexcept
 {
 	token.text = _view.substr(0, 1);
 	token.type = static_cast<Token::Type>(type);
@@ -31,12 +31,12 @@ inline void Lexer::advance(size_t n) noexcept
 	return 1;
 }
 
-[[nodiscard]] inline size_t Lexer::read_number(Token& token) const noexcept
+[[nodiscard]] inline Lexer::EquationSize Lexer::read_number(Token& token) const noexcept
 {
 	Value val;
 	const auto res = std::from_chars(_view.data(), _view.data() + _view.size(), val);
-	[[assume(res.ptr - _view.data() >= 0)]];
-	const size_t n = res.ptr - _view.data();
+	__assume(res.ptr - _view.data() >= 0);
+	const EquationSize n = res.ptr - _view.data();
 
 	token.text = _view.substr(0, n);
 
@@ -58,9 +58,9 @@ inline void Lexer::advance(size_t n) noexcept
 	return n;
 }
 
-[[nodiscard]] inline size_t Lexer::read_ident(Token& token) const noexcept
+[[nodiscard]] inline Lexer::EquationSize Lexer::read_ident(Token& token) const noexcept
 {
-	size_t n = 1;
+	EquationSize n = 1;
 
 	for (; n < _view.size(); ++n)
 	{

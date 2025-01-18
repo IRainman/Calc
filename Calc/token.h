@@ -8,6 +8,7 @@ struct Token
 	/*
 	 * Type using as a type for calculation.
 	 */
+	using EquationSize = size_t;
 	using Value = double;
 	using ParamCount = unsigned char;
 
