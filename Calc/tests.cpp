@@ -266,7 +266,11 @@ std::string calc_tests()
 	}
 
 	const auto end = std::chrono::steady_clock::now();
-	const std::chrono::duration<double> diff = end - start;
+	const auto diff =
+#ifdef CALC_TESTS_DEV_ENABLED
+		std::chrono::duration_cast<std::chrono::microseconds>
+#endif
+		(end - start);
 	output += std::format("Tests:"
 #ifdef CALC_TESTS_DEV_ENABLED
 		"\r\n passed: {},\r\n failed: {},"
