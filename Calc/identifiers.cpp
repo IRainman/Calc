@@ -68,7 +68,7 @@ namespace Identifiers
 	[[nodiscard]] constexpr Value rad(Value x) noexcept { return x * std::numbers::pi_v<Value> / 180.0; }
 	[[nodiscard]] constexpr Value deg(Value x) noexcept { return x * 180.0 / std::numbers::pi_v<Value>; }
 
-	[[nodiscard]] constexpr Value hypotenuse(std::span<Value> params) noexcept
+	[[nodiscard]] constexpr Value hypot(std::span<Value> params) noexcept
 	{
 		switch (params.size())
 		{
@@ -209,7 +209,7 @@ namespace Identifiers
 		{ "arcsin", function_pointer<1, std::asin>() },
 		{ "arctan", function_pointer<1, std::atan>() },
 
-		{ "hypot", {{2, 3}, hypotenuse} },
+		{ "hypot", {{2, 3}, hypot} },
 
 		{ "sh", function_pointer<1, std::sinh>() },
 		{ "ch", function_pointer<1, std::cosh>() },
