@@ -114,7 +114,7 @@ inline void Parser::advance() noexcept
 	Parser::Value& result = values[count];
 	while (--count != values.size())
 	{
-		result = Identifiers::calc_pow(values[count], result);
+		result = Identifiers::pow(values[count], result);
 	};
 	return result;
 }

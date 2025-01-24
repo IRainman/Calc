@@ -47,7 +47,7 @@ namespace Identifiers
 	 */
 	[[nodiscard]] const map& get() noexcept;
 
-	[[nodiscard]] Value calc_pow(Value x, Value y) noexcept;
+	[[nodiscard]] Value pow(Value x, Value y) noexcept;
 
 	[[nodiscard]] constexpr Value to_rad(Value x) noexcept;
 

@@ -50,12 +50,12 @@ namespace Identifiers
 		return { { 0, 0 }, constant_impl<value> };
 	}
 
-	[[nodiscard]] constexpr Value minimum(std::span<Value> params) noexcept
+	[[nodiscard]] constexpr Value min(std::span<Value> params) noexcept
 	{
 		return std::ranges::min(params);
 	}
 
-	[[nodiscard]] constexpr Value maximum(std::span<Value> params) noexcept
+	[[nodiscard]] constexpr Value max(std::span<Value> params) noexcept
 	{
 		return std::ranges::max(params);
 	}
@@ -80,7 +80,7 @@ namespace Identifiers
 		std::unreachable();
 	}
 
-	[[nodiscard]] Value calc_pow(Value x, Value y) noexcept
+	[[nodiscard]] Value pow(Value x, Value y) noexcept
 	{
 		if (compare(x, std::numbers::e_v<Value>))
 		{
@@ -141,24 +141,24 @@ namespace Identifiers
 		return std::sph_neumann(static_cast<unsigned int>(params[0]), params[1]); //-V2004
 	}
 
-	[[nodiscard]] static Value minkowski_distance(std::span<Value> params) noexcept
+	[[nodiscard]] static Value distance(std::span<Value> params) noexcept
 	{
-		// parameters contains p all other parameters is distances d[i] = v[i] - w[i] for two vectors v and w
+		// Minkowski distance: parameters contains p all other parameters is distances d[i] = v[i] - w[i] for two vectors v and w
 		Value ex = 0.0;
 		Value min_d = std::numeric_limits<Value>::infinity();
 		Value max_d = -std::numeric_limits<Value>::infinity();
-		for (auto& i : params.subspan(1))
+		for (size_t i = 1; i != params.size(); ++i)
 		{
-			i = std::abs(i);
-			ex += calc_pow(i, params[0]);
-			min_d = std::min(min_d, i);
-			max_d = std::max(max_d, i);
+			params[i] = std::abs(params[i]);
+			ex += pow(params[i], params[0]);
+			min_d = std::min(min_d, params[i]);
+			max_d = std::max(max_d, params[i]);
 		}
 
 		return std::isnan(ex) ? ex
 			: !std::isnormal(ex) && std::signbit(params[0]) ? min_d
 			: !std::isnormal(ex) && !std::signbit(params[0]) ? max_d
-			: calc_pow(ex, 1.0 / params[0]);
+			: pow(ex, 1.0 / params[0]);
 	}
 #endif
 
@@ -230,7 +230,7 @@ namespace Identifiers
 
 		{ "sqrt", function_pointer<1, std::sqrt>() },
 		{ "cbrt", function_pointer<1, std::cbrt>() },
-		{ "pow", function_pointer<2, calc_pow>() },
+		{ "pow", function_pointer<2, pow>() },
 #ifdef CALC_TESTS_ENABLED
 		{ "exp", function_pointer<1, std::exp>() },
 		{ "exp2", function_pointer<1, std::exp2>() },
@@ -242,8 +242,8 @@ namespace Identifiers
 		{ "rad", function_pointer<1, rad>() },
 		{ "deg", function_pointer<1, deg>() },
 
-		{ "min", {{1, std::numeric_limits<ParamCount>::max()}, minimum} },
-		{ "max", {{1, std::numeric_limits<ParamCount>::max()}, maximum} },
+		{ "min", {{1, std::numeric_limits<ParamCount>::max()}, min} },
+		{ "max", {{1, std::numeric_limits<ParamCount>::max()}, max} },
 
 		{ "abs", function_pointer<1, std::abs>() },
 
@@ -269,8 +269,6 @@ namespace Identifiers
 		{ "legendre", {{2, 2}, legendre} },
 		{ "laguerre", {{2, 2}, laguerre} },
 
-		
-
 		{ "comp_ellint_1", function_pointer<1, std::comp_ellint_1>() },
 		{ "comp_ellint_2", function_pointer<1, std::comp_ellint_2>() },
 		{ "comp_ellint_3", function_pointer<2, std::comp_ellint_3>() },
@@ -295,7 +293,7 @@ namespace Identifiers
 		{ "riemann_zeta", function_pointer<1, std::riemann_zeta>() },
 
 		//---------------------------------------------------------------------------
-		{ "minkowski_dist", {{2, std::numeric_limits<ParamCount>::max()}, minkowski_distance} },
+		{ "distance", {{2, std::numeric_limits<ParamCount>::max()}, distance} },
 #endif
 
 		//---------------------------------------------------------------------------
