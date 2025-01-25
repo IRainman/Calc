@@ -207,7 +207,7 @@ std::string calc_tests()
 		{ "fma(2, 2, 2)", 6.0 },
 
 		// additional special
-		{ "minkowski_dist(1, 1, 2, 3)", 6.0 }
+		{ "distance(1, 1, 2, 3)", 6.0 }
 	};
 
 
