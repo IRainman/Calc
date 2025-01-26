@@ -1,6 +1,12 @@
 #pragma once
 
-// define Windows version requirements
-#define _WIN32_WINNT _WIN32_WINNT_WIN7 // the minimal version of OS supported by application is Windows 7.
-#define _WIN32_IE _WIN32_IE_IE110 // it's a maximum available version of IE available since Windows 7.
-#define NTDDI_VERSION NTDDI_WIN8 // using NTDDI for Windows 8 for proper working with touch interfaces.
+// Including SDKDDKVer.h defines the highest available Windows platform.
+
+// If you wish to build your application for a previous Windows platform, include WinSDKVer.h and
+// set the _WIN32_WINNT macro to the platform you wish to support before including SDKDDKVer.h.
+
+#include <WinSDKVer.h>
+
+#define _WIN32_WINNT _WIN32_WINNT_WIN7 // The minimal version of OS supported by application is Windows 7.
+
+#include <SDKDDKVer.h>

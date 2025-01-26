@@ -4,6 +4,9 @@
 /*
  * Copyright 2009-2024 Solomina Elle Leonovna, a.rainman on gmail point com
  */
+ 
+// GUI.cpp : Defines the class behaviors for the application.
+//
 
 #include "pch.h"
 
@@ -20,113 +23,174 @@
 
 #ifdef _WIN32
 
-#include "targetver.h"
-
-#define VC_EXTRALEAN
-#define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
-#define _AFX_NO_OLE_SUPPORT
-#define _AFX_NO_DB_SUPPORT
-#define _AFX_NO_DAO_SUPPORT
-#define _AFX_NO_AFXCMN_SUPPORT
-#define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS
-#define _ATL_CSTRING_NO_CRT
-#define _ATL_ALL_WARNINGS
-#define _ATL_SINGLE_THREADED
-#define _ATL_NO_COM_SUPPORT
-#define _AFX_MINREBUILD
-#define _AFX_ALL_WARNINGS
-#define _CSTRING_DISABLE_NARROW_WIDE_CONVERSION
-#include <afxwinappex.h>
-#include <afxwin.h>
-#include <tchar.h>
-#include <CommCtrl.h>
-#include <libloaderapi.h>
-#include <WinUser.h>
-#include <minwindef.h>
-#include <windef.h>
-#include <afxmsg_.h>
-#include <afxres.h>
-#include <afx.h>
-#include <afxstr.h>
-
-#include "resource.h"
+#include "framework.h"
 #include "GUI.h"
 
-CCalcApp theCalcApp;
+BEGIN_MESSAGE_MAP(CCalcApp, CWinApp)
+	ON_COMMAND(ID_HELP, &CWinApp::OnHelp)
+END_MESSAGE_MAP()
 
-CCalcDlg dlg;
 
+
+#include "resource.h"
+
+// CCalcApp construction
+CCalcApp::CCalcApp()
+{
+	// support Restart Manager
+	m_dwRestartManagerSupportFlags = AFX_RESTART_MANAGER_SUPPORT_ALL_ASPECTS;
+
+	// TODO: add construction code here,
+	// Place all significant initialization in InitInstance
+
+	IssueManager::speedup();
+}
+
+
+// The one and only CCalcApp object
+CCalcApp theApp;
+
+
+// CCalcApp initialization
 BOOL CCalcApp::InitInstance()
 {
-	CWinAppEx::InitInstance();
-
+	// InitCommonControlsEx() is required on Windows XP if an application
+	// manifest specifies use of ComCtl32.dll version 6 or later to enable
+	// visual styles.  Otherwise, any window creation will fail.
 	INITCOMMONCONTROLSEX InitCtrls;
 	InitCtrls.dwSize = sizeof(InitCtrls);
-
-	InitCtrls.dwICC = ICC_STANDARD_CLASSES;
+	// Set this to include all the common control classes you want to use
+	// in your application.
+	InitCtrls.dwICC = ICC_STANDARD_CLASSES | ICC_NATIVEFNTCTL_CLASS | ICC_PAGESCROLLER_CLASS | ICC_COOL_CLASSES;
 	InitCommonControlsEx(&InitCtrls);
 
-	m_pMainWnd = &dlg;
-	dlg.DoModal();
+	CWinApp::InitInstance();
 
+#ifdef CALC_MFC_USING_EXTENDENT_FUNCTIONS
+	AfxEnableControlContainer();
+
+	// Create the shell manager, in case the dialog contains
+	// any shell tree view or shell list view controls.
+	CShellManager *pShellManager = new CShellManager;
+
+	// Activate "Windows Native" visual manager for enabling themes in MFC controls
+	CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(CMFCVisualManagerWindows));
+
+	// Standard initialization
+	// If you are not using these features and wish to reduce the size
+	// of your final executable, you should remove from the following
+	// the specific initialization routines you do not need
+	// Change the registry key under which our settings are stored
+	// TODO: You should modify this string to be something appropriate
+	// such as the name of your company or organization
+	SetRegistryKey(_T("Local AppWizard-Generated Applications"));
+#endif
+
+	CCalcDlg dlg;
+	m_pMainWnd = &dlg;
+#ifdef CALC_MFC_USING_EXTENDENT_FUNCTIONS
+	INT_PTR nResponse = 
+#endif
+		dlg.DoModal();
+#ifdef CALC_MFC_USING_EXTENDENT_FUNCTIONS
+	if (nResponse == IDCANCEL)
+	{
+		// TODO: Place code here to handle when the dialog is
+		//  dismissed with Cancel [Pressed Esc or Close button]
+	}
+	else if (nResponse == -1)
+	{
+		TRACE(traceAppMsg, 0, "Warning: dialog creation failed, so application is terminating unexpectedly.\n");
+		TRACE(traceAppMsg, 0, "Warning: if you are using MFC controls on the dialog, you cannot #define _AFX_NO_MFC_CONTROLS_IN_DIALOGS.\n");
+	}
+
+	// Delete the shell manager created above.
+	delete pShellManager;
+
+#if !defined(_AFXDLL) && !defined(_AFX_NO_MFC_CONTROLS_IN_DIALOGS)
+	ControlBarCleanUp();
+#endif
+#endif
+
+	// Since the dialog has been closed, return FALSE so that we exit the
+	//  application, rather than start the application's message pump.
 	return FALSE;
 }
 
-BEGIN_MESSAGE_MAP(CCalcApp, CWinAppEx)
-	ON_COMMAND(ID_HELP, &ThisClass::OnHelp)
-END_MESSAGE_MAP()
 
-void CCalcApp::OnHelp()
+
+
+
+
+
+
+CCalcDlg::CCalcDlg(CWnd* pParent /*=nullptr*/)
+	: CDialog(IDD_CALC_DIALOG, pParent)
 {
-	// FIXME
+	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
 
-
-
-
-
-
-
-CCalcDlg::CCalcDlg(CWnd* pParent /*=nullptr*/) //-V730
-	: CDialog(CCalcDlg::IDD, pParent)
+#ifdef CALC_MFC_USING_EXTENDENT_FUNCTIONS
+void CCalcDlg::DoDataExchange(CDataExchange* pDX)
 {
+	CDialog::DoDataExchange(pDX);
 }
-
-BOOL CCalcDlg::OnInitDialog()
-{
-	CDialog::OnInitDialog();
-
-	static_assert((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
-	static_assert(IDM_ABOUTBOX < 0xF000);
-
-	CMenu* pSysMenu = GetSystemMenu(FALSE);
-	CString strAboutMenu;
-	strAboutMenu.LoadString(IDS_ABOUTBOX);
-	pSysMenu->AppendMenu(MF_SEPARATOR);
-	pSysMenu->AppendMenu(MF_STRING, IDM_ABOUTBOX, strAboutMenu);
-
-	HICON hIcon = theCalcApp.LoadIcon(IDR_MAINFRAME);
-
-	SetIcon(hIcon, TRUE);
-	SetIcon(hIcon, FALSE);
-
-	IssueManager::speedup();
-
-#ifdef CALC_TESTS_ENABLED
-	SetDlgItemText(IDC_EDIT_MESSAGE, calc_tests().data());
 #endif
-
-	return TRUE;
-}
 
 BEGIN_MESSAGE_MAP(CCalcDlg, CDialog)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	//}}AFX_MSG_MAP
-	ON_EN_CHANGE(IDC_EDIT_INPUT, &ThisClass::OnEnChangeEditInput)
+#ifdef CALC_MFC_USING_EXTENDENT_FUNCTIONS
+	ON_EN_CHANGE(IDC_EDIT_INPUT, &CCalcDlg::OnEnChangeEditInput)
+	ON_EN_ERRSPACE(IDC_EDIT_INPUT, &CCalcDlg::OnEnErrspaceEditInput)
+	ON_EN_UPDATE(IDC_EDIT_INPUT, &CCalcDlg::OnEnUpdateEditInput)
+	ON_EN_MAXTEXT(IDC_EDIT_INPUT, &CCalcDlg::OnEnMaxtextEditInput)
+#endif
+	ON_BN_CLICKED(IDC_BUTTON_CALC, &CCalcDlg::OnBnClickedButtonCalc)
 END_MESSAGE_MAP()
+
+
+// CCalcDlg message handlers
+BOOL CCalcDlg::OnInitDialog()
+{
+	CDialog::OnInitDialog();
+
+	// Add "About..." menu item to system menu.
+
+	// IDM_ABOUTBOX must be in the system command range.
+	static_assert((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
+	static_assert(IDM_ABOUTBOX < 0xF000);
+
+	CMenu* pSysMenu = GetSystemMenu(FALSE);
+	if (pSysMenu != nullptr)
+	{
+		BOOL bNameValid;
+		CString strAboutMenu;
+		bNameValid = strAboutMenu.LoadString(IDS_ABOUTBOX);
+		ASSERT(bNameValid);
+		if (!strAboutMenu.IsEmpty())
+		{
+			pSysMenu->AppendMenu(MF_SEPARATOR);
+			pSysMenu->AppendMenu(MF_STRING, IDM_ABOUTBOX, strAboutMenu);
+		}
+	}
+
+	// Set the icon for this dialog.  The framework does this automatically
+	//  when the application's main window is not a dialog
+	SetIcon(m_hIcon, TRUE);			// Set big icon
+	SetIcon(m_hIcon, FALSE);		// Set small icon
+
+	// TODO: Add extra initialization here
+	m_edit_input = GetDlgItem(IDC_EDIT_INPUT);
+
+#ifdef CALC_TESTS_ENABLED
+	SetDlgItemText(IDC_EDIT_MESSAGE, calc_tests().data());
+#endif
+
+	return TRUE;  // return TRUE  unless you set the focus to a control
+}
 
 void CCalcDlg::OnSysCommand(UINT nID, LPARAM lParam)
 {
@@ -141,11 +205,70 @@ void CCalcDlg::OnSysCommand(UINT nID, LPARAM lParam)
 	}
 }
 
+// If you add a minimize button to your dialog, you will need the code below
+//  to draw the icon.  For MFC applications using the document/view model,
+//  this is automatically done for you by the framework.
+void CCalcDlg::OnPaint()
+{
+	if (IsIconic())
+	{
+		CPaintDC dc(this); // device context for painting
+
+		SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
+
+		// Center icon in client rectangle
+		int cxIcon = GetSystemMetrics(SM_CXICON);
+		int cyIcon = GetSystemMetrics(SM_CYICON);
+		CRect rect;
+		GetClientRect(&rect);
+		int x = (rect.Width() - cxIcon + 1) / 2;
+		int y = (rect.Height() - cyIcon + 1) / 2;
+
+		// Draw the icon
+		dc.DrawIcon(x, y, m_hIcon);
+	}
+	else
+	{
+		CDialog::OnPaint();
+	}
+}
+
+// The system calls this function to obtain the cursor to display while the user drags
+//  the minimized window.
+HCURSOR CCalcDlg::OnQueryDragIcon()
+{
+	return static_cast<HCURSOR>(m_hIcon);
+}
+
+#ifdef CALC_MFC_USING_EXTENDENT_FUNCTIONS
 void CCalcDlg::OnEnChangeEditInput()
 {
-	if (GetDlgItemText(IDC_EDIT_INPUT, m_str) >= 1)
+	// TODO: Add your control notification handler code here
+}
+
+void CCalcDlg::OnEnErrspaceEditInput()
+{
+	// TODO: Add your control notification handler code here
+}
+
+void CCalcDlg::OnEnUpdateEditInput()
+{
+	// TODO:  Add your control notification handler code here
+}
+
+void CCalcDlg::OnEnMaxtextEditInput()
+{
+	// TODO: Add your control notification handler code here
+}
+#endif
+
+void CCalcDlg::OnBnClickedButtonCalc()
+{
+	m_edit_input->GetWindowTextA(m_str);
+
+	if(!m_str.IsEmpty())
 	{
-		const std::string_view input(m_str, static_cast<unsigned int>(m_str.GetLength()));
+		const std::string_view input(m_str.GetString(), static_cast<unsigned int>(m_str.GetLength()));
 
 		Lexer l{ input };
 		Parser p{ l };
@@ -154,37 +277,41 @@ void CCalcDlg::OnEnChangeEditInput()
 
 		if (std::isnan(result))
 		{
-			SetDlgItemText(IDC_EDIT_RESULT, "");
-			SetDlgItemText(IDC_EDIT_MESSAGE, Formatter::create_summary().data());
+			SetDlgItemTextA(IDC_EDIT_RESULT, "");
+			SetDlgItemTextA(IDC_EDIT_MESSAGE, Formatter::create_summary().data());
 			IssueManager::clear();
 		}
 		else
 		{
-			SetDlgItemText(IDC_EDIT_RESULT, Formatter::format(result).data());
-			SetDlgItemText(IDC_EDIT_MESSAGE, "");
+			SetDlgItemTextA(IDC_EDIT_RESULT, Formatter::format(result).data());
+			SetDlgItemTextA(IDC_EDIT_MESSAGE, "");
 		}
 	}
 	else
 	{
-		SetDlgItemText(IDC_EDIT_RESULT, m_str);
-		SetDlgItemText(IDC_EDIT_MESSAGE, m_str);
+		SetDlgItemTextA(IDC_EDIT_RESULT, m_str);
+		SetDlgItemTextA(IDC_EDIT_MESSAGE, m_str);
 	}
+	m_edit_input->SetFocus();
 }
 
 
-
-
-
-
-
-CAboutDlg::CAboutDlg() : CDialog(CAboutDlg::IDD)
+// CAboutDlg dialog used for App About
+CAboutDlg::CAboutDlg() : CDialog(IDD_ABOUTBOX)
 {
 }
+
+#ifdef CALC_MFC_USING_EXTENDENT_FUNCTIONS
+void CAboutDlg::DoDataExchange(CDataExchange* pDX)
+{
+	CDialog::DoDataExchange(pDX);
+}
+#endif
 
 BOOL CAboutDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
-	SetDlgItemText(IDC_COMPILED_DATE, _T(__TIMESTAMP__));
+	SetDlgItemTextA(IDC_COMPILED_DATE, _T(__TIMESTAMP__));
 	return TRUE;
 }
 
@@ -198,6 +325,7 @@ void CAboutDlg::OnBnClickedCancel() noexcept
 {
 	EndDialog(FALSE);
 }
+
 
 #else
 
