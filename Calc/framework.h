@@ -28,7 +28,7 @@
 
 #define _ATL_CSTRING_NO_CRT
 #define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS      // some CString constructors will be explicit
-#define _CSTRING_DISABLE_NARROW_WIDE_CONVERSION
+#define _CSTRING_DISABLE_NARROW_WIDE_CONVERSION // ensure that we are not using conversion to wchar_t
 
 #ifndef CALC_MFC_USING_EXTENDENT_FUNCTIONS
 #define _ATL_ALL_WARNINGS
@@ -40,7 +40,7 @@
 #endif
 
 
-#ifndef CALC_MFC_USING_EXTENDENT_FUNCTIONS
+#ifdef CALC_MFC_USING_EXTENDENT_FUNCTIONS
 // To mimic older RichEdit behavior, set _RICHEDIT_VER to appropriate value
 //		Version 1.0 	0x0100	
 //		Version 2.0 	0x0200	
@@ -50,7 +50,7 @@
 
 #include <afxwin.h>         // MFC core and standard components
 
-#ifndef CALC_MFC_USING_EXTENDENT_FUNCTIONS
+#ifdef CALC_MFC_USING_EXTENDENT_FUNCTIONS
 #include <afxext.h>         // MFC extensions
 
 

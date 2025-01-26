@@ -142,12 +142,6 @@ BEGIN_MESSAGE_MAP(CCalcDlg, CDialog)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	//}}AFX_MSG_MAP
-#ifdef CALC_MFC_USING_EXTENDENT_FUNCTIONS
-	ON_EN_CHANGE(IDC_EDIT_INPUT, &CCalcDlg::OnEnChangeEditInput)
-	ON_EN_ERRSPACE(IDC_EDIT_INPUT, &CCalcDlg::OnEnErrspaceEditInput)
-	ON_EN_UPDATE(IDC_EDIT_INPUT, &CCalcDlg::OnEnUpdateEditInput)
-	ON_EN_MAXTEXT(IDC_EDIT_INPUT, &CCalcDlg::OnEnMaxtextEditInput)
-#endif
 	ON_BN_CLICKED(IDC_BUTTON_CALC, &CCalcDlg::OnBnClickedButtonCalc)
 END_MESSAGE_MAP()
 
@@ -183,8 +177,6 @@ BOOL CCalcDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
 	// TODO: Add extra initialization here
-	m_edit_input = GetDlgItem(IDC_EDIT_INPUT);
-
 #ifdef CALC_TESTS_ENABLED
 	SetDlgItemText(IDC_EDIT_MESSAGE, calc_tests().data());
 #endif
@@ -240,35 +232,11 @@ HCURSOR CCalcDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
-#ifdef CALC_MFC_USING_EXTENDENT_FUNCTIONS
-void CCalcDlg::OnEnChangeEditInput()
-{
-	// TODO: Add your control notification handler code here
-}
-
-void CCalcDlg::OnEnErrspaceEditInput()
-{
-	// TODO: Add your control notification handler code here
-}
-
-void CCalcDlg::OnEnUpdateEditInput()
-{
-	// TODO:  Add your control notification handler code here
-}
-
-void CCalcDlg::OnEnMaxtextEditInput()
-{
-	// TODO: Add your control notification handler code here
-}
-#endif
-
 void CCalcDlg::OnBnClickedButtonCalc()
 {
-	m_edit_input->GetWindowTextA(m_str);
-
-	if(!m_str.IsEmpty())
+	if(CString text; GetDlgItemTextA(IDC_EDIT_INPUT, text) >= 1)
 	{
-		const std::string_view input(m_str.GetString(), static_cast<unsigned int>(m_str.GetLength()));
+		const std::string_view input(text.GetString(), static_cast<unsigned int>(text.GetLength()));
 
 		Lexer l{ input };
 		Parser p{ l };
@@ -289,10 +257,10 @@ void CCalcDlg::OnBnClickedButtonCalc()
 	}
 	else
 	{
-		SetDlgItemTextA(IDC_EDIT_RESULT, m_str);
-		SetDlgItemTextA(IDC_EDIT_MESSAGE, m_str);
+		SetDlgItemTextA(IDC_EDIT_RESULT, "");
+		SetDlgItemTextA(IDC_EDIT_MESSAGE, "");
 	}
-	m_edit_input->SetFocus();
+	GetDlgItem(IDC_EDIT_INPUT)->SetFocus();
 }
 
 

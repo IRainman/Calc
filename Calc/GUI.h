@@ -51,8 +51,6 @@ public:
 // Implementation
 protected:
 	HICON m_hIcon; //-V122
-	CWnd* m_edit_input;
-	CString m_str;
 
 public:
 	// Generated message map functions
@@ -60,12 +58,6 @@ public:
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
-#ifdef CALC_MFC_USING_EXTENDENT_FUNCTIONS
-	afx_msg void OnEnChangeEditInput();
-	afx_msg void OnEnErrspaceEditInput();
-	afx_msg void OnEnUpdateEditInput();
-	afx_msg void OnEnMaxtextEditInput();
-#endif
 	afx_msg void OnBnClickedButtonCalc();
 };
 
