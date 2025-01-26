@@ -31,8 +31,5 @@
 #include <vector>
 
 // add headers that you want to pre-compile here
-#ifdef _WIN32
-#include "framework.h"
-#endif
 
 #endif //PCH_H
