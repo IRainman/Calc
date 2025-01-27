@@ -10,8 +10,6 @@
 	#error "include 'pch.h' before including this file for PCH"
 #endif
 
-#include "resource.h"		// main symbols
-
 // CCalcApp:
 // See GUI.cpp for the implementation of this class
 //
@@ -48,16 +46,20 @@ public:
 #endif
 	DECLARE_MESSAGE_MAP()
 
+#ifdef CALC_MFC_USING_EXTENDENT_FUNCTIONS
 // Implementation
 protected:
-	HICON m_hIcon; //-V122
+	HICON m_hIcon;
+#endif
 
 public:
 	// Generated message map functions
 	virtual BOOL OnInitDialog();
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
+#ifdef CALC_MFC_USING_EXTENDENT_FUNCTIONS
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
+#endif
 	afx_msg void OnBnClickedButtonCalc();
 };
 

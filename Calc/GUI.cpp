@@ -24,6 +24,12 @@
 #ifdef _WIN32
 
 #include "framework.h"
+#include "resource.h"		// main symbols
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
 #include "GUI.h"
 
 BEGIN_MESSAGE_MAP(CCalcApp, CWinApp)
@@ -31,8 +37,6 @@ BEGIN_MESSAGE_MAP(CCalcApp, CWinApp)
 END_MESSAGE_MAP()
 
 
-
-#include "resource.h"
 
 // CCalcApp construction
 CCalcApp::CCalcApp()
@@ -127,7 +131,9 @@ BOOL CCalcApp::InitInstance()
 CCalcDlg::CCalcDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(IDD_CALC_DIALOG, pParent)
 {
-	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+#ifdef CALC_MFC_USING_EXTENDENT_FUNCTIONS
+	m_hIcon = AfxGetApp()->LoadIconA(IDR_MAINFRAME);
+#endif
 }
 
 #ifdef CALC_MFC_USING_EXTENDENT_FUNCTIONS
@@ -158,19 +164,16 @@ BOOL CCalcDlg::OnInitDialog()
 	static_assert(IDM_ABOUTBOX < 0xF000);
 
 	CMenu* pSysMenu = GetSystemMenu(FALSE);
-	if (pSysMenu != nullptr)
-	{
-		BOOL bNameValid;
-		CString strAboutMenu;
-		bNameValid = strAboutMenu.LoadString(IDS_ABOUTBOX);
-		ASSERT(bNameValid);
-		if (!strAboutMenu.IsEmpty())
-		{
-			pSysMenu->AppendMenu(MF_SEPARATOR);
-			pSysMenu->AppendMenu(MF_STRING, IDM_ABOUTBOX, strAboutMenu);
-		}
-	}
+	ASSERT(pSysMenu != nullptr);
+	CStringA strAboutMenu;
+	strAboutMenu.LoadStringA(IDS_ABOUTBOX);
+	ASSERT(!strAboutMenu.IsEmpty());
+	pSysMenu->AppendMenuA(MF_SEPARATOR);
+	pSysMenu->AppendMenuA(MF_STRING, IDM_ABOUTBOX, strAboutMenu);
 
+#ifndef CALC_MFC_USING_EXTENDENT_FUNCTIONS
+	auto m_hIcon = theApp.LoadIconA(IDR_MAINFRAME);
+#endif
 	// Set the icon for this dialog.  The framework does this automatically
 	//  when the application's main window is not a dialog
 	SetIcon(m_hIcon, TRUE);			// Set big icon
@@ -178,7 +181,7 @@ BOOL CCalcDlg::OnInitDialog()
 
 	// TODO: Add extra initialization here
 #ifdef CALC_TESTS_ENABLED
-	SetDlgItemText(IDC_EDIT_MESSAGE, calc_tests().data());
+	SetDlgItemTextA(IDC_EDIT_MESSAGE, calc_tests().data());
 #endif
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
@@ -197,6 +200,7 @@ void CCalcDlg::OnSysCommand(UINT nID, LPARAM lParam)
 	}
 }
 
+#ifdef CALC_MFC_USING_EXTENDENT_FUNCTIONS
 // If you add a minimize button to your dialog, you will need the code below
 //  to draw the icon.  For MFC applications using the document/view model,
 //  this is automatically done for you by the framework.
@@ -231,10 +235,11 @@ HCURSOR CCalcDlg::OnQueryDragIcon()
 {
 	return static_cast<HCURSOR>(m_hIcon);
 }
+#endif
 
 void CCalcDlg::OnBnClickedButtonCalc()
 {
-	if(CString text; GetDlgItemTextA(IDC_EDIT_INPUT, text) >= 1)
+	if(CStringA text; GetDlgItemTextA(IDC_EDIT_INPUT, text) >= 1)
 	{
 		const std::string_view input(text.GetString(), static_cast<unsigned int>(text.GetLength()));
 
