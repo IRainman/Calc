@@ -8,6 +8,7 @@
 #include "pch.h"
 #include "flags.h"
 #ifdef CALC_TESTS_ENABLED
+#include <chrono>
 #include "lexer.h"
 #include "parser.h"
 #include "issue_manager.h"
@@ -22,16 +23,17 @@ namespace
 
 	enum class result : int
 	{
+		failed = -1,
+
 		bit_to_bit = 0,
 		less_than_epsilon = 1,
 		both_nan = 2,
-		failed = -1,
 	};
-	constexpr static bool is_ok(result r)
+	constexpr bool is_ok(result r)
 	{
 		return r >= static_cast<result>(0);
 	}
-	constexpr static  bool is_failed(result r)
+	constexpr bool is_failed(result r)
 	{
 		return !is_ok(r);
 	}
@@ -55,7 +57,7 @@ namespace
 
 std::string calc_tests()
 {
-	const std::array<const std::pair<const std::string_view, const Value>, 109> tests =
+	const std::array<const std::pair<const std::string_view, const Value>, 121> tests =
 	{
 		// syntax errors
 		std::make_pair("2 + )", std::numeric_limits<Value>::quiet_NaN()),
@@ -69,9 +71,11 @@ std::string calc_tests()
 		{ "sin(", std::numeric_limits<Value>::quiet_NaN() },
 		{ "1+1 1", std::numeric_limits<Value>::quiet_NaN() },
 		{ "1+1;", std::numeric_limits<Value>::quiet_NaN() },
+		{ "+1.4e-3", std::numeric_limits<Value>::quiet_NaN() },
 
 		// value parsing
 		{ "1.4e-3", 0.0014 },
+		{ "-1.4e+3", -1400.0 },
 
 		// check constants
 		// https://en.cppreference.com/w/cpp/numeric/constants 
@@ -80,6 +84,16 @@ std::string calc_tests()
 		{ "e", 2.718281828459045235360287471352 }, // https://en.wikipedia.org/wiki/E_(mathematical_constant)
 		{ "phi", 1.6180339887498948482045868343656381177203091798057628621 }, // https://en.wikipedia.org/wiki/Golden_ratio
 		{ "egamma", 0.57721566490153286060651209008240243104215933593992 }, // https://en.wikipedia.org/wiki/Euler%27s_constant
+		{ "log2(e)", std::numbers::log2e_v<Value> },
+		{ "log10(e)", std::numbers::log10e_v<Value> },
+		{ "1 / pi", std::numbers::inv_pi_v<Value> },
+		{ "1 / sqrt(pi)", std::numbers::inv_sqrtpi_v<Value> },
+		{ "ln(2)", std::numbers::ln2_v<Value> },
+		{ "ln(10)", std::numbers::ln10_v<Value> },
+		{ "sqrt(2)", std::numbers::sqrt2_v<Value> },
+		{ "sqrt(3)", std::numbers::sqrt3_v<Value> },
+		{ "1 / sqrt(3)", std::numbers::inv_sqrt3_v<Value> },
+
 		//---------------------------------------------------------------------------
 		{ "c", 299792458.0 }, // Speed of light in vacuum (m*s^-1)
 		{ "G", 6.6743015151515151515151515151515151e-11 }, // Newtonian constant of gravitation (m^3*kg^−1*s^−2)
@@ -115,7 +129,10 @@ std::string calc_tests()
 		{ "log10(1000)",3.0 },
 		{ "log2(8)",3.0 },
 		{ "log(sh(42) + ch(42))", 42},
+
+		// finance
 		{ "log1p(1e-16)", 1.0e-16 },
+		{ "expm1(1e-16)", 1.0e-16 },
 
 		// hyperbolic functions
 		{ "sh(0)", 0.0 },
@@ -213,6 +230,7 @@ std::string calc_tests()
 
 	std::string output;
 	size_t failed = 0;
+	size_t almost = 0;
 
 	const auto start = std::chrono::steady_clock::now();
 
@@ -230,10 +248,11 @@ std::string calc_tests()
 
 			const auto result = compare(value, t.second);
 
-			if (is_failed(result))
+			switch(result)
 			{
-				++failed;
-			}
+				case result::failed:			++failed;break;
+				case result::less_than_epsilon:	++almost;break;
+			};
 #ifdef CALC_TESTS_DEV_ENABLED
 			output += std::format(
 				"Test {}:\r\n"
@@ -273,11 +292,11 @@ std::string calc_tests()
 		(end - start);
 	output += std::format("Tests:"
 #ifdef CALC_TESTS_DEV_ENABLED
-		"\r\n passed: {},\r\n failed: {},"
+		" {},\r\n exactly: {},\r\n almost: {},\r\n failed: {},"
 #endif
 		"\r\n time is: {}.\r\n",
 #ifdef CALC_TESTS_DEV_ENABLED
-		tests.size() - failed, failed,
+		tests.size(), tests.size() - (failed + almost), almost, failed,
 #endif
 		diff);
 	return output;
