@@ -169,10 +169,17 @@ namespace Identifiers
 		{ "e", constant<std::numbers::e_v<Value>>() }, // https://en.wikipedia.org/wiki/E_(mathematical_constant)
 		{ "phi", constant<std::numbers::phi_v<Value>>() }, // https://en.wikipedia.org/wiki/Golden_ratio
 		{ "egamma", constant<std::numbers::egamma_v<Value>>() }, // https://en.wikipedia.org/wiki/Euler%27s_constant
-		// TODO add more precision values to wrappers:
-		//log2e
-		//log10e
-		// ...
+#ifdef CALC_TESTS_ENABLED
+		{ "log2e", constant<std::numbers::log2e_v<Value>>() },
+		{ "log10e", constant<std::numbers::log10e_v<Value>>() },
+		{ "inv_pi", constant<std::numbers::inv_pi_v<Value>>() },
+		{ "inv_sqrtpi", constant<std::numbers::inv_sqrtpi_v<Value>>() },
+		{ "ln2", constant<std::numbers::ln2_v<Value>>() },
+		{ "ln10", constant<std::numbers::ln10_v<Value>>() },
+		{ "sqrt2", constant<std::numbers::sqrt2_v<Value>>() },
+		{ "sqrt3", constant<std::numbers::sqrt3_v<Value>>() },
+		{ "inv_sqrt3", constant<std::numbers::inv_sqrt3_v<Value>>() },
+#endif
 
 		//---------------------------------------------------------------------------
 		// TODO additional constant
@@ -231,10 +238,11 @@ namespace Identifiers
 		{ "sqrt", function_pointer<1, std::sqrt>() },
 		{ "cbrt", function_pointer<1, std::cbrt>() },
 		{ "pow", function_pointer<2, pow>() },
-#ifdef CALC_TESTS_ENABLED
 		{ "exp", function_pointer<1, std::exp>() },
+		{ "expm1", function_pointer<1, std::expm1>() },
+#ifdef CALC_TESTS_ENABLED
 		{ "exp2", function_pointer<1, std::exp2>() },
-#endif		
+#endif	
 
 #ifdef CALC_TESTS_ENABLED
 		{ "fma", function_pointer<3, std::fma>() },
