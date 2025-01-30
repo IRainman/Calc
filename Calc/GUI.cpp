@@ -58,6 +58,7 @@ CCalcApp theApp;
 // CCalcApp initialization
 BOOL CCalcApp::InitInstance()
 {
+#ifdef CALC_MFC_USING_EXTENDENT_FUNCTIONS
 	// InitCommonControlsEx() is required on Windows XP if an application
 	// manifest specifies use of ComCtl32.dll version 6 or later to enable
 	// visual styles.  Otherwise, any window creation will fail.
@@ -67,6 +68,7 @@ BOOL CCalcApp::InitInstance()
 	// in your application.
 	InitCtrls.dwICC = ICC_STANDARD_CLASSES | ICC_NATIVEFNTCTL_CLASS | ICC_PAGESCROLLER_CLASS | ICC_COOL_CLASSES;
 	InitCommonControlsEx(&InitCtrls);
+#endif
 
 	CWinApp::InitInstance();
 
@@ -243,8 +245,8 @@ void CCalcDlg::OnBnClickedButtonCalc()
 	{
 		const std::string_view input(text.GetString(), static_cast<unsigned int>(text.GetLength()));
 
-		Lexer l{ input };
-		Parser p{ l };
+		Lexer l(input);
+		Parser p(l);
 
 		const auto result = p.parse();
 
@@ -284,7 +286,7 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 BOOL CAboutDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
-	SetDlgItemTextA(IDC_COMPILED_DATE, _T(__TIMESTAMP__));
+	SetDlgItemTextA(IDC_COMPILED_DATE, __TIMESTAMP__);
 	return TRUE;
 }
 

@@ -31,9 +31,9 @@ class Formatter
 		[[nodiscard]] constexpr static inline auto create_summary() noexcept
 		{
 			std::string ret;
-			for (const auto& error : IssueManager::_errors)
+			for (auto& error : IssueManager::_errors)
 			{
-				ret += "Error at pos " + std::to_string(error.pos) + ": " + error.text + "\r\n";
+				ret += "Error at pos " + std::to_string(error.pos) + ": " + std::move(error.text) + "\r\n";
 			}
 			return ret;
 		}
