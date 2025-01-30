@@ -261,7 +261,7 @@ std::string calc_tests()
 			const auto result = compare(value, t.second);
 
 #ifdef CALC_TESTS_DEV_ENABLED
- 			if(is_less_than_epsilon(result))
+			if(is_less_than_epsilon(result))
 			{
 				++almost;
 			}
