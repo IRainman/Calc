@@ -21,23 +21,31 @@ namespace
 {
 	using Value = Token::Value;
 
-	enum class result : int
+	enum class result : char
 	{
 		failed = -1,
 
 		bit_to_bit = 0,
-		less_than_epsilon = 1,
-		both_nan = 2,
+		less_than_epsilon = 2,
+		both_nan = 1,
 	};
-	constexpr bool is_ok(result r)
+	[[nodiscard]] constexpr bool is_ok(result r)
 	{
 		return r >= static_cast<result>(0);
 	}
-	constexpr bool is_failed(result r)
+	[[nodiscard]] constexpr bool is_failed(result r)
 	{
-		return !is_ok(r);
+		return r < static_cast<result>(0);
 	}
-	[[nodiscard]] static auto compare(const Value a, const Value b) noexcept
+	[[nodiscard]] constexpr bool is_less_than_epsilon(result r)
+	{
+		return r == result::less_than_epsilon;
+	}
+	[[nodiscard]] constexpr bool is_both_nan(result r)
+	{
+		return r == result::both_nan;
+	}
+	[[nodiscard]] static inline auto compare(const Value a, const Value b) noexcept
 	{
 		if (a == b) //-V550
 		{
@@ -57,7 +65,7 @@ namespace
 
 std::string calc_tests()
 {
-	const std::array<const std::pair<const std::string_view, const Value>, 121> tests =
+	constexpr std::array<const std::pair<const std::string_view, const Value>, 121> tests =
 	{
 		// syntax errors
 		std::make_pair("2 + )", std::numeric_limits<Value>::quiet_NaN()),
@@ -121,8 +129,8 @@ std::string calc_tests()
 
 		// check additional constants
 		// Gelfond's constant https://en.wikipedia.org/wiki/Gelfond%27s_constant
-		{ "e ^ pi",  23.1406926327792690057 }, 
-		{ "exp(pi)", 23.1406926327792690057 },
+		{ "e ^ pi",  23.14069263277926900572 }, 
+		{ "exp(pi)", 23.14069263277926900572 },
 
 		// logarithmic functions
 		{ "ln(e)",1.0 },
@@ -229,31 +237,36 @@ std::string calc_tests()
 
 
 	std::string output;
+#ifdef CALC_TESTS_DEV_ENABLED
 	size_t failed = 0;
 	size_t almost = 0;
+#endif
 
 	const auto start = std::chrono::steady_clock::now();
 
 #ifndef CALC_TESTS_DEV_ENABLED
-	for (auto i = 0; i < 100000; ++i)
+	for (unsigned int i = 100'000; i; --i)
 #endif
 	{
 		for (const auto& t : tests)
 		{
-			Lexer l{ t.first };
+			Lexer l(t.first);
 
-			Parser p{ l };
+			Parser p(l);
 
 			const auto value = p.parse();
 
 			const auto result = compare(value, t.second);
 
-			switch(result)
-			{
-				case result::failed:			++failed;break;
-				case result::less_than_epsilon:	++almost;break;
-			};
 #ifdef CALC_TESTS_DEV_ENABLED
+ 			if(is_less_than_epsilon(result))
+			{
+				++almost;
+			}
+			else if (is_failed(result))
+			{
+				++failed;
+			}			
 			output += std::format(
 				"Test {}:\r\n"
 				"{}\r\n"
@@ -261,7 +274,7 @@ std::string calc_tests()
 				"{}\r\n",
 				is_ok(result) ? "OK" : "failed",
 				t.first,
-				result == result::both_nan ?
+				is_both_nan(result) ?
 					"not return a result, must return nan." :
 					std::format(
 					"return = {}\r\n"
@@ -271,11 +284,11 @@ std::string calc_tests()
 					value,
 					is_failed(result) ?
 					"NOT" :
-					result == result::bit_to_bit ?
-					"exactly" :
-					"almost",
+					is_less_than_epsilon(result) ?
+					"almost" :
+					"exactly",
 					t.second,
-					value
+					Formatter::format(value)
 					),
 				Formatter::create_summary());
 #endif
@@ -285,20 +298,23 @@ std::string calc_tests()
 	}
 
 	const auto end = std::chrono::steady_clock::now();
-	const auto diff =
-#ifdef CALC_TESTS_DEV_ENABLED
-		std::chrono::duration_cast<std::chrono::microseconds>
-#endif
-		(end - start);
+
 	output += std::format("Tests:"
 #ifdef CALC_TESTS_DEV_ENABLED
-		" {},\r\n exactly: {},\r\n almost: {},\r\n failed: {},"
+		" exactly: {}, almost: {},\r\n failed: {},"
 #endif
-		"\r\n time is: {}.\r\n",
+		"\r\n time is: {}.",
 #ifdef CALC_TESTS_DEV_ENABLED
-		tests.size(), tests.size() - (failed + almost), almost, failed,
+		tests.size() - (failed + almost), almost, failed,
 #endif
-		diff);
+		std::chrono::duration_cast<std::chrono::
+#ifdef CALC_TESTS_DEV_ENABLED
+		microseconds
+#else
+		milliseconds
+#endif
+		>(end - start));
+
 	return output;
 }
 
