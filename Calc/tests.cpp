@@ -65,7 +65,7 @@ namespace
 
 std::string calc_tests()
 {
-	constexpr std::array<const std::pair<const std::string_view, const Value>, 121> tests =
+	constexpr std::array<const std::pair<const std::string_view, const Value>, 123> tests =
 	{
 		// syntax errors
 		std::make_pair("2 + )", std::numeric_limits<Value>::quiet_NaN()),
@@ -150,7 +150,9 @@ std::string calc_tests()
 		// misc functions
 		{ "abs(-42)", 42.0 },
 		{ "round(3.14159)", 3.0 },
+		{ "round(e^pi-pi)", 20.0},
 		{ "trunc(3.14159)", 3.0 },
+		{ "trunc(e^pi-pi)", 19.0},
 		{ "hypot(3,4)", 5.0 },
 		{ "hypot(1,2,2)", 3.0 },
 		{ "max(1,2,3)",3.0 },
