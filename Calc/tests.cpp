@@ -65,7 +65,7 @@ namespace
 
 std::string calc_tests()
 {
-	constexpr std::array<const std::pair<const std::string_view, const Value>, 123> tests =
+	constexpr std::array<const std::pair<const std::string_view, const Value>, 125> tests =
 	{
 		// syntax errors
 		std::make_pair("2 + )", std::numeric_limits<Value>::quiet_NaN()),
@@ -183,6 +183,8 @@ std::string calc_tests()
 		{ "10000 / 540 * 3", 55.5555555555555555555555555555555 },
 		{ "500 / 9", 55.5555555555555555555555555555555 },
 		{ "1 / 3 * 3", 1.0 },
+		{ "0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1", 1.0 },
+		{ "9876543.210123456789", 9876543.210123456789 },
 
 		// trigonometric precision especially with pi
 		{ "87 * tan(pi) - 7", -7.0 },
