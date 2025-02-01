@@ -16,7 +16,7 @@ class Formatter
 		 */
 		[[nodiscard]] static inline auto format(Value value) noexcept
 		{
-			//return std::format("{:.{}g}", value, std::numeric_limits<Value>::digits10/2);
+			//return std::format("{:.{}g}", value, std::numeric_limits<Value>::digits10 - 3);
 			return std::format("{}", value);
 		}
 		/**
