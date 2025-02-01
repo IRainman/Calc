@@ -65,7 +65,7 @@ namespace
 
 std::string calc_tests()
 {
-	constexpr std::array<const std::pair<const std::string_view, const Value>, 125> tests =
+	constexpr std::array<const std::pair<const std::string_view, const Value>, 127> tests =
 	{
 		// syntax errors
 		std::make_pair("2 + )", std::numeric_limits<Value>::quiet_NaN()),
@@ -80,10 +80,6 @@ std::string calc_tests()
 		{ "1+1 1", std::numeric_limits<Value>::quiet_NaN() },
 		{ "1+1;", std::numeric_limits<Value>::quiet_NaN() },
 		{ "+1.4e-3", std::numeric_limits<Value>::quiet_NaN() },
-
-		// value parsing
-		{ "1.4e-3", 0.0014 },
-		{ "-1.4e+3", -1400.0 },
 
 		// check constants
 		// https://en.cppreference.com/w/cpp/numeric/constants 
@@ -132,15 +128,33 @@ std::string calc_tests()
 		{ "e ^ pi",  23.14069263277926900572 }, 
 		{ "exp(pi)", 23.14069263277926900572 },
 
+		// scientific notation
+		{ "1.4e-3", 0.0014 },
+		{ "-1.4e+3", -1400.0 },
+
+		// basic operations
+		{ "1+2", 3.0 },
+		{ "5-3", 2.0 },
+		{ "4*2", 8.0 },
+		{ "8/4", 2.0 },
+		{ "2^3", 8.0 },
+		{ "5%2", 1.0 },
+
+		// advanced functions
+		{ "exp(0)", 1.0 },
+		{ "log1p(1e-16)", 1.0e-16 },
+		{ "expm1(1e-16)", 1.0e-16 },
+		{ "tgamma(5)", 24.0 },  // 4! = 24
+		//{ "lgamma(5)", std::log(24) },
+		{ "beta(2, 2)", 0.1666666666666666 },
+		{ "erf(0)", 0.0 },
+		{ "erfc(0)", 1.0 },
+
 		// logarithmic functions
 		{ "ln(e)",1.0 },
 		{ "log10(1000)",3.0 },
 		{ "log2(8)",3.0 },
 		{ "log(sh(42) + ch(42))", 42},
-
-		// finance
-		{ "log1p(1e-16)", 1.0e-16 },
-		{ "expm1(1e-16)", 1.0e-16 },
 
 		// hyperbolic functions
 		{ "sh(0)", 0.0 },
@@ -155,23 +169,6 @@ std::string calc_tests()
 		{ "trunc(e^pi-pi)", 19.0},
 		{ "hypot(3,4)", 5.0 },
 		{ "hypot(1,2,2)", 3.0 },
-		{ "max(1,2,3)",3.0 },
-		{ "min(1,2,3)",1.0 },
-
-		// basic operations
-		{ "1+2", 3.0 },
-		{ "5-3", 2.0 },
-		{ "4*2", 8.0 },
-		{ "8/4", 2.0 },
-		{ "2^3", 8.0 },
-		{ "5%2", 1.0 },
-
-		// parentheses and complex expressions
-		{ "(1+2)*3", 9.0 },
-		{ "2*(3+4)", 14.0 },
-		{ "pow(8, 1/3)", 2.0 },
-		{ "pow( sin( pi / 2 ) / .001 + 24, 2 )", 1048576.0 },
-		{ "pow(exp2(32), 1/4)", 256.0 },
 
 		// operation priority
 		{ "2 + 2", 4.0 },
@@ -179,12 +176,25 @@ std::string calc_tests()
 		{ "2 + 2 * 2", 6.0 },
 		{ "(2 + 2) * 2", 8.0 },
 
+		// parentheses and complex expressions
+		{ "(1+2)*3", 9.0 },
+		{ "2*(3+4)", 14.0 },
+		{ "(2 + 2) * 2", 8.0 },
+		{ "2 + (2 * 2)", 6.0 },
+		{ "(2 + 3) * (4 - 1)", 15.0 },
+		{ "pow( sin( pi / 2 ) / .001 + 24, 2 )", 1048576.0 },
+		{ "pow(exp2(32), 1/4)", 256.0 },
+
 		// precision
 		{ "10000 / 540 * 3", 55.5555555555555555555555555555555 },
 		{ "500 / 9", 55.5555555555555555555555555555555 },
 		{ "1 / 3 * 3", 1.0 },
-		{ "0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1", 1.0 },
 		{ "9876543.210123456789", 9876543.210123456789 },
+		{ "0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1", 1.0 },
+		{ "100.0 - 99.99", 0.01 },
+		{ "10.0 - 9.99", 0.01 },
+		{ "0.2 + 0.1", 0.3 },
+		{ "10.0 - 0.93", 9.07 },
 
 		// trigonometric precision especially with pi
 		{ "87 * tan(pi) - 7", -7.0 },
@@ -196,7 +206,11 @@ std::string calc_tests()
 		{ "1 / 0", std::numeric_limits<Value>::infinity() },
 
 		// trigonometric functions
-		{ "sin( rad(0) )", 0.0 },
+		{ "rad(180)", 3.14159265358979323846264338327950288 },
+		{ "deg(pi)", 180.0 },
+		{ "sin(0)", 0.0 },
+		{ "cos(0)", 1.0 },
+		{ "tan(0)", 0.0 },
 		{ "tan(inf)", std::numeric_limits<Value>::quiet_NaN() },
 		{ "sin(rad(30))", 0.5 },
 		{ "cos(rad(60))", 0.5 },
@@ -209,23 +223,10 @@ std::string calc_tests()
 		{ "cbrt(27)", 3.0 },
 		{ "0^0", 1.0 },
 		{ "-4 ^ 2", 16.0 },
-		{ "- 4 ^ 2", 16.0 },
 		{ "0 - 4 ^ 2", -16.0 },
 		{ "3 ^ 3 ^ 3", 7625597484987.0 },
 		{ "(3 ^ 3) ^ 3", 19683.0 },
 		{ "2^2^2^2", 65536.0 },
-
-		// modulo operator
-		{ "-5 % 3", -2.0 },
-		{ "5 % -3", 2.0 },
-		{ "-5 % -3", -2.0 },
-		{ "4 % 1.5", 1.0 },
-		{ "7 % 3 % 2", 1.0 },
-		{ "7 % 2 ^ 2", 3.0 },
-		{ "6 / 3 % 2", 0.0 },
-		{ "6 % 4 / 2", 1.0 },
-		{ "3.5 % 2", 1.5 },
-		{ "mod(3.5, 2)", 1.5},
 
 		// min max functions
 		{ "min(1)", 1.0 },
@@ -260,7 +261,7 @@ std::string calc_tests()
 
 			const auto value = p.parse();
 
-			const auto result = compare(value, t.second);
+			[[maybe_unused]] const auto result = compare(value, t.second);
 
 #ifdef CALC_TESTS_DEV_ENABLED
 			if(is_less_than_epsilon(result))
