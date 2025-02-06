@@ -8,6 +8,6 @@
 #define CALC_TESTS_ENABLED
 #define CALC_TESTS_DEV_ENABLED // if commented test is measurement performance
 
-//#define ISSUE_MANAGER_HAVE_SEVERITY // deprecated
+// ISSUE_MANAGER_HAVE_SEVERITY // deprecated
 #endif
 //---------------------------------------------------------------------------

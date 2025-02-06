@@ -35,61 +35,36 @@ class IssueManager
 		/**
 		 * Speedup the manager if needed.
 		 */
-		static void speedup() noexcept
-		{
-			_errors.reserve(10);
-#ifdef ISSUE_MANAGER_HAVE_SEVERITY
-			_warnings.reserve(10);
-			_infos.reserve(10);
-#endif
-		}
+		static void speedup() noexcept;
 
 #ifdef ISSUE_MANAGER_HAVE_SEVERITY
 		/**
 		 * Report a new info message.
 		 */
-		static void report_info(EquationSize pos, std::string&& text) noexcept
-		{
-			_infos.emplace_back(Issue(std::move(text), pos));
-		}
+		static void report_info(EquationSize pos, std::string&& text) noexcept;
 		
 		/**
 		 * Report a new warning.
 		 */
-		static void report_warning(EquationSize pos, std::string&& text) noexcept
-		{
-			_warnings.emplace_back(Issue(std::move(text), pos));
-		}
+		static void report_warning(EquationSize pos, std::string&& text) noexcept;
 #endif
 		/**
 		 * Report a new error.
 		 */
-		static void report_error(EquationSize pos, std::string&& text) noexcept
-		{
-			_errors.emplace_back(std::move(Issue(std::move(text), pos)));
-		}
+		static void report_error(EquationSize pos, std::string&& text) noexcept;
 		
 		/**
 		 * Indicate whether any messages have been reported so far.
 		 */
-		[[nodiscard]] static bool has_errors() noexcept
-		{
-			return !_errors.empty();
-		}
+		[[nodiscard]] static bool has_errors() noexcept;
 
 		/**
 		 * Clear the manager.
 		 */
-		static void clear() noexcept
-		{
-			_errors.clear();
-#ifdef ISSUE_MANAGER_HAVE_SEVERITY
-			_warnings.clear();
-			_infos.clear();
-#endif
-		}
+		static void clear() noexcept;
 		
 	private:
+		static void emplace(std::vector<Issue>& v, EquationSize pos, std::string&& text) noexcept;
 		static std::vector<Issue> _errors; // Errors that do stop processing.
 #ifdef ISSUE_MANAGER_HAVE_SEVERITY
 		static std::vector<Issue> _warnings; // Warnings that don't stop processing.
