@@ -65,10 +65,10 @@ namespace
 
 std::string calc_tests()
 {
-	constexpr std::array<const std::pair<const std::string_view, const Value>, 127> tests =
-	{
+	constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>
+	({
 		// syntax errors
-		std::make_pair("2 + )", std::numeric_limits<Value>::quiet_NaN()),
+		{ "2 + )", std::numeric_limits<Value>::quiet_NaN() },
 		{ "2 + (", std::numeric_limits<Value>::quiet_NaN() },
 		{ "e(", std::numeric_limits<Value>::quiet_NaN() },
 		{ "pi(e)", std::numeric_limits<Value>::quiet_NaN() },
@@ -238,7 +238,7 @@ std::string calc_tests()
 
 		// additional special
 		{ "distance(1, 1, 2, 3)", 6.0 }
-	};
+	});
 
 
 	std::string output;
