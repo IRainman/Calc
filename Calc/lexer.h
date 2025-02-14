@@ -27,11 +27,7 @@ private:
 		/**
 		 * Return the current position.
 		 */
-		[[nodiscard]] EquationSize get_position() const noexcept
-		{
-			__assume(_view.data() - _begin >= 0);
-		    return _view.data() - _begin;
-		}
+		[[nodiscard]] EquationSize get_position() const noexcept;
 		
 		/**
 		 * Move current position n symbols further.
