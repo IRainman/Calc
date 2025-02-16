@@ -100,7 +100,6 @@ namespace Identifiers
 		return std::pow(x, y);
 	}
 
-#ifdef CALC_TESTS_ENABLED
 	[[nodiscard]] static Value assoc_legendre(std::span<Value> params) noexcept
 	{
 		return std::assoc_legendre(static_cast<unsigned int>(params[0]), static_cast<unsigned int>(params[1]), params[2]); //-V2004
@@ -141,6 +140,7 @@ namespace Identifiers
 		return std::sph_neumann(static_cast<unsigned int>(params[0]), params[1]); //-V2004
 	}
 
+#ifdef CALC_TESTS_ENABLED
 	[[nodiscard]] static Value distance(std::span<Value> params) noexcept
 	{
 		// Minkowski distance: parameters contains p all other parameters is distances d[i] = v[i] - w[i] for two vectors v and w
@@ -270,7 +270,6 @@ namespace Identifiers
 		// TODO https://en.cppreference.com/w/cpp/numeric/special_math
 		{ "beta", function_pointer<2, std::beta>() },
 
-#ifdef CALC_TESTS_ENABLED
 		{ "assoc_legendre", {{3, 3}, assoc_legendre} },
 		{ "assoc_laguerre", {{3, 3}, assoc_laguerre} },
 
@@ -300,6 +299,7 @@ namespace Identifiers
 
 		{ "riemann_zeta", function_pointer<1, std::riemann_zeta>() },
 
+#ifdef CALC_TESTS_ENABLED
 		//---------------------------------------------------------------------------
 		{ "distance", {{2, std::numeric_limits<ParamCount>::max()}, distance} },
 #endif
