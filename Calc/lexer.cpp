@@ -14,7 +14,7 @@
 [[nodiscard]] Lexer::EquationSize Lexer::get_position() const noexcept
 {
 	[[assume(_view.data() - _begin >= 0)]];
-    return _view.data() - _begin;
+	return _view.data() - _begin;
 }
 
 inline void Lexer::advance(Lexer::EquationSize n) noexcept
