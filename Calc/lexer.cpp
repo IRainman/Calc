@@ -71,12 +71,7 @@ inline void Lexer::advance(Lexer::EquationSize n) noexcept
 
 	for (; n < _view.size(); ++n)
 	{
-		if (!((_view[n] >= 'a' && _view[n] <= 'z') || (_view[n] >= 'A' && _view[n] <= 'Z') || (_view[n] >= '0' && _view[n] <= '9')
-#ifdef CALC_TESTS_DEV_ENABLED
-			|| _view[n] == '_'
-
-#endif
-			))
+		if (!((_view[n] >= 'a' && _view[n] <= 'z') || (_view[n] >= 'A' && _view[n] <= 'Z') || (_view[n] >= '0' && _view[n] <= '9') || _view[n] == '_'))
 		{
 			break;
 		}
@@ -119,7 +114,7 @@ void Lexer::next(Token& token) noexcept
 		else if ((cur >= '0' && cur <= '9')
 			|| cur == '.' /* for numbers like ".054" */
 			|| cur == 'i' /* for inf */
-#ifdef CALC_TESTS_DEV_ENABLED
+#ifdef CALC_TESTS_USE_ADDITIONAL_OPTIONS
 			|| cur == 'n' /* for nan */
 #endif
 			) [[likely]]
@@ -129,7 +124,7 @@ void Lexer::next(Token& token) noexcept
 		}
 		else if ((cur >= 'a' && cur <= 'z')
 			|| (cur >= 'A' && cur <= 'Z')
-#ifdef CALC_TESTS_DEV_ENABLED
+#ifdef CALC_TESTS_USE_ADDITIONAL_OPTIONS
 			|| cur == '_' /* for identifications like "_something" */
 #endif
 			) [[likely]]
@@ -143,7 +138,7 @@ void Lexer::next(Token& token) noexcept
 			advance(1);
 			continue;
 		}
-#ifdef CALC_TESTS_DEV_ENABLED
+#ifdef CALC_TESTS_USE_ADDITIONAL_OPTIONS
 		else if (cur == 0xA0
 			|| cur == '\t'
 			|| cur == '\n'
