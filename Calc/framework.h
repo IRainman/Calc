@@ -1,6 +1,7 @@
 #pragma once
 
 // CALC_MFC_USING_EXTENDENT_FUNCTIONS // disabled by default, because we have a simple application
+// CALC_SUPPORT_WINDOWS_XP // deprecated
 
 #ifndef VC_EXTRALEAN
 #define VC_EXTRALEAN            // Exclude rarely-used stuff from Windows headers

@@ -58,7 +58,7 @@ CCalcApp theApp;
 // CCalcApp initialization
 BOOL CCalcApp::InitInstance()
 {
-#ifdef CALC_MFC_USING_EXTENDENT_FUNCTIONS
+#ifdef CALC_SUPPORT_WINDOWS_XP
 	// InitCommonControlsEx() is required on Windows XP if an application
 	// manifest specifies use of ComCtl32.dll version 6 or later to enable
 	// visual styles.  Otherwise, any window creation will fail.
@@ -285,9 +285,7 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 
 BOOL CAboutDlg::OnInitDialog()
 {
-	CDialog::OnInitDialog();
-	SetDlgItemTextA(IDC_COMPILED_DATE, __TIMESTAMP__);
-	return TRUE;
+	return CDialog::OnInitDialog();
 }
 
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
