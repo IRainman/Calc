@@ -14,22 +14,10 @@ class Formatter
 		/**
 		 * Format output value of the expression returned.
 		 */
-		[[nodiscard]] static inline auto format(Value value) noexcept
-		{
-			//return std::format("{:.{}g}", value, std::numeric_limits<Value>::digits10 - 3);
-			return std::format("{}", value);
-		}
+		[[nodiscard]] static std::string format(Value value) noexcept;
 		/**
 		 * Create full report of expression processing.
 		 */
-		[[nodiscard]] constexpr static inline auto create_summary() noexcept
-		{
-			std::string ret;
-			for (const auto& error : IssueManager::_errors)
-			{
-				ret += std::format("Error at pos {}: ", error.pos) + error.text + "\r\n";
-			}
-			return ret;
-		}
+		[[nodiscard]] static std::string create_summary() noexcept;
 };
 

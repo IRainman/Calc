@@ -7,3 +7,19 @@
 
 #include "pch.h"
 #include "formatter.h"
+
+[[nodiscard]] std::string Formatter::format(Formatter::Value value) noexcept
+{
+	//return std::format("{:.{}g}", value, std::numeric_limits<Value>::digits10/* - 3*/);
+	return std::format("{}", value);
+}
+
+[[nodiscard]] std::string Formatter::create_summary() noexcept
+{
+	std::string ret;
+	for (const auto& error : IssueManager::_errors)
+	{
+		ret += std::format("Error at pos {}: ", error.pos) + error.text + "\r\n";
+	}
+	return ret;
+}
