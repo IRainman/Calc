@@ -16,6 +16,23 @@
 #include "identifiers.h"
 #include "tests.h"
 #include "token.h"
+#ifdef CALC_USING_FASTFLOAT
+#include "../../fast_float/include/fast_float/fast_float.h"
+
+std::string test_fast_float_parsing()
+{
+	std::string output;
+	unsigned int bin_val, hex_val;
+	float f_val;
+	constexpr std::string_view data_bin = "1010010010000011001001010101001";
+	auto res = fast_float::from_chars(data_bin._Unchecked_begin(), data_bin._Unchecked_end(), bin_val, 2);
+	constexpr std::string_view data_hex = "abCdEf69";
+	res = fast_float::from_chars(data_hex._Unchecked_begin(), data_hex._Unchecked_end(), hex_val, 16);
+	constexpr std::string_view data_float = "12345678e-9";
+	res = fast_float::from_chars(data_float._Unchecked_begin(), data_float._Unchecked_end(), f_val);
+	return std::format("bin:{}: {},\r\nhex:{}: {},\r\nfloat:{}: {}", data_bin, bin_val, data_hex, hex_val, data_float, f_val);
+}
+#endif
 
 namespace
 {
@@ -251,7 +268,7 @@ std::string calc_tests()
 	const auto start = std::chrono::steady_clock::now();
 
 #ifndef CALC_TESTS_DEV_ENABLED
-	for (unsigned int i = 100'000; i; --i)
+	for (unsigned int i = 1'000'000; i; --i)
 #endif
 	{
 		for (const auto& t : tests)
@@ -321,6 +338,10 @@ std::string calc_tests()
 #endif
 		>(end - start));
 
+
+#ifdef CALC_USING_FASTFLOAT
+	output += "\r\n\r\n" + test_fast_float_parsing();
+#endif
 	return output;
 }
 

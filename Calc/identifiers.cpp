@@ -21,13 +21,13 @@ namespace Identifiers
 	using WrappedFn = decltype(WrappedFnImpl(std::make_index_sequence<N>()));
 
 	template <typename Fn, const ParamCount... Is>
-	[[nodiscard]] constexpr auto call_fn(Fn fn, std::span<const Value> params, std::index_sequence<Is...>) noexcept
+	[[nodiscard]] constexpr/*consteval*/ auto call_fn(Fn fn, std::span<const Value> params, std::index_sequence<Is...>) noexcept
 	{
 		return fn(params[Is]...);
 	}
 
 	template<const ParamCount N, WrappedFn<N> wrappedFn>
-	[[nodiscard]] constexpr auto function_pointer_impl(std::span<Value> params) noexcept
+	[[nodiscard]] constexpr/*consteval*/ auto function_pointer_impl(std::span<Value> params) noexcept
 	{
 		return call_fn(wrappedFn, params, std::make_index_sequence<N>());
 	}
@@ -39,7 +39,7 @@ namespace Identifiers
 	}
 
 	template <Value value>
-	[[nodiscard]] constexpr auto constant_impl(std::span<Value>) noexcept
+	[[nodiscard]] constexpr/*consteval*/ auto constant_impl(std::span<Value>) noexcept
 	{
 		return value;
 	}
@@ -60,7 +60,7 @@ namespace Identifiers
 		return std::ranges::max(params);
 	}
 
-	[[nodiscard]] bool compare(const Value a, const Value b) noexcept
+	[[nodiscard]] /*constexpr*/ bool compare(const Value a, const Value b) noexcept
 	{
 		return std::abs(a - b) <= std::numeric_limits<Value>::epsilon() * std::max(std::abs(a), std::abs(b));
 	}
@@ -80,7 +80,7 @@ namespace Identifiers
 		std::unreachable();
 	}
 
-	[[nodiscard]] Value pow(Value x, Value y) noexcept
+	[[nodiscard]] /*constexpr*/ Value pow(Value x, Value y) noexcept
 	{
 		if (compare(x, std::numbers::e_v<Value>))
 		{
@@ -100,48 +100,48 @@ namespace Identifiers
 		return std::pow(x, y);
 	}
 
-	[[nodiscard]] static Value assoc_legendre(std::span<Value> params) noexcept
+	[[nodiscard]] /*constexpr*/static Value assoc_legendre(std::span<Value> params) noexcept
 	{
 		return std::assoc_legendre(static_cast<unsigned int>(params[0]), static_cast<unsigned int>(params[1]), params[2]); //-V2004
 	}
 
-	[[nodiscard]] static Value assoc_laguerre(std::span<Value> params) noexcept
+	[[nodiscard]] /*constexpr*/static Value assoc_laguerre(std::span<Value> params) noexcept
 	{
 		return std::assoc_laguerre(static_cast<unsigned int>(params[0]), static_cast<unsigned int>(params[1]), params[2]); //-V2004
 	}
 
-	[[nodiscard]] static Value hermite(std::span<Value> params) noexcept
+	[[nodiscard]] /*constexpr*/static Value hermite(std::span<Value> params) noexcept
 	{
 		return std::hermite(static_cast<unsigned int>(params[0]), params[1]); //-V2004
 	}
 
-	[[nodiscard]] static Value legendre(std::span<Value> params) noexcept
+	[[nodiscard]] /*constexpr*/static Value legendre(std::span<Value> params) noexcept
 	{
 		return std::legendre(static_cast<unsigned int>(params[0]), params[1]); //-V2004
 	}
 
-	[[nodiscard]] static Value laguerre(std::span<Value> params) noexcept
+	[[nodiscard]] /*constexpr*/static Value laguerre(std::span<Value> params) noexcept
 	{
 		return std::laguerre(static_cast<unsigned int>(params[0]), params[1]); //-V2004
 	}
 
-	[[nodiscard]] static Value sph_bessel(std::span<Value> params) noexcept
+	[[nodiscard]] /*constexpr*/static Value sph_bessel(std::span<Value> params) noexcept
 	{
 		return std::sph_bessel(static_cast<unsigned int>(params[0]), params[1]); //-V2004
 	}
 
-	[[nodiscard]] static Value sph_legendre(std::span<Value> params) noexcept
+	[[nodiscard]] /*constexpr*/static Value sph_legendre(std::span<Value> params) noexcept
 	{
 		return std::sph_legendre(static_cast<unsigned int>(params[0]), static_cast<unsigned int>(params[1]), params[2]); //-V2004
 	}
 
-	[[nodiscard]] static Value sph_neumann(std::span<Value> params) noexcept
+	[[nodiscard]] /*constexpr*/static Value sph_neumann(std::span<Value> params) noexcept
 	{
 		return std::sph_neumann(static_cast<unsigned int>(params[0]), params[1]); //-V2004
 	}
 
 #ifdef CALC_TESTS_ENABLED
-	[[nodiscard]] static Value distance(std::span<Value> params) noexcept
+	[[nodiscard]] /*constexpr*/static Value distance(std::span<Value> params) noexcept
 	{
 		// Minkowski distance: parameters contains p all other parameters is distances d[i] = v[i] - w[i] for two vectors v and w
 		Value ex = 0.0;
@@ -180,7 +180,8 @@ namespace Identifiers
 		{ "sqrt3", constant<std::numbers::sqrt3_v<Value>>() },
 		{ "inv_sqrt3", constant<std::numbers::inv_sqrt3_v<Value>>() },
 #endif
-
+		{ "inf", constant<std::numeric_limits<Value>::infinity()>() },
+		{ "infinity", constant<std::numeric_limits<Value>::infinity()>() },
 		//---------------------------------------------------------------------------
 		// TODO additional constant
 		{ "c", constant<299792458.0>() }, // Speed of light in vacuum (m*s^-1)
@@ -303,6 +304,7 @@ namespace Identifiers
 		//---------------------------------------------------------------------------
 		{ "distance", {{2, std::numeric_limits<ParamCount>::max()}, distance} },
 #endif
+
 
 		//---------------------------------------------------------------------------
 	};

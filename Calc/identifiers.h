@@ -47,11 +47,11 @@ namespace Identifiers
 	 */
 	[[nodiscard]] const map& get() noexcept;
 
-	[[nodiscard]] Value pow(Value x, Value y) noexcept;
+	[[nodiscard]] /*constexpr*/ Value pow(Value x, Value y) noexcept;
 
 	[[nodiscard]] constexpr Value to_rad(Value x) noexcept;
 
 	[[nodiscard]] constexpr Value to_deg(Value x) noexcept;
 
-	[[nodiscard]] bool compare(const Value a, const Value b) noexcept;
+	[[nodiscard]] /*constexpr*/ bool compare(const Value a, const Value b) noexcept;
 };

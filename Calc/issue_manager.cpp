@@ -8,24 +8,24 @@
 #include "pch.h"
 #include "issue_manager.h"
 
-std::vector<Issue> IssueManager::_errors;
+IssueManager::Issues IssueManager::_errors;
 #ifdef ISSUE_MANAGER_HAVE_SEVERITY
-std::vector<Issue> IssueManager::_warnings;
-std::vector<Issue> IssueManager::_infos;
+IssueManager::Issues IssueManager::_warnings;
+IssueManager::Issues IssueManager::_infos;
 #endif
-
+#ifndef CALC_USING_STATIC_VECTOR
 /**
  * Speedup the manager if needed.
  */
 void IssueManager::speedup() noexcept
 {
-	_errors.reserve(10);
+	_errors.reserve(CALC_MAX_ISSUES);
 #ifdef ISSUE_MANAGER_HAVE_SEVERITY
-	_warnings.reserve(10);
-	_infos.reserve(10);
+	_warnings.reserve(CALC_MAX_ISSUES);
+	_infos.reserve(CALC_MAX_ISSUES);
 #endif
 }
-
+#endif
 #ifdef ISSUE_MANAGER_HAVE_SEVERITY
 /**
  * Report a new info message.
@@ -71,7 +71,7 @@ void IssueManager::clear() noexcept
 #endif
 }
 		
-void IssueManager::emplace(std::vector<Issue>& v, EquationSize pos, std::string&& text) noexcept
+void IssueManager::emplace(Issues& v, EquationSize pos, std::string&& text) noexcept
 {
 	v.emplace_back(std::move(Issue(std::move(text), pos)));
 }

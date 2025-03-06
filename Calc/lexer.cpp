@@ -9,6 +9,9 @@
 #include "issue_manager.h"
 #include "lexer.h"
 #include "token.h"
+#ifdef CALC_USING_FASTFLOAT
+#include "../../fast_float/include/fast_float/fast_float.h"
+#endif
 
 
 [[nodiscard]] Lexer::EquationSize Lexer::get_position() const noexcept
@@ -26,7 +29,9 @@ inline void Lexer::advance(Lexer::EquationSize n) noexcept
 {
 	token.text = _view.substr(0, 1);
 	token.type = Token::Type::END;
+#ifdef CALC_USE_FULL_TOKENS
 	token.val = std::numeric_limits<Value>::quiet_NaN();
+#endif
 	return 0;
 }
 
@@ -34,23 +39,28 @@ inline void Lexer::advance(Lexer::EquationSize n) noexcept
 {
 	token.text = _view.substr(0, 1);
 	token.type = static_cast<Token::Type>(type);
+#ifdef CALC_USE_FULL_TOKENS
 	token.val = std::numeric_limits<Value>::quiet_NaN();
+#endif
 	return 1;
 }
 
 [[nodiscard]] inline Lexer::EquationSize Lexer::read_number(Token& token) const noexcept
 {
-	Value val;
-	const auto res = std::from_chars(_view.data(), _view.data() + _view.size(), val);
-	[[assume(res.ptr - _view.data() >= 0)]];
-	const EquationSize n = res.ptr - _view.data();
-
+	[[assume(_view._Unchecked_end() - _view._Unchecked_begin() >= 1)]];
+#ifdef CALC_USING_FASTFLOAT
+	const auto res = fast_float::from_chars(_view._Unchecked_begin(), _view._Unchecked_end(), token.val);
+#else
+	const auto res = std::from_chars(_view._Unchecked_begin(), _view._Unchecked_end(), token.val);
+#endif
+	[[assume(res.ptr - _view._Unchecked_begin() >= 1)]];
+	const EquationSize n = res.ptr - _view._Unchecked_begin();
+#ifdef CALC_USE_FULL_TOKENS
 	token.text = _view.substr(0, n);
-
+#endif
 	if (res.ec == std::errc{}) [[likely]]
 	{
 		token.type = Token::Type::NUM;
-		token.val = val;
 	}
 	else [[unlikely]]
 	{
@@ -59,7 +69,9 @@ inline void Lexer::advance(Lexer::EquationSize n) noexcept
 		// invalid_argument
 		IssueManager::report_error(get_position(), "invalid number");
 		token.type = Token::Type::END;
+#ifdef CALC_USE_FULL_TOKENS
 		token.val = std::numeric_limits<Value>::quiet_NaN();
+#endif
 	}
 
 	return n;
@@ -79,7 +91,9 @@ inline void Lexer::advance(Lexer::EquationSize n) noexcept
 
 	token.text = _view.substr(0, n);
 	token.type = Token::Type::IDENT;
+#ifdef CALC_USE_FULL_TOKENS
 	token.val = std::numeric_limits<Value>::quiet_NaN();
+#endif
 
 	return n;
 }
@@ -88,7 +102,9 @@ void inline Lexer::read_end(Token& token) const noexcept
 {
 	token.text = _view;
 	token.type = Token::Type::END;
+#ifdef CALC_USE_FULL_TOKENS
 	token.val = std::numeric_limits<Value>::quiet_NaN();
+#endif
 }
 
 void Lexer::next(Token& token) noexcept
@@ -113,10 +129,6 @@ void Lexer::next(Token& token) noexcept
 		}
 		else if ((cur >= '0' && cur <= '9')
 			|| cur == '.' /* for numbers like ".054" */
-			|| cur == 'i' /* for inf */
-#ifdef CALC_TESTS_USE_ADDITIONAL_OPTIONS
-			|| cur == 'n' /* for nan */
-#endif
 			) [[likely]]
 		{
 			advance(read_number(token));

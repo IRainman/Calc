@@ -30,13 +30,20 @@ class Issue
  */
 class IssueManager
 {
+#ifdef CALC_USING_STATIC_VECTOR
+	//using opt = boost::container::static_vector_options<boost::container::throw_on_overflow<false>, boost::container::inplace_alignment<4>>;
+	using Issues = boost::container::static_vector<Issue, CALC_MAX_ISSUES>;
+#else
+	using Issues = std::vector<Issue>;
+#endif
 	using EquationSize = Token::EquationSize;
 	public:
+#ifndef CALC_USING_STATIC_VECTOR
 		/**
 		 * Speedup the manager if needed.
 		 */
 		static void speedup() noexcept;
-
+#endif
 #ifdef ISSUE_MANAGER_HAVE_SEVERITY
 		/**
 		 * Report a new info message.
@@ -64,11 +71,11 @@ class IssueManager
 		static void clear() noexcept;
 		
 	private:
-		static void emplace(std::vector<Issue>& v, EquationSize pos, std::string&& text) noexcept;
-		static std::vector<Issue> _errors; // Errors that do stop processing.
+		static void emplace(Issues& v, EquationSize pos, std::string&& text) noexcept;
+		static Issues _errors; // Errors that do stop processing.
 #ifdef ISSUE_MANAGER_HAVE_SEVERITY
-		static std::vector<Issue> _warnings; // Warnings that don't stop processing.
-		static std::vector<Issue> _infos; // Information and comments.
+		static Issues _warnings; // Warnings that don't stop processing.
+		static Issues _infos; // Information and comments.
 #endif
 		friend class Formatter;
 };

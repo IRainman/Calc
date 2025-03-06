@@ -46,8 +46,9 @@ CCalcApp::CCalcApp()
 
 	// TODO: add construction code here,
 	// Place all significant initialization in InitInstance
-
+#ifndef CALC_USING_STATIC_VECTOR
 	IssueManager::speedup();
+#endif
 }
 
 
