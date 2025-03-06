@@ -4,18 +4,22 @@
  */
 
 //---------------------------------------------------------------------------
-//#ifdef _DEBUG
+#ifdef _DEBUG
 #define CALC_TESTS_ENABLED
-//#define CALC_TESTS_DEV_ENABLED // if commented test is measurement performance
+#define CALC_TESTS_DEV_ENABLED // if commented test is measurement performance
 
 // CALC_USE_FULL_TOKENS // deprecated
 // CALC_TESTS_USE_ADDITIONAL_OPTIONS // deprecated
 // ISSUE_MANAGER_HAVE_SEVERITY // deprecated
-//#endif
+#endif
 //---------------------------------------------------------------------------
 #define CALC_USING_FASTFLOAT
 /*
 std::from_chars
+
+Tests: exactly: 115, almost: 9,
+ failed: 4,
+ time is: 711us.
 
 Tests:
  time is: 32064ms.
@@ -28,6 +32,10 @@ Tests:
 */
 #define FASTFLOAT_ONLY_POSITIVE_C_NUMBER_WO_INF_NAN
 /*
+Tests: exactly: 115, almost: 9,
+ failed: 4,
+ time is: 523us.
+
 Tests:
  time is: 25947ms.
 */
