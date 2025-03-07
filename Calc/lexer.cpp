@@ -9,10 +9,6 @@
 #include "issue_manager.h"
 #include "lexer.h"
 #include "token.h"
-#ifdef CALC_USING_FASTFLOAT
-#include "../../fast_float/include/fast_float/fast_float.h"
-#endif
-
 
 [[nodiscard]] Lexer::EquationSize Lexer::get_position() const noexcept
 {
@@ -66,6 +62,7 @@ inline void Lexer::advance(Lexer::EquationSize n) noexcept
 	{
 		// result_out_of_range
 		// value_too_large
+		// value_too_small
 		// invalid_argument
 		IssueManager::report_error(get_position(), "invalid number");
 		token.type = Token::Type::END;
@@ -128,7 +125,9 @@ void Lexer::next(Token& token) noexcept
 			
 		}
 		else if ((cur >= '0' && cur <= '9')
+#ifdef CALC_TESTS_USE_ADDITIONAL_OPTIONS
 			|| cur == '.' /* for numbers like ".054" */
+#endif
 			) [[likely]]
 		{
 			advance(read_number(token));
@@ -166,7 +165,7 @@ void Lexer::next(Token& token) noexcept
 #endif
 		else [[unlikely]]
 		{
-			IssueManager::report_error(get_position(), std::format("unknown character {}", cur));
+			IssueManager::report_error(get_position(), fmt::format(FMT_COMPILE("unknown character {}"), cur));
 			advance(read_unknown(token));
 			return;
 		}

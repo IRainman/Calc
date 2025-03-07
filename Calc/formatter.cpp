@@ -10,16 +10,18 @@
 
 [[nodiscard]] std::string Formatter::format(Formatter::Value value) noexcept
 {
-	//return std::format("{:.{}g}", value, std::numeric_limits<Value>::digits10/* - 3*/);
-	return std::format("{}", value);
+	return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10);
 }
+
 
 [[nodiscard]] std::string Formatter::create_summary() noexcept
 {
 	std::string ret;
 	for (const auto& error : IssueManager::_errors)
 	{
-		ret += std::format("Error at pos {}: ", error.pos) + error.text + "\r\n";
+		//fmt::memory_buffer buffer;
+		ret += fmt::format(FMT_COMPILE("Error at pos {}: "), error.pos) + error.text + "\r\n";
+		//ret += std::string(buffer.data(), buffer.size());
 	}
 	return ret;
 }

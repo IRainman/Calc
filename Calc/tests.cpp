@@ -12,16 +12,16 @@
 #include "lexer.h"
 #include "parser.h"
 #include "issue_manager.h"
+#ifdef CALC_TESTS_DEV_ENABLED
 #include "formatter.h"
+#endif
 #include "identifiers.h"
 #include "tests.h"
 #include "token.h"
-#ifdef CALC_USING_FASTFLOAT
-#include "../../fast_float/include/fast_float/fast_float.h"
 
+#ifdef CALC_TEST_FASTFLOAT
 std::string test_fast_float_parsing()
 {
-	std::string output;
 	unsigned int bin_val, hex_val;
 	float f_val;
 	constexpr std::string_view data_bin = "1010010010000011001001010101001";
@@ -30,7 +30,7 @@ std::string test_fast_float_parsing()
 	res = fast_float::from_chars(data_hex._Unchecked_begin(), data_hex._Unchecked_end(), hex_val, 16);
 	constexpr std::string_view data_float = "12345678e-9";
 	res = fast_float::from_chars(data_float._Unchecked_begin(), data_float._Unchecked_end(), f_val);
-	return std::format("bin:{}: {},\r\nhex:{}: {},\r\nfloat:{}: {}", data_bin, bin_val, data_hex, hex_val, data_float, f_val);
+	return fmt::format(FMT_COMPILE("bin:{}: {},\r\nhex:{}: {},\r\nfloat:{}: {}"), data_bin, bin_val, data_hex, hex_val, data_float, f_val);
 }
 #endif
 
@@ -97,6 +97,8 @@ std::string calc_tests()
 		{ "1+1 1", std::numeric_limits<Value>::quiet_NaN() },
 		{ "1+1;", std::numeric_limits<Value>::quiet_NaN() },
 		{ "+1.4e-3", std::numeric_limits<Value>::quiet_NaN() },
+		{ "999999999999999999999999999999999999999999999999999999999999999999999999999999999999999e1000000000000000000000000000000", std::numeric_limits<Value>::quiet_NaN() },
+		{ "999999999999999999999999999999999999999999999999999999999999999999999999999999999999999e-1000000000000000000000000000000", std::numeric_limits<Value>::quiet_NaN() },
 
 		// check constants
 		// https://en.cppreference.com/w/cpp/numeric/constants 
@@ -144,6 +146,10 @@ std::string calc_tests()
 		// Gelfond's constant https://en.wikipedia.org/wiki/Gelfond%27s_constant
 		{ "e ^ pi",  23.14069263277926900572 }, 
 		{ "exp(pi)", 23.14069263277926900572 },
+
+		// check long mantissa to produce correct output without noise
+		{ "0.000000000000000000000000000000000000000000000000000000000000000000000000000000000000001234567890123456789012345", 0.000000000000000000000000000000000000000000000000000000000000000000000000000000000000001234567890123456789012345 },
+		{ "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890.123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", 123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890.123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890 },
 
 		// scientific notation
 		{ "1.4e-3", 0.0014 },
@@ -199,7 +205,7 @@ std::string calc_tests()
 		{ "(2 + 2) * 2", 8.0 },
 		{ "2 + (2 * 2)", 6.0 },
 		{ "(2 + 3) * (4 - 1)", 15.0 },
-		{ "pow( sin( pi / 2 ) / .001 + 24, 2 )", 1048576.0 },
+		{ "pow( sin( pi / 2 ) / 0.001 + 24, 2 )", 1048576.0 },
 		{ "pow(exp2(32), 1/4)", 256.0 },
 		{ "sqrt(cos(rad(30))^2+sin(rad(30))^2)", 1.0 },
 
@@ -261,6 +267,7 @@ std::string calc_tests()
 
 	std::string output;
 #ifdef CALC_TESTS_DEV_ENABLED
+	output.reserve(60000);
 	size_t failed = 0;
 	size_t almost = 0;
 #endif
@@ -339,7 +346,7 @@ std::string calc_tests()
 		>(end - start));
 
 
-#ifdef CALC_USING_FASTFLOAT
+#ifdef CALC_TEST_FASTFLOAT
 	output += "\r\n\r\n" + test_fast_float_parsing();
 #endif
 	return output;

@@ -181,7 +181,6 @@ namespace Identifiers
 		{ "inv_sqrt3", constant<std::numbers::inv_sqrt3_v<Value>>() },
 #endif
 		{ "inf", constant<std::numeric_limits<Value>::infinity()>() },
-		{ "infinity", constant<std::numeric_limits<Value>::infinity()>() },
 		//---------------------------------------------------------------------------
 		// TODO additional constant
 		{ "c", constant<299792458.0>() }, // Speed of light in vacuum (m*s^-1)

@@ -22,5 +22,15 @@
 #include <vector>
 
 // add headers that you want to pre-compile here
+#define FMT_UNICODE 0
+#define FMT_EXCEPTIONS 0
+#define FMT_HEADER_ONLY 1
+#include <fmt/compile.h>
+
+#define CALC_USING_FASTFLOAT
+#ifdef CALC_USING_FASTFLOAT
+#define FASTFLOAT_ONLY_POSITIVE_C_NUMBER_WO_INF_NAN
+#include "../../fast_float/include/fast_float/fast_float.h"
+#endif
 
 #endif //PCH_H

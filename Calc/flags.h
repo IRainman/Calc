@@ -13,7 +13,7 @@
 // ISSUE_MANAGER_HAVE_SEVERITY // deprecated
 #endif
 //---------------------------------------------------------------------------
-#define CALC_USING_FASTFLOAT
+// CALC_TEST_FASTFLOAT // done
 /*
 std::from_chars
 
@@ -30,7 +30,7 @@ fast_float::from_chars
 Tests:
  time is: 26684ms.
 */
-#define FASTFLOAT_ONLY_POSITIVE_C_NUMBER_WO_INF_NAN
+
 /*
 Tests: exactly: 115, almost: 9,
  failed: 4,
@@ -38,6 +38,13 @@ Tests: exactly: 115, almost: 9,
 
 Tests:
  time is: 25947ms.
+*/
+//---------------------------------------------------------------------------
+// Usage of fmt is improve performance.
+// TODO: check it and use fmt::memory_buffer for reduse new/delete from string
+/*
+Tests:
+ time is: 24744ms.
 */
 //---------------------------------------------------------------------------
 //#define CALC_USING_STATIC_VECTOR

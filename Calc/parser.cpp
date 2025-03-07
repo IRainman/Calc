@@ -21,7 +21,7 @@ namespace
 	const auto result = parse_expr_4();
 	if (_current.type != Token::Type::END) [[unlikely]]
 	{
-		IssueManager::report_error(_lex.get_position(), std::format("extraneous input: {}" , _current.text));
+		IssueManager::report_error(_lex.get_position(), fmt::format(FMT_COMPILE("extraneous input: {}"), _current.text));
 		return std::numeric_limits<Value>::quiet_NaN();
 	}
 	else if (IssueManager::has_errors()) [[unlikely]]
@@ -107,7 +107,7 @@ inline void Parser::advance() noexcept
 	
 	if (count == values.size()) [[unlikely]]
 	{
-		IssueManager::report_error(_lex.get_position(), std::format("too many ^ in one expression, the maximum is {}", values.size()));
+		IssueManager::report_error(_lex.get_position(), fmt::format(FMT_COMPILE("too many ^ in one expression, the maximum is {}"), values.size()));
 		return _current.val;
 	}
 	
@@ -146,7 +146,7 @@ inline void Parser::advance() noexcept
 			}
 			else [[unlikely]]
 			{
-				IssueManager::report_error(_lex.get_position(), std::format("expected closing parenthesis, got {}", _current.text));
+				IssueManager::report_error(_lex.get_position(), fmt::format(FMT_COMPILE("expected closing parenthesis, got {}"), _current.text));
 				return _current.val;
 			}
 		}
@@ -162,7 +162,7 @@ inline void Parser::advance() noexcept
 		}
 		default: [[unlikely]]
 		{
-			IssueManager::report_error(_lex.get_position(), std::format("unexpected {}", _current.text));
+			IssueManager::report_error(_lex.get_position(), fmt::format(FMT_COMPILE("unexpected {}"), _current.text));
 			return _current.val;
 		}
 	}
@@ -197,7 +197,7 @@ inline void Parser::advance() noexcept
 						}
 						else [[unlikely]]
 						{
-							IssueManager::report_error(pos_of_ident_start, std::format("for function {} expected minimum {} and maximum {} parameters, got {}", name, check.min, check.max, count));
+							IssueManager::report_error(pos_of_ident_start, fmt::format(FMT_COMPILE("for function {} expected minimum {} and maximum {} parameters, got {}"), name, check.min, check.max, count));
 							return _current.val;
 						}
 					}
@@ -208,25 +208,25 @@ inline void Parser::advance() noexcept
 					}
 					else [[unlikely]]
 					{
-						IssueManager::report_error(_lex.get_position(), std::format("expected closing parenthesis or coma, got {}", name));
+						IssueManager::report_error(_lex.get_position(), fmt::format(FMT_COMPILE("expected closing parenthesis or coma, got {}"), name));
 						return _current.val;
 					}
 				}
 				{
 					[[unlikely]]
-					IssueManager::report_error(pos_of_ident_start, std::format("maximum supported parameters is {}", params.size()));
+					IssueManager::report_error(pos_of_ident_start, fmt::format(FMT_COMPILE("maximum supported parameters is {}"), params.size()));
 					return _current.val;
 				}
 			}
 			else [[unlikely]]
 			{
-				IssueManager::report_error(pos_of_ident_start, std::format("identifier {} is not a function", name));
+				IssueManager::report_error(pos_of_ident_start, fmt::format(FMT_COMPILE("identifier {} is not a function"), name));
 				return _current.val;
 			}
 		}
 		else [[unlikely]]
 		{
-			IssueManager::report_error(pos_of_ident_start, std::format("unknown function {}", name));
+			IssueManager::report_error(pos_of_ident_start, fmt::format(FMT_COMPILE("unknown function {}"), name));
 			return _current.val;
 		}
 	}
@@ -241,13 +241,13 @@ inline void Parser::advance() noexcept
 			}
 			else [[unlikely]]
 			{
-				IssueManager::report_error(pos_of_ident_start, std::format("function {} needs parenthesis for call", name));
+				IssueManager::report_error(pos_of_ident_start, fmt::format(FMT_COMPILE("function {} needs parenthesis for call"), name));
 				return _current.val;
 			}
 		}
 		else [[unlikely]]
 		{
-			IssueManager::report_error(pos_of_ident_start, std::format("unknown constant {}", name));
+			IssueManager::report_error(pos_of_ident_start, fmt::format(FMT_COMPILE("unknown constant {}"), name));
 			return _current.val;
 		}
 	}
