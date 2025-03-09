@@ -19,25 +19,37 @@ std::from_chars
 
 Tests: exactly: 115, almost: 9,
  failed: 4,
- time is: 711us.
-
-Tests:
  time is: 32064ms.
-*/
-/*
+
 fast_float::from_chars
 
 Tests:
  time is: 26684ms.
-*/
 
-/*
+( I do additional improvements and code cleanup in PR )
+
+Tests (100% of CPU cores is used by BOINC):
+ time is: 43135ms.
+Tests (50% of CPU cores is used by BOINC):
+ time is: 28898ms.
+Tests (BOINC is stopped):
+ time is: 25459ms.
+
+When switch FASTFLOAT_ONLY_POSITIVE_C_NUMBER_WO_INF_NAN
+is applied:
+
 Tests: exactly: 115, almost: 9,
  failed: 4,
- time is: 523us.
-
-Tests:
  time is: 25947ms.
+
+( I do additional improvements and code cleanup in PR )
+
+Tests (100% of CPU cores is used by BOINC):
+ time is: 39588ms.
+Tests (50% of CPU cores is used by BOINC):
+ time is: 27301ms.
+Tests (BOINC is stopped):
+ time is: 24597ms.
 */
 //---------------------------------------------------------------------------
 // Usage of fmt is improve performance.
@@ -54,9 +66,6 @@ Tests:
 /*
  Tests: exactly: 115, almost: 9,
  failed: 4,
- time is: 552us.
- 
- Tests:
  time is: 31949ms.
  
  std::vector<Issue> + reserve(10)
@@ -65,9 +74,6 @@ Tests:
 /*
 Tests: exactly: 115, almost: 9,
  failed: 4,
- time is: 544us.
- 
- Tests:
  time is: 31621ms.
  
  boost::container::static_vector<Issue, 10>

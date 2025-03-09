@@ -33,4 +33,13 @@
 #include "../../fast_float/include/fast_float/fast_float.h"
 #endif
 
+// for support attribute [[assume]] is declared in P1774
+#if defined(__clang__)
+#define ASSUME(expr) __builtin_assume(expr)
+#elif defined(__GNUC__) && !defined(__ICC)
+#define ASSUME(expr) __attribute__((expr))
+#elif defined(_MSC_VER) || defined(__ICC)
+#define ASSUME(expr) __assume(expr)
+#endif
+
 #endif //PCH_H
