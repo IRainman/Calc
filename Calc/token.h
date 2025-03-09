@@ -24,8 +24,8 @@ struct Token
 		LPAREN = '(',
 		RPAREN = ')',
 		COMA = ',',
-		NUM = '.',
-		IDENT = '_',
+		NUM = '0',
+		IDENT = 'a',
 	};
 
 	// Text of the token.
