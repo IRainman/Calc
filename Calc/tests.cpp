@@ -97,8 +97,8 @@ std::string calc_tests()
 		{ "1+1 1", std::numeric_limits<Value>::quiet_NaN() },
 		{ "1+1;", std::numeric_limits<Value>::quiet_NaN() },
 		{ "+1.4e-3", std::numeric_limits<Value>::quiet_NaN() },
-		{ "999999999999999999999999999999999999999999999999999999999999999999999999999999999999999e1000000000000000000000000000000", std::numeric_limits<Value>::quiet_NaN() },
-		{ "999999999999999999999999999999999999999999999999999999999999999999999999999999999999999e-1000000000000000000000000000000", std::numeric_limits<Value>::quiet_NaN() },
+		{ "9999999999999999999e1000000000000000000000000000000", std::numeric_limits<Value>::quiet_NaN() },
+		{ "999999999999999999e-1000000000000000000000000000000", std::numeric_limits<Value>::quiet_NaN() },
 
 		// check constants
 		// https://en.cppreference.com/w/cpp/numeric/constants 

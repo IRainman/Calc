@@ -21,17 +21,9 @@ namespace
 	const auto result = parse_expr_4();
 	if (_current.type != Token::Type::END) [[unlikely]]
 	{
-		IssueManager::report_error(_lex.get_position(), fmt::format(FMT_COMPILE("extraneous input: {}"), _current.text));
-		return std::numeric_limits<Value>::quiet_NaN();
+		IssueManager::report_error(_lex.get_position(), fmt::format(FMT_COMPILE("extraneous input")));
 	}
-	else if (IssueManager::has_errors()) [[unlikely]]
-	{
-		return std::numeric_limits<Value>::quiet_NaN();
-	}
-	else [[likely]]
-	{
-		return result;
-	}
+	return result;
 }
 
 inline void Parser::advance() noexcept
@@ -146,7 +138,7 @@ inline void Parser::advance() noexcept
 			}
 			else [[unlikely]]
 			{
-				IssueManager::report_error(_lex.get_position(), fmt::format(FMT_COMPILE("expected closing parenthesis, got {}"), _current.text));
+				IssueManager::report_error(_lex.get_position(), fmt::format(FMT_COMPILE("expected closing parenthesis")));
 				return _current.val;
 			}
 		}
@@ -162,7 +154,7 @@ inline void Parser::advance() noexcept
 		}
 		default: [[unlikely]]
 		{
-			IssueManager::report_error(_lex.get_position(), fmt::format(FMT_COMPILE("unexpected {}"), _current.text));
+			IssueManager::report_error(_lex.get_position(), fmt::format(FMT_COMPILE("unexpected")));
 			return _current.val;
 		}
 	}

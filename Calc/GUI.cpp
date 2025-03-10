@@ -251,7 +251,7 @@ void CCalcDlg::OnBnClickedButtonCalc()
 
 		const auto result = p.parse();
 
-		if (std::isnan(result))
+		if (IssueManager::has_errors())
 		{
 			SetDlgItemTextA(IDC_EDIT_RESULT, "");
 			SetDlgItemTextA(IDC_EDIT_MESSAGE, Formatter::create_summary().data());
