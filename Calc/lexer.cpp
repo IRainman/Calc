@@ -30,7 +30,6 @@ inline void Lexer::advance(Lexer::EquationSize n) noexcept
 
 [[nodiscard]] inline Lexer::EquationSize Lexer::read_operator(const auto type, Token& token) const noexcept
 {
-	token.text = _view.substr(0, 1);
 	token.type = static_cast<Token::Type>(type);
 	return 1;
 }
