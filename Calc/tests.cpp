@@ -44,7 +44,7 @@ namespace
 
 		bit_to_bit = 0,
 		less_than_epsilon = 2,
-		both_nan = 1,
+		has_no_value = 1,
 	};
 	[[nodiscard]] constexpr bool is_ok(result r)
 	{
@@ -58,9 +58,9 @@ namespace
 	{
 		return r == result::less_than_epsilon;
 	}
-	[[nodiscard]] constexpr bool is_both_nan(result r)
+	[[nodiscard]] constexpr bool has_no_value(result r)
 	{
-		return r == result::both_nan;
+		return r == result::has_no_value;
 	}
 	[[nodiscard]] static inline auto compare(const Value a, const Value b) noexcept
 	{
@@ -74,7 +74,7 @@ namespace
 		}
 		if (std::isnan(a) && std::isnan(b))
 		{
-			return result::both_nan;
+			return result::has_no_value;
 		}
 		return result::failed;
 	}
@@ -286,7 +286,7 @@ std::string calc_tests()
 
 			const auto value = p.parse();
 
-			[[maybe_unused]] const auto result = compare(value, t.second);
+			[[maybe_unused]] const auto result = IssueManager::has_errors() ? result::has_no_value : compare(value, t.second);
 
 #ifdef CALC_TESTS_DEV_ENABLED
 			if(is_less_than_epsilon(result))
@@ -304,8 +304,8 @@ std::string calc_tests()
 				"{}\r\n",
 				is_ok(result) ? "OK" : "failed",
 				t.first,
-				is_both_nan(result) ?
-					"not return a result, must return nan." :
+				has_no_value(result) ?
+					"not return a result, must return error." :
 					std::format(
 					"return = {}\r\n"
 					"and it's {} equal to expect value\r\n"
