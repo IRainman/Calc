@@ -21,7 +21,16 @@ namespace
 	const auto result = parse_expr_4();
 	if (_current.type != Token::Type::END) [[unlikely]]
 	{
-		IssueManager::report_error(_lex.get_position(), fmt::format(FMT_COMPILE("extraneous input")));
+		if (_current.type == Token::Type::ERROR)
+		{
+#ifdef CALC_USE_ERROR_TOKEN
+			return error_position;
+#endif
+		}
+		else
+		{
+			IssueManager::report_error(_lex.get_position(), "extraneous input");
+		}
 	}
 	return result;
 }

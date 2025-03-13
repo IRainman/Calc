@@ -14,7 +14,7 @@
 	return fmt::format(FMT_COMPILE("{}"), value);
 }
 
-
+#ifndef CALC_USE_ERROR_TOKEN
 [[nodiscard]] std::string Formatter::create_summary() noexcept
 {
 	std::string ret;
@@ -26,3 +26,4 @@
 	}
 	return ret;
 }
+#endif

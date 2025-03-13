@@ -14,7 +14,7 @@ struct Token
 
 	enum class Type : unsigned char
 	{
-		END = '\0',
+		END = std::numeric_limits<unsigned char>::min(),
 		ADD = '+',
 		SUB = '-',
 		MUL = '*',
@@ -26,6 +26,7 @@ struct Token
 		COMA = ',',
 		NUM = '0',
 		IDENT = 'a',
+		ERROR = std::numeric_limits<unsigned char>::max(),
 	};
 
 	// Text of the token.

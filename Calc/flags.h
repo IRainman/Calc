@@ -8,6 +8,7 @@
 #define CALC_TESTS_ENABLED
 #define CALC_TESTS_DEV_ENABLED // if commented test is measurement performance
 
+//#define CALC_USE_ERROR_TOKEN // WIP
 // CALC_USE_FULL_TOKENS // deprecated
 // CALC_TESTS_USE_ADDITIONAL_OPTIONS // deprecated
 // ISSUE_MANAGER_HAVE_SEVERITY // deprecated
@@ -53,12 +54,13 @@ Tests (BOINC is stopped):
 */
 //---------------------------------------------------------------------------
 // Usage of fmt is improve performance.
-// TODO: check it and use fmt::memory_buffer for reduse new/delete from string
+// TODO: check it and use fmt::memory_buffer for reduce new/delete from string
 /*
 Tests:
  time is: 24744ms.
 */
 //---------------------------------------------------------------------------
+#ifndef CALC_USE_ERROR_TOKEN
 //#define CALC_USING_STATIC_VECTOR
 // TODO: boost is working but without options and noexcept
 // maybe better to use inplace_vector when it's available,
@@ -79,6 +81,7 @@ Tests: exactly: 115, almost: 9,
  boost::container::static_vector<Issue, 10>
 */
 constexpr size_t CALC_MAX_ISSUES = 10;
+#endif
 //---------------------------------------------------------------------------
 //std::map<std::string_view, const Fn> // Tests: time is: 37931ms.
 //std::unordered_map<std::string_view, const Fn> // Tests: time is: 31515ms.

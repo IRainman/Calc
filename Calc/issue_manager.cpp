@@ -7,6 +7,7 @@
 
 #include "pch.h"
 #include "issue_manager.h"
+#ifndef CALC_USE_ERROR_TOKEN
 
 IssueManager::Issues IssueManager::_errors;
 #ifdef ISSUE_MANAGER_HAVE_SEVERITY
@@ -75,3 +76,5 @@ void IssueManager::emplace(Issues& v, EquationSize pos, std::string&& text) noex
 {
 	v.emplace_back(std::move(Issue(std::move(text), pos)));
 }
+
+#endif

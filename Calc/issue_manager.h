@@ -4,6 +4,7 @@
  */
 
 #include "flags.h"
+#ifndef CALC_USE_ERROR_TOKEN
 #include "token.h"
 /**
  * Represents a message from the compiler.
@@ -79,3 +80,5 @@ class IssueManager
 #endif
 		friend class Formatter;
 };
+
+#endif

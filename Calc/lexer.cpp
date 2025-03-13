@@ -23,8 +23,7 @@ inline void Lexer::advance(Lexer::EquationSize n) noexcept
 
 [[nodiscard]] inline Lexer::EquationSize Lexer::read_unknown(Token& token) const noexcept
 {
-	token.text = _view.substr(0, 1);
-	token.type = Token::Type::END;
+	token.type = Token::Type::ERROR;
 	return 0;
 }
 
@@ -56,7 +55,7 @@ inline void Lexer::advance(Lexer::EquationSize n) noexcept
 		// value_too_small
 		// invalid_argument
 		IssueManager::report_error(get_position(), "invalid number");
-		token.type = Token::Type::END;
+		token.type = Token::Type::ERROR;
 	}
 
 	return n;
@@ -82,7 +81,6 @@ inline void Lexer::advance(Lexer::EquationSize n) noexcept
 
 inline void Lexer::read_end(Token& token) const noexcept
 {
-	token.text = _view;
 	token.type = Token::Type::END;
 }
 
