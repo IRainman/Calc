@@ -5,6 +5,7 @@
 
 #include "flags.h"
 #ifndef CALC_USE_ERROR_TOKEN
+#include <vector>
 #include "token.h"
 /**
  * Represents a message from the compiler.

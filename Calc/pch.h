@@ -19,7 +19,6 @@
 #include <string>
 #include <string_view>
 #include <unordered_map>
-#include <vector>
 
 // add headers that you want to pre-compile here
 #define FMT_UNICODE 0

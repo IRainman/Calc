@@ -97,6 +97,8 @@ std::string calc_tests()
 		{ "1+1 1", std::numeric_limits<Value>::quiet_NaN() },
 		{ "1+1;", std::numeric_limits<Value>::quiet_NaN() },
 		{ "+1.4e-3", std::numeric_limits<Value>::quiet_NaN() },
+
+		// very big numbers? No, it's should return NAN.
 		{ "9999999999999999999e1000000000000000000000000000000", std::numeric_limits<Value>::quiet_NaN() },
 		{ "999999999999999999e-1000000000000000000000000000000", std::numeric_limits<Value>::quiet_NaN() },
 
@@ -223,8 +225,6 @@ std::string calc_tests()
 		// trigonometric precision especially with pi
 		{ "87 * tan(pi) - 7", -7.0 },
 		{ "tan(-pi)", 0.0 },
-
-		// TODO very big numbers?
 
 		// special value support
 		{ "1 / 0", std::numeric_limits<Value>::infinity() },

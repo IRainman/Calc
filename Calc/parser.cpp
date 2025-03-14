@@ -147,7 +147,7 @@ inline void Parser::advance() noexcept
 			}
 			else [[unlikely]]
 			{
-				IssueManager::report_error(_lex.get_position(), fmt::format(FMT_COMPILE("expected closing parenthesis")));
+				IssueManager::report_error(_lex.get_position(), "expected closing parenthesis");
 				return _current.val;
 			}
 		}
@@ -163,7 +163,7 @@ inline void Parser::advance() noexcept
 		}
 		default: [[unlikely]]
 		{
-			IssueManager::report_error(_lex.get_position(), fmt::format(FMT_COMPILE("unexpected")));
+			IssueManager::report_error(_lex.get_position(), "unexpected");
 			return _current.val;
 		}
 	}
@@ -209,7 +209,7 @@ inline void Parser::advance() noexcept
 					}
 					else [[unlikely]]
 					{
-						IssueManager::report_error(_lex.get_position(), fmt::format(FMT_COMPILE("expected closing parenthesis or coma, got {}"), name));
+						IssueManager::report_error(_lex.get_position(), "expected closing parenthesis or coma");
 						return _current.val;
 					}
 				}
