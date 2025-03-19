@@ -251,11 +251,19 @@ void CCalcDlg::OnBnClickedButtonCalc()
 
 		const auto result = p.parse();
 
-		if (IssueManager::has_errors())
+		if (
+#ifndef CALC_USE_ERROR_TOKEN
+			IssueManager::has_errors()
+#else
+			something
+#endif
+			)
 		{
 			SetDlgItemTextA(IDC_EDIT_RESULT, "");
 			SetDlgItemTextA(IDC_EDIT_MESSAGE, Formatter::create_summary().data());
+#ifdef CALC_USE_ERROR_TOKEN
 			IssueManager::clear();
+#endif
 		}
 		else
 		{

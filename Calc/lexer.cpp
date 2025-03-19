@@ -89,11 +89,6 @@ void Lexer::next(Token& token) noexcept
 	while (!_view.empty()) [[likely]]
 	{
 		const auto& cur = _view.front();
-#ifdef CALC_TESTS_USE_ADDITIONAL_OPTIONS
-		//ASSUME(cur > 8 && cur < 123);
-#else
-		//ASSUME(cur > 31 && cur < 123);
-#endif
 		if (cur == '+' ||
 			cur == '-' ||
 			cur == '*' ||
@@ -129,6 +124,7 @@ void Lexer::next(Token& token) noexcept
 			continue;
 		}
 #ifdef CALC_TESTS_USE_ADDITIONAL_OPTIONS
+		// https://en.cppreference.com/w/cpp/language/ascii
 		else if (cur == 0xA0
 			|| cur == '\t'
 			|| cur == '\n'
