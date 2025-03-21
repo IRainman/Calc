@@ -22,7 +22,6 @@
 
 // add headers that you want to pre-compile here
 #define FMT_UNICODE 0
-#define FMT_EXCEPTIONS 0
 #define FMT_HEADER_ONLY 1
 #include <fmt/compile.h>
 
