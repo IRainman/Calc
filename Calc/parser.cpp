@@ -29,7 +29,11 @@ namespace
 		}
 		else
 		{
+#ifdef CALC_USE_ERROR_TOKEN
+			return error_position + extraneous input;
+#else
 			IssueManager::report_error(_lex.get_position(), "extraneous input");
+#endif
 		}
 	}
 	return result;

@@ -261,7 +261,7 @@ void CCalcDlg::OnBnClickedButtonCalc()
 		{
 			SetDlgItemTextA(IDC_EDIT_RESULT, "");
 			SetDlgItemTextA(IDC_EDIT_MESSAGE, Formatter::create_summary().data());
-#ifdef CALC_USE_ERROR_TOKEN
+#ifndef CALC_USE_ERROR_TOKEN
 			IssueManager::clear();
 #endif
 		}
