@@ -244,9 +244,7 @@ namespace Identifiers
 		{ "exp2", function_pointer<1, std::exp2>() },
 #endif	
 
-#ifdef CALC_TESTS_ENABLED
 		{ "fma", function_pointer<3, std::fma>() },
-#endif
 		{ "rad", function_pointer<1, rad>() },
 		{ "deg", function_pointer<1, deg>() },
 
