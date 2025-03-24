@@ -33,7 +33,7 @@
 		#include "../../fast_float/include/fast_float/fast_float.h"
 /*
 Tests:
- time is: 23462ms.
+ time is: 21810ms.
 */
 	#else
 		#include <fast_float/fast_float.h>
@@ -42,28 +42,6 @@ Tests:
  time is: 24870ms.
 */
 	#endif
-#endif
-
-//#define CALC_USE_ASSUME_PRE_STANDARD
-#ifdef CALC_USE_ASSUME_PRE_STANDARD
-// for support attribute [[assume]] is declared in P1774
-#if defined(__clang__)
-#define ASSUME(expr) __builtin_assume(expr)
-#elif defined(__GNUC__) && !defined(__ICC)
-#define ASSUME(expr) if (expr) {} else { __builtin_unreachable(); }
-#elif defined(_MSC_VER) || defined(__ICC)
-#define ASSUME(expr) __assume(expr)
-/*
-Tests:
- time is: 25538ms.
-*/
-#endif
-#else
-#define ASSUME(expr)
-/*
-Tests:
- time is: 23653ms.
-*/
 #endif
 
 #endif //PCH_H

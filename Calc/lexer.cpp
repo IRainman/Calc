@@ -12,7 +12,7 @@
 
 [[nodiscard]] Lexer::EquationSize Lexer::get_position() const noexcept
 {
-	ASSUME(_view.data() - _begin >= 0);
+	[[assume(_view.data() - _begin >= 0)]];
 	return _view.data() - _begin;
 }
 
@@ -35,17 +35,17 @@ inline void Lexer::advance(Lexer::EquationSize n) noexcept
 
 [[nodiscard]] inline Lexer::EquationSize Lexer::read_number(Token& token) const noexcept
 {
-	ASSUME(_view._Unchecked_end() - _view._Unchecked_begin() >= 1);
+	[[assume(_view._Unchecked_end() - _view._Unchecked_begin() >= 1)]];
 #ifdef CALC_USING_FASTFLOAT
 	const auto res = fast_float::from_chars(_view._Unchecked_begin(), _view._Unchecked_end(), token.val);
 #else
 	const auto res = std::from_chars(_view._Unchecked_begin(), _view._Unchecked_end(), token.val);
 #endif
-	ASSUME(res.ptr - _view._Unchecked_begin() >= 1);
+	[[assume(res.ptr - _view._Unchecked_begin() >= 1)]];
 	const EquationSize n = res.ptr - _view._Unchecked_begin();
 	if (res.ec == std::errc{}) [[likely]]
 	{
-		ASSUME(token.val >= 0 && token.val <= std::numeric_limits<Value>::max() && !std::isnan(token.val));
+		[[assume(token.val >= 0 && token.val <= std::numeric_limits<Value>::max() && !std::isnan(token.val))]];
 		token.type = Token::Type::NUM;
 	}
 	else [[unlikely]]
@@ -63,6 +63,7 @@ inline void Lexer::advance(Lexer::EquationSize n) noexcept
 
 [[nodiscard]] inline Lexer::EquationSize Lexer::read_ident(Token& token) const noexcept
 {
+	[[assume((_view.size() >= 1)]];
 	EquationSize n = 1;
 
 	for (; n < _view.size(); ++n)
