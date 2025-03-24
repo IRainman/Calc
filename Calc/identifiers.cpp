@@ -62,7 +62,7 @@ namespace Identifiers
 
 	[[nodiscard]] /*constexpr*/ bool compare(const Value a, const Value b) noexcept
 	{
-		return std::abs(a - b) <= std::numeric_limits<Value>::epsilon() * std::max(std::abs(a), std::abs(b));
+		return std::fdim(a, b) <= std::numeric_limits<Value>::epsilon() * std::max(std::abs(a), std::abs(b));
 	}
 
 	[[nodiscard]] constexpr Value rad(Value x) noexcept { return x * std::numbers::pi_v<Value> / 180.0; }
