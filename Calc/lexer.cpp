@@ -63,7 +63,7 @@ inline void Lexer::advance(Lexer::EquationSize n) noexcept
 
 [[nodiscard]] inline Lexer::EquationSize Lexer::read_ident(Token& token) const noexcept
 {
-	[[assume((_view.size() >= 1)]];
+	[[assume((_view.size() >= 1))]];
 	EquationSize n = 1;
 
 	for (; n < _view.size(); ++n)
