@@ -260,10 +260,12 @@ namespace Identifiers
 
 		{ "tgamma", function_pointer<1, std::tgamma>() },
 		{ "lgamma", function_pointer<1, std::lgamma>() },
-#ifdef CALC_TESTS_ENABLED
+
 		{ "trunc", function_pointer<1, std::trunc>() },
 		{ "round", function_pointer<1, std::round>() },
-#endif
+		{ "ceil",function_pointer<1, std::ceil>() },
+		{ "floor",function_pointer<1, std::floor>() },
+
 		{ "mod", function_pointer<2, std::fmod>() },
 
 		//---------------------------------------------------------------------------
