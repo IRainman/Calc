@@ -117,7 +117,7 @@ inline void Parser::advance() noexcept
 	}
 	
 	Parser::Value& result = values[count];
-	while (--count != values.size())
+	while (--count != ParamCount(-1))
 	{
 		result = Identifiers::pow(values[count], result);
 	};
