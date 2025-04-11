@@ -22,7 +22,11 @@
 
 // add headers that you want to pre-compile here
 #define FMT_UNICODE 0
+#define FMT_USE_LOCALE 0
 #define FMT_HEADER_ONLY 1
+#define FMT_USE_FLOAT 0
+#define FMT_USE_DOUBLE 1
+#define FMT_USE_LONG_DOUBLE 0
 #include <fmt/compile.h>
 
 #define CALC_USING_FASTFLOAT
