@@ -20,6 +20,20 @@
 #include "token.h"
 
 #ifdef CALC_TEST_FASTFLOAT
+#if 0 // TODO
+	[[nodiscard]] constexpr Value bin(std::string_view x) noexcept
+	{
+		unsigned int bin_val;
+		auto res = fast_float::from_chars(x._Unchecked_begin(), x._Unchecked_end(), bin_val, 2);
+		
+	}
+	[[nodiscard]] constexpr Value hex(std::string_view x) noexcept
+	{
+		unsigned int hex_val;
+		auto res = fast_float::from_chars(x._Unchecked_begin(), x._Unchecked_end(), hex_val, 16);
+	}
+#endif
+
 std::string test_fast_float_parsing()
 {
 	unsigned int bin_val, hex_val;
@@ -103,12 +117,12 @@ std::string calc_tests()
 		{ "1+1;", std::numeric_limits<Value>::quiet_NaN() },
 		{ "+1.4e-3", std::numeric_limits<Value>::quiet_NaN() },
 
-		// very big numbers? No, it's should return NAN.
+		// very big or very small numbers? No, it's should return NAN.
 		{ "9999999999999999999e1000000000000000000000000000000", std::numeric_limits<Value>::quiet_NaN() },
 		{ "999999999999999999e-1000000000000000000000000000000", std::numeric_limits<Value>::quiet_NaN() },
 
 		// check constants
-		// https://en.cppreference.com/w/cpp/numeric/constants 
+		// https://en.cppreference.com/w/cpp/numeric/constants
 		{ "pi",                   3.14159265358979323846264338327950288 }, // https://en.wikipedia.org/wiki/Pi_(mathematical_constant)
 		{ "245850922 / 78256779", 3.14159265358979323846264338327950288 }, // https://en.wikipedia.org/wiki/Pi#Approximate_value_and_digits
 		{ "e", 2.718281828459045235360287471352 }, // https://en.wikipedia.org/wiki/E_(mathematical_constant)
@@ -398,20 +412,20 @@ std::string calc_tests()
 			{
 				++failed;
 			}			
-			output += std::format(
+			output += fmt::format(FMT_COMPILE(
 				"Test {}:\r\n"
 				"{}\r\n"
 				"{}\r\n"
-				"{}\r\n",
+				"{}\r\n"),
 				is_ok(result) ? "OK" : "failed",
 				t.first,
 				has_no_value(result) ?
 					"not return a result, must return error." :
-					std::format(
+					fmt::format(FMT_COMPILE(
 					"return = {}\r\n"
 					"and it's {} equal to expect value\r\n"
 					"expect = {}\r\n"
-					"output = {}",
+					"output = {}"),
 					value,
 					is_failed(result) ?
 					"NOT" :
