@@ -10,11 +10,12 @@ struct Token
 	 */
 	using EquationSize = size_t;
 	using Value = double;
-	using ParamCount = unsigned char;
+	using ParamCount = char;
 
-	enum class Type : unsigned char
+	enum class Type : ParamCount
 	{
-		END = std::numeric_limits<unsigned char>::min(),
+		// https://en.cppreference.com/w/cpp/language/ascii
+		END = 0x00,
 		ADD = '+',
 		SUB = '-',
 		MUL = '*',
@@ -26,7 +27,7 @@ struct Token
 		COMA = ',',
 		NUM = '0',
 		IDENT = 'a',
-		ERROR = std::numeric_limits<unsigned char>::max(),
+		ERROR = 0x7F,
 	};
 
 	// Text of the token.
