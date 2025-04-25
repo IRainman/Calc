@@ -27,7 +27,12 @@
 #define FMT_USE_FLOAT 0
 #define FMT_USE_DOUBLE 1
 #define FMT_USE_LONG_DOUBLE 0
+// Disable C4702 for fmt because it's generate incorrect error when constexpr if is using this is an MSVC bug.
+#pragma warning(push)
+#pragma warning(disable: 4702)
 #include <fmt/compile.h>
+// Restore the previous warning state
+#pragma warning(pop)
 
 #define CALC_USING_FASTFLOAT
 #ifdef CALC_USING_FASTFLOAT
