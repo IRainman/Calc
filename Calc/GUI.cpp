@@ -46,6 +46,12 @@ CCalcApp::CCalcApp()
 
 	// TODO: add construction code here,
 	// Place all significant initialization in InitInstance
+
+	/*Applications that generate floating point underflow in vector registers can benefit from setting the flush-to-zero mode rather than generating subnormal numbers in case of underflow:*/
+	/*It is strongly recommended to set the flush-to-zero mode unless you have special reasons to use subnormal numbers. You may, in addition, set the denormals-are-zero mode if vector regsiters are available:*/
+	// Set flush-to-zero and denormals-are-zero mode (SSE2):
+	_mm_setcsr(_mm_getcsr() | 0x8040);
+	// TODO: move this code to the core.
 #if !defined(CALC_USE_ERROR_TOKEN) && !defined(CALC_USING_STATIC_VECTOR)
 	IssueManager::speedup();
 #endif
@@ -78,7 +84,7 @@ BOOL CCalcApp::InitInstance()
 
 	// Create the shell manager, in case the dialog contains
 	// any shell tree view or shell list view controls.
-	CShellManager *pShellManager = new CShellManager;
+	auto pShellManager = std::make_unique<CShellManager>();
 
 	// Activate "Windows Native" visual manager for enabling themes in MFC controls
 	CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(CMFCVisualManagerWindows));
@@ -90,7 +96,7 @@ BOOL CCalcApp::InitInstance()
 	// Change the registry key under which our settings are stored
 	// TODO: You should modify this string to be something appropriate
 	// such as the name of your company or organization
-	SetRegistryKey(_T("Local AppWizard-Generated Applications"));
+	//SetRegistryKey(_T("Local AppWizard-Generated Applications"));
 #endif
 
 	CCalcDlg dlg;
@@ -110,9 +116,6 @@ BOOL CCalcApp::InitInstance()
 		TRACE(traceAppMsg, 0, "Warning: dialog creation failed, so application is terminating unexpectedly.\n");
 		TRACE(traceAppMsg, 0, "Warning: if you are using MFC controls on the dialog, you cannot #define _AFX_NO_MFC_CONTROLS_IN_DIALOGS.\n");
 	}
-
-	// Delete the shell manager created above.
-	delete pShellManager;
 
 #if !defined(_AFXDLL) && !defined(_AFX_NO_MFC_CONTROLS_IN_DIALOGS)
 	ControlBarCleanUp();
@@ -242,9 +245,9 @@ HCURSOR CCalcDlg::OnQueryDragIcon()
 
 void CCalcDlg::OnBnClickedButtonCalc()
 {
-	if(CStringA text; GetDlgItemTextA(IDC_EDIT_INPUT, text) >= 1)
+	if(GetDlgItemTextA(IDC_EDIT_INPUT, Input) >= 1)
 	{
-		const std::string_view input(text.GetString(), static_cast<unsigned int>(text.GetLength()));
+		const std::string_view input(Input.GetString(), static_cast<unsigned int>(Input.GetLength()));
 
 		Lexer l(input);
 		Parser p(l);

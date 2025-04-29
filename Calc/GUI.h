@@ -61,6 +61,8 @@ public:
 	afx_msg HCURSOR OnQueryDragIcon();
 #endif
 	afx_msg void OnBnClickedButtonCalc();
+private:
+	CStringA Input;
 };
 
 class CAboutDlg : public CDialog

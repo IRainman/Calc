@@ -40,6 +40,7 @@
 	#define CALC_USING_MY_FASTFLOAT
 	#ifdef CALC_USING_MY_FASTFLOAT
 		#define FASTFLOAT_ONLY_POSITIVE_C_NUMBER_WO_INF_NAN
+		#define FASTFLOAT_ONLY_ROUNDS_TO_NEAREST_SUPPORTED
 		#include "../../fast_float/include/fast_float/fast_float.h"
 /*
 Tests:
