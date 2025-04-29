@@ -10,6 +10,8 @@
 #ifndef PCH_H
 #define PCH_H
 
+// add headers that you want to pre-compile here
+
 #include <array>
 #include <format>
 #include <limits>
@@ -20,7 +22,6 @@
 #include <string_view>
 #include <unordered_map>
 
-// add headers that you want to pre-compile here
 #define FMT_UNICODE 0
 #define FMT_USE_LOCALE 0
 #define FMT_HEADER_ONLY 1
