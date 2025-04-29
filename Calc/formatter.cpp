@@ -10,7 +10,7 @@
 
 [[nodiscard]] std::string Formatter::format(Formatter::Value value) noexcept
 {
-	//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10);
+	//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10/* - 3*/);
 	return fmt::format(FMT_COMPILE("{}"), value);
 }
 
