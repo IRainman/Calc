@@ -35,16 +35,18 @@ inline void Lexer::advance(Lexer::EquationSize n) noexcept
 
 [[nodiscard]] inline Lexer::EquationSize Lexer::read_number(Token& token) const noexcept
 {
-	[[assume(_view._Unchecked_end() - _view._Unchecked_begin() >= 1)]];
+	const auto begin = _view.data();
+	const auto end = _view.data() + _view.size();
+	[[assume(end - begin >= 1)]];
 #if defined(CALC_USING_MY_FASTFLOAT)
-	const auto res = fast_float::from_chars_advanced(_view._Unchecked_begin(), _view._Unchecked_end(), token.val, fast_float::parse_options{});
+	const auto res = fast_float::from_chars_advanced(begin, end, token.val, fast_float::parse_options{fast_float::chars_format::general});
 #elif defined(CALC_USING_FASTFLOAT)
-	const auto res = fast_float::from_chars_advanced(_view._Unchecked_begin(), _view._Unchecked_end(), token.val, fast_float::parse_options{fast_float::chars_format::general | fast_float::chars_format::no_infnan});
+	const auto res = fast_float::from_chars_advanced(begin, end, token.val, fast_float::parse_options{fast_float::chars_format::general | fast_float::chars_format::no_infnan});
 #else // use std
-	const auto res = std::from_chars(_view._Unchecked_begin(), _view._Unchecked_end(), token.val);
+	const auto res = std::from_chars(begin, end, token.val);
 #endif
-	[[assume(res.ptr - _view._Unchecked_begin() >= 1)]];
-	const auto n = static_cast<EquationSize>(res.ptr - _view._Unchecked_begin());
+	[[assume(res.ptr - begin >= 1)]];
+	const auto n = static_cast<EquationSize>(res.ptr - begin);
 	if (res.ec == std::errc{}) [[likely]]
 	{
 		[[assume(token.val >= 0 && token.val <= std::numeric_limits<Value>::max() && !std::isnan(token.val))]];
@@ -56,6 +58,7 @@ inline void Lexer::advance(Lexer::EquationSize n) noexcept
 		// value_too_large
 		// value_too_small
 		// invalid_argument
+		// ...
 		IssueManager::report_error(get_position(), "invalid number");
 		token.type = Token::Type::ERROR;
 	}
@@ -91,6 +94,7 @@ void Lexer::next(Token& token) noexcept
 {
 	while (!_view.empty()) [[likely]]
 	{
+		// https://en.cppreference.com/w/cpp/language/ascii
 		const auto& cur = _view.front();
 		if (cur == '+' ||
 			cur == '-' ||
@@ -107,29 +111,27 @@ void Lexer::next(Token& token) noexcept
 			return;
 			
 		}
-		else if ((cur >= '0' && cur <= '9')
+		if ((cur >= '0' && cur <= '9')
 			) [[likely]]
 		{
 			advance(read_number(token));
 			return;
 		}
-		else if ((cur >= 'a' && cur <= 'z')
+		if ((cur >= 'a' && cur <= 'z')
 			|| (cur >= 'A' && cur <= 'Z')
 			) [[likely]]
 		{
 			advance(read_ident(token));
 			return;
 		}
-		else if (cur == ' ') [[likely]]
+		if (cur == ' ') [[likely]]
 		{
 			// skip any spices
 			advance(1);
 			continue;
 		}
 #ifdef CALC_TESTS_USE_ADDITIONAL_OPTIONS
-		// https://en.cppreference.com/w/cpp/language/ascii
-		else if (cur == 0xA0
-			|| cur == '\t'
+		if (cur == '\t'
 			|| cur == '\n'
 			|| cur == '\v'
 			|| cur == '\f'
@@ -141,7 +143,7 @@ void Lexer::next(Token& token) noexcept
 			continue;
 		}
 #endif
-		else [[unlikely]]
+		[[unlikely]]
 		{
 			IssueManager::report_error(get_position(), fmt::format(FMT_COMPILE("unknown character {}"), cur));
 			advance(read_unknown(token));
