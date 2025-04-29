@@ -303,6 +303,13 @@ std::string calc_tests()
 		{ "10.0 - 1.2",  8.8 },
 
 		// trigonometric precision especially with pi
+		{ "sin(pi/2)", 1.0 },
+		{ "cos(pi/2)", 0.0 },
+		{ "sin(pi)", 0.0 },
+		{ "cos(pi)", -1.0 },
+		{ "sin(3*pi/2)", -1.0 },
+		{ "cos(3*pi/2)", 0.0 },
+		{ "tan(3*pi/2)", std::numeric_limits<Value>::infinity() },
 		{ "87 * tan(pi) - 7", -7.0 },
 		{ "tan(-pi)", 0.0 },
 		{ "tan(pi)", 0.0 },
@@ -341,6 +348,7 @@ std::string calc_tests()
 		{ "inf", std::numeric_limits<Value>::infinity() },
 		{ "1 / 0", std::numeric_limits<Value>::infinity() },
 		{ "0 / 0", std::numeric_limits<Value>::quiet_NaN() },
+		{ "sqrt(4 - 9)", std::numeric_limits<Value>::quiet_NaN() },
 
 		// trigonometric functions
 		{ "rad(180)", 3.14159265358979323846264338327950288 }, // https://en.wikipedia.org/wiki/Pi_(mathematical_constant)
@@ -348,32 +356,81 @@ std::string calc_tests()
 		{ "sin(0)", 0.0 },
 		{ "cos(0)", 1.0 },
 		{ "tan(0)", 0.0 },
+		{ "cos(0)", 1.0 },
+		{ "tan(0)", 0.0 },
 		{ "sin(rad(30))", 0.5 },
 		{ "cos(rad(60))", 0.5 },
 		{ "tan(rad(45))", 1.0 },
 		{ "sin(pi/4)^2", 0.5 },
 		{ "cos(pi/3)^2", 0.25 },
+		{ "sin(0)^2 + cos(0)^2", 1.0 },
+		{ "sin(rad(30)) + cos(rad(60))", 1.0 },
+		{ "sin(rad(30)) - cos(rad(60))", 0.0 },
+		{ "sin(rad(30)) * cos(rad(60))", 0.25 },
+		{ "sin(rad(30)) / cos(rad(60))", 1.0 },
+		{ "cos(rad(30)) / sin(rad(60))", 1.0 },
+		{ "arcsin(1)", 1.57079632679489661923132169163975144 }, // https://en.wikipedia.org/wiki/Pi_(mathematical_constant)
+		{ "arccos(1)", 0.0 },
+		{ "arctan(1)", 0.78539816339744830961566084581987572 }, // https://en.wikipedia.org/wiki/Pi_(mathematical_constant)
+		{ "arctan2(1, 1)", 0.78539816339744830961566084581987572 }, // https://en.wikipedia.org/wiki/Pi_(mathematical_constant)
 
 		// power and root functions
 		{ "pow(2,3)", 8.0 },
 		{ "sqrt(4)", 2.0 },
+		{ "sqrt(4) + sqrt(9)", 5.0 },
+		{ "sqrt(4) - sqrt(9)", -1.0 },
+		{ "sqrt(4) * sqrt(9)", 6.0 },
+		{ "sqrt(4) / sqrt(9)", 0.6666666666666666 },
+		{ "sqrt(4) ^ sqrt(9)", 8.0 },
+		{ "sqrt(4 + 9)", 3.605551275463989 },
+		{ "sqrt(4 * 9)", 6.0 },
+		{ "sqrt(4 / 9)", 0.6666666666666666 },
+		{ "sqrt(4 ^ 9)", 262144.0 },
+		{ "sqrt(4 + 9) ^ 2", 13.0 },
+		{ "sqrt(4 * 9) ^ 2", 36.0 },
+		{ "sqrt(4 / 9) ^ 2", 0.4444444444444444 },
+		{ "sqrt(4 ^ 9) ^ 2", 68719476736.0 },
 		{ "cbrt(27)", 3.0 },
+		{ "cbrt(27) + cbrt(64)", 7.0 },
+		{ "cbrt(27) - cbrt(64)", -1.0 },
+		{ "cbrt(27) * cbrt(64)", 12.0 },
+		{ "cbrt(27) / cbrt(64)", 0.75 },
+		{ "cbrt(27) ^ cbrt(64)", 9.0 },
+		{ "cbrt(27 + 64)", 4.3267487109222245 },
+		{ "cbrt(27 * 64)", 12.0 },
+		{ "cbrt(27 / 64)", 0.75 },
+		{ "cbrt(27 ^ 64)", 1.0 },
 		{ "0^0", 1.0 },
 		{ "-4 ^ 2", 16.0 },
 		{ "0 - 4 ^ 2", -16.0 },
 		{ "3 ^ 3 ^ 3", 7625597484987.0 },
 		{ "(3 ^ 3) ^ 3", 19683.0 },
-		{ "2^2^2^2", 65536.0 },
+		{ "2 ^ 2 ^ 2 ^ 2", 65536.0 },
+		{ "2 ^ 2 ^ 2", 16.0 },
+		{ "2 ^ (3 ^ 2)", 512.0 },
+		{ "2 ^ (4 ^ 2)", 65536.0 },
+		{ "(2 ^ 3) ^ 2", 64.0 },
+		{ "(2 ^ 4) ^ 2", 256.0 },
 
 		// min max functions
 		{ "min(1)", 1.0 },
 		{ "min(1, 2, 3)", 1.0 },
 		{ "max(1, 2, 3)", 3.0 },
+		{ "min(1, 2, 3, 4)", 1.0 },
+		{ "max(1, 2, 3, 4)", 4.0 },
+		{ "min(1, 2, 3, 4, 5)", 1.0 },
+		{ "max(1, 2, 3, 4, 5)", 5.0 },
+		{ "min(1, 2, 3, 4, 5, 6)", 1.0 },
+		{ "max(1, 2, 3, 4, 5, 6)", 6.0 },
+		{ "min(1, 2, 3, 4, 5, 6, 7)", 1.0 },
+		{ "max(1, 2, 3, 4, 5, 6, 7)", 7.0 },
+		{ "min(1, 2, 3, 4, 5, 6, 7,8)", 1.0 },
+		{ "max(1,2 ,3 ,4 ,5 ,6 ,7 ,8)", 8.0 },
 		{ "min(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14)", 1.0 },
 		{ "max(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14)", 14.0 },
 
 		// hardware and library present
-		{ "fma(0.2,0.1,0.3)", 0.32 },
+		{ "fma(0.2, 0.1, 0.3)", 0.32 },
 
 		// additional special
 		{ "distance(1, 1, 2, 3)", 6.0 }
@@ -413,11 +470,10 @@ std::string calc_tests()
 				++failed;
 			}			
 			output += fmt::format(FMT_COMPILE(
-				"Test {}:\r\n"
-				"{}\r\n"
+				"Test {}: {}\r\n"
 				"{}\r\n"
 				"{}\r\n"),
-				is_ok(result) ? "OK" : "failed",
+				is_ok(result) ? "OK" : "FAILED",
 				t.first,
 				has_no_value(result) ?
 					"not return a result, must return error." :
@@ -428,7 +484,7 @@ std::string calc_tests()
 					"output = {}"),
 					value,
 					is_failed(result) ?
-					"NOT" :
+					"not" :
 					is_less_than_epsilon(result) ?
 					"almost" :
 					"exactly",
