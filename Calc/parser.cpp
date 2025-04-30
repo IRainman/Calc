@@ -175,9 +175,9 @@ inline void Parser::advance() noexcept
 
 [[nodiscard]] Parser::Value Parser::parse_function_or_constant() noexcept
 {
+	const auto pos_of_ident_start = _lex.get_position() - _current.text.size();
 	if (const auto i = ids.find(_current.text); i != ids.end()) [[likely]]
 	{
-		const auto pos_of_ident_start = _lex.get_position();
 		advance();
 		if (_current.type == Token::Type::LPAREN) // function
 		{
@@ -248,7 +248,7 @@ inline void Parser::advance() noexcept
 	}
 	else [[unlikely]]
 	{
-		IssueManager::report_error(_lex.get_position(), fmt::format(FMT_COMPILE("unknown identifier {}"), _current.text));
+		IssueManager::report_error(pos_of_ident_start, fmt::format(FMT_COMPILE("unknown identifier {}"), _current.text));
 		return _current.val;
 	}
 }
