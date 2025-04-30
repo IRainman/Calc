@@ -6,13 +6,11 @@
 #include "flags.h"
 #ifndef CALC_USE_ERROR_TOKEN
 #include <vector>
-#include "token.h"
 /**
  * Represents a message from the compiler.
  */
 class Issue
 {
-	using EquationSize = Token::EquationSize;
 	public:
 		Issue(std::string&& t, EquationSize p) noexcept : text(t), pos(p) {};
 		Issue(const Issue&) = delete;
@@ -38,7 +36,6 @@ class IssueManager
 #else
 	using Issues = std::vector<Issue>;
 #endif
-	using EquationSize = Token::EquationSize;
 	public:
 #ifndef CALC_USING_STATIC_VECTOR
 		/**

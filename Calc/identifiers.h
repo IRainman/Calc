@@ -3,12 +3,12 @@
  * Copyright 2023-2024 Solomina Elle Leonovna, a.rainman on gmail point com
  */
 
-#include "token.h"
+#include "flags.h"
 
 namespace Identifiers
 {
-	using Value = Token::Value;
-	using ParamCount = Token::ParamCount;
+	using Value = Value;
+	using ParamCount = ParamCount;
 
 	struct Fn
 	{

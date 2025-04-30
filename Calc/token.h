@@ -3,15 +3,10 @@
  * Copyright 2023-2024 Solomina Elle Leonovna, a.rainman on gmail point com
  */
 
+#include "identifiers.h"
+
 struct Token
 {
-	/*
-	 * Type using as a type for calculation.
-	 */
-	using EquationSize = size_t;
-	using Value = double;
-	using ParamCount = char;
-
 	enum class Type : ParamCount
 	{
 		// https://en.cppreference.com/w/cpp/language/ascii
@@ -26,15 +21,18 @@ struct Token
 		RPAREN = ')',
 		COMA = ',',
 		NUM = '0',
-		IDENT = 'a',
+		FUNCT = 'a',
 		ERROR = 0x7F,
 	};
 
-	// Text of the token.
-	std::string_view text;
+	union
+	{
+		// If token is a function, there is a pointer to it.
+		Identifiers::map::const_pointer func;
 
-	// If token is a number, this is the parsed value of it.
-	Value val;
+		// If token is a number parsed from string or a constant, this is the value of it.
+		Value val;
+	};
 
 	// Type of this token.
 	Type type;

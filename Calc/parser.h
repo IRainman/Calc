@@ -4,7 +4,6 @@
  */
 
 #include "lexer.h"
-#include "token.h"
 
 class Parser
 {
@@ -41,8 +40,6 @@ class Parser
 		Parser(const Parser&) = delete;
 		Parser(Parser&&) = default;
 		
-		using Value = Token::Value;
-		using ParamCount = Token::ParamCount;
 		/**
 		 * Parse and evaluate an expression. Return nan in case of an error.
 		 */
@@ -64,7 +61,7 @@ class Parser
 		
 		[[nodiscard]] Value parse_expr_0() noexcept;
 		
-		[[nodiscard]] Value parse_function_or_constant() noexcept;
+		[[nodiscard]] Value parse_function() noexcept;
 		
 		Lexer& _lex;
 		Token _current;

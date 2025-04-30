@@ -4,6 +4,13 @@
  */
 
 //---------------------------------------------------------------------------
+/*
+ * Type using as a type for calculation.
+ */
+using EquationSize = size_t;
+using Value = double;
+using ParamCount = char;
+//---------------------------------------------------------------------------
 #ifdef _DEBUG
 #define CALC_TESTS_ENABLED
 #define CALC_TESTS_DEV_ENABLED // if commented test is measurement performance

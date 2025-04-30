@@ -6,17 +6,15 @@
  */
 
 #include "pch.h"
-#include "identifiers.h"
 #include "issue_manager.h"
 #include "parser.h"
-#include "token.h"
 
 namespace
 {
 	const auto& ids = Identifiers::get();
 };
 
-[[nodiscard]] Parser::Value Parser::parse() noexcept
+[[nodiscard]] Value Parser::parse() noexcept
 {
 	const auto result = parse_expr_4();
 	if (_current.type != Token::Type::END) [[unlikely]]
@@ -44,7 +42,7 @@ inline void Parser::advance() noexcept
 	 _lex.next(_current);
 }
 
-[[nodiscard]] Parser::Value Parser::parse_expr_4() noexcept
+[[nodiscard]] Value Parser::parse_expr_4() noexcept
 {
 	auto result = parse_expr_3();
 	while (true)
@@ -65,7 +63,7 @@ inline void Parser::advance() noexcept
 	}
 }
 
-[[nodiscard]] Parser::Value Parser::parse_expr_3() noexcept
+[[nodiscard]] Value Parser::parse_expr_3() noexcept
 {
 	auto result = parse_expr_2();
 	while (true)
@@ -90,7 +88,7 @@ inline void Parser::advance() noexcept
 	}
 }
 
-[[nodiscard]] Parser::Value Parser::parse_expr_2() noexcept
+[[nodiscard]] Value Parser::parse_expr_2() noexcept
 {
 	std::array<Value, std::numeric_limits<ParamCount>::max()> values;
 	
@@ -112,11 +110,11 @@ inline void Parser::advance() noexcept
 	
 	if (count == static_cast<ParamCount>(values.size())) [[unlikely]]
 	{
-		IssueManager::report_error(_lex.get_position(), fmt::format(FMT_COMPILE("too many ^ in one expression, the maximum is {}"), values.size()));
+		IssueManager::report_error(_lex.get_position(), "too many ^ in expression");
 		return _current.val;
 	}
 	
-	Parser::Value& result = values[count];
+	Value& result = values[count];
 	while (--count != static_cast<ParamCount>(-1))
 	{
 		result = Identifiers::pow(values[count], result);
@@ -124,7 +122,7 @@ inline void Parser::advance() noexcept
 	return result;
 }
 
-[[nodiscard]] Parser::Value Parser::parse_expr_1() noexcept
+[[nodiscard]] Value Parser::parse_expr_1() noexcept
 {
 	switch (_current.type)
 	{
@@ -136,7 +134,7 @@ inline void Parser::advance() noexcept
 	}
 }
 
-[[nodiscard]] Parser::Value Parser::parse_expr_0() noexcept
+[[nodiscard]] Value Parser::parse_expr_0() noexcept
 {
 	switch (_current.type)
 	{
@@ -151,7 +149,7 @@ inline void Parser::advance() noexcept
 			}
 			else [[unlikely]]
 			{
-				IssueManager::report_error(_lex.get_position(), "expected closing parenthesis");
+				IssueManager::report_error(_lex.get_position(), "expected parenthesis");
 				return _current.val;
 			}
 		}
@@ -161,9 +159,9 @@ inline void Parser::advance() noexcept
 			advance();
 			return num;
 		}
-		case Token::Type::IDENT: [[likely]]
+		case Token::Type::FUNCT: [[likely]]
 		{
-			return parse_function_or_constant();
+			return parse_function();
 		}
 		default: [[unlikely]]
 		{
@@ -173,82 +171,64 @@ inline void Parser::advance() noexcept
 	}
 }
 
-[[nodiscard]] Parser::Value Parser::parse_function_or_constant() noexcept
+[[nodiscard]] Value Parser::parse_function() noexcept
 {
-	const auto pos_of_ident_start = _lex.get_position() - _current.text.size();
-	if (const auto i = ids.find(_current.text); i != ids.end()) [[likely]]
+	auto pos_of_ident = _lex.get_position();
+	const auto i = _current.func;
+
+	advance();
+	if (_current.type == Token::Type::LPAREN) [[likely]]
 	{
 		advance();
-		if (_current.type == Token::Type::LPAREN) // function
-		{
-			advance();
-			const auto [check, function] = i->second;
-			if (check.is_function()) [[likely]]
-			{
-				std::array<Value, std::numeric_limits<ParamCount>::max()> params;
-				ParamCount count = 0;
-				do
-				{
-					params[count] = parse_expr_4();
-					++count;
 
-					switch(_current.type)
+		const auto [check, function] = i->second;
+
+		std::array<Value, std::numeric_limits<ParamCount>::max()> params;
+		ParamCount count = 0;
+
+		do
+		{
+			params[count] = parse_expr_4();
+			++count;
+
+			switch(_current.type)
+			{
+				case Token::Type::RPAREN: [[likely]]
+				{
+					advance();
+					if (check.params_count_is_valid(count)) [[likely]]
 					{
-						case Token::Type::RPAREN: [[likely]]
-						{
-							advance();
-							if (check.params_count_is_valid(count)) [[likely]]
-							{
-								return function({params.begin(), params.begin() + count});
-							}
-							else [[unlikely]]
-							{
-								IssueManager::report_error(pos_of_ident_start, fmt::format(FMT_COMPILE("for function {} expected minimum {} and maximum {} parameters, got {}"), i->first, static_cast<uint8_t>(check.min), static_cast<uint8_t>(check.max), static_cast<uint8_t>(count)));
-								return _current.val;
-							}
-						}
-						case Token::Type::COMA: [[likely]]
-						{
-							advance();
-							continue;
-						}
-						default: [[unlikely]]
-						{
-							IssueManager::report_error(_lex.get_position(), "expected closing parenthesis or coma");
-							return _current.val;
-						}
+						return function({params.begin(), params.begin() + count});
+					}
+					else [[unlikely]]
+					{
+						pos_of_ident -= i->first.size();
+						IssueManager::report_error(pos_of_ident, fmt::format(FMT_COMPILE("incorrect paramethers count: min {}, max {}, got {}"), static_cast<uint8_t>(check.min), static_cast<uint8_t>(check.max), static_cast<uint8_t>(count)));
+						return _current.val;
 					}
 				}
-				while (count != static_cast<ParamCount>(params.size())); [[likely]]
-
-				{ [[unlikely]]
-					IssueManager::report_error(pos_of_ident_start, fmt::format(FMT_COMPILE("maximum supported parameters is {}"), params.size()));
+				case Token::Type::COMA: [[likely]]
+				{
+					advance();
+					continue;
+				}
+				default: [[unlikely]]
+				{
+					IssueManager::report_error(_lex.get_position(), "expected parenthesis");
 					return _current.val;
 				}
 			}
-			else [[unlikely]]
-			{
-				IssueManager::report_error(pos_of_ident_start, fmt::format(FMT_COMPILE("identifier {} is not a function"), i->first));
-				return _current.val;
-			}
 		}
-		else // constant
+		while (count != static_cast<ParamCount>(params.size())); [[likely]]
+
 		{
-			const auto [check, constant] = i->second;
-			if (check.is_constant()) [[likely]]
-			{
-				return constant({});
-			}
-			else [[unlikely]]
-			{
-				IssueManager::report_error(pos_of_ident_start, fmt::format(FMT_COMPILE("function {} needs parenthesis for call"), i->first));
-				return _current.val;
-			}
+			IssueManager::report_error(_lex.get_position(), "to many parameters");
+			return _current.val;
 		}
 	}
 	else [[unlikely]]
 	{
-		IssueManager::report_error(pos_of_ident_start, fmt::format(FMT_COMPILE("unknown identifier {}"), _current.text));
+		IssueManager::report_error(_lex.get_position(), "expected parenthesis");
 		return _current.val;
 	}
 }

@@ -50,20 +50,18 @@ std::string test_fast_float_parsing()
 
 namespace
 {
-	using Value = Token::Value;
-
 	enum class result : char
 	{
 		// all values is handled optimized:
 		// less than 0 - failed or other error/exception.
 		// see is_failed.
-		failed = -1,
+		failed = -2,
+		less_than_epsilon = -1,
 
 		// all values including zero and above is OK.
 		// see is_ok.
-		less_than_epsilon = 0,
-		bit_to_bit = 1,
-		has_no_value = 2,
+		bit_to_bit = 0,
+		has_no_value = 1,
 	};
 	[[nodiscard]] constexpr bool is_ok(result r) noexcept
 	{
@@ -110,6 +108,7 @@ std::string calc_tests()
 		{ "pi(e)", std::numeric_limits<Value>::quiet_NaN() },
 		{ "pi(sin)", std::numeric_limits<Value>::quiet_NaN() },
 		{ "sin + 12", std::numeric_limits<Value>::quiet_NaN() },
+		{ "sin(1, 2, 3)", std::numeric_limits<Value>::quiet_NaN() },
 		{ "1(", std::numeric_limits<Value>::quiet_NaN() },
 		{ "sin(0 ", std::numeric_limits<Value>::quiet_NaN() },
 		{ "sin(", std::numeric_limits<Value>::quiet_NaN() },
@@ -123,10 +122,10 @@ std::string calc_tests()
 
 		// check constants
 		// https://en.cppreference.com/w/cpp/numeric/constants
+		{ "phi", 1.6180339887498948482045868343656381177203091798057628621 }, // https://en.wikipedia.org/wiki/Golden_ratio
 		{ "pi",                   3.14159265358979323846264338327950288 }, // https://en.wikipedia.org/wiki/Pi_(mathematical_constant)
 		{ "245850922 / 78256779", 3.14159265358979323846264338327950288 }, // https://en.wikipedia.org/wiki/Pi#Approximate_value_and_digits
-		{ "e", 2.718281828459045235360287471352 }, // https://en.wikipedia.org/wiki/E_(mathematical_constant)
-		{ "phi", 1.6180339887498948482045868343656381177203091798057628621 }, // https://en.wikipedia.org/wiki/Golden_ratio
+		{ "e",                    2.718281828459045235360287471352 }, // https://en.wikipedia.org/wiki/E_(mathematical_constant)
 		{ "egamma", 0.57721566490153286060651209008240243104215933593992 }, // https://en.wikipedia.org/wiki/Euler%27s_constant
 		{ "log2(e)", std::numbers::log2e_v<Value> },
 		{ "log10(e)", std::numbers::log10e_v<Value> },
@@ -182,6 +181,7 @@ std::string calc_tests()
 		{ "1+2", 3.0 },
 		{ "5-3", 2.0 },
 		{ "4*2", 8.0 },
+		{ "4*4*4*4*4*4*3*3*3*3", 331776.0 },
 		{ "8/4", 2.0 },
 		{ "2^3", 8.0 },
 		{ "5%2", 1.0 },
@@ -385,21 +385,21 @@ std::string calc_tests()
 		{ "sqrt(4 + 9)", 3.605551275463989 },
 		{ "sqrt(4 * 9)", 6.0 },
 		{ "sqrt(4 / 9)", 0.6666666666666666 },
-		{ "sqrt(4 ^ 9)", 262144.0 },
+		{ "sqrt(4 ^ 9)", 512.0 },
 		{ "sqrt(4 + 9) ^ 2", 13.0 },
 		{ "sqrt(4 * 9) ^ 2", 36.0 },
 		{ "sqrt(4 / 9) ^ 2", 0.4444444444444444 },
-		{ "sqrt(4 ^ 9) ^ 2", 68719476736.0 },
+		{ "sqrt(4 ^ 9) ^ 2", 262144.0 },
 		{ "cbrt(27)", 3.0 },
 		{ "cbrt(27) + cbrt(64)", 7.0 },
 		{ "cbrt(27) - cbrt(64)", -1.0 },
 		{ "cbrt(27) * cbrt(64)", 12.0 },
 		{ "cbrt(27) / cbrt(64)", 0.75 },
-		{ "cbrt(27) ^ cbrt(64)", 9.0 },
-		{ "cbrt(27 + 64)", 4.3267487109222245 },
+		{ "cbrt(27) ^ cbrt(64)", 81.0 },
+		{ "cbrt(27 + 64)", 4.497941445275415 },
 		{ "cbrt(27 * 64)", 12.0 },
 		{ "cbrt(27 / 64)", 0.75 },
-		{ "cbrt(27 ^ 64)", 1.0 },
+		{ "cbrt(27 ^ 64)", 3.433683820292513e+30 },
 		{ "0^0", 1.0 },
 		{ "-4 ^ 2", 16.0 },
 		{ "0 - 4 ^ 2", -16.0 },
@@ -484,9 +484,9 @@ std::string calc_tests()
 					"output = {}"),
 					value,
 					is_failed(result) ?
-					"not" :
+					"absolutely not" :
 					is_less_than_epsilon(result) ?
-					"almost" :
+					"close, but not" :
 					"exactly",
 					t.second,
 					Formatter::format(value)
@@ -502,7 +502,7 @@ std::string calc_tests()
 
 	output += std::format("Tests:"
 #ifdef CALC_TESTS_DEV_ENABLED
-		" exactly: {}, almost: {},\r\n failed: {},"
+		" exactly: {},\r\n failed: {} (almost: {}),"
 #endif
 		"\r\n time is: {}.",
 #ifdef CALC_TESTS_DEV_ENABLED

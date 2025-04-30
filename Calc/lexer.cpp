@@ -8,32 +8,38 @@
 #include "pch.h"
 #include "issue_manager.h"
 #include "lexer.h"
-#include "token.h"
 
-[[nodiscard]] Lexer::EquationSize Lexer::get_position() const noexcept
+namespace
+{
+	const auto& ids = Identifiers::get();
+};
+
+[[nodiscard]] EquationSize Lexer::get_position() const noexcept
 {
 	[[assume(_view.data() - _begin >= 0)]];
-	return static_cast<Lexer::EquationSize>(_view.data() - _begin);
+	return static_cast<EquationSize>(_view.data() - _begin);
 }
 
-inline void Lexer::advance(Lexer::EquationSize n) noexcept
+inline void Lexer::advance(EquationSize n) noexcept
 {
 	_view.remove_prefix(n);
 }
 
-[[nodiscard]] inline Lexer::EquationSize Lexer::read_unknown(Token& token) const noexcept
+[[nodiscard]] EquationSize Lexer::read_unparsable(Token& token) const noexcept
 {
+	IssueManager::report_error(get_position(), "unparsable");
 	token.type = Token::Type::ERROR;
 	return 0;
 }
 
-[[nodiscard]] inline Lexer::EquationSize Lexer::read_operator(const auto type, Token& token) const noexcept
+[[nodiscard]] inline EquationSize Lexer::read_operator(Token& token) const noexcept
 {
-	token.type = static_cast<Token::Type>(type);
+	[[assume((_view.size() >= 1))]];
+	token.type = static_cast<Token::Type>(_view.front());
 	return 1;
 }
 
-[[nodiscard]] inline Lexer::EquationSize Lexer::read_number(Token& token) const noexcept
+[[nodiscard]] inline EquationSize Lexer::read_number(Token& token) const noexcept
 {
 	const auto begin = _view.data();
 	const auto end = _view.data() + _view.size();
@@ -51,38 +57,45 @@ inline void Lexer::advance(Lexer::EquationSize n) noexcept
 	{
 		[[assume(token.val >= 0 && token.val <= std::numeric_limits<Value>::max() && !std::isnan(token.val))]];
 		token.type = Token::Type::NUM;
+		return n;
 	}
-	else [[unlikely]]
-	{
-		// result_out_of_range
-		// value_too_large
-		// value_too_small
-		// invalid_argument
-		// ...
-		IssueManager::report_error(get_position(), "invalid number");
-		token.type = Token::Type::ERROR;
-	}
-
-	return n;
+	
+	[[unlikely]]
+	return read_unparsable(token);
 }
 
-[[nodiscard]] inline Lexer::EquationSize Lexer::read_ident(Token& token) const noexcept
+[[nodiscard]] inline EquationSize Lexer::read_ident(Token& token) const noexcept
 {
 	[[assume((_view.size() >= 1))]];
 	EquationSize n = 1;
 
-	for (; n < _view.size(); ++n)
+	while (n != _view.size())
 	{
 		if (!((_view[n] >= 'a' && _view[n] <= 'z') || (_view[n] >= 'A' && _view[n] <= 'Z') || (_view[n] >= '0' && _view[n] <= '9') || _view[n] == '_'))
 		{
 			break;
 		}
+		++n;
 	}
 
-	token.text = _view.substr(0, n);
-	token.type = Token::Type::IDENT;
-
-	return n;
+	if (const auto i = ids.find(_view.substr(0, n)); i != ids.end()) [[likely]]
+	{
+		const auto [check, constant] = i->second;
+		if (check.is_constant())
+		{
+			token.val = constant({});
+			token.type = Token::Type::NUM;
+		}
+		else
+		{
+			token.func = &(*i); // Use the address of the iterator's dereferenced value
+			token.type = Token::Type::FUNCT;
+		}
+		return n;
+	}
+	
+	[[unlikely]]
+	return read_unparsable(token);
 }
 
 inline void Lexer::read_end(Token& token) const noexcept
@@ -107,7 +120,7 @@ void Lexer::next(Token& token) noexcept
 			cur == ','
 			) [[likely]]
 		{
-			advance(read_operator(cur, token));
+			advance(read_operator(token));
 			return;
 			
 		}
@@ -126,7 +139,6 @@ void Lexer::next(Token& token) noexcept
 		}
 		if (cur == ' ') [[likely]]
 		{
-			// skip any spices
 			advance(1);
 			continue;
 		}
@@ -138,17 +150,14 @@ void Lexer::next(Token& token) noexcept
 			|| cur == '\r'
 			) [[unlikely]]
 		{
-			// skip any spices
 			advance(1);
 			continue;
 		}
 #endif
+
 		[[unlikely]]
-		{
-			IssueManager::report_error(get_position(), fmt::format(FMT_COMPILE("unknown character {}"), cur));
-			advance(read_unknown(token));
-			return;
-		}
+		advance(read_unparsable(token));
+		return;
 	}
 
 	read_end(token);

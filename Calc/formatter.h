@@ -1,6 +1,5 @@
 #pragma once
 
-#include "token.h"
 #include "issue_manager.h"
 
 /*
@@ -9,7 +8,6 @@
 
 class Formatter
 {
-	using Value = Token::Value;
 	public:
 		/**
 		 * Format output value of the expression returned.

@@ -7,8 +7,6 @@
 
 class Lexer
 {
-	using Value = Token::Value;
-	using EquationSize = Token::EquationSize;
 	public:
 		explicit Lexer(const std::string_view data) noexcept
 			: _view{ data }, _begin{ data.data() }
@@ -37,7 +35,7 @@ private:
 		/**
 		 * Read an operator at the beginning of the input view and return size of it.
 		 */
-		[[nodiscard]] EquationSize read_operator(const auto type, Token& token) const noexcept;
+		[[nodiscard]] EquationSize read_operator(Token& token) const noexcept;
 		
 		/**
 		 * Read a number at the beginning of the input view and return size of it.
@@ -55,9 +53,9 @@ private:
 		void read_end(Token& token) const noexcept;
 
 		/**
-		 * Read an unknown symbol at the beginning of the input view and return size of it.
+		 * Read an some unparsable in the input view and return 0 to reparse from this point.
 		 */
-		[[nodiscard]] EquationSize read_unknown(Token& token) const noexcept;
+		[[nodiscard]] EquationSize read_unparsable(Token& token) const noexcept;
 
 		std::string_view _view;
 		const std::string_view::const_pointer _begin; //-V122

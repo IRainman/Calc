@@ -8,7 +8,7 @@
 #include "pch.h"
 #include "formatter.h"
 
-[[nodiscard]] std::string Formatter::format(Formatter::Value value) noexcept
+[[nodiscard]] std::string Formatter::format(Value value) noexcept
 {
 	//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10/* - 3*/);
 	return fmt::format(FMT_COMPILE("{}"), value);
