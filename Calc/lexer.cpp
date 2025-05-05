@@ -44,10 +44,13 @@ inline void Lexer::advance(EquationSize n) noexcept
 	const auto begin = _view.data();
 	const auto end = _view.data() + _view.size();
 	[[assume(end - begin >= 1)]];
-#if defined(CALC_USING_MY_FASTFLOAT)
-	const auto res = fast_float::from_chars_advanced(begin, end, token.val, fast_float::parse_options{fast_float::chars_format::general});
-#elif defined(CALC_USING_FASTFLOAT)
-	const auto res = fast_float::from_chars_advanced(begin, end, token.val, fast_float::parse_options{fast_float::chars_format::general | fast_float::chars_format::no_infnan});
+#ifdef CALC_USING_FASTFLOAT
+	const auto opt = fast_float::parse_options{fast_float::chars_format::general
+#ifndef CALC_USING_MY_FASTFLOAT
+		 | fast_float::chars_format::no_infnan
+#endif
+	};
+	const auto res = fast_float::from_chars_advanced(begin, end, token.val, opt);
 #else // use std
 	const auto res = std::from_chars(begin, end, token.val);
 #endif
