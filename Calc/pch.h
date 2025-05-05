@@ -10,10 +10,11 @@
 #ifndef PCH_H
 #define PCH_H
 
+#include "flags.h"
+
 // add headers that you want to pre-compile here
 
 #include <array>
-#include <format>
 #include <limits>
 #include <numbers>
 #include <ranges>
@@ -22,18 +23,22 @@
 #include <string_view>
 #include <unordered_map>
 
-#define FMT_UNICODE 0
-#define FMT_USE_LOCALE 0
 #define FMT_HEADER_ONLY 1
 #define FMT_USE_FLOAT 0
 #define FMT_USE_DOUBLE 1
 #define FMT_USE_LONG_DOUBLE 0
-// Disable C4702 for fmt because it's generate incorrect error when constexpr if is using this is an MSVC bug.
-#pragma warning(push)
-#pragma warning(disable: 4702)
+#define FMT_USE_FLOAT128 0
+#define FMT_REDUCE_INT_INSTANTIATIONS 1
+#define FMT_BUILTIN_TYPES 0
+#define FMT_OPTIMIZE_SIZE 1
+#define FMT_UNICODE 0
+//#define FMT_USE_EXCEPTIONS 0
+#define FMT_ENFORCE_COMPILE_STRING 1
+//#define FMT_USE_FULL_CACHE_DRAGONBOX 0
+#define FMT_USE_LOCALE 0
+#define FMT_STATIC_THOUSANDS_SEPARATOR '\''
+#include <fmt/base.h>
 #include <fmt/compile.h>
-// Restore the previous warning state
-#pragma warning(pop)
 
 #define CALC_USING_FASTFLOAT
 #ifdef CALC_USING_FASTFLOAT

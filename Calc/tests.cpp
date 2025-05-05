@@ -6,7 +6,6 @@
  */
 
 #include "pch.h"
-#include "flags.h"
 #ifdef CALC_TESTS_ENABLED
 #include <chrono>
 #include "lexer.h"

@@ -1,7 +1,5 @@
 #pragma once
 
-#include "issue_manager.h"
-
 /*
  * Copyright 2023-2024 Solomina Elle Leonovna, a.rainman on gmail point com
  */

@@ -10,7 +10,6 @@
 
 #include "pch.h"
 
-#include "flags.h"
 #include "lexer.h"
 #include "parser.h"
 #include "issue_manager.h"

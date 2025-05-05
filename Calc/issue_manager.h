@@ -3,7 +3,6 @@
  * Copyright 2023-2024 Solomina Elle Leonovna, a.rainman on gmail point com
  */
 
-#include "flags.h"
 #ifndef CALC_USE_ERROR_TOKEN
 #include <vector>
 /**

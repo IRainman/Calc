@@ -7,6 +7,7 @@
 
 #include "pch.h"
 #include "formatter.h"
+#include "issue_manager.h"
 
 [[nodiscard]] std::string Formatter::format(Value value) noexcept
 {
