@@ -19,7 +19,6 @@
 #include <numbers>
 #include <ranges>
 #include <span>
-#include <string>
 #include <string_view>
 #include <unordered_map>
 
@@ -29,16 +28,17 @@
 #define FMT_USE_LONG_DOUBLE 0
 #define FMT_USE_FLOAT128 0
 #define FMT_REDUCE_INT_INSTANTIATIONS 1
-#define FMT_BUILTIN_TYPES 0
-#define FMT_OPTIMIZE_SIZE 1
+#define FMT_CPP_LIB_FILESYSTEM 0
+//#define FMT_BUILTIN_TYPES 0
+//#define FMT_OPTIMIZE_SIZE 1
 #define FMT_UNICODE 0
-//#define FMT_USE_EXCEPTIONS 0
+#define FMT_USE_EXCEPTIONS 0
 #define FMT_ENFORCE_COMPILE_STRING 1
-//#define FMT_USE_FULL_CACHE_DRAGONBOX 0
+//#define FMT_USE_FULL_CACHE_DRAGONBOX 1
 #define FMT_USE_LOCALE 0
 #define FMT_STATIC_THOUSANDS_SEPARATOR '\''
-#include <fmt/base.h>
-#include <fmt/compile.h>
+#include "../../fmt/include/fmt/base.h"
+#include "../../fmt/include/fmt/compile.h"
 
 #define CALC_USING_FASTFLOAT
 #ifdef CALC_USING_FASTFLOAT
@@ -46,6 +46,7 @@
 	#ifdef CALC_USING_MY_FASTFLOAT
 		#define FASTFLOAT_ONLY_POSITIVE_C_NUMBER_WO_INF_NAN
 		#define FASTFLOAT_ONLY_ROUNDS_TO_NEAREST_SUPPORTED
+		#define FASTFLOAT_ONLY_ANSI_SUPPORTED
 		#include "../../fast_float/include/fast_float/fast_float.h"
 /*
 Tests:
