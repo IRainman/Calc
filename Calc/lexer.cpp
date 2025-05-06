@@ -45,7 +45,7 @@ inline void Lexer::advance(EquationSize n) noexcept
 	const auto end = _view.data() + _view.size();
 	[[assume(end - begin >= 1)]];
 #ifdef CALC_USING_FASTFLOAT
-	const auto opt = fast_float::parse_options{fast_float::chars_format::general
+	constexpr auto opt = fast_float::parse_options{fast_float::chars_format::general
 #ifndef CALC_USING_MY_FASTFLOAT
 		 | fast_float::chars_format::no_infnan
 #endif
