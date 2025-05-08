@@ -51,7 +51,7 @@
 #ifdef CALC_USING_MY_FASTFLOAT
 	#define FASTFLOAT_ONLY_POSITIVE_C_NUMBER_WO_INF_NAN
 	#define FASTFLOAT_ONLY_ROUNDS_TO_NEAREST_SUPPORTED
-	// #define FASTFLOAT_ONLY_8BIT_STRING_SUPPORTED TODO?
+	// #define FASTFLOAT_ONLY_CHAR_STRING_SUPPORTED TODO?
 	#include "../../fast_float/include/fast_float/fast_float.h"
 #else
 	#include <fast_float/fast_float.h>

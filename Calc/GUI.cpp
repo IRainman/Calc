@@ -46,10 +46,11 @@ CCalcApp::CCalcApp()
 	// TODO: add construction code here,
 	// Place all significant initialization in InitInstance
 
-	/*Applications that generate floating point underflow in vector registers can benefit from setting the flush-to-zero mode rather than generating subnormal numbers in case of underflow:*/
-	/*It is strongly recommended to set the flush-to-zero mode unless you have special reasons to use subnormal numbers. You may, in addition, set the denormals-are-zero mode if vector regsiters are available:*/
+	/* Applications that generate floating point underflow in vector registers can benefit from setting the flush-to-zero mode rather than generating subnormal numbers in case of underflow:*/
+	/* It is strongly recommended to set the flush-to-zero mode unless you have special reasons to use subnormal numbers. You may, in addition, set the denormals-are-zero mode if vector regsiters are available:*/
 	// Set flush-to-zero and denormals-are-zero mode (SSE2):
 	_mm_setcsr(_mm_getcsr() | 0x8040);
+
 	// TODO: move this code to the core.
 #if !defined(CALC_USE_ERROR_TOKEN) && !defined(CALC_USING_STATIC_VECTOR)
 	IssueManager::speedup();
@@ -178,11 +179,12 @@ BOOL CCalcDlg::OnInitDialog()
 
 #ifndef CALC_MFC_USING_EXTENDENT_FUNCTIONS
 	auto m_hIcon = theApp.LoadIconA(IDR_MAINFRAME);
-#endif
+
 	// Set the icon for this dialog.  The framework does this automatically
 	//  when the application's main window is not a dialog
 	SetIcon(m_hIcon, TRUE);			// Set big icon
 	SetIcon(m_hIcon, FALSE);		// Set small icon
+#endif
 
 	// TODO: Add extra initialization here
 #ifdef CALC_TESTS_ENABLED
@@ -285,6 +287,9 @@ void CCalcDlg::OnBnClickedButtonCalc()
 // CAboutDlg dialog used for App About
 CAboutDlg::CAboutDlg() : CDialog(IDD_ABOUTBOX)
 {
+	// TODO
+	// FMT_VERSION_STR
+	// FASTFLOAT_VERSION_STR
 }
 
 #ifdef CALC_MFC_USING_EXTENDENT_FUNCTIONS
