@@ -1,6 +1,6 @@
 #pragma once
 /*
- * Copyright 2009-2024 Solomina Elle Leonovna, a.rainman on gmail point com
+ * Copyright 2009-2025 Solomina Elle Leonovna, a.rainman on gmail point com
  */
 
 //---------------------------------------------------------------------------
@@ -14,51 +14,13 @@ using ParamCount = char;
 #ifdef _DEBUG
 #define CALC_TESTS_ENABLED
 #define CALC_TESTS_DEV_ENABLED // if commented test is measurement performance
+#define CALC_TEST_FASTFLOAT
 
 //#define CALC_USE_ERROR_TOKEN // WIP
 // CALC_USE_FULL_TOKENS // deprecated
 // CALC_TESTS_USE_ADDITIONAL_OPTIONS // deprecated
 // ISSUE_MANAGER_HAVE_SEVERITY // deprecated
 #endif
-//---------------------------------------------------------------------------
-// CALC_TEST_FASTFLOAT // done
-/*
-std::from_chars
-
-Tests: exactly: 115, almost: 9,
- failed: 4,
- time is: 32064ms.
-
-fast_float::from_chars
-
-Tests:
- time is: 26684ms.
-
-( I do additional improvements and code cleanup in PR )
-
-Tests (100% of CPU cores is used by BOINC):
- time is: 43135ms.
-Tests (50% of CPU cores is used by BOINC):
- time is: 28898ms.
-Tests (BOINC is stopped):
- time is: 25459ms.
-
-When switch FASTFLOAT_ONLY_POSITIVE_C_NUMBER_WO_INF_NAN
-is applied:
-
-Tests: exactly: 115, almost: 9,
- failed: 4,
- time is: 25947ms.
-
-( I do additional improvements and code cleanup in PR )
-
-Tests (100% of CPU cores is used by BOINC):
- time is: 39588ms.
-Tests (50% of CPU cores is used by BOINC):
- time is: 27301ms.
-Tests (BOINC is stopped):
- time is: 24597ms.
-*/
 //---------------------------------------------------------------------------
 // Usage of fmt is improve performance.
 // TODO: check it and use fmt::memory_buffer for reduce new/delete from string

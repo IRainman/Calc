@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2024 Solomina Elle Leonovna, a.rainman on gmail point com
+ * Copyright 2009-2025 Solomina Elle, a.rainman on gmail point com
  */
 
 #ifdef _WIN32

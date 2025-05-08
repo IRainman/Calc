@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2024 Solomina Elle Leonovna, a.rainman on gmail point com
+ * Copyright 2009-2025 Solomina Elle Leonovna, a.rainman on gmail point com
  */
 // pch.h: This is a precompiled header file.
 // Files listed below are compiled only once, improving build performance for future builds.
@@ -37,28 +37,24 @@
 //#define FMT_USE_FULL_CACHE_DRAGONBOX 1
 #define FMT_USE_LOCALE 0
 #define FMT_STATIC_THOUSANDS_SEPARATOR '\''
-#include "../../fmt/include/fmt/base.h"
-#include "../../fmt/include/fmt/compile.h"
 
-#define CALC_USING_FASTFLOAT
-#ifdef CALC_USING_FASTFLOAT
-	#define CALC_USING_MY_FASTFLOAT
-	#ifdef CALC_USING_MY_FASTFLOAT
-		#define FASTFLOAT_ONLY_POSITIVE_C_NUMBER_WO_INF_NAN
-		#define FASTFLOAT_ONLY_ROUNDS_TO_NEAREST_SUPPORTED
-		// #define FASTFLOAT_ONLY_8BIT_STRING_SUPPORTED TODO?
-		#include "../../fast_float/include/fast_float/fast_float.h"
-/*
-Tests:
- time is: 21810ms.
-*/
-	#else
-		#include <fast_float/fast_float.h>
-/*
-Tests:
- time is: 24870ms.
-*/
-	#endif
+#define CALC_USING_MY_FMT // TODO: waiting for vcpkg vesrsion is updated.
+#ifdef CALC_USING_MY_FMT
+	#include "../../fmt/include/fmt/base.h"
+	#include "../../fmt/include/fmt/compile.h"
+#else
+	#include <fmt/base.h>
+	#include <fmt/compile.h>
+#endif
+
+#define CALC_USING_MY_FASTFLOAT // TODO: waiting for PR is approwed.
+#ifdef CALC_USING_MY_FASTFLOAT
+	#define FASTFLOAT_ONLY_POSITIVE_C_NUMBER_WO_INF_NAN
+	#define FASTFLOAT_ONLY_ROUNDS_TO_NEAREST_SUPPORTED
+	// #define FASTFLOAT_ONLY_8BIT_STRING_SUPPORTED TODO?
+	#include "../../fast_float/include/fast_float/fast_float.h"
+#else
+	#include <fast_float/fast_float.h>
 #endif
 
 #endif //PCH_H

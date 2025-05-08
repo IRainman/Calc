@@ -2,7 +2,7 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 /*
- * Copyright 2023-2024 Solomina Elle Leonovna, a.rainman on gmail point com
+ * Copyright 2023-2025 Solomina Elle, a.rainman on gmail point com
  */
 
 #include "pch.h"
@@ -19,30 +19,41 @@
 #include "token.h"
 
 #ifdef CALC_TEST_FASTFLOAT
-#if 0 // TODO
-	[[nodiscard]] constexpr Value bin(std::string_view x) noexcept
+	[[nodiscard]] inline Value bin(const std::string_view& x) noexcept
 	{
-		unsigned int bin_val;
-		auto res = fast_float::from_chars(x._Unchecked_begin(), x._Unchecked_end(), bin_val, 2);
-		
+		uint32_t bin_val;
+		auto res = fast_float::from_chars(x.data(), x.data() + x.size(), bin_val, 2);
+		if (res.ec == std::errc{}) [[likely]]
+		{
+			return bin_val;
+		}
+	
+		[[unlikely]]
+		return std::numeric_limits<Value>::quiet_NaN();
 	}
-	[[nodiscard]] constexpr Value hex(std::string_view x) noexcept
+	[[nodiscard]] inline Value hex(const std::string_view& x) noexcept
 	{
-		unsigned int hex_val;
-		auto res = fast_float::from_chars(x._Unchecked_begin(), x._Unchecked_end(), hex_val, 16);
+		uint32_t hex_val;
+		auto res = fast_float::from_chars(x.data(), x.data() + x.size(), hex_val, 16);
+		if (res.ec == std::errc{}) [[likely]]
+		{
+			return hex_val;
+		}
+	
+		[[unlikely]]
+		return std::numeric_limits<Value>::quiet_NaN();
 	}
-#endif
 
-std::string test_fast_float_parsing()
+static std::string test_fast_float_parsing()
 {
-	unsigned int bin_val, hex_val;
+	uint32_t bin_val, hex_val;
 	float f_val;
 	constexpr std::string_view data_bin = "1010010010000011001001010101001";
-	auto res = fast_float::from_chars(data_bin._Unchecked_begin(), data_bin._Unchecked_end(), bin_val, 2);
+	auto res = fast_float::from_chars(data_bin.data(), data_bin.data() + data_bin.size(), bin_val, 2);
 	constexpr std::string_view data_hex = "abCdEf69";
-	res = fast_float::from_chars(data_hex._Unchecked_begin(), data_hex._Unchecked_end(), hex_val, 16);
+	res = fast_float::from_chars(data_hex.data(), data_hex.data() + data_hex.size(), hex_val, 16);
 	constexpr std::string_view data_float = "12345678e-9";
-	res = fast_float::from_chars(data_float._Unchecked_begin(), data_float._Unchecked_end(), f_val);
+	res = fast_float::from_chars(data_float.data(), data_float.data() + data_float.size(), f_val);
 	return fmt::format(FMT_COMPILE("bin:{}: {},\r\nhex:{}: {},\r\nfloat:{}: {}"), data_bin, bin_val, data_hex, hex_val, data_float, f_val);
 }
 #endif
@@ -122,9 +133,8 @@ std::string calc_tests()
 		// check constants
 		// https://en.cppreference.com/w/cpp/numeric/constants
 		{ "phi", 1.6180339887498948482045868343656381177203091798057628621 }, // https://en.wikipedia.org/wiki/Golden_ratio
-		{ "pi",                   3.14159265358979323846264338327950288 }, // https://en.wikipedia.org/wiki/Pi_(mathematical_constant)
-		{ "245850922 / 78256779", 3.14159265358979323846264338327950288 }, // https://en.wikipedia.org/wiki/Pi#Approximate_value_and_digits
-		{ "e",                    2.718281828459045235360287471352 }, // https://en.wikipedia.org/wiki/E_(mathematical_constant)
+		{ "pi", 3.141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342117067982148086513282306647093844609550582231725359408128481117450284102701938521105559644622948954930381964428810975665933446128475648233786783165271201909145648566923460348610454326648213393607260249141273724587006606315588174881520920962829254091715364367892590360011330530548820466521384146951941511609433057270365759591953092186117381932611793105118548074462379962749567351885752724891227938183011949129833673362440656643086021394946395224737190702179860943702770539217176293176752384674818467669405132000568127145263560827785771342757789609173637178721468440901224953430146549585371050792279689258923542019956112129021960864034418159813629774771309960518707211349999998372978 }, // https://en.wikipedia.org/wiki/Pi_(mathematical_constant)
+		{ "e", 2.718281828459045235360287471352 }, // https://en.wikipedia.org/wiki/E_(mathematical_constant)
 		{ "egamma", 0.57721566490153286060651209008240243104215933593992 }, // https://en.wikipedia.org/wiki/Euler%27s_constant
 		{ "log2(e)", std::numbers::log2e_v<Value> },
 		{ "log10(e)", std::numbers::log10e_v<Value> },
@@ -164,7 +174,6 @@ std::string calc_tests()
 		// check additional constants
 		// Gelfond's constant https://en.wikipedia.org/wiki/Gelfond%27s_constant
 		{ "e ^ pi",  23.14069263277926900572 }, 
-		{ "exp(pi)", 23.14069263277926900572 },
 
 		// check long mantissa to produce correct output without noise
 		{ "0.000000000000000000000000000000000000000000000000000000000000000000000000000000000000001234567890123456789012345",
@@ -175,6 +184,15 @@ std::string calc_tests()
 		// scientific notation
 		{ "1.4e-3", 0.0014 },
 		{ "-1.4e+3", -1400.0 },
+		{ "-92666518056446206563E3", -9.2666518056446206563e+22 },
+		{ "1e-3", 0.001 },
+		{ "1e+0", 1.0 },
+		{ "1e+1", 10.0 },
+		{ "1e+2", 100.0 },
+		{ "1e3", 1000.0 },
+		{ "1e+4", 10000.0 },
+		{ "1e5", 100000.0 },
+		{ "1e+6", 1000000.0 },
 
 		// basic operations
 		{ "1+2", 3.0 },

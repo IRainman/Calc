@@ -1,7 +1,7 @@
 #pragma once
 
 /*
- * Copyright 2023-2024 Solomina Elle Leonovna, a.rainman on gmail point com
+ * Copyright 2023-2025 Solomina Elle, a.rainman on gmail point com
  */
 
 class Formatter

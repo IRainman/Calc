@@ -2,7 +2,7 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 /*
- * Copyright 2023-2024 Solomina Elle Leonovna, a.rainman on gmail point com
+ * Copyright 2023-2025 Solomina Elle, a.rainman on gmail point com
  */
 
 #include "pch.h"
@@ -44,16 +44,12 @@ inline void Lexer::advance(EquationSize n) noexcept
 	const auto begin = _view.data();
 	const auto end = _view.data() + _view.size();
 	[[assume(end - begin >= 1)]];
-#ifdef CALC_USING_FASTFLOAT
 	constexpr auto opt = fast_float::parse_options{fast_float::chars_format::general
-#ifndef CALC_USING_MY_FASTFLOAT
+#ifndef FASTFLOAT_ONLY_POSITIVE_C_NUMBER_WO_INF_NAN
 		 | fast_float::chars_format::no_infnan
 #endif
 	};
 	const auto res = fast_float::from_chars_advanced(begin, end, token.val, opt);
-#else // use std
-	const auto res = std::from_chars(begin, end, token.val);
-#endif
 	[[assume(res.ptr - begin >= 1)]];
 	const auto n = static_cast<EquationSize>(res.ptr - begin);
 	if (res.ec == std::errc{}) [[likely]]
