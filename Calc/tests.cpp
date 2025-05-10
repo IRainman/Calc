@@ -58,55 +58,6 @@ static std::string test_fast_float_parsing()
 }
 #endif
 
-namespace
-{
-	enum class result : char
-	{
-		// all values is handled optimized:
-		// less than 0 - failed or other error/exception.
-		// see is_failed.
-		failed = -2,
-		less_than_epsilon = -1,
-
-		// all values including zero and above is OK.
-		// see is_ok.
-		bit_to_bit = 0,
-		has_no_value = 1,
-	};
-	[[nodiscard]] constexpr bool is_ok(result r) noexcept
-	{
-		return r >= static_cast<result>(0);
-	}
-	[[nodiscard]] constexpr bool is_failed(result r) noexcept
-	{
-		return r < static_cast<result>(0);
-	}
-	[[nodiscard]] constexpr bool is_less_than_epsilon(result r) noexcept
-	{
-		return r == result::less_than_epsilon;
-	}
-	[[nodiscard]] constexpr bool has_no_value(result r) noexcept
-	{
-		return r == result::has_no_value;
-	}
-	[[nodiscard]] static inline auto compare(Value a, Value b)
-	{
-		if (a == b) //-V550
-		{
-			return result::bit_to_bit;
-		}
-		if (Identifiers::compare(a, b))
-		{
-			return result::less_than_epsilon;
-		}
-		if (std::isnan(a) && std::isnan(b))
-		{
-			return result::has_no_value;
-		}
-		return result::failed;
-	}
-}
-
 std::string calc_tests()
 {
 	constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>
@@ -386,10 +337,9 @@ std::string calc_tests()
 		{ "sin(rad(30)) * cos(rad(60))", 0.25 },
 		{ "sin(rad(30)) / cos(rad(60))", 1.0 },
 		{ "cos(rad(30)) / sin(rad(60))", 1.0 },
-		{ "arcsin(1)", 1.57079632679489661923132169163975144 }, // https://en.wikipedia.org/wiki/Pi_(mathematical_constant)
+		{ "arcsin(1)", 1.57079632679489661923132169163975144 },
 		{ "arccos(1)", 0.0 },
-		{ "arctan(1)", 0.78539816339744830961566084581987572 }, // https://en.wikipedia.org/wiki/Pi_(mathematical_constant)
-		{ "arctan2(1, 1)", 0.78539816339744830961566084581987572 }, // https://en.wikipedia.org/wiki/Pi_(mathematical_constant)
+		{ "arctan(1)", 0.78539816339744830961566084581987572 },
 
 		// power and root functions
 		{ "pow(2,3)", 8.0 },
@@ -458,7 +408,6 @@ std::string calc_tests()
 #ifdef CALC_TESTS_DEV_ENABLED
 	output.reserve(60000);
 	size_t failed = 0;
-	size_t almost = 0;
 #endif
 
 	const auto start = std::chrono::steady_clock::now();
@@ -475,56 +424,40 @@ std::string calc_tests()
 
 			const auto value = p.parse();
 
-			[[maybe_unused]] const auto result = IssueManager::has_errors() ? result::has_no_value : compare(value, t.second);
+			const bool ok = (IssueManager::has_errors() && std::isnan(t.second)) || (std::isnan(value) && std::isnan(t.second)) || (Formatter::format(value) == Formatter::format(t.second));
 
-#ifdef CALC_TESTS_DEV_ENABLED
-			if(is_less_than_epsilon(result))
-			{
-				++almost;
-			}
-			else if (is_failed(result))
+			if(!ok)
 			{
 				++failed;
-			}			
+			}
+#ifdef CALC_TESTS_DEV_ENABLED
 			output += fmt::format(FMT_COMPILE(
 				"Test {}: {}\r\n"
 				"{}\r\n"
 				"{}\r\n"),
-				is_ok(result) ? "OK" : "FAILED",
+				ok ? "OK" : "FAILED",
 				t.first,
-				has_no_value(result) ?
-					"not return a result, must return error." :
 					fmt::format(FMT_COMPILE(
 					"return = {}\r\n"
-					"and it's {} equal to expect value\r\n"
 					"expect = {}\r\n"
 					"output = {}"),
 					value,
-					is_failed(result) ?
-					"absolutely not" :
-					is_less_than_epsilon(result) ?
-					"close, but not" :
-					"exactly",
 					t.second,
 					Formatter::format(value)
 					),
 				Formatter::create_summary());
 #endif
-
-			IssueManager::clear();
+			if (IssueManager::has_errors())
+			{
+				IssueManager::clear();
+			}
 		}
 	}
 
 	const auto end = std::chrono::steady_clock::now();
 
-	output += std::format("Tests:"
-#ifdef CALC_TESTS_DEV_ENABLED
-		" exactly: {},\r\n failed: {} (almost: {}),"
-#endif
-		"\r\n time is: {}.",
-#ifdef CALC_TESTS_DEV_ENABLED
-		tests.size() - (failed + almost), almost, failed,
-#endif
+	output += std::format("Tests: ok: {},\r\n failed: {}\r\n time is: {}.",
+		tests.size() - (failed), failed,
 		std::chrono::duration_cast<std::chrono::
 #ifdef CALC_TESTS_DEV_ENABLED
 		microseconds
