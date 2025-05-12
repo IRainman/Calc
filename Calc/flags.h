@@ -14,7 +14,7 @@ using ParamCount = char;
 #ifdef _DEBUG
 #define CALC_TESTS_ENABLED
 #define CALC_TESTS_DEV_ENABLED // if commented test is measurement performance
-#define CALC_TEST_FASTFLOAT
+//#define CALC_TEST_FASTFLOAT
 
 //#define CALC_USE_ERROR_TOKEN // WIP
 // CALC_USE_FULL_TOKENS // deprecated
