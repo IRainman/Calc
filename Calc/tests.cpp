@@ -81,7 +81,8 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>
 
 	// check additional constants
 	// Gelfond's constant https://en.wikipedia.org/wiki/Gelfond%27s_constant
-	{ "e ^ pi",  23.14069263277926900572 }, 
+	{ "e ^ pi", 23.14069263277926900572 },
+	{ "pi ^ e", 22.45915771836104547342 },
 
 	// check long mantissa to produce correct output without noise
 	{ "0.000000000000000000000000000000000000000000000000000000000000000000000000000000000000001234567890123456789012345",
@@ -422,8 +423,9 @@ std::string calc_tests()
 			Parser p(l);
 
 			[[maybe_unused]] const auto value = p.parse();
+			const bool has_errors = IssueManager::has_errors();
 #ifdef CALC_TESTS_DEV_ENABLED
-			const bool ok = (IssueManager::has_errors() && std::isnan(t.second)) || (std::isnan(value) && std::isnan(t.second)) || (Formatter::format(value) == Formatter::format(t.second));
+			const bool ok = (has_errors && std::isnan(t.second)) || (std::isnan(value) && std::isnan(t.second)) || (Formatter::format(value) == Formatter::format(t.second));
 
 			if(!ok)
 			{
@@ -445,7 +447,7 @@ std::string calc_tests()
 					),
 				Formatter::create_summary());
 #endif
-			if (IssueManager::has_errors())
+			if (has_errors)
 			{
 				IssueManager::clear();
 			}
@@ -454,6 +456,7 @@ std::string calc_tests()
 
 	const auto end = std::chrono::steady_clock::now();
 
+	// Don't use fmt here, because it isn't compile.
 	output += std::format("Tests"
 #ifdef CALC_TESTS_DEV_ENABLED
 		":\r\n ok: {},\r\n failed: {}\r\n"

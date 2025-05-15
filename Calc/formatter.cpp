@@ -18,6 +18,7 @@
 #ifndef CALC_USE_ERROR_TOKEN
 [[nodiscard]] std::string Formatter::create_summary() noexcept
 {
+	// https://fmt.dev/11.1/api/#range-and-tuple-formatting
 	std::string ret;
 	for (const auto& error : IssueManager::_errors)
 	{
