@@ -49,12 +49,12 @@ inline void Lexer::advance(EquationSize n) noexcept
 		 | fast_float::chars_format::no_infnan
 #endif
 	};
-	const auto res = fast_float::from_chars_advanced(begin, end, token.val, opt);
+	const auto res = fast_float::from_chars_advanced(begin, end, token.number, opt);
 	[[assume(res.ptr - begin >= 1)]];
 	const auto n = static_cast<EquationSize>(res.ptr - begin);
 	if (res.ec == std::errc{}) [[likely]]
 	{
-		[[assume(token.val >= 0 && token.val <= std::numeric_limits<Value>::max() && !std::isnan(token.val))]];
+		[[assume(token.number >= 0 && token.number <= std::numeric_limits<Value>::max() && !std::isnan(token.number))]];
 		token.type = Token::Type::NUM;
 		return n;
 	}
@@ -82,12 +82,12 @@ inline void Lexer::advance(EquationSize n) noexcept
 		const auto [check, constant] = i->second;
 		if (check.is_constant())
 		{
-			token.val = constant({});
+			token.number = constant({});
 			token.type = Token::Type::NUM;
 		}
 		else
 		{
-			token.func = &(*i); // Use the address of the iterator's dereferenced value
+			token.function = &(*i); // Use the address of the iterator's dereferenced value
 			token.type = Token::Type::FUNCT;
 		}
 		return n;
