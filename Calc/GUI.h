@@ -41,7 +41,7 @@ public:
 #endif
 
 #ifdef CALC_MFC_USING_EXTENDENT_FUNCTIONS
-	protected:
+protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV support
 #endif
 	DECLARE_MESSAGE_MAP()
@@ -80,7 +80,7 @@ public:
 	afx_msg void OnBnClickedCancel() noexcept;
 
 #ifdef CALC_MFC_USING_EXTENDENT_FUNCTIONS
-	protected:
+protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 #endif
 

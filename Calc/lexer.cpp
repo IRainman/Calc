@@ -68,12 +68,13 @@ inline void Lexer::advance(EquationSize n) noexcept
 	[[assume((_view.size() >= 1))]];
 	EquationSize n = 1;
 
-	while (n != _view.size())
+	while (n != _view.size() && (
+		(_view[n] >= 'A' && _view[n] <= 'Z') ||
+		(_view[n] >= 'a' && _view[n] <= 'z') ||
+		(_view[n] >= '0' && _view[n] <= '9') ||
+		 _view[n] == '_'
+		))
 	{
-		if (!((_view[n] >= 'a' && _view[n] <= 'z') || (_view[n] >= 'A' && _view[n] <= 'Z') || (_view[n] >= '0' && _view[n] <= '9') || _view[n] == '_'))
-		{
-			break;
-		}
 		++n;
 	}
 
@@ -129,8 +130,8 @@ void Lexer::next(Token& token) noexcept
 			advance(read_number(token));
 			return;
 		}
-		if ((cur >= 'a' && cur <= 'z')
-			|| (cur >= 'A' && cur <= 'Z')
+		if ((cur >= 'A' && cur <= 'Z') ||
+			(cur >= 'a' && cur <= 'z')
 			) [[likely]]
 		{
 			advance(read_ident(token));

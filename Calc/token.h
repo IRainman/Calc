@@ -21,7 +21,7 @@ struct Token
 		RPAREN = ')',
 		COMA = ',',
 		NUM = '0',
-		FUNCT = 'a',
+		FUNCT = 'A',
 		ERROR = 0x7F,
 	};
 

@@ -15,6 +15,7 @@
 // add headers that you want to pre-compile here
 
 #include <array>
+#include <charconv>
 #include <limits>
 #include <numbers>
 #include <ranges>
