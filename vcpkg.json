@@ -1,13 +1,10 @@
 {
-  "builtin-baseline": "856505bb767458c99d8e3c3ed441f59a058d3687",
   "dependencies": [
     {
-      "name": "fmt",
-      "version>=": "11.0.2"
+      "name": "fmt"
     },
     {
-      "name": "fast-float",
-      "version>=": "8.0.2"
+      "name": "fast-float"
     }
   ]
 }
