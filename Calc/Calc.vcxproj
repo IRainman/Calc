@@ -142,7 +142,7 @@
       <CompileAsManaged>false</CompileAsManaged>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <ControlFlowGuard>Guard</ControlFlowGuard>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <CallingConvention>FastCall</CallingConvention>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -188,7 +188,7 @@
       <CompileAsManaged>false</CompileAsManaged>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <ControlFlowGuard>Guard</ControlFlowGuard>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <CallingConvention>FastCall</CallingConvention>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -247,7 +247,7 @@
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <OmitDefaultLibName>true</OmitDefaultLibName>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <CallingConvention>FastCall</CallingConvention>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -309,7 +309,7 @@
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <OmitDefaultLibName>true</OmitDefaultLibName>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <CallingConvention>FastCall</CallingConvention>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
