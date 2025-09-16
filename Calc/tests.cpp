@@ -463,7 +463,7 @@ std::string calc_tests()
 #endif
 		" time is: {}.",
 #ifdef CALC_TESTS_DEV_ENABLED
-		tests.size() - (failed), failed,
+		tests.size() - failed, failed,
 #endif
 		std::chrono::duration_cast<std::chrono::
 #ifdef CALC_TESTS_DEV_ENABLED

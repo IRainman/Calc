@@ -17,24 +17,28 @@ namespace
 [[nodiscard]] Value Parser::parse() noexcept
 {
 	const auto result = parse_expr_4();
-	if (_current.type != Token::Type::END) [[unlikely]]
+	if (_current.type == Token::Type::END) [[likely]]
 	{
-		if (_current.type == Token::Type::ERROR)
-		{
-#ifdef CALC_USE_ERROR_TOKEN
-			return error_position;
-#endif
-		}
-		else
-		{
-#ifdef CALC_USE_ERROR_TOKEN
-			return error_position + extraneous input;
-#else
-			IssueManager::report_error(_lex.get_position(), "extraneous input");
-#endif
-		}
+		return result;
 	}
-	return result;
+	if (_current.type == Token::Type::ERROR) [[unlikely]]
+	{
+#ifdef CALC_USE_ERROR_TOKEN
+		return error_position;
+#endif
+	}
+	else [[unlikely]]
+	{
+#ifdef CALC_USE_ERROR_TOKEN
+		return error_position + extraneous input;
+#else
+		IssueManager::report_error(_lex.get_position(), "extraneous input");
+#endif
+	}
+#ifndef CALC_USE_ERROR_TOKEN
+	[[unlikely]]
+	return std::numeric_limits<Value>::quiet_NaN();
+#endif
 }
 
 inline void Parser::advance() noexcept
