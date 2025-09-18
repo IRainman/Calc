@@ -41,9 +41,9 @@ inline void Lexer::advance(EquationSize n) noexcept
 
 [[nodiscard]] inline EquationSize Lexer::read_number(Token& token) const noexcept
 {
+	[[assume((_view.size() >= 1))]];
 	const auto begin = _view.data();
 	const auto end = _view.data() + _view.size();
-	[[assume(end - begin >= 1)]];
 	constexpr auto opt = fast_float::parse_options{fast_float::chars_format::general
 #ifndef FASTFLOAT_ONLY_POSITIVE_C_NUMBER_WO_INF_NAN
 		 | fast_float::chars_format::no_infnan

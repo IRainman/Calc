@@ -14,7 +14,11 @@ namespace Identifiers
 	using WrappedFnImplArg = Value;
 
 	template<const ParamCount ...Is>
-	consteval auto WrappedFnImpl(std::index_sequence<Is...>) noexcept -> Value(*)(WrappedFnImplArg<Is>...);
+	consteval auto WrappedFnImpl(std::index_sequence<Is...>) noexcept -> Value(*)(WrappedFnImplArg<Is>...)
+	{
+		// This function only returns a type, so the body can be empty.
+		return nullptr;
+	}
 
 	template <const ParamCount N>
 	using WrappedFn = decltype(WrappedFnImpl(std::make_index_sequence<N>()));
