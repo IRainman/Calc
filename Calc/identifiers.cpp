@@ -189,7 +189,7 @@ namespace Identifiers
 		{ "c", constant<299792458.0>() }, // Speed of light in vacuum (m*s^-1)
 		{ "G", constant<6.6743015151515151515151515151515151e-11>() }, // Newtonian constant of gravitation (m^3*kg^−1*s^−2)
 		{ "J", constant<3.058198247456354132564564787888767>() }, // Constants of Gauss field
-		{ "atm", constant<101.325>() }, // Standard atmosphere (Pa)
+		{ "atm", constant<101325.0>() }, // Standard atmosphere (Pa)
 		{ "g_n", constant<9.80665>() }, // Standard acceleration of gravity (m*s^-2)
 		{ "N_A", constant<6.02214076e23>() }, // Avogadro's number (mol^−1)
 		{ "k", constant<1.380649e-23>() }, // Boltzmann constant (J*K−1)
