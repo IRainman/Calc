@@ -145,7 +145,6 @@
       <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
       <UseUnicodeForAssemblerListing>true</UseUnicodeForAssemblerListing>
       <UseStandardPreprocessor>true</UseStandardPreprocessor>
-      <SmallerTypeCheck>true</SmallerTypeCheck>
       <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
     <ResourceCompile>
@@ -196,7 +195,6 @@
       <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
       <UseUnicodeForAssemblerListing>true</UseUnicodeForAssemblerListing>
       <UseStandardPreprocessor>true</UseStandardPreprocessor>
-      <SmallerTypeCheck>true</SmallerTypeCheck>
       <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
     <ResourceCompile>
