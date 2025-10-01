@@ -82,7 +82,12 @@ namespace Identifiers
 		};
 		std::unreachable();
 	}
-
+#ifdef CALC_TESTS_ENABLED
+	[[nodiscard]] constexpr Value parabola(std::span<Value> params) noexcept
+	{
+		return params[0] * params[0] + 1.0;
+	}
+#endif
 	[[nodiscard]] /*constexpr*/ Value pow(Value x, Value y) noexcept
 	{
 		if (compare(x, std::numbers::e_v<Value>))
@@ -221,6 +226,9 @@ namespace Identifiers
 		{ "arctan", function_pointer<1, std::atan>() },
 
 		{ "hypot", {{2, 3}, hypot} },
+#ifdef CALC_TESTS_ENABLED
+		{ "parabola", {{1, 1}, parabola} },
+#endif
 
 		{ "sh", function_pointer<1, std::sinh>() },
 		{ "ch", function_pointer<1, std::cosh>() },
@@ -248,7 +256,12 @@ namespace Identifiers
 		{ "exp2", function_pointer<1, std::exp2>() },
 #endif	
 
+#ifdef CALC_TESTS_ENABLED
 		{ "fma", function_pointer<3, std::fma>() },
+#endif
+#ifdef CALC_TESTS_ENABLED
+		{ "atan2",function_pointer<2, std::atan2>() },
+#endif
 		{ "rad", function_pointer<1, rad>() },
 		{ "deg", function_pointer<1, deg>() },
 
@@ -303,8 +316,8 @@ namespace Identifiers
 
 		{ "riemann_zeta", function_pointer<1, std::riemann_zeta>() },
 
-#ifdef CALC_TESTS_ENABLED
 		//---------------------------------------------------------------------------
+#ifdef CALC_TESTS_ENABLED
 		{ "distance", {{2, std::numeric_limits<ParamCount>::max()}, distance} },
 #endif
 
