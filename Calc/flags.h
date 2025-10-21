@@ -7,7 +7,16 @@
 /*
  * Type using as a type for calculation.
  */
-using EquationSize = uint32_t; // TODO needs to rewrite usage in the containers.
+/*
+In 64 bit build:
+
+uint32_t
+Tests time is: 50430ms.
+
+size_t
+Tests time is: 49737ms.
+*/
+using EquationSize = size_t; // TODO needs to rewrite usage in the containers.
 using Value = double;
 using ParamCount = char;
 //---------------------------------------------------------------------------
