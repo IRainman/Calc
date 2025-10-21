@@ -248,7 +248,7 @@ void CCalcDlg::OnBnClickedButtonCalc()
 {
 	if(GetDlgItemTextA(IDC_EDIT_INPUT, Input) >= 1)
 	{
-		const std::string_view input(Input.GetString(), static_cast<unsigned int>(Input.GetLength()));
+		const std::string_view input(Input.GetString(), static_cast<EquationSize>(Input.GetLength()));
 
 		Lexer l(input);
 		Parser p(l);

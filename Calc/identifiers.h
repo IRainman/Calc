@@ -5,9 +5,6 @@
 
 namespace Identifiers
 {
-	using Value = Value;
-	using ParamCount = ParamCount;
-
 	struct Fn
 	{
 		struct P

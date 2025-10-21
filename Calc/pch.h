@@ -10,8 +10,6 @@
 #ifndef PCH_H
 #define PCH_H
 
-#include "flags.h"
-
 // add headers that you want to pre-compile here
 
 #include <array>
@@ -22,6 +20,8 @@
 #include <span>
 #include <string_view>
 #include <unordered_map>
+
+#include "flags.h"
 
 #define FMT_HEADER_ONLY 1
 #define FMT_USE_FLOAT 0
@@ -45,7 +45,7 @@
 	#include <fmt/compile.h>
 #endif
 
-#define CALC_USING_MY_FASTFLOAT // TODO: waiting for PR is approved.
+#define CALC_USING_MY_FASTFLOAT // TODO: waiting for PR is approved and vcpkg version is updated.
 #ifdef CALC_USING_MY_FASTFLOAT
 	#define FASTFLOAT_ONLY_POSITIVE_C_NUMBER_WO_INF_NAN
 	#define FASTFLOAT_ONLY_ROUNDS_TO_NEAREST_SUPPORTED

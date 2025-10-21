@@ -1,4 +1,4 @@
-﻿// This is an independent project of an individual developer. Dear PVS-Studio, please check it.
+// This is an independent project of an individual developer. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 /*
@@ -207,7 +207,7 @@ inline void Parser::advance() noexcept
 					else [[unlikely]]
 					{
 						pos_of_ident -= i->first.size();
-						IssueManager::report_error(pos_of_ident, fmt::format(FMT_COMPILE("incorrect parameters count: min {}, max {}, got {}"), static_cast<uint8_t>(check.min), static_cast<uint8_t>(check.max), static_cast<uint8_t>(count)));
+						IssueManager::report_error(pos_of_ident, fmt::format("incorrect parameters count"));
 						return _current.number;
 					}
 				}

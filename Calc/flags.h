@@ -7,7 +7,7 @@
 /*
  * Type using as a type for calculation.
  */
-using EquationSize = size_t;
+using EquationSize = uint32_t; // TODO needs to rewrite usage in the containers.
 using Value = double;
 using ParamCount = char;
 //---------------------------------------------------------------------------
