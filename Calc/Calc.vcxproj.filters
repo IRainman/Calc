@@ -88,7 +88,6 @@
     <None Include="res\Calc.rc2">
       <Filter>Resources</Filter>
     </None>
-    <None Include="..\vcpkg.json" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Calc.rc">
