@@ -1,4 +1,4 @@
-﻿// This is an independent project of an individual developer. Dear PVS-Studio, please check it.
+// This is an independent project of an individual developer. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 /*
@@ -8,6 +8,7 @@
 #include "pch.h"
 #ifdef CALC_TESTS_ENABLED
 #include <chrono>
+#include <cfenv>
 #include "lexer.h"
 #include "parser.h"
 #include "issue_manager.h"
@@ -413,6 +414,21 @@ static std::string test_fast_float_parsing()
 }
 #endif
 
+constexpr std::string_view round_name(int const d) {
+	switch (d) {
+	case FE_UPWARD:
+		return "FE_UPWARD";
+	case FE_DOWNWARD:
+		return "FE_DOWNWARD";
+	case FE_TOWARDZERO:
+		return "FE_TOWARDZERO";
+	case FE_TONEAREST:
+		return "FE_TONEAREST";
+	default:
+		return "UNKNOWN";
+	}
+}
+
 std::string calc_tests()
 {
 	std::string output;
@@ -471,10 +487,12 @@ std::string calc_tests()
 	output += std::format("Tests"
 #ifdef CALC_TESTS_DEV_ENABLED
 		":\r\n ok: {},\r\n failed: {}\r\n"
+		"fegetround() == {}\r\n"
 #endif
 		" time is: {}.",
 #ifdef CALC_TESTS_DEV_ENABLED
 		tests.size() - failed, failed,
+		round_name(fegetround()),
 #endif
 		std::chrono::duration_cast<std::chrono::
 #ifdef CALC_TESTS_DEV_ENABLED
