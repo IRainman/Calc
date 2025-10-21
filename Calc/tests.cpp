@@ -414,6 +414,7 @@ static std::string test_fast_float_parsing()
 }
 #endif
 
+#ifdef CALC_TESTS_DEV_ENABLED
 constexpr std::string_view round_name(int const d) {
 	switch (d) {
 	case FE_UPWARD:
@@ -428,6 +429,7 @@ constexpr std::string_view round_name(int const d) {
 		return "UNKNOWN";
 	}
 }
+#endif
 
 std::string calc_tests()
 {
