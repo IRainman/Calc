@@ -1,10 +1,10 @@
 {
   "dependencies": [
-    {
-      "name": "fmt"
-    },
-    {
-      "name": "fast-float"
-    }
+    //{
+      //"name": "fmt"
+    //},
+    //{
+      //"name": "fast-float"
+    //}
   ]
 }
