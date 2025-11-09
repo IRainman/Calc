@@ -38,21 +38,22 @@
 
 #define CALC_USING_MY_FMT // TODO: waiting for vcpkg version is updated.
 #ifdef CALC_USING_MY_FMT
-	#include "../../fmt/include/fmt/base.h"
-	#include "../../fmt/include/fmt/compile.h"
+#include "../../fmt/include/fmt/base.h"
+#include "../../fmt/include/fmt/compile.h"
 #else
-	#include <fmt/base.h>
-	#include <fmt/compile.h>
+#include <fmt/base.h>
+#include <fmt/compile.h>
 #endif
 
 #define CALC_USING_MY_FASTFLOAT // TODO: waiting for PR is approved and vcpkg version is updated.
 #ifdef CALC_USING_MY_FASTFLOAT
-	#define FASTFLOAT_ONLY_POSITIVE_C_NUMBER_WO_INF_NAN
-	#define FASTFLOAT_ONLY_ROUNDS_TO_NEAREST_SUPPORTED
-	// #define FASTFLOAT_ONLY_CHAR_STRING_SUPPORTED TODO?
-	#include "../../fast_float/include/fast_float/fast_float.h"
+#define FASTFLOAT_ONLY_POSITIVE_C_NUMBER_WO_INF_NAN
+#define FASTFLOAT_ONLY_ROUNDS_TO_NEAREST_SUPPORTED
+#define FASTFLOAT_ISNOT_CHECKED_BOUNDS
+// #define FASTFLOAT_ONLY_CHAR_STRING_SUPPORTED TODO?
+#include "../../fast_float/include/fast_float/fast_float.h"
 #else
-	#include <fast_float/fast_float.h>
+#include <fast_float/fast_float.h>
 #endif
 
 #endif //PCH_H
