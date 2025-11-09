@@ -225,10 +225,8 @@ inline void Parser::advance() noexcept
 		}
 		while (count != static_cast<ParamCount>(parameters.size())); [[likely]]
 
-		{
-			IssueManager::report_error(_lex.get_position(), "to many parameters");
-			return _current.number;
-		}
+		IssueManager::report_error(_lex.get_position(), "to many parameters");
+		return _current.number;
 	}
 	else [[unlikely]]
 	{

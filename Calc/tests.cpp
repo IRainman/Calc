@@ -442,7 +442,7 @@ std::string calc_tests()
 	const auto start = std::chrono::steady_clock::now();
 
 #ifndef CALC_TESTS_DEV_ENABLED
-	for (unsigned int i = 1'000'000; i; --i)
+	for (unsigned int i = 1'000'000; i-- != 0;)
 #endif
 	{
 		for (const auto& t : tests)
