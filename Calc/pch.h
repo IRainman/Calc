@@ -23,6 +23,10 @@
 
 #include "flags.h"
 
+#define CALC_USING_MY_FMT // TODO: waiting for vcpkg version is updated.
+
+#define FMT_OPTIMIZE_SIZE 2 /* Tests time is: 49612ms. */
+#define FMT_BUILTIN_TYPES 0 /* Tests time is: 49980ms. */
 #define FMT_HEADER_ONLY 1
 #define FMT_USE_FLOAT 0
 #define FMT_USE_DOUBLE 1
@@ -32,11 +36,10 @@
 #define FMT_CPP_LIB_FILESYSTEM 0
 #define FMT_UNICODE 0
 #define FMT_USE_EXCEPTIONS 0
-#define FMT_USE_FULL_CACHE_DRAGONBOX 1
+#define FMT_USE_FULL_CACHE_DRAGONBOX 0 /* Tests time is: 50111ms. */
 #define FMT_USE_LOCALE 0
 #define FMT_STATIC_THOUSANDS_SEPARATOR '\''
 
-#define CALC_USING_MY_FMT // TODO: waiting for vcpkg version is updated.
 #ifdef CALC_USING_MY_FMT
 #include "../../fmt/include/fmt/base.h"
 #include "../../fmt/include/fmt/compile.h"
@@ -45,14 +48,17 @@
 #include <fmt/compile.h>
 #endif
 
+/* Tests time is: 50365ms. */
 #define CALC_USING_MY_FASTFLOAT // TODO: waiting for PR is approved and vcpkg version is updated.
 #ifdef CALC_USING_MY_FASTFLOAT
+/* Tests time is: 51645ms. */
 #define FASTFLOAT_ONLY_POSITIVE_C_NUMBER_WO_INF_NAN
 #define FASTFLOAT_ONLY_ROUNDS_TO_NEAREST_SUPPORTED
 #define FASTFLOAT_ISNOT_CHECKED_BOUNDS
 // #define FASTFLOAT_ONLY_CHAR_STRING_SUPPORTED TODO?
 #include "../../fast_float/include/fast_float/fast_float.h"
 #else
+/* Tests time is: 55430ms. */
 #include <fast_float/fast_float.h>
 #endif
 
