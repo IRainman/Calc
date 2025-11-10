@@ -177,7 +177,7 @@ inline void Parser::advance() noexcept
 
 [[nodiscard]] Value Parser::parse_function() noexcept
 {
-	auto pos_of_ident = _lex.get_position();
+	auto function_start_pos = _lex.get_position();
 	const auto i = _current.function;
 
 	advance();
@@ -206,8 +206,8 @@ inline void Parser::advance() noexcept
 					}
 					else [[unlikely]]
 					{
-						pos_of_ident -= i->first.size();
-						IssueManager::report_error(pos_of_ident, fmt::format("incorrect parameters count"));
+						function_start_pos -= i->first.size();
+						IssueManager::report_error(function_start_pos, "incorrect parameters count");
 						return _current.number;
 					}
 				}
@@ -225,7 +225,7 @@ inline void Parser::advance() noexcept
 		}
 		while (count != static_cast<ParamCount>(parameters.size())); [[likely]]
 
-		IssueManager::report_error(_lex.get_position(), "to many parameters");
+		IssueManager::report_error(_lex.get_position(), "too many parameters");
 		return _current.number;
 	}
 	else [[unlikely]]
