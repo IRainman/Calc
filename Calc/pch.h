@@ -48,10 +48,10 @@
 #include <fmt/compile.h>
 #endif
 
-/* Tests time is: 50365ms. */
+/* Tests time is: 51645ms. */
 #define CALC_USING_MY_FASTFLOAT // TODO: waiting for PR is approved and vcpkg version is updated.
 #ifdef CALC_USING_MY_FASTFLOAT
-/* Tests time is: 51645ms. */
+/* Tests time is: 50365ms. */
 #define FASTFLOAT_ONLY_POSITIVE_C_NUMBER_WO_INF_NAN
 #define FASTFLOAT_ONLY_ROUNDS_TO_NEAREST_SUPPORTED
 #define FASTFLOAT_ISNOT_CHECKED_BOUNDS
