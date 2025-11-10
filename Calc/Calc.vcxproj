@@ -256,6 +256,7 @@
       <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
       <UseUnicodeForAssemblerListing>true</UseUnicodeForAssemblerListing>
       <UseStandardPreprocessor>true</UseStandardPreprocessor>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -322,6 +323,7 @@
       <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
       <UseUnicodeForAssemblerListing>true</UseUnicodeForAssemblerListing>
       <UseStandardPreprocessor>true</UseStandardPreprocessor>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
