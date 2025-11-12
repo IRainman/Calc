@@ -64,5 +64,5 @@ class Parser
 		[[nodiscard]] Value parse_function() noexcept;
 		
 		Lexer& _lex;
-		Token _current;
+		Token _current [[indeterminate]];
 };

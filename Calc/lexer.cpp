@@ -14,7 +14,7 @@ namespace
 	const auto& ids = Identifiers::get();
 };
 
-[[nodiscard]] EquationSize Lexer::get_position() const noexcept
+[[nodiscard]] inline EquationSize Lexer::get_position() const noexcept
 {
 	[[assume(_view.data() - _begin >= 0)]];
 	return static_cast<EquationSize>(_view.data() - _begin);
@@ -25,7 +25,7 @@ inline void Lexer::advance(EquationSize n) noexcept
 	_view.remove_prefix(n);
 }
 
-[[nodiscard]] EquationSize Lexer::read_unparsable(Token& token) const noexcept
+[[nodiscard]] inline EquationSize Lexer::read_unparsable(Token& token) const noexcept
 {
 	IssueManager::report_error(get_position(), "unparsable");
 	token.type = Token::Type::ERROR;

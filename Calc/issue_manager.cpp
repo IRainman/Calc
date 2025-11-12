@@ -47,7 +47,7 @@ void report_warning(EquationSize pos, std::string&& text) noexcept
 /**
  * Report a new error.
  */
-void IssueManager::report_error(EquationSize pos, std::string&& text) noexcept
+void IssueManager::report_error(const EquationSize pos, std::string&& text) noexcept
 {
 	emplace(_errors, pos, std::move(text));
 }

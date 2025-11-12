@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 /*
  * Copyright 2023-2025 Solomina Elle, a.rainman on gmail point com
  */
@@ -30,8 +30,8 @@ namespace Identifiers
 			{
 				return min <= count && count <= max;
 			}
-			const ParamCount min;
-			const ParamCount max;
+			const ParamCount min [[indeterminate]];
+			const ParamCount max [[indeterminate]];
 		} check;
 		Value(*fn)(std::span<Value>); //-V122
 	};

@@ -288,6 +288,7 @@ void CCalcDlg::OnBnClickedButtonCalc()
 CAboutDlg::CAboutDlg() : CDialog(IDD_ABOUTBOX)
 {
 	// TODO
+	// CALC_VERSION_STR
 	// FMT_VERSION_STR
 	// FASTFLOAT_VERSION_STR
 }

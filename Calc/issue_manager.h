@@ -11,7 +11,7 @@
 class Issue
 {
 	public:
-		Issue(std::string&& t, EquationSize p) noexcept : text(t), pos(p) {};
+		Issue(std::string&& t, const EquationSize p) noexcept : text(t), pos(p) {};
 		Issue(const Issue&) = delete;
 		Issue(Issue&&) = default;
 	private:
@@ -56,7 +56,7 @@ class IssueManager
 		/**
 		 * Report a new error.
 		 */
-		static void report_error(EquationSize pos, std::string&& text) noexcept;
+		static void report_error(const EquationSize pos, std::string&& text) noexcept;
 		
 		/**
 		 * Indicate whether any messages have been reported so far.

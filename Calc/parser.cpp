@@ -94,7 +94,7 @@ inline void Parser::advance() noexcept
 
 [[nodiscard]] Value Parser::parse_expr_2() noexcept
 {
-	std::array<Value, std::numeric_limits<ParamCount>::max()> values;
+	std::array<Value, std::numeric_limits<ParamCount>::max()> values [[indeterminate]];
 	
 	ParamCount count = 0;
 	do
@@ -187,7 +187,7 @@ inline void Parser::advance() noexcept
 
 		const auto [check, function] = i->second;
 
-		std::array<Value, std::numeric_limits<ParamCount>::max()> parameters;
+		std::array<Value, std::numeric_limits<ParamCount>::max()> parameters [[indeterminate]];
 		ParamCount count = 0;
 
 		do

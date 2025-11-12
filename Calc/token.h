@@ -28,12 +28,12 @@ struct Token
 	union
 	{
 		// If token is a function, there is a pointer to it.
-		Identifiers::map::const_pointer function; //-V117
+		Identifiers::map::const_pointer function [[indeterminate]]; //-V117
 
 		// If token is a number parsed from string or a constant, this is the value of it.
-		Value number;
+		Value number [[indeterminate]];
 	};
 
 	// Type of this token.
-	Type type;
+	Type type [[indeterminate]];
 };
