@@ -1,4 +1,4 @@
-call "c:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsMSBuildCmd.bat"
+call "c:\Program Files\Microsoft Visual Studio\18\Enterprise\Common7\Tools\VsMSBuildCmd.bat"
 
 devenv Calc.sln /Rebuild "Release|Win32"
 
