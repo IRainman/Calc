@@ -7,6 +7,6 @@
 
 //#include <WinSDKVer.h> Don't enable it here. MFC(ATL) is doing it for us.
 
-#define _WIN32_WINNT _WIN32_WINNT_WIN7 // The minimal version of OS supported by application is Windows 7.
+#define _WIN32_WINNT _WIN32_WINNT_WIN10 // The minimal version of OS supported by application is Windows 10.
 
 //#include <SDKDDKVer.h> Don't enable it here. MFC(ATL) is doing it for us.
