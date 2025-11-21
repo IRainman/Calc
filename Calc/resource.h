@@ -11,8 +11,9 @@
 #define IDC_EDIT_INPUT                  1000
 #define IDC_EDIT_RESULT                 1001
 #define IDC_EDIT_MESSAGE                1002
-#define IDC_MFCLINK_HOMEPAGE            1003
-#define IDC_BUTTON_CALC                 1004
+#define IDC_BUTTON_CALC                 1003
+#define IDC_MFCLINK_HOMEPAGE            1004
+
 
 // Next default values for new objects
 // 

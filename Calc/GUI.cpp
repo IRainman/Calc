@@ -35,8 +35,6 @@ BEGIN_MESSAGE_MAP(CCalcApp, CWinApp)
 	ON_COMMAND(ID_HELP, &CWinApp::OnHelp)
 END_MESSAGE_MAP()
 
-
-
 // CCalcApp construction
 CCalcApp::CCalcApp()
 {
@@ -46,6 +44,7 @@ CCalcApp::CCalcApp()
 	// TODO: add construction code here,
 	// Place all significant initialization in InitInstance
 
+	// TODO: move this code to the core.
 	/* Applications that generate floating point underflow in vector registers can benefit from setting the flush-to-zero mode rather than generating subnormal numbers in case of underflow:*/
 	/* It is strongly recommended to set the flush-to-zero mode unless you have special reasons to use subnormal numbers. You may, in addition, set the denormals-are-zero mode if vector regsiters are available:*/
 	// Set flush-to-zero and denormals-are-zero mode (SSE2):
@@ -57,9 +56,8 @@ CCalcApp::CCalcApp()
 #endif
 }
 
-
 // The one and only CCalcApp object
-CCalcApp theApp;
+static CCalcApp theApp;
 
 
 // CCalcApp initialization
@@ -127,13 +125,6 @@ BOOL CCalcApp::InitInstance()
 	return FALSE;
 }
 
-
-
-
-
-
-
-
 CCalcDlg::CCalcDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(IDD_CALC_DIALOG, pParent)
 {
@@ -156,7 +147,6 @@ BEGIN_MESSAGE_MAP(CCalcDlg, CDialog)
 	//}}AFX_MSG_MAP
 	ON_BN_CLICKED(IDC_BUTTON_CALC, &CCalcDlg::OnBnClickedButtonCalc)
 END_MESSAGE_MAP()
-
 
 // CCalcDlg message handlers
 BOOL CCalcDlg::OnInitDialog()
@@ -243,7 +233,6 @@ HCURSOR CCalcDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 #endif
-
 void CCalcDlg::OnBnClickedButtonCalc()
 {
 	if(GetDlgItemTextA(IDC_EDIT_INPUT, Input) >= 1)
@@ -316,6 +305,13 @@ void CAboutDlg::OnBnClickedCancel() noexcept
 	EndDialog(FALSE);
 }
 
+#if defined _M_IX86
+#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='x86' publicKeyToken='6595b64144ccf1df' language='*'\"")
+#elif defined _M_X64
+#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='amd64' publicKeyToken='6595b64144ccf1df' language='*'\"")
+#else
+#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
+#endif
 
 #else
 

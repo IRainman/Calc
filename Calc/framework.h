@@ -1,7 +1,8 @@
 #pragma once
 
-// CALC_MFC_USING_EXTENDENT_FUNCTIONS // disabled by default, because we have a simple application
-// CALC_SUPPORT_WINDOWS_XP // deprecated
+//#define CALC_MFC_USING_EXTENDENT_FUNCTIONS // disabled by default, because we have a simple application
+//#define CALC_SUPPORT_WINDOWS_XP // deprecated by Windows SDK
+//#define CALC_SUPPORT_WINDOWS_7_8_81 // deprecated by Windows SDK since version 18 of the MSVC compiler.
 
 #ifndef VC_EXTRALEAN
 #define VC_EXTRALEAN            // Exclude rarely-used stuff from Windows headers
@@ -12,11 +13,9 @@
 
 #include "targetver.h"
 
-
 // turns off MFC's hiding of some common and often safely ignored warning messages
 #define _AFX_ALL_WARNINGS
 
-#define _AFX_MINREBUILD
 #define _AFX_NO_COM_SUPPORT
 #define _AFX_SINGLE_THREADED
 #define _AFX_NO_OLE_SUPPORT
@@ -67,20 +66,4 @@
 #endif
 
 #include <afxcontrolbars.h>     // MFC support for ribbons and control bars
-#endif
-
-
-
-
-
-
-
-
-
-#if defined _M_IX86
-#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='x86' publicKeyToken='6595b64144ccf1df' language='*'\"")
-#elif defined _M_X64
-#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='amd64' publicKeyToken='6595b64144ccf1df' language='*'\"")
-#else
-#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #endif
