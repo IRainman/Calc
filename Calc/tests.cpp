@@ -199,6 +199,10 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>
 	{ "0.00000000000001 - 0.000000000000009", 0.000000000000001 },
 	{ "0.000000000000001 - 0.0000000000000009", 0.0000000000000001 },
 	{ "0.0000000000000001 - 0.00000000000000009", 0.00000000000000001 },
+	{ "0.00000000000000001 - 0.000000000000000009", 0.000000000000000001 },
+	{ "0.2 - 0.1", 0.1 },
+	{ "0.3 - 0.2", 0.1 },
+	{ "0.3 - 0.1", 0.2 },
 	{ "0.2 + 0.1", 0.3 },
 	{ "0.1 + 0.2", 0.3 },
 	{ "10.0 - 0.93", 9.07 },
@@ -435,7 +439,7 @@ std::string calc_tests()
 {
 	std::string output;
 #ifdef CALC_TESTS_DEV_ENABLED
-	output.reserve(60000);
+	output.reserve(65536);
 	size_t failed = 0;
 #endif
 
@@ -452,9 +456,9 @@ std::string calc_tests()
 			Parser p(l);
 
 			[[maybe_unused]] const auto value = p.parse();
-			const bool has_errors = IssueManager::has_errors();
+			const auto has_errors = IssueManager::has_errors();
 #ifdef CALC_TESTS_DEV_ENABLED
-			const bool ok = (has_errors && std::isnan(t.second)) || (std::isnan(value) && std::isnan(t.second)) || (Formatter::format(value) == Formatter::format(t.second));
+			const auto ok = (has_errors && std::isnan(t.second)) || (std::isnan(value) && std::isnan(t.second)) || (Formatter::format(value) == Formatter::format(t.second));
 
 			if(!ok)
 			{
