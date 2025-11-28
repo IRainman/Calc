@@ -44,9 +44,9 @@ namespace Identifiers
 
 	[[nodiscard]] /*constexpr*/ Value pow(Value x, Value y) noexcept;
 
-	[[nodiscard]] constexpr Value to_rad(Value x) noexcept;
+	[[nodiscard]] constexpr Value rad(Value x) noexcept;
 
-	[[nodiscard]] constexpr Value to_deg(Value x) noexcept;
+	[[nodiscard]] constexpr Value deg(Value x) noexcept;
 
 	[[nodiscard]] /*constexpr*/ bool compare(const Value a, const Value b) noexcept;
 };
