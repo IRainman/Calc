@@ -108,7 +108,6 @@
     <ManagedAssembly>false</ManagedAssembly>
     <EnableMicrosoftCodeAnalysis>false</EnableMicrosoftCodeAnalysis>
     <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
-    <CopyCppRuntimeToOutputDir>true</CopyCppRuntimeToOutputDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ManagedAssembly>false</ManagedAssembly>
@@ -162,9 +161,7 @@
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
       <EnableUAC>false</EnableUAC>
     </Link>
-    <ProjectReference>
-      <LinkLibraryDependencies>false</LinkLibraryDependencies>
-    </ProjectReference>
+    <ProjectReference />
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
     </Manifest>
@@ -216,9 +213,7 @@
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
       <EnableUAC>false</EnableUAC>
     </Link>
-    <ProjectReference>
-      <LinkLibraryDependencies>false</LinkLibraryDependencies>
-    </ProjectReference>
+    <ProjectReference />
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
     </Manifest>
@@ -260,7 +255,6 @@
       <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <FloatingPointExceptions>false</FloatingPointExceptions>
-      <OmitDefaultLibName>true</OmitDefaultLibName>
       <CompileAs>CompileAsCpp</CompileAs>
       <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
       <UseUnicodeForAssemblerListing>true</UseUnicodeForAssemblerListing>
@@ -285,10 +279,9 @@
       <CETCompat>false</CETCompat>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
       <EnableUAC>false</EnableUAC>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
-    <ProjectReference>
-      <LinkLibraryDependencies>false</LinkLibraryDependencies>
-    </ProjectReference>
+    <ProjectReference />
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
     </Manifest>
@@ -330,7 +323,6 @@
       <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <FloatingPointExceptions>false</FloatingPointExceptions>
-      <OmitDefaultLibName>true</OmitDefaultLibName>
       <CallingConvention>FastCall</CallingConvention>
       <CompileAs>CompileAsCpp</CompileAs>
       <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
@@ -356,10 +348,9 @@
       <CETCompat>false</CETCompat>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
       <EnableUAC>false</EnableUAC>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
-    <ProjectReference>
-      <LinkLibraryDependencies>false</LinkLibraryDependencies>
-    </ProjectReference>
+    <ProjectReference />
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
     </Manifest>

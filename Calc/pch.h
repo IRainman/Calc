@@ -20,6 +20,8 @@
 #include <span>
 #include <string_view>
 #include <unordered_map>
+#include <optional>
+#include <algorithm>
 
 #include "flags.h"
 

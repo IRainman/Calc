@@ -22,12 +22,6 @@
 
 #ifdef _WIN32
 
-#include <vector>
-#include <optional>
-#include <cstdint>
-#include <immintrin.h>
-#include <algorithm>
-
 //#define CALC_SUPPORT_WINDOWS_XP // deprecated by Windows SDK
 //#define CALC_SUPPORT_WINDOWS_7_8_81 // deprecated by Windows SDK since version 18 of the MSVC compiler.
 
@@ -40,6 +34,7 @@
 
 #include "targetver.h"
 
+#include <immintrin.h>
 
 #include <windows.h>
 #include <commctrl.h>
@@ -50,7 +45,7 @@
 
 #pragma comment(lib, "comctl32.lib")
 #pragma comment(lib, "imm32.lib")
-#pragma comment(lib, "Version.lib") // needed for GetFileVersionInfo*
+//#pragma comment(lib, "Version.lib") // needed for GetFileVersionInfo*
 
 // ---------- configuration ----------
 static constexpr std::string_view kRegKey = "Software\\HedgehogInTheCPP\\Calc";
@@ -98,7 +93,7 @@ static std::optional<DWORD> RegReadDword(HKEY root, std::string_view subkey, std
     }
     return out;
 }
-
+/*
 // ---------- version string reading (uses Version APIs) ----------
 static std::string ReadFileVersionString() {
     const auto module = GetModuleHandleA(nullptr);
@@ -140,7 +135,7 @@ static std::string ReadFileVersionString() {
     if (!VerQueryValueA(buffer.data(), key.c_str(), &verData, &verLen) || verLen == 0) return {};
     return std::string(static_cast<const char*>(verData), static_cast<std::size_t>(verLen));
 }
-
+*/
 // ---------- DPI helpers ----------
 using SetProcessDpiAwarenessContext_t = BOOL(WINAPI*)(DPI_AWARENESS_CONTEXT);
 static SetProcessDpiAwarenessContext_t pSetProcessDpiAwarenessContext = nullptr;
@@ -340,41 +335,31 @@ static void RestoreWindowPlacement(HWND hWnd, [[maybe_unused]] UINT dpi) {
     SetWindowPlacement(hWnd, &wp);
 }
 
-// ---------- Create menu (used) ----------
-static void CreateAndAttachMenu(HWND hWnd) {
+// ---------- Create menu ----------
+static void AddAboutMenuToSystemMenu(HWND hDlg) {
     // Add "About..." menu item to system menu.
     // IDM_ABOUTBOX must be in the system command range.
     static_assert((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
     static_assert(IDM_ABOUTBOX < 0xF000);
 
-    const auto hMenu = CreateMenu();
-    if (!hMenu) return;
-    const auto hFile = CreatePopupMenu();
-    if (!hFile) { DestroyMenu(hMenu); return; }
-    AppendMenuA(hFile, MF_STRING, IDM_ABOUTBOX, "&About...");
-    AppendMenuA(hFile, MF_SEPARATOR, 0, nullptr);
-    AppendMenuA(hFile, MF_STRING, ID_CANCEL, "E&xit");
-    AppendMenuA(hMenu, MF_POPUP, reinterpret_cast<UINT_PTR>(hFile), "File");
-    SetMenu(hWnd, hMenu);
-
-    /*
-    const auto pSysMenu = GetSystemMenu(hWnd, FALSE);
-    AppendMenuA(pSysMenu, MF_SEPARATOR, 0, nullptr);
-    AppendMenuA(pSysMenu, MF_STRING, IDM_ABOUTBOX, "&About...");
-    AppendMenuA(pSysMenu, MF_SEPARATOR, 0, nullptr);
-    AppendMenuA(pSysMenu, MF_STRING, ID_CANCEL, "E&xit");
-    */
-
-    //auto m_hIcon = LoadIconA(reinterpret_cast<HINSTANCE>(GetWindowLongPtrA(hWnd, GWLP_HINSTANCE)), MAKEINTRESOURCEA(IDR_MAINFRAME));
-
-    // Set the icon for this dialog.  The framework does this automatically
-    //  when the application's main window is not a dialog
-    //SetIconA(m_hIcon, TRUE);			// Set big icon
-    //SetIconA(m_hIcon, FALSE);		// Set small icon
+    const auto hSys = GetSystemMenu(hDlg, FALSE);
+    if (hSys) {
+        AppendMenuA(hSys, MF_SEPARATOR, 0, nullptr);
+        AppendMenuA(hSys, MF_STRING, IDM_ABOUTBOX, "&About...");
+    }
 }
 
-// ---------- RunCalcOnce ----------
-static void RunCalcOnce(HWND hDlg) {
+static void SetWindowIcons(HWND hDlg) {
+    // Set icons (large and small)
+    const auto icon = LoadIconA(GetModuleHandleA(nullptr), MAKEINTRESOURCEA(IDR_MAINFRAME));
+    if (icon) {
+        SendMessageA(hDlg, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(icon));
+        SendMessageA(hDlg, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(icon));
+    }
+}
+
+// ---------- Calc! ----------
+static void ExecuteCalculation(HWND hDlg) {
     const auto copied = GetDlgItemTextA(hDlg, IDC_EDIT_INPUT, g_input.data(), static_cast<int>(g_input.size()));
     if (!copied) {
         SetDlgItemTextA(hDlg, IDC_EDIT_RESULT, "");
@@ -409,7 +394,44 @@ static void RunCalcOnce(HWND hDlg) {
     SetFocus(GetDlgItem(hDlg, IDC_EDIT_INPUT));
 }
 
-// ---------- Dialog proc ----------
+
+// About dialog proc (resource IDD_ABOUTBOX)
+static INT_PTR CALLBACK AboutDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM [[maybe_unused]] lParam) {
+    switch (uMsg) {
+    //case WM_INITDIALOG: {
+        // Set texts from code: version from resource and author line
+        //const auto ver = ReadFileVersionString();
+        //std::string line1 = "Calc";
+        //if (!ver.empty()) { line1 += " "; line1 += ver; }
+        //else line1 += "  (version unknown)";
+        //SetDlgItemTextA(hDlg, IDC_ABOUT_LINE1, line1.c_str());
+        //SetDlgItemTextA(hDlg, IDC_ABOUT_LINE2, "HedgehogInTheCPP");
+        // SysLink text (homepage)
+        //std::string link = "<a href=\""; link += kHomepageUrl; link += "\">Homepage</a>";
+        //SetDlgItemTextA(hDlg, IDC_LINK_HOMEPAGE, link.c_str());
+        //return TRUE;
+    //}
+    case WM_COMMAND:
+        if (/*LOWORD(wParam) == IDOK || */ LOWORD(wParam) == IDCANCEL) {
+            EndDialog(hDlg, 0); return TRUE;
+        }
+        break;
+    case WM_NOTIFY: {
+        const auto nm = reinterpret_cast<LPNMHDR>(lParam);
+        if (nm && nm->idFrom == IDC_LINK_HOMEPAGE && nm->code == NM_CLICK) {
+            const auto link = reinterpret_cast<NMLINK*>(lParam);
+            if (link && link->item.szUrl) {
+                ShellExecuteW(nullptr, L"open", link->item.szUrl, nullptr, nullptr, SW_SHOWNORMAL);
+            }
+            return TRUE;
+        }
+        break;
+    }
+    }
+    return FALSE;
+}
+
+// ---------- Calc Dialog proc ----------
 static INT_PTR CALLBACK CalcDialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     switch (uMsg) {
     case WM_INITDIALOG: {
@@ -444,7 +466,10 @@ static INT_PTR CALLBACK CalcDialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPAR
         RECT wr [[indeterminate]]; if (GetWindowRect(hDlg, &wr)) { g_minW = static_cast<UINT>(wr.right - wr.left); g_minH = static_cast<UINT>(wr.bottom - wr.top); }
 
         // create menu
-        CreateAndAttachMenu(hDlg);
+        AddAboutMenuToSystemMenu(hDlg);
+
+		// add icon
+        SetWindowIcons(hDlg);
 
         // restore placement (center if no stored)
         RestoreWindowPlacement(hDlg, g_currentDpi);
@@ -501,28 +526,22 @@ static INT_PTR CALLBACK CalcDialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPAR
         return 0;
     }
 
+    case WM_SYSCOMMAND: {
+        const auto cmd = static_cast<int>(wParam & 0xFFF0);
+        if (cmd == IDM_ABOUTBOX) {
+            // Show about dialog as resource modal
+            DialogBoxParamA(GetModuleHandleA(nullptr), MAKEINTRESOURCEA(IDD_ABOUTBOX), hDlg, AboutDlgProc, 0);
+            return TRUE;
+        }
+        break;
+    }
+
     case WM_COMMAND: {
         const auto id = static_cast<int>(LOWORD(wParam));
         const auto notify = static_cast<int>(HIWORD(wParam));
         
         if (id == IDC_BUTTON_CALC && notify == BN_CLICKED) {
-            RunCalcOnce(hDlg);
-            return TRUE;
-        }
-        else if (id == IDM_ABOUTBOX) {
-            const auto ver = ReadFileVersionString();
-            std::string about;
-            if (!ver.empty()) { about = "Calc "; about += ver; }
-            else about = "Calc";
-            about += "\r\nHedgehogInTheCPP";
-            MessageBoxA(hDlg, about.c_str(), "About", MB_OK | MB_ICONINFORMATION);
-            return TRUE;
-        }
-        else if (id == IDC_LINK_HOMEPAGE && (notify == NM_CLICK || notify == NM_RETURN)) {
-            const auto link = reinterpret_cast<NMLINK*>(lParam);
-            if (link && link->item.szUrl) {
-                ShellExecuteW(nullptr, L"open", link->item.szUrl, nullptr, nullptr, SW_SHOWNORMAL);
-            }
+            ExecuteCalculation(hDlg);
             return TRUE;
         }
         else if (id == ID_CANCEL) {
@@ -561,14 +580,9 @@ int WINAPI WinMain(HINSTANCE hInstance, [[maybe_unused]] HINSTANCE hPrev, [[mayb
 
     TryEnableDpiAwareness();
 
-    // InitCommonControlsEx() is required on Windows XP if an application
-    // manifest specifies use of ComCtl32.dll version 6 or later to enable
-    // visual styles.  Otherwise, any window creation will fail.
     INITCOMMONCONTROLSEX InitCtrls [[indeterminate]];
     InitCtrls.dwSize = sizeof(InitCtrls);
-    // Set this to include all the common control classes you want to use
-    // in your application.
-    InitCtrls.dwICC = ICC_STANDARD_CLASSES | ICC_LINK_CLASS | ICC_NATIVEFNTCTL_CLASS | ICC_PAGESCROLLER_CLASS | ICC_COOL_CLASSES;
+    InitCtrls.dwICC = ICC_STANDARD_CLASSES;
     InitCommonControlsEx(&InitCtrls);
 
     const auto ret = DialogBoxParamA(hInstance, MAKEINTRESOURCEA(IDD_CALC_DIALOG), nullptr, CalcDialogProc, 0);
