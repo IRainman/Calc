@@ -71,13 +71,7 @@
     <ClInclude Include="identifiers.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="GUI.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
     <ClInclude Include="token.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="framework.h">
       <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>
