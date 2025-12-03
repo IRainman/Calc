@@ -45,33 +45,14 @@
 
 #pragma comment(lib, "comctl32.lib")
 #pragma comment(lib, "imm32.lib")
-//#pragma comment(lib, "Version.lib") // needed for GetFileVersionInfo*
 
 // ---------- configuration ----------
 static constexpr std::string_view kRegKey = "Software\\HedgehogInTheCPP\\Calc";
 
-// ANSI multiline EDIT max is 64 KiB for classic Edit control
-static std::array<char, 64 * 1024> g_input; // 65535 for symbols and 1 for null C string API terminator
-
-// baseline DPI
-static constexpr UINT kBaselineDpi = 96u;
-
-// ---------- anchors ----------
-struct Anchor {
-    int id;
-    RECT rcBaseline; // client coords at baseline DPI
-    bool left, top, right, bottom;
-};
-static std::vector<Anchor> g_anchors;
-static UINT g_minW = 260u; // minimal window width (pixels)
-static UINT g_minH = 180u; // minimal window height
-static UINT g_baseClientW = g_minW;
-static UINT g_baseClientH = g_minH;
-static UINT g_currentDpi = kBaselineDpi;
-static HFONT g_hFontDialog = nullptr;
-
-// ---------- registry helpers ----------
-static void RegWriteDword(HKEY root, std::string_view subkey, std::string_view name, DWORD value) {
+// ------------------------------------------------------------------
+// registry helper
+// ------------------------------------------------------------------
+static void RegWriteDword(const HKEY root, const std::string_view subkey, const std::string_view name, const DWORD value) {
     HKEY hKey [[indeterminate]];
     if (RegCreateKeyExA(root, subkey.data(), 0, nullptr, 0, KEY_WRITE, nullptr, &hKey, nullptr) == ERROR_SUCCESS) {
         RegSetValueExA(hKey, name.data(), 0, REG_DWORD, reinterpret_cast<const BYTE*>(&value), sizeof(value));
@@ -79,9 +60,13 @@ static void RegWriteDword(HKEY root, std::string_view subkey, std::string_view n
     }
 }
 
-static std::optional<DWORD> RegReadDword(HKEY root, std::string_view subkey, std::string_view name) {
+// ------------------------------------------------------------------
+// registry helper
+// ------------------------------------------------------------------
+static std::optional<DWORD> RegReadDword(const HKEY root, const std::string_view subkey, const std::string_view name) {
     HKEY hKey [[indeterminate]];
     if (RegOpenKeyExA(root, subkey.data(), 0, KEY_READ, &hKey) != ERROR_SUCCESS) return std::nullopt;
+
     DWORD out [[indeterminate]]; DWORD outSize = sizeof(out); DWORD type [[indeterminate]];
     if (RegQueryValueExA(hKey, name.data(), nullptr, &type, reinterpret_cast<LPBYTE>(&out), &outSize) != ERROR_SUCCESS) {
         RegCloseKey(hKey);
@@ -93,189 +78,219 @@ static std::optional<DWORD> RegReadDword(HKEY root, std::string_view subkey, std
     }
     return out;
 }
-/*
-// ---------- version string reading (uses Version APIs) ----------
-static std::string ReadFileVersionString() {
-    const auto module = GetModuleHandleA(nullptr);
-    if (!module) return {};
 
-    std::string path; path.resize(MAX_PATH);
-    const auto len = GetModuleFileNameA(module, path.data(), static_cast<DWORD>(path.size()));
-    if (len == 0) return {};
-    if (len >= path.size()) {
-        // filename longer than MAX_PATH: resize and try again (rare)
-        path.resize(len + 1);
-        const auto len2 = GetModuleFileNameA(module, path.data(), static_cast<DWORD>(path.size()));
-        if (len2 == 0 || len2 >= path.size()) return {};
-    }
-    // null-terminate properly
-    path.resize(len); path.push_back('\0');
+// ANSI multiline EDIT max is 64 KiB for classic Edit control
+static std::array<char, 64 * 1024> g_input; // 65535 for symbols and 1 for null C string API terminator
 
-    const DWORD verSize = GetFileVersionInfoSizeA(path.data(), nullptr);
-    if (verSize == 0) return {};
-
-    std::string buffer;
-    buffer.resize(verSize);
-    if (!GetFileVersionInfoA(path.data(), 0, verSize, buffer.data())) return {};
-
-    struct LANGANDCODEPAGE { WORD wLanguage; WORD wCodePage; };
-    LANGANDCODEPAGE* trans [[indeterminate]]; UINT transLen [[indeterminate]];
-    if (!VerQueryValueA(buffer.data(), "\\VarFileInfo\\Translation", reinterpret_cast<LPVOID*>(&trans), &transLen)) {
-        // fallback to usual key
-        LPVOID data [[indeterminate]]; UINT dataLen [[indeterminate]];
-        if (VerQueryValueA(buffer.data(), "\\StringFileInfo\\040904b0\\FileVersion", &data, &dataLen) && dataLen) {
-            return std::string(static_cast<const char*>(data), static_cast<std::size_t>(dataLen));
-        }
-        return {};
-    }
-    if (transLen < sizeof(LANGANDCODEPAGE)) return {};
-    // build query key using std::format and then query
-    const auto key = fmt::format("\\StringFileInfo\\{:04x}{:04x}\\FileVersion", trans->wLanguage, trans->wCodePage);
-    LPVOID verData [[indeterminate]]; UINT verLen [[indeterminate]];
-    if (!VerQueryValueA(buffer.data(), key.c_str(), &verData, &verLen) || verLen == 0) return {};
-    return std::string(static_cast<const char*>(verData), static_cast<std::size_t>(verLen));
-}
-*/
-// ---------- DPI helpers ----------
-using SetProcessDpiAwarenessContext_t = BOOL(WINAPI*)(DPI_AWARENESS_CONTEXT);
-static SetProcessDpiAwarenessContext_t pSetProcessDpiAwarenessContext = nullptr;
-using SetProcessDpiAwareness_t = HRESULT(WINAPI*)(int);
-static SetProcessDpiAwareness_t pSetProcessDpiAwareness = nullptr;
-
-static void TryEnableDpiAwareness() {
-    const auto user32 = GetModuleHandleA("user32.dll");
-    if (user32) {
-        pSetProcessDpiAwarenessContext = reinterpret_cast<SetProcessDpiAwarenessContext_t>(GetProcAddress(user32, "SetProcessDpiAwarenessContext"));
-        if (pSetProcessDpiAwarenessContext) {
-#ifndef DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2
-#define DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 ((DPI_AWARENESS_CONTEXT)-4)
-#endif
-            if (pSetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2)) return;
-        }
-    }
-    const auto shcore = GetModuleHandleA("shcore.dll");
-    if (shcore) {
-        pSetProcessDpiAwareness = reinterpret_cast<SetProcessDpiAwareness_t>(GetProcAddress(shcore, "SetProcessDpiAwareness"));
-        if (pSetProcessDpiAwareness) { pSetProcessDpiAwareness(2); return; } // PROCESS_PER_MONITOR_DPI_AWARE
-    }
-    if (user32) {
-        using SetProcessDPIAware_t = BOOL(WINAPI*)();
-        const auto fn = reinterpret_cast<SetProcessDPIAware_t>(GetProcAddress(user32, "SetProcessDPIAware"));
-        if (fn) fn();
-    }
-}
-
-static void TryEnableDarkModeForWindow(HWND hWnd, const BOOL enable) {
-    const auto hDwm = GetModuleHandleA("dwmapi.dll");
-    if (!hDwm) return;
-    using DwmSetWindowAttribute_t = HRESULT(WINAPI*)(HWND, DWORD, LPCVOID, DWORD);
-    const auto pDwmSetWindowAttribute = reinterpret_cast<DwmSetWindowAttribute_t>(GetProcAddress(hDwm, "DwmSetWindowAttribute"));
-    if (!pDwmSetWindowAttribute) return;
-    constexpr int attrs[] = { 20, 19 };
-    for (const auto a : attrs) {
-        (void)pDwmSetWindowAttribute(hWnd, static_cast<DWORD>(a), &enable, sizeof(enable));
-    }
-}
-
-static HFONT CreateDialogFontForDpi(UINT dpi) {
-    const int pointSize = 10;
-    const int height = -MulDiv(pointSize, static_cast<int>(dpi), 72);
-    return CreateFontA(height, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, ANSI_CHARSET,
-        OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
-        DEFAULT_PITCH | FF_DONTCARE, "Segoe UI");
-}
-
-// ---------- Anchors ----------
-static void InitAnchors(HWND hDlg) {
-    g_anchors.clear();
-    RECT client [[indeterminate]]; if (!GetClientRect(hDlg, &client)) return;
-    g_baseClientW = static_cast<UINT>(client.right - client.left);
-    g_baseClientH = static_cast<UINT>(client.bottom - client.top);
-
-    const auto add = [&](int id, bool l, bool t, bool r, bool b) {
-        const auto h = GetDlgItem(hDlg, id);
-        if (!h) return;
-
-        RECT wr [[indeterminate]]; if (!GetWindowRect(h, &wr)) return;
-        POINT p{ wr.left, wr.top }; ScreenToClient(hDlg, &p);
-        RECT rcClient{ p.x, p.y, p.x + (wr.right - wr.left), p.y + (wr.bottom - wr.top) };
-        g_anchors.push_back({ id, rcClient, l, t, r, b });
+class CalcWindowState {
+    struct Baseline {
+        constexpr static UINT dpi = 96;
+        constexpr static UINT min_height = 280;
+        constexpr static UINT min_width = 240;
+        constexpr static UINT point_size = 10; // matches RC font 10 pt in resource template
     };
+    constexpr static Baseline baseline;
 
-    add(IDC_EDIT_INPUT, true, true, true, true);    // flexible input
-    add(IDC_EDIT_RESULT, true, false, true, true);  // bottom anchored
-    add(IDC_EDIT_MESSAGE, true, false, true, true); // bottom anchored
-    add(IDC_BUTTON_CALC, false, false, true, true); // button bottom-right
-}
-
-static inline int ScaleForDpi(int baselinePx, UINT targetDpi) {
-    return MulDiv(baselinePx, static_cast<int>(targetDpi), static_cast<int>(kBaselineDpi));
-}
-
-static void ResizeAnchoredControls(HWND hDlg, UINT clientW, UINT clientH, UINT dpi) {
-    if (g_anchors.empty()) return;
-
-    const auto baseW = (g_baseClientW ? g_baseClientW : 1u);
-    const auto baseH = (g_baseClientH ? g_baseClientH : 1u);
-
-    const auto dpiScaledClientW = ScaleForDpi(static_cast<int>(baseW), dpi);
-    const auto dpiScaledClientH = ScaleForDpi(static_cast<int>(baseH), dpi);
-
-    for (const auto& a : g_anchors) {
-        const RECT& rc = a.rcBaseline;
-        const int leftB = rc.left, topB = rc.top, rightB = rc.right, bottomB = rc.bottom;
-        const int widthB = rightB - leftB, heightB = bottomB - topB;
-
-        const auto leftS = ScaleForDpi(leftB, dpi);
-        const auto topS = ScaleForDpi(topB, dpi);
-        const auto rightS = ScaleForDpi(rightB, dpi);
-        const auto bottomS = ScaleForDpi(bottomB, dpi);
-
-        auto newLeft = leftS, newTop = topS, newRight = rightS, newBottom = bottomS;
-
-        const auto deltaW = static_cast<int>(clientW) - dpiScaledClientW;
-        const auto deltaH = static_cast<int>(clientH) - dpiScaledClientH;
-
-        // horizontal
-        if (a.left && a.right) {
-            newRight = rightS + deltaW; newLeft = leftS;
+    struct Anchor {
+        int id;
+        RECT rc;
+        const bool left, top, right, bottom;
+        auto get_x() const {
+            return static_cast<UINT>(rc.left);
+		}
+        auto get_y() const {
+            return static_cast<UINT>(rc.top);
         }
-        else if (!a.left && a.right) {
-            const auto distRight = dpiScaledClientW - rightS;
-            newRight = static_cast<int>(clientW) - distRight;
-            newLeft = newRight - ScaleForDpi(widthB, dpi);
+        auto get_width() const {
+            return static_cast<UINT>(rc.right - rc.left);
+		}
+        auto get_height() const {
+            return static_cast<UINT>(rc.bottom - rc.top);
         }
-        else {
-            newLeft = leftS; newRight = leftS + ScaleForDpi(widthB, dpi);
-        }
+    };
+    std::vector<Anchor> anchors;
 
-        // vertical
-        if (a.top && a.bottom) {
-            newBottom = bottomS + deltaH; newTop = topS;
-        }
-        else if (!a.top && a.bottom) {
-            const auto distBottom = dpiScaledClientH - bottomS;
-            newBottom = static_cast<int>(clientH) - distBottom;
-            newTop = newBottom - ScaleForDpi(heightB, dpi);
-        }
-        else {
-            newTop = topS; newBottom = topS + ScaleForDpi(heightB, dpi);
-        }
+    mutable HFONT font;
+    UINT dpi [[indeterminate]];
+    UINT min_width [[indeterminate]];
+    UINT width [[indeterminate]];
+    UINT min_heigth [[indeterminate]];
+    UINT heigth [[indeterminate]];
 
-        if (newLeft < 0) newLeft = 0;
-        if (newTop < 0) newTop = 0;
-        if (newRight < newLeft + 4) newRight = newLeft + 4;
-        if (newBottom < newTop + 4) newBottom = newTop + 4;
-
-        const auto hCtrl = GetDlgItem(hDlg, a.id);
-        if (hCtrl) MoveWindow(hCtrl, newLeft, newTop, newRight - newLeft, newBottom - newTop, TRUE);
+public:
+    CalcWindowState() noexcept : font(nullptr) { }
+    CalcWindowState(const CalcWindowState&) = delete;
+    CalcWindowState(CalcWindowState&&) = delete;
+    ~CalcWindowState() {
+		cleanup_font();
     }
+    auto get_font() const {
+        return font;
+	}
+    static constexpr auto get_baseline_dpi() {
+        return baseline.dpi;
+	}
+    auto get_dpi() const {
+        return dpi;
+    }
+    auto get_min_width() const {
+        return min_width;
+	}
+    auto get_min_heigth() const {
+        return min_heigth;
+    }
+    auto get_min_x() const {
+        return get_min_width();
+    }
+    auto get_min_y() const {
+        return get_min_heigth();
+    }
+    void initialize(const HWND dlg, const UINT _dpi, UINT _width, UINT _heigth) {
+        dpi = _dpi;
+        width = _width;
+		heigth = _heigth;
+		set_dpi(dlg, dpi);
+		init_anchors(dlg);
+	}
+    void init_anchors(const HWND dlg) {
+        const auto add = [&](const int id, const bool left, const bool top, const bool right, const bool bottom) {
+            const auto h = GetDlgItem(dlg, id);
+            if (!h) return;
+
+            RECT wr [[indeterminate]]; if (!GetWindowRect(h, &wr)) return;
+            POINT p{ wr.left, wr.top }; ScreenToClient(dlg, &p);
+            RECT rcClient{ p.x, p.y, p.x + (wr.right - wr.left), p.y + (wr.bottom - wr.top) };
+            anchors.emplace_back(Anchor{ id, rcClient, left, top, right, bottom });
+            };
+
+        add(IDC_EDIT_INPUT, true, true, true, true);    // flexible input
+        add(IDC_EDIT_RESULT, true, false, true, true);  // bottom anchored
+        add(IDC_EDIT_MESSAGE, true, false, true, true); // bottom anchored
+        add(IDC_BUTTON_CALC, false, false, true, true); // button bottom-right
+    }
+    void set_dpi(const HWND dlg, const UINT new_dpi) {
+        if (new_dpi == baseline.dpi) {
+            min_width = baseline.min_width;
+            min_heigth = baseline.min_height;
+        }
+        else {
+            min_width = scale(baseline.min_width, baseline.dpi, new_dpi);
+            min_heigth = scale(baseline.min_height, baseline.dpi, new_dpi);
+        }
+        const auto scale = static_cast<double>(new_dpi) / static_cast<double>(dpi);
+        rescale_anchors(scale);
+        dpi = new_dpi;
+        //==============
+        cleanup_font();
+        set_font(dlg);
+    }
+    void update_controls(const HWND hDlg) const {
+        for (const auto& a : anchors) {
+            const HWND hCtrl = GetDlgItem(hDlg, a.id);
+            if (hCtrl) {
+                MoveWindow(hCtrl, a.get_x(), a.get_y(), a.get_width(), a.get_height(), TRUE);
+            }
+        }
+    }
+    void resize(UINT clientW, UINT clientH) {
+        clientW = std::max(clientW, get_min_width());
+        clientH = std::max(clientH, get_min_heigth());
+
+        const auto w = width - clientW;
+        const auto h = heigth - clientH;
+
+        for (auto& a : anchors) {
+			a.rc.bottom = a.bottom ? (a.rc.bottom - h) : a.rc.bottom;
+			a.rc.left = a.left ? a.rc.left : (a.rc.left - w);
+			a.rc.top = a.top ? a.rc.top : (a.rc.top - h);
+			a.rc.right = a.right ? (a.rc.right - w) : a.rc.right;
+        }
+
+		width = clientW;
+        heigth = clientH;
+    }
+    operator bool() const {
+        return font != nullptr;
+	}
+private:
+    static UINT scale(const UINT base_px, const UINT base_dpi, const UINT target_dpi) {
+		return base_dpi == target_dpi ? base_px : static_cast<UINT>(std::lround(static_cast<double>(base_px) * static_cast<double>(target_dpi) / static_cast<double>(base_dpi)));
+    }
+    void rescale_anchors(const double scale) {
+        for (auto& a : anchors) {
+            // scale to target DPI
+            a.rc.left = std::lround(a.rc.left * scale);
+            a.rc.top = std::lround(a.rc.top * scale);
+            a.rc.right = std::lround(a.rc.right * scale);
+            a.rc.bottom = std::lround(a.rc.bottom * scale);
+        }
+    }
+    void set_font(const HWND dlg) const {
+        // Height in logical units: negative value means character height; formula:
+        // height = -MulDiv(pointSize, dpi, 72)
+        constexpr int pointSize = 10; // matches RC font 10 pt in resource template
+        const auto height = -MulDiv(pointSize, static_cast<int>(dpi), 72);
+        font = CreateFontA(height, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, ANSI_CHARSET,
+            OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
+            DEFAULT_PITCH | FF_DONTCARE, "Segoe UI");
+
+        if (font) {
+            SendMessageA(dlg, WM_SETFONT, reinterpret_cast<WPARAM>(font), MAKELPARAM(TRUE, 0));
+            constexpr int controlIds[] = { IDC_EDIT_INPUT, IDC_EDIT_RESULT, IDC_EDIT_MESSAGE, IDC_BUTTON_CALC };
+            for (int id : controlIds) {
+                const HWND h = GetDlgItem(dlg, id);
+                if (h) SendMessageA(h, WM_SETFONT, reinterpret_cast<WPARAM>(font), MAKELPARAM(TRUE, 0));
+            }
+        }
+        else {
+            // error
+		}
+	}
+    void cleanup_font() const {
+        if (font) {
+            DeleteObject(font);
+        }
+	}
+};
+static CalcWindowState CalcWindow [[indeterminate]];
+
+// ------------------------------------------------------------------
+// Helpers to get DPI for a window, with fallbacks.
+// Uses GetDpiForWindow when available, otherwise falls back to GetDeviceCaps.
+// ------------------------------------------------------------------
+static UINT GetWindowDpi(const HWND hWnd) {
+    // Try GetDpiForWindow (Windows 10+). Dynamically resolve to keep compatibility.
+    const HMODULE user32 = GetModuleHandleA("user32.dll");
+    if (user32) {
+        using GetDpiForWindow_t = UINT(WINAPI*)(HWND);
+        auto fn = reinterpret_cast<GetDpiForWindow_t>(GetProcAddress(user32, "GetDpiForWindow"));
+        if (fn) {
+            const UINT dpi = fn(hWnd);
+            if (dpi > 0) return dpi;
+        }
+    }
+    // Fallback: get device caps from nearest monitor / device context.
+    const HDC hdc = GetDC(hWnd);
+    if (hdc) {
+        const int dpiY = GetDeviceCaps(hdc, LOGPIXELSY);
+        ReleaseDC(hWnd, hdc);
+        if (dpiY > 0) return static_cast<UINT>(dpiY);
+    }
+    // Last fallback, query primary screen
+    const HDC screen = GetDC(nullptr);
+    if (screen) {
+        const int dpiY = GetDeviceCaps(screen, LOGPIXELSY);
+        ReleaseDC(nullptr, screen);
+        if (dpiY > 0) return static_cast<UINT>(dpiY);
+    }
+    return CalcWindow.get_baseline_dpi();
 }
 
 // ---------- placement ----------
-static void SaveWindowPlacement(HWND hWnd) {
+static void SaveWindowPlacement(const HWND hWnd) {
     WINDOWPLACEMENT wp [[indeterminate]]; wp.length = sizeof(wp);
     if (!GetWindowPlacement(hWnd, &wp)) return;
+    //RegWriteDword(HKEY_CURRENT_USER, kRegKey, "DPI", static_cast<DWORD>(CalcWindow.get_dpi()));
     RegWriteDword(HKEY_CURRENT_USER, kRegKey, "showCmd", static_cast<DWORD>(wp.showCmd));
     RegWriteDword(HKEY_CURRENT_USER, kRegKey, "flags", static_cast<DWORD>(wp.flags));
     RegWriteDword(HKEY_CURRENT_USER, kRegKey, "left", static_cast<DWORD>(wp.rcNormalPosition.left));
@@ -284,7 +299,7 @@ static void SaveWindowPlacement(HWND hWnd) {
     RegWriteDword(HKEY_CURRENT_USER, kRegKey, "bottom", static_cast<DWORD>(wp.rcNormalPosition.bottom));
 }
 
-static void CenterWindowOnMonitor(HWND hWnd, HMONITOR hMon) {
+static void CenterWindowOnMonitor(const HWND hWnd, const HMONITOR hMon) {
     RECT wr [[indeterminate]]; if (!GetWindowRect(hWnd, &wr)) { SetWindowPos(hWnd, nullptr, 100, 100, 0, 0, SWP_NOZORDER | SWP_NOSIZE); return; }
     MONITORINFO mi [[indeterminate]]; mi.cbSize = sizeof(mi);
     if (!GetMonitorInfo(hMon, &mi)) SystemParametersInfoW(SPI_GETWORKAREA, 0, &mi.rcWork, 0);
@@ -294,7 +309,15 @@ static void CenterWindowOnMonitor(HWND hWnd, HMONITOR hMon) {
     SetWindowPos(hWnd, nullptr, x, y, 0, 0, SWP_NOZORDER | SWP_NOSIZE | SWP_NOACTIVATE);
 }
 
-static void RestoreWindowPlacement(HWND hWnd, [[maybe_unused]] UINT dpi) {
+static void RestoreWindowPlacement(const HWND hWnd) {
+    RECT wr [[indeterminate]];
+    if (GetWindowRect(hWnd, &wr)) {
+        const auto width = static_cast<UINT>(wr.right - wr.left);
+        const auto height = static_cast<UINT>(wr.bottom - wr.top);
+        CalcWindow.initialize(hWnd, GetWindowDpi(hWnd), width, height);
+    }
+
+    //const auto sDPI = RegReadDword(HKEY_CURRENT_USER, kRegKey, "DPI");
     const auto sShow = RegReadDword(HKEY_CURRENT_USER, kRegKey, "showCmd");
     const auto sFlags = RegReadDword(HKEY_CURRENT_USER, kRegKey, "flags");
     const auto sLeft = RegReadDword(HKEY_CURRENT_USER, kRegKey, "left");
@@ -302,41 +325,33 @@ static void RestoreWindowPlacement(HWND hWnd, [[maybe_unused]] UINT dpi) {
     const auto sRight = RegReadDword(HKEY_CURRENT_USER, kRegKey, "right");
     const auto sBottom = RegReadDword(HKEY_CURRENT_USER, kRegKey, "bottom");
 
-    if (!sLeft || !sTop || !sRight || !sBottom) {
-        POINT pt [[indeterminate]]; GetCursorPos(&pt);
-        const auto hMon = MonitorFromPoint(pt, MONITOR_DEFAULTTONEAREST);
-        CenterWindowOnMonitor(hWnd, hMon);
-        return;
-    }
-
     WINDOWPLACEMENT wp [[indeterminate]]; wp.length = sizeof(wp);
     wp.showCmd = static_cast<int>(sShow ? *sShow : SW_SHOWNORMAL);
     wp.flags = static_cast<UINT>(sFlags ? *sFlags : 0u);
-    wp.rcNormalPosition.left = static_cast<LONG>(*sLeft);
-    wp.rcNormalPosition.top = static_cast<LONG>(*sTop);
-    wp.rcNormalPosition.right = static_cast<LONG>(*sRight);
-    wp.rcNormalPosition.bottom = static_cast<LONG>(*sBottom);
+    wp.rcNormalPosition.left = static_cast<LONG>(sLeft ? *sLeft : 100);
+    wp.rcNormalPosition.top = static_cast<LONG>(sTop ? *sTop : 100);
+    wp.rcNormalPosition.right = static_cast<LONG>(sRight ? *sRight : CalcWindow.get_min_width() + 100);
+    wp.rcNormalPosition.bottom = static_cast<LONG>(sBottom? *sBottom : CalcWindow.get_min_width() + 100);
 
     const auto hMon = MonitorFromRect(&wp.rcNormalPosition, MONITOR_DEFAULTTONEAREST);
     MONITORINFO mi [[indeterminate]]; mi.cbSize = sizeof(mi);
-    if (!GetMonitorInfoA(hMon, &mi)) { POINT pt; GetCursorPos(&pt); const auto hMon2 = MonitorFromPoint(pt, MONITOR_DEFAULTTONEAREST); CenterWindowOnMonitor(hWnd, hMon2); return; }
+    if (!GetMonitorInfoA(hMon, &mi)) {
+        POINT pt [[indeterminate]];
+        GetCursorPos(&pt);
+        const auto hMon2 = MonitorFromPoint(pt, MONITOR_DEFAULTTONEAREST);
+        CenterWindowOnMonitor(hWnd, hMon2);
+        return;
+    }
     const RECT& work = mi.rcWork;
     if (wp.rcNormalPosition.right <= work.left || wp.rcNormalPosition.left >= work.right || wp.rcNormalPosition.bottom <= work.top || wp.rcNormalPosition.top >= work.bottom) {
         CenterWindowOnMonitor(hWnd, hMon);
-        return;
-    }
-
-    const auto width = static_cast<UINT>(wp.rcNormalPosition.right - wp.rcNormalPosition.left);
-    const auto height = static_cast<UINT>(wp.rcNormalPosition.bottom - wp.rcNormalPosition.top);
-    if (width < g_minW || height < g_minH) {
-        SetWindowPos(hWnd, nullptr, work.left + static_cast<int>((work.right - work.left - g_minW) / 2), work.top + static_cast<int>((work.bottom - work.top - g_minH) / 2), static_cast<int>(g_minW), static_cast<int>(g_minH), SWP_NOZORDER | SWP_NOACTIVATE);
         return;
     }
     SetWindowPlacement(hWnd, &wp);
 }
 
 // ---------- Create menu ----------
-static void AddAboutMenuToSystemMenu(HWND hDlg) {
+static void AddAboutMenuToSystemMenu(const HWND hDlg) {
     // Add "About..." menu item to system menu.
     // IDM_ABOUTBOX must be in the system command range.
     static_assert((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
@@ -349,7 +364,10 @@ static void AddAboutMenuToSystemMenu(HWND hDlg) {
     }
 }
 
-static void SetWindowIcons(HWND hDlg) {
+// ------------------------------------------------------------------
+// Utility: set dialog icon (small & big) from IDR_MAINFRAME
+// ------------------------------------------------------------------
+static void SetWindowIcons(const HWND hDlg) {
     // Set icons (large and small)
     const auto icon = LoadIconA(GetModuleHandleA(nullptr), MAKEINTRESOURCEA(IDR_MAINFRAME));
     if (icon) {
@@ -358,8 +376,10 @@ static void SetWindowIcons(HWND hDlg) {
     }
 }
 
-// ---------- Calc! ----------
-static void ExecuteCalculation(HWND hDlg) {
+// ------------------------------------------------------------------
+// Calc!
+// ------------------------------------------------------------------
+static void ExecuteCalculation(const HWND hDlg) {
     const auto copied = GetDlgItemTextA(hDlg, IDC_EDIT_INPUT, g_input.data(), static_cast<int>(g_input.size()));
     if (!copied) {
         SetDlgItemTextA(hDlg, IDC_EDIT_RESULT, "");
@@ -395,24 +415,16 @@ static void ExecuteCalculation(HWND hDlg) {
 }
 
 
-// About dialog proc (resource IDD_ABOUTBOX)
-static INT_PTR CALLBACK AboutDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM [[maybe_unused]] lParam) {
+// ------------------------------------------------------------------
+// About dialog proc (resource-based).
+// ------------------------------------------------------------------
+static INT_PTR CALLBACK AboutDlgProc(const HWND hDlg, const UINT uMsg, const WPARAM wParam, const LPARAM lParam) {
     switch (uMsg) {
     //case WM_INITDIALOG: {
-        // Set texts from code: version from resource and author line
-        //const auto ver = ReadFileVersionString();
-        //std::string line1 = "Calc";
-        //if (!ver.empty()) { line1 += " "; line1 += ver; }
-        //else line1 += "  (version unknown)";
-        //SetDlgItemTextA(hDlg, IDC_ABOUT_LINE1, line1.c_str());
-        //SetDlgItemTextA(hDlg, IDC_ABOUT_LINE2, "HedgehogInTheCPP");
-        // SysLink text (homepage)
-        //std::string link = "<a href=\""; link += kHomepageUrl; link += "\">Homepage</a>";
-        //SetDlgItemTextA(hDlg, IDC_LINK_HOMEPAGE, link.c_str());
-        //return TRUE;
+    //    return TRUE;
     //}
     case WM_COMMAND:
-        if (/*LOWORD(wParam) == IDOK || */ LOWORD(wParam) == IDCANCEL) {
+        if (LOWORD(wParam) == IDCANCEL) {
             EndDialog(hDlg, 0); return TRUE;
         }
         break;
@@ -431,51 +443,26 @@ static INT_PTR CALLBACK AboutDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
     return FALSE;
 }
 
-// ---------- Calc Dialog proc ----------
-static INT_PTR CALLBACK CalcDialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+// ------------------------------------------------------------------
+// Calc dialog proc (resource-based).
+// ------------------------------------------------------------------
+static INT_PTR CALLBACK CalcDialogProc(const HWND hDlg, const UINT uMsg, const WPARAM wParam, const LPARAM lParam) {
     switch (uMsg) {
     case WM_INITDIALOG: {
-        TryEnableDpiAwareness();
-
-        // detect initial DPI
-        auto dpi = kBaselineDpi;
-        const auto user32 = GetModuleHandleA("user32.dll");
-        if (user32) {
-            using GetDpiForWindow_t = UINT(WINAPI*)(HWND);
-            const auto pGetDpiForWindow = reinterpret_cast<GetDpiForWindow_t>(GetProcAddress(user32, "GetDpiForWindow"));
-            if (pGetDpiForWindow) dpi = pGetDpiForWindow(hDlg);
-        }
-        g_currentDpi = dpi;
-
-        // DPI scaled font
-        g_hFontDialog = CreateDialogFontForDpi(g_currentDpi);
-        if (g_hFontDialog) {
-            const auto apply = [&](int id) {
-                const auto h = GetDlgItem(hDlg, id);
-                if (h) SendMessageA(h, WM_SETFONT, reinterpret_cast<WPARAM>(g_hFontDialog), TRUE);
-                };
-            apply(IDC_EDIT_INPUT); apply(IDC_EDIT_RESULT); apply(IDC_EDIT_MESSAGE); apply(IDC_BUTTON_CALC); apply(IDC_LINK_HOMEPAGE);
-        }
-
         // IME: associate default context for multiline edit
         const auto hInput = GetDlgItem(hDlg, IDC_EDIT_INPUT);
         if (hInput) ImmAssociateContextEx(hInput, nullptr, IACE_DEFAULT);
 
-        // anchors and min size
-        InitAnchors(hDlg);
-        RECT wr [[indeterminate]]; if (GetWindowRect(hDlg, &wr)) { g_minW = static_cast<UINT>(wr.right - wr.left); g_minH = static_cast<UINT>(wr.bottom - wr.top); }
 
-        // create menu
+        RestoreWindowPlacement(hDlg);
+
         AddAboutMenuToSystemMenu(hDlg);
 
-		// add icon
         SetWindowIcons(hDlg);
 
-        // restore placement (center if no stored)
-        RestoreWindowPlacement(hDlg, g_currentDpi);
-
-        // try dark mode
+#if 0
         TryEnableDarkModeForWindow(hDlg, TRUE);
+#endif
 
 #ifdef CALC_TESTS_ENABLED
         SetDlgItemTextA(hDlg, IDC_EDIT_MESSAGE, calc_tests().c_str());
@@ -484,88 +471,73 @@ static INT_PTR CALLBACK CalcDialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPAR
         SetFocus(hInput);
         return FALSE;
     }
-
+    case WM_DISPLAYCHANGE: {
+		const auto new_dpi = GetWindowDpi(hDlg);
+        if (CalcWindow.get_dpi() != new_dpi) {
+			CalcWindow.set_dpi(hDlg, new_dpi);
+            CalcWindow.update_controls(hDlg);
+            return TRUE;
+		}
+    }
     case WM_DPICHANGED: {
         const UINT newDpi = HIWORD(wParam);
-        if (newDpi == 0) break;
-        g_currentDpi = newDpi;
-        if (lParam) {
-            const auto prc = reinterpret_cast<RECT*>(lParam);
-            SetWindowPos(hDlg, nullptr, prc->left, prc->top, prc->right - prc->left, prc->bottom - prc->top, SWP_NOZORDER | SWP_NOACTIVATE);
+        if (newDpi) {
+			CalcWindow.set_dpi(hDlg, newDpi);
+            CalcWindow.update_controls(hDlg);
+            return TRUE;
         }
-        if (g_hFontDialog) { DeleteObject(g_hFontDialog); g_hFontDialog = nullptr; }
-        g_hFontDialog = CreateDialogFontForDpi(g_currentDpi);
-        if (g_hFontDialog) {
-            const auto apply = [&](int id) {
-                const auto h = GetDlgItem(hDlg, id);
-                if (h) SendMessageA(h, WM_SETFONT, reinterpret_cast<WPARAM>(g_hFontDialog), TRUE);
-                };
-            apply(IDC_EDIT_INPUT); apply(IDC_EDIT_RESULT); apply(IDC_EDIT_MESSAGE); apply(IDC_BUTTON_CALC); apply(IDC_LINK_HOMEPAGE);
-        }
-        RECT client [[indeterminate]]; GetClientRect(hDlg, &client);
-        ResizeAnchoredControls(hDlg, static_cast<UINT>(client.right - client.left), static_cast<UINT>(client.bottom - client.top), g_currentDpi);
+		return FALSE;
+    }
+    case WM_SIZE: { // OK
+        const auto clientW = static_cast<UINT>(LOWORD(lParam));
+        const auto clientH = static_cast<UINT>(HIWORD(lParam));
+        CalcWindow.resize(clientW, clientH);
+        CalcWindow.update_controls(hDlg);
         return TRUE;
     }
-
-    case WM_SIZE: {
-        const auto newW = static_cast<UINT>(LOWORD(lParam));
-        const auto newH = static_cast<UINT>(HIWORD(lParam));
-        // enforce minimal size
-        const auto enforcedW = std::max(newW, g_minW);
-        const auto enforcedH = std::max(newH, g_minH);
-        ResizeAnchoredControls(hDlg, enforcedW, enforcedH, g_currentDpi);
-        return TRUE;
-    }
-
-    case WM_GETMINMAXINFO: {
+    case WM_GETMINMAXINFO: { // OK
         const auto lpMMI = reinterpret_cast<LPMINMAXINFO>(lParam);
         if (lpMMI) {
-            lpMMI->ptMinTrackSize.x = static_cast<LONG>(g_minW);
-            lpMMI->ptMinTrackSize.y = static_cast<LONG>(g_minH);
+            lpMMI->ptMinTrackSize.x = static_cast<LONG>(CalcWindow.get_min_x());
+            lpMMI->ptMinTrackSize.y = static_cast<LONG>(CalcWindow.get_min_y());
         }
-        return 0;
+        return FALSE;
     }
-
-    case WM_SYSCOMMAND: {
+    case WM_SYSCOMMAND: { // OK
         const auto cmd = static_cast<int>(wParam & 0xFFF0);
         if (cmd == IDM_ABOUTBOX) {
-            // Show about dialog as resource modal
             DialogBoxParamA(GetModuleHandleA(nullptr), MAKEINTRESOURCEA(IDD_ABOUTBOX), hDlg, AboutDlgProc, 0);
             return TRUE;
         }
-        break;
+        return FALSE;
     }
+    case WM_COMMAND: { // OK
+        const auto id = static_cast<UINT>(LOWORD(wParam));
+        const auto notify = static_cast<UINT>(HIWORD(wParam));
 
-    case WM_COMMAND: {
-        const auto id = static_cast<int>(LOWORD(wParam));
-        const auto notify = static_cast<int>(HIWORD(wParam));
-        
         if (id == IDC_BUTTON_CALC && notify == BN_CLICKED) {
             ExecuteCalculation(hDlg);
             return TRUE;
         }
-        else if (id == ID_CANCEL) {
-            EndDialog(hDlg, 0);
-            return TRUE;
-        }
-        break;
+        return FALSE;
     }
-
-    case WM_CLOSE:
+    case WM_CLOSE: { // OK
         SaveWindowPlacement(hDlg);
         EndDialog(hDlg, 0);
         return TRUE;
+    }
+    case WM_DESTROY: {
+        //if (g_hFontDialog) { DeleteObject(g_hFontDialog); g_hFontDialog = nullptr; }
 
-    case WM_DESTROY:
-        if (g_hFontDialog) { DeleteObject(g_hFontDialog); g_hFontDialog = nullptr; }
         return FALSE;
+    }
     }
 
     return FALSE;
 }
 
 // ---------- WinMain ----------
-int WINAPI WinMain(HINSTANCE hInstance, [[maybe_unused]] HINSTANCE hPrev, [[maybe_unused]] LPSTR lpCmdLine, int) {
+int WINAPI WinMain(const HINSTANCE hInstance, [[maybe_unused]] const HINSTANCE hPrev, [[maybe_unused]] const LPSTR lpCmdLine, const int) { // OK
 
     // TODO: move this code to the core.
     /* Applications that generate floating point underflow in vector registers can benefit from setting the flush-to-zero mode rather than generating subnormal numbers in case of underflow:*/
@@ -577,8 +549,6 @@ int WINAPI WinMain(HINSTANCE hInstance, [[maybe_unused]] HINSTANCE hPrev, [[mayb
 #if !defined(CALC_USE_ERROR_TOKEN) && !defined(CALC_USING_STATIC_VECTOR)
     IssueManager::speedup();
 #endif
-
-    TryEnableDpiAwareness();
 
     INITCOMMONCONTROLSEX InitCtrls [[indeterminate]];
     InitCtrls.dwSize = sizeof(InitCtrls);
