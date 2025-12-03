@@ -214,7 +214,7 @@ namespace Identifiers
 		{ "KJ", constant<physical::KJ>() },
 		{ "phi0", constant<physical::phi0>() },
 
-		/*
+#ifdef CALC_TESTS_ENABLED
 		// Particle constants
 		{ "electron_mass", constant<particle::electron_mass>() },
 		{ "proton_mass", constant<particle::proton_mass>() },
@@ -327,7 +327,7 @@ namespace Identifiers
 		{ "proton_mass_energy_MeV", constant<nuclear::proton_mass_energy_MeV>() },
 		{ "neutron_mass_energy_MeV", constant<nuclear::neutron_mass_energy_MeV>() },
 		{ "nuclear_magneton", constant<nuclear::nuclear_magneton>() },
-		*/
+#endif
 
 		// Derived physical constants & conversion factors
 		{ "atm", constant<derived::atm>() },
@@ -426,7 +426,6 @@ namespace Identifiers
 		// TODO additional constant
 		{ "J", constant<3.058198247456354132564564787888767>() }, // Constants of Gauss field
 		{ "Z_0", constant<376.7303134617706554681984004203193082686>() }, // characteristic impedance of vacuum (Ohm)
-		{ "e_0", constant<1.602176634e-19>() }, // Elementary charge (C)
 		{ "eV",  constant<1.602176634e-19>() }, // Electronvolt (J)
 
 		//---------------------------------------------------------------------------

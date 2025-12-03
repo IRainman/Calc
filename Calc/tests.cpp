@@ -42,6 +42,24 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>
 	{ "pi", 3.141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342117067982148086513282306647093844609550582231725359408128481117450284102701938521105559644622948954930381964428810975665933446128475648233786783165271201909145648566923460348610454326648213393607260249141273724587006606315588174881520920962829254091715364367892590360011330530548820466521384146951941511609433057270365759591953092186117381932611793105118548074462379962749567351885752724891227938183011949129833673362440656643086021394946395224737190702179860943702770539217176293176752384674818467669405132000568127145263560827785771342757789609173637178721468440901224953430146549585371050792279689258923542019956112129021960864034418159813629774771309960518707211349999998372978 }, // https://en.wikipedia.org/wiki/Pi_(mathematical_constant)
 	{ "e", 2.718281828459045235360287471352 }, // https://en.wikipedia.org/wiki/E_(mathematical_constant)
 	{ "egamma", 0.57721566490153286060651209008240243104215933593992 }, // https://en.wikipedia.org/wiki/Euler%27s_constant
+
+	// check precission of other constants
+	//{ "sqrt(pi/2)", std::numbers::sqrt_pi_v<Value> / std::numbers::sqrt_2_v<Value> },
+	//{ "sqrt(2 * pi)", std::numbers::sqrt_2_v<Value> * std::numbers::sqrt_pi_v<Value> },
+	//{ "tau", std::numbers::tau_v<Value> },
+	{ "pi / 2", std::numbers::pi_v<Value> / 2.0 },
+	{ "pi / 3", std::numbers::pi_v<Value> / 3.0 },
+	{ "pi / 4", std::numbers::pi_v<Value> / 4.0 },
+	{ "pi / 6", std::numbers::pi_v<Value> / 6.0 },
+	{ "2 / pi", 2.0 / std::numbers::pi_v<Value> },
+	{ "3 / pi", 3.0 / std::numbers::pi_v<Value> },
+	{ "4 / pi", 4.0 / std::numbers::pi_v<Value> },
+	{ "6 / pi", 6.0 / std::numbers::pi_v<Value> },
+	{ "e / 2", std::numbers::e_v<Value> / 2.0 },
+	{ "e / 3", std::numbers::e_v<Value> / 3.0 },
+	{ "e / 4", std::numbers::e_v<Value> / 4.0 },
+	{ "e / 6", std::numbers::e_v<Value> / 6.0 },
+	//{ "sqrt(e)", std::numbers::sqrt_e_v<Value> },
 	{ "log2(e)", std::numbers::log2e_v<Value> },
 	{ "log10(e)", std::numbers::log10e_v<Value> },
 	{ "1 / pi", std::numbers::inv_pi_v<Value> },
@@ -71,7 +89,7 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>
 	{ "mu0", 1.2566370621219191919191919191919191919e-6 }, // magnetic constant (exactly 4 pi * 10^-7)
 	{ "epsilon0", 8.854187817620389850536563031710750260608e-12 }, // electric constant (Ohm) (F*m^-1)
 	{ "Z_0", 376.7303134617706554681984004203193082686 }, // characteristic impedance of vacuum (Ohm)
-	{ "e_0", 1.602176634e-19 }, // Elementary charge (C)
+	{ "e_charge", 1.602176634e-19 }, // Elementary charge (C)
 	{ "eV",  1.602176634e-19 }, // Electronvolt (J)
 	{ "me", 9.1093837139282828282828282828282828282828282828282828282828282828e-31 }, // Electron mass (kg)
 	{ "mp", 1.67262192595525252525252525252525252525252525252525252525252525252e-27 }, // Proton mass (kg)
