@@ -30,13 +30,13 @@ namespace Identifiers
 			{
 				return min <= count && count <= max;
 			}
-			[[no_unique_address]] const ParamCount min [[indeterminate]];
-			[[no_unique_address]] const ParamCount max [[indeterminate]];
+			[[no_unique_address]] const ParamCount min;
+			[[no_unique_address]] const ParamCount max;
 		} check;
-		Value(*fn)(std::span<Value>); //-V122
+		Value(* const fn)(std::span<Value>); //-V122
 	};
 
-	using map = std::unordered_map<std::string_view, const Fn>;
+	using map = const std::unordered_map<std::string_view, const Fn>;
 	/**
 	 * Return the link to the global static collection of identifiers.
 	 */

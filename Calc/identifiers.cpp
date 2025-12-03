@@ -7,9 +7,12 @@
 
 #include "pch.h"
 #include "identifiers.h"
+#include "codata2022.hpp"
 
 namespace Identifiers
 {
+	using namespace codata2022;
+
 	template <const ParamCount>
 	using WrappedFnImplArg = Value;
 
@@ -24,13 +27,13 @@ namespace Identifiers
 	using WrappedFn = decltype(WrappedFnImpl(std::make_index_sequence<N>()));
 
 	template <typename Fn, const ParamCount... Is>
-	[[nodiscard]] constexpr/*consteval*/ auto call_fn(Fn fn, std::span<const Value> params, std::index_sequence<Is...>) noexcept
+	[[nodiscard]] constexpr auto call_fn(Fn fn, std::span<const Value> params, std::index_sequence<Is...>) noexcept
 	{
 		return fn(params[Is]...);
 	}
 
 	template<const ParamCount N, WrappedFn<N> wrappedFn>
-	[[nodiscard]] constexpr/*consteval*/ auto function_pointer_impl(std::span<Value> params) noexcept
+	[[nodiscard]] constexpr auto function_pointer_impl(std::span<Value> params) noexcept
 	{
 		return call_fn(wrappedFn, params, std::make_index_sequence<N>());
 	}
@@ -41,13 +44,13 @@ namespace Identifiers
 		return { { N, N }, function_pointer_impl<N, wrappedFn> };
 	}
 
-	template <Value value>
-	[[nodiscard]] constexpr/*consteval*/ auto constant_impl(std::span<Value>) noexcept
+	template <const Value value>
+	[[nodiscard]] constexpr auto constant_impl(std::span<Value>) noexcept
 	{
 		return value;
 	}
 
-	template <Value value>
+	template <const Value value>
 	[[nodiscard]] consteval Fn constant() noexcept
 	{
 		return { { 0, 0 }, constant_impl<value> };
@@ -188,33 +191,243 @@ namespace Identifiers
 		{ "sqrt3", constant<std::numbers::sqrt3_v<Value>>() },
 		{ "inv_sqrt3", constant<std::numbers::inv_sqrt3_v<Value>>() },
 #endif
-		{ "inf", constant<std::numeric_limits<Value>::infinity()>() },
+		{ "inf", constant<std::numeric_limits<Value>::infinity()>() }, // added for optimization, reduce code size and speedup float parsing.
 		//---------------------------------------------------------------------------
+		// http://physics.nist.gov/constants
+		// CODATA2022 constants (single, canonical set)
+		// Physical constants (top-level physical namespace in codata2022.hpp)
+		{ "c", constant<physical::c>() },
+		{ "mu0", constant<physical::mu0>() },
+		{ "epsilon0", constant<physical::epsilon0>() },
+		{ "h", constant<physical::h>() },
+		{ "hbar", constant<physical::hbar>() },
+		{ "e_charge", constant<physical::e>() }, // use distinct name to avoid collision with math "e"
+		{ "NA", constant<physical::NA>() },
+		{ "kB", constant<physical::kB>() },
+		{ "F", constant<physical::F>() },
+		{ "R", constant<physical::R>() },
+		{ "sigma", constant<physical::sigma>() },
+		{ "R_inf", constant<physical::R_inf>() },
+		{ "alpha", constant<physical::alpha>() },
+		{ "G0", constant<physical::G0>() },
+		{ "RK", constant<physical::RK>() },
+		{ "KJ", constant<physical::KJ>() },
+		{ "phi0", constant<physical::phi0>() },
+
+		/*
+		// Particle constants
+		{ "electron_mass", constant<particle::electron_mass>() },
+		{ "proton_mass", constant<particle::proton_mass>() },
+		{ "neutron_mass", constant<particle::neutron_mass>() },
+		{ "deuteron_mass", constant<particle::deuteron_mass>() },
+		{ "triton_mass", constant<particle::triton_mass>() },
+		{ "alpha_particle_mass", constant<particle::alpha_particle_mass>() },
+
+		{ "electron_mass_energy_J", constant<particle::electron_mass_energy_J>() },
+		{ "proton_mass_energy_J", constant<particle::proton_mass_energy_J>() },
+		{ "neutron_mass_energy_J", constant<particle::neutron_mass_energy_J>() },
+		{ "deuteron_mass_energy_J", constant<particle::deuteron_mass_energy_J>() },
+		{ "triton_mass_energy_J", constant<particle::triton_mass_energy_J>() },
+		{ "alpha_particle_mass_energy_J", constant<particle::alpha_particle_mass_energy_J>() },
+
+		{ "electron_mass_energy_MeV", constant<particle::electron_mass_energy_MeV>() },
+		{ "proton_mass_energy_MeV", constant<particle::proton_mass_energy_MeV>() },
+		{ "neutron_mass_energy_MeV", constant<particle::neutron_mass_energy_MeV>() },
+		{ "deuteron_mass_energy_MeV", constant<particle::deuteron_mass_energy_MeV>() },
+		{ "triton_mass_energy_MeV", constant<particle::triton_mass_energy_MeV>() },
+		{ "alpha_particle_mass_energy_MeV", constant<particle::alpha_particle_mass_energy_MeV>() },
+
+		{ "proton_electron_mass_ratio", constant<particle::proton_electron_mass_ratio>() },
+		{ "neutron_proton_mass_ratio", constant<particle::neutron_proton_mass_ratio>() },
+		{ "deuteron_electron_mass_ratio", constant<particle::deuteron_electron_mass_ratio>() },
+		{ "alpha_electron_mass_ratio", constant<particle::alpha_electron_mass_ratio>() },
+
+		{ "classical_electron_radius", constant<particle::classical_electron_radius>() },
+		{ "electron_compton_wavelength", constant<particle::electron_compton_wavelength>() },
+		{ "proton_compton_wavelength", constant<particle::proton_compton_wavelength>() },
+		{ "neutron_compton_wavelength", constant<particle::neutron_compton_wavelength>() },
+		{ "reduced_compton_wavelength", constant<particle::reduced_compton_wavelength>() },
+
+		{ "bohr_magneton", constant<particle::bohr_magneton>() },
+		{ "nuclear_magneton", constant<particle::nuclear_magneton>() },
+		{ "electron_magnetic_moment", constant<particle::electron_magnetic_moment>() },
+		{ "proton_magnetic_moment", constant<particle::proton_magnetic_moment>() },
+		{ "neutron_magnetic_moment", constant<particle::neutron_magnetic_moment>() },
+
+		{ "electron_gyro_ratio", constant<particle::electron_gyro_ratio>() },
+		{ "proton_gyro_ratio", constant<particle::proton_gyro_ratio>() },
+		{ "neutron_gyro_ratio", constant<particle::neutron_gyro_ratio>() },
+
+		{ "electron_g_factor", constant<particle::electron_g_factor>() },
+		{ "proton_g_factor", constant<particle::proton_g_factor>() },
+		{ "neutron_g_factor", constant<particle::neutron_g_factor>() },
+
+		{ "proton_to_bohr_moment_ratio", constant<particle::proton_to_bohr_moment_ratio>() },
+		{ "neutron_to_bohr_moment_ratio", constant<particle::neutron_to_bohr_moment_ratio>() },
+
+		{ "neutron_proton_mass_difference", constant<particle::neutron_proton_mass_difference>() },
+		{ "neutron_proton_mass_diff_energy_J", constant<particle::neutron_proton_mass_diff_energy_J>() },
+		{ "neutron_proton_mass_diff_energy_MeV", constant<particle::neutron_proton_mass_diff_energy_MeV>() },
+
+		// Atomic / atomic-unit constants (first atomic namespace)
+		{ "atomic_mass_unit", constant<atomic::atomic_mass_unit>() },
+		{ "atomic_mass_unit_u", constant<atomic::atomic_mass_unit_u>() },
+		{ "bohr_radius", constant<atomic::bohr_radius>() },
+		{ "hartree_energy_J", constant<atomic::hartree_energy_J>() },
+		{ "hartree_energy_eV", constant<atomic::hartree_energy_eV>() },
+
+		{ "atomic_unit_length", constant<atomic::atomic_unit_length>() },
+		{ "atomic_unit_mass", constant<atomic::atomic_unit_mass>() },
+		{ "atomic_unit_time", constant<atomic::atomic_unit_time>() },
+		{ "atomic_unit_velocity", constant<atomic::atomic_unit_velocity>() },
+
+		{ "atomic_unit_energy_J", constant<atomic::atomic_unit_energy_J>() },
+		{ "atomic_unit_action_Js", constant<atomic::atomic_unit_action_Js>() },
+		{ "atomic_unit_momentum", constant<atomic::atomic_unit_momentum>() },
+
+		{ "atomic_unit_charge", constant<atomic::atomic_unit_charge>() },
+		{ "atomic_unit_dipole_moment", constant<atomic::atomic_unit_dipole_moment>() },
+		{ "atomic_unit_electric_field", constant<atomic::atomic_unit_electric_field>() },
+		{ "atomic_unit_potential", constant<atomic::atomic_unit_potential>() },
+		{ "atomic_unit_force", constant<atomic::atomic_unit_force>() },
+		{ "atomic_unit_polarizability", constant<atomic::atomic_unit_polarizability>() },
+		{ "atomic_unit_magnetic_dipole", constant<atomic::atomic_unit_magnetic_dipole>() },
+		{ "atomic_unit_flux_density", constant<atomic::atomic_unit_flux_density>() },
+		{ "atomic_unit_current", constant<atomic::atomic_unit_current>() },
+
+		// Nuclear / isotope constants
+		{ "deuteron_mass", constant<nuclear::deuteron_mass>() },
+		{ "deuteron_mass_energy_J", constant<nuclear::deuteron_mass_energy_J>() },
+		{ "deuteron_mass_energy_MeV", constant<nuclear::deuteron_mass_energy_MeV>() },
+		{ "deuteron_g_factor", constant<nuclear::deuteron_g_factor>() },
+		{ "deuteron_magnetic_moment", constant<nuclear::deuteron_magnetic_moment>() },
+		{ "deuteron_compton_wavelength", constant<nuclear::deuteron_compton_wavelength>() },
+
+		{ "triton_mass", constant<nuclear::triton_mass>() },
+		{ "triton_mass_energy_J", constant<nuclear::triton_mass_energy_J>() },
+		{ "triton_mass_energy_MeV", constant<nuclear::triton_mass_energy_MeV>() },
+		{ "triton_g_factor", constant<nuclear::triton_g_factor>() },
+		{ "triton_magnetic_moment", constant<nuclear::triton_magnetic_moment>() },
+		{ "triton_compton_wavelength", constant<nuclear::triton_compton_wavelength>() },
+
+		{ "helion_mass", constant<nuclear::helion_mass>() },
+		{ "helion_mass_energy_J", constant<nuclear::helion_mass_energy_J>() },
+		{ "helion_mass_energy_MeV", constant<nuclear::helion_mass_energy_MeV>() },
+		{ "helion_g_factor", constant<nuclear::helion_g_factor>() },
+		{ "helion_magnetic_moment", constant<nuclear::helion_magnetic_moment>() },
+		{ "helion_compton_wavelength", constant<nuclear::helion_compton_wavelength>() },
+
+		{ "alpha_mass", constant<nuclear::alpha_mass>() },
+		{ "alpha_mass_energy_J", constant<nuclear::alpha_mass_energy_J>() },
+		{ "alpha_mass_energy_MeV", constant<nuclear::alpha_mass_energy_MeV>() },
+		{ "alpha_g_factor", constant<nuclear::alpha_g_factor>() },
+		{ "alpha_magnetic_moment", constant<nuclear::alpha_magnetic_moment>() },
+		{ "alpha_compton_wavelength", constant<nuclear::alpha_compton_wavelength>() },
+
+		{ "proton_mass_energy_MeV", constant<nuclear::proton_mass_energy_MeV>() },
+		{ "neutron_mass_energy_MeV", constant<nuclear::neutron_mass_energy_MeV>() },
+		{ "nuclear_magneton", constant<nuclear::nuclear_magneton>() },
+		*/
+
+		// Derived physical constants & conversion factors
+		{ "atm", constant<derived::atm>() },
+		{ "eV_joule", constant<derived::eV>() }, // prefer distinct name for electron-volt (J)
+		{ "u", constant<derived::u>() },
+		{ "a0", constant<derived::a0>() },
+		{ "Eh", constant<derived::Eh>() },
+		{ "epsilon0", constant<derived::epsilon0>() },
+		{ "muB", constant<derived::muB>() },
+		{ "lambda_e", constant<derived::lambda_e>() },
+		{ "lambda_bar_e", constant<derived::lambda_bar_e>() },
+		{ "NA", constant<derived::NA>() },
+		{ "R", constant<derived::R>() },
+		{ "F", constant<derived::F>() },
+		{ "KJ", constant<derived::KJ>() },
+		{ "RK", constant<derived::RK>() },
+		{ "G0", constant<derived::G0>() },
+
+		// Atomic (second atomic namespace - atomic units)
+		{ "m_e", constant<atomic::m_e>() },
+		{ "a0", constant<atomic::a0>() },
+		{ "t_a", constant<atomic::t_a>() },
+		{ "Eh", constant<atomic::Eh>() },
+		{ "E_h", constant<atomic::E_h>() },
+		{ "V_h", constant<atomic::V_h>() },
+		{ "e_atomic", constant<atomic::e>() }, // use distinct name to avoid collision with math "e"
+		{ "I_h", constant<atomic::I_h>() },
+		{ "mu_h", constant<atomic::mu_h>() },
+
+		// Planck units
+		{ "l_p", constant<planck::l_p>() },
+		{ "m_p", constant<planck::m_p>() },
+		{ "t_p", constant<planck::t_p>() },
+		{ "q_p", constant<planck::q_p>() },
+		{ "T_p", constant<planck::T_p>() },
+		{ "E_p", constant<planck::E_p>() },
+
+		// Astronomy
+		{ "au", constant<astronomy::au>() },
+		{ "ly", constant<astronomy::ly>() },
+		{ "pc", constant<astronomy::pc>() },
+		{ "M_sun", constant<astronomy::M_sun>() },
+		{ "M_earth", constant<astronomy::M_earth>() },
+		{ "M_jupiter", constant<astronomy::M_jupiter>() },
+		{ "R_sun", constant<astronomy::R_sun>() },
+		{ "R_earth", constant<astronomy::R_earth>() },
+		{ "G", constant<astronomy::G>() },
+		{ "g0", constant<astronomy::g0>() },
+
+		// Miscellaneous physical constants
+		{ "kB", constant<misc::kB>() },
+		{ "R", constant<misc::R>() },
+		{ "F", constant<misc::F>() },
+		{ "NA", constant<misc::NA>() },
+		{ "R_inf", constant<misc::R_inf>() },
+		{ "mu0", constant<misc::mu0>() },
+		{ "epsilon0", constant<misc::epsilon0>() },
+		{ "alpha", constant<misc::alpha>() },
+
+		// Physical (mass/charge/atomic units - the second 'physical' namespace in codata file)
+		{ "me", constant<physical::me>() },
+		{ "me_u", constant<physical::me_u>() },
+		{ "me_MeV", constant<physical::me_MeV>() },
+		{ "mp", constant<physical::mp>() },
+		{ "mp_u", constant<physical::mp_u>() },
+		{ "mp_MeV", constant<physical::mp_MeV>() },
+		{ "mn", constant<physical::mn>() },
+		{ "mn_u", constant<physical::mn_u>() },
+		{ "mn_MeV", constant<physical::mn_MeV>() },
+		{ "md", constant<physical::md>() },
+		{ "md_u", constant<physical::md_u>() },
+		{ "md_MeV", constant<physical::md_MeV>() },
+		{ "malpha", constant<physical::malpha>() },
+		{ "malpha_u", constant<physical::malpha_u>() },
+		{ "malpha_MeV", constant<physical::malpha_MeV>() },
+		{ "mh", constant<physical::mh>() },
+		{ "mh_u", constant<physical::mh_u>() },
+		{ "mh_MeV", constant<physical::mh_MeV>() },
+		{ "mu", constant<physical::mu>() },
+		{ "me_mp", constant<physical::me_mp>() },
+		{ "me_mm", constant<physical::me_mm>() },
+		{ "mn_mp", constant<physical::mn_mp>() },
+		{ "md_mp", constant<physical::md_mp>() },
+		{ "muB", constant<physical::muB>() },
+		{ "muN", constant<physical::muN>() },
+		{ "mue", constant<physical::mue>() },
+		{ "mup", constant<physical::mup>() },
+		{ "mun", constant<physical::mun>() },
+		{ "mud", constant<physical::mud>() },
+		{ "mualpha", constant<physical::mualpha>() },
+		{ "lambdaC", constant<physical::lambdaC>() },
+		{ "lambdaC_e", constant<physical::lambdaC_e>() },
+		{ "re", constant<physical::re>() },
+		{ "sigmae", constant<physical::sigmae>() },
+
 		// TODO additional constant
-		{ "c", constant<299792458.0>() }, // Speed of light in vacuum (m*s^-1)
-		{ "G", constant<6.6743015151515151515151515151515151e-11>() }, // Newtonian constant of gravitation (m^3*kg^−1*s^−2)
 		{ "J", constant<3.058198247456354132564564787888767>() }, // Constants of Gauss field
-		{ "atm", constant<101325.0>() }, // Standard atmosphere (Pa)
-		{ "g_n", constant<9.80665>() }, // Standard acceleration of gravity (m*s^-2)
-		{ "N_A", constant<6.02214076e23>() }, // Avogadro's number (mol^−1)
-		{ "k", constant<1.380649e-23>() }, // Boltzmann constant (J*K−1)
-		{ "F", constant<9.64853321233100184e4>() }, // Faraday constant (C*mol^−1)
-		{ "R", constant<8.31446261815324>() }, // Molar gas constant (J*K^−1*mol^−1)
-		{ "h", constant<6.62607015e-34>() }, // Planck constant (J*s)
-		{ "G_0", constant<7.748091729729729729729729729729729729729729729729729e-5>() }, // Conductance quantum (S)
-		{ "l_P", constant<1.616255181818181818181818181818181818181818e-35>() }, // Planck length (m)
-		{ "m_P", constant<2.176434242424242424242424242424242424242424e-8>() }, // Planck mass (kg)
-		{ "T_P", constant<1.4167841616161616161616161616161616161616161616161616e32>() }, // Planck temperature (K)
-		{ "t_P", constant<5.391247606060606060606060606060606060606060606060e-44>() }, // Planck time (s)
-		{ "mu_0", constant<1.2566370621219191919191919191919191919e-6>() }, // magnetic constant (exactly 4 pi * 10^-7)
-		{ "eps_0", constant<8.854187817620389850536563031710750260608e-12>() }, // electric constant (Ohm) (F*m^-1)
 		{ "Z_0", constant<376.7303134617706554681984004203193082686>() }, // characteristic impedance of vacuum (Ohm)
 		{ "e_0", constant<1.602176634e-19>() }, // Elementary charge (C)
 		{ "eV",  constant<1.602176634e-19>() }, // Electronvolt (J)
-		{ "m_e", constant<9.1093837139282828282828282828282828282828282828282828282828282828e-31>() }, // Electron mass (kg)
-		{ "m_p", constant<1.67262192595525252525252525252525252525252525252525252525252525252e-27>() }, // Proton mass (kg)
-		{ "m_n", constant<1.67492750056858585858585858585858585858585858585858585858585858585e-27>() }, // Neutron mass (kg)
-		{ "m_u", constant<1.66053906892e-27>() }, // Atomic mass constant (kg)
 
 		//---------------------------------------------------------------------------
 		// https://en.cppreference.com/w/cpp/numeric/math
