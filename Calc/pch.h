@@ -12,16 +12,17 @@
 
 // add headers that you want to pre-compile here
 
+#include <algorithm>
 #include <array>
 #include <charconv>
 #include <limits>
+#include <optional>
 #include <numbers>
 #include <ranges>
 #include <span>
 #include <string_view>
+#include <stdfloat>
 #include <unordered_map>
-#include <optional>
-#include <algorithm>
 
 #include "flags.h"
 

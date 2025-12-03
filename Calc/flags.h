@@ -16,8 +16,22 @@ Tests time is: 50430ms.
 size_t
 Tests time is: 49737ms.
 */
-using EquationSize = size_t; // TODO needs to rewrite usage in the containers.
+#define CALC_USE_UINT_FAST16_T_FOR_EQUATION_SIZE 0
+#if CALC_USE_UINT_FAST16_T_FOR_EQUATION_SIZE
+// Don't need more than 65536 symbols for equation, because GUI input limit is 64 KiB.
+using EquationSize = uint_fast16_t;
+#else
+#warning "TODO needs to rewrite size type usage in the containers."
+using EquationSize = size_t;
+#endif
+
+#if __STDCPP_FLOAT128_T__ == 1
+using Value = std::float128_t;
+#else
+#warning "128-bit float type isn't supported. Calc is using 64-bit double implementation."
 using Value = double;
+#endif
+
 using ParamCount = char;
 //---------------------------------------------------------------------------
 #ifdef _DEBUG
