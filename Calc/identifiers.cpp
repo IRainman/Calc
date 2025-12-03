@@ -335,7 +335,6 @@ namespace Identifiers
 		{ "u", constant<derived::u>() },
 		{ "a0", constant<derived::a0>() },
 		{ "Eh", constant<derived::Eh>() },
-		{ "epsilon0", constant<derived::epsilon0>() },
 		{ "muB", constant<derived::muB>() },
 		{ "lambda_e", constant<derived::lambda_e>() },
 		{ "lambda_bar_e", constant<derived::lambda_bar_e>() },
