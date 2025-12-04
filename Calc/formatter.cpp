@@ -11,34 +11,29 @@
 
 [[nodiscard]] std::string Formatter::format(Value value) noexcept
 {
-	//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 2 - 1);	// ok: 285, failed: 9
-	//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10);			// ok: 280, failed: 14
-	//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::max_digits10);		// ok: 218, failed: 76
-	return fmt::format(FMT_COMPILE("{}"), value);														// ok: 218, failed: 76
+	//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 7);      // ok: 313, failed: 9
+	//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 6);      // ok: 313, failed: 9
+	//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 5);      // ok: 313, failed: 9
+	//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 4);      // ok: 313, failed: 9
+	//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 3);  	// ok: 313, failed: 9
+	//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 2);  	// ok: 312, failed: 10
+	//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 1);  	// ok: 311, failed: 11
+	//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10);			// ok: 307, failed: 15
+	//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::max_digits10);		// ok: 242, failed: 80
+	return fmt::format(FMT_COMPILE("{}"), value);														// ok: 242, failed: 80
 
 	/*
-	std::string s = fmt::format(FMT_COMPILE("{}"), value)
+	std::string res = fmt::format(FMT_COMPILE("{}"), value);
 	uint_fast16_t max_digits = std::numeric_limits<Value>::max_digits10;
-	uint_fast16_t n = 0;
-	if (s.find_first_not_of("0123456789", n) == std::string::npos)
+	const auto inf_nan = res == "nan" || res == "inf";
+	if (!inf_nan)
 	{
-		s.resize(max_digits);
-		return s;
+		const auto s = res.size();
+		const auto pt = res.find_first_of('.');
+		const auto e = res.rfind('e');
+		return res;
 	}
-	if (s.find_first_of('.') != std::string::npos)
-	{
-		n = s.find_first_of('.');
-		if (n < max_digits)
-		{
-			s.resize(n + 1 + max_digits - n);
-			return s;
-		}
-	}
-	else
-	{
-		s.resize(max_digits);
-		return s;
-	}
+	return res;
 	*/
 }
 

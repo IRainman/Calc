@@ -260,7 +260,7 @@ namespace Identifiers
 		{ "lambdaC_e", constant<physical::lambdaC_e>() },
 		{ "re", constant<physical::re>() },
 		{ "sigmae", constant<physical::sigmae>() },
-#ifdef CALC_TESTS_ENABLED
+
 		// Particle constants
 		{ "electron_mass", constant<particle::electron_mass>() },
 		{ "proton_mass", constant<particle::proton_mass>() },
@@ -373,7 +373,7 @@ namespace Identifiers
 		{ "proton_mass_energy_MeV", constant<nuclear::proton_mass_energy_MeV>() },
 		{ "neutron_mass_energy_MeV", constant<nuclear::neutron_mass_energy_MeV>() },
 		{ "nuclear_magneton", constant<nuclear::nuclear_magneton>() },
-#endif
+
 		// Atomic (second atomic namespace - atomic units)
 		{ "m_e", constant<atomic::m_e>() },
 		{ "a0", constant<atomic::a0>() },
