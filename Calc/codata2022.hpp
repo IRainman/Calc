@@ -12,59 +12,161 @@
 // PHYSICAL CONSTANTS (SI)
 // -------------------------------------------------------------
 namespace codata2022 {
+
+// -------------------------------------------------------------
+// MASS, CHARGE, ATOMIC UNITS (SI)
+// -------------------------------------------------------------
 namespace physical {
 
     // Speed of light in vacuum (exact)
-    static constexpr Value c = 299792458.0;
+    static constexpr Value c = 299792458.0; // m/s
 
     // Magnetic constant ?0 (exactly defined)
-    static constexpr Value mu0 = 1.25663706212e-6;
+    static constexpr Value mu0 = 1.25663706212e-6; // N/A^2
 
     // Electric constant ?0 = 1/(?0 c^2)
-    static constexpr Value epsilon0 = 8.8541878128e-12;
+    static constexpr Value epsilon0 = 8.8541878128e-12; // F/m
 
-    // Planck constant
+    // Planck constant (for energy-frequency relation)
     static constexpr Value h = 6.62607015e-34;
 
     // Reduced Planck constant
     static constexpr Value hbar = 1.0545718176461565e-34;
 
     // Elementary charge (exact)
-    static constexpr Value e = 1.602176634e-19;
+    static constexpr Value e = 1.602176634e-19; // C
 
     // Avogadro constant (exact)
-    static constexpr Value NA = 6.02214076e23;
+    static constexpr Value NA = 6.02214076e23; // mol^-1
 
     // Boltzmann constant (exact)
-    static constexpr Value kB = 1.380649e-23;
+    static constexpr Value kB = 1.380649e-23; // J/K
 
     // Faraday constant
-    static constexpr Value F = 96485.33212;
+    static constexpr Value F = 96485.33212; // C/mol
 
     // Molar gas constant
-    static constexpr Value R = 8.31446261815324;
+    static constexpr Value R = 8.31446261815324; // J mol^-1 K^-1
 
     // Stefan–Boltzmann constant
-    static constexpr Value sigma = 5.670374419e-8;
+    static constexpr Value sigma = 5.670374419e-8; // W/m^2 K^4
 
     // Rydberg constant
-    static constexpr Value R_inf = 10973731.568160;
+    static constexpr Value R_inf = 10973731.568160; // m^-1
 
     // Fine-structure constant ?
-    static constexpr Value alpha = 0.00729735256815700;
+    static constexpr Value alpha = 0.00729735256815700; // 7.2973525693e-3
 
     // Conductance quantum G0 = 2e?/h
-    static constexpr Value G0 = 7.748091729e-5;
+    static constexpr Value G0 = 7.748091729e-5; // S
 
     // Von Klitzing constant RK = h/e?
-    static constexpr Value RK = 25812.80745;
+    static constexpr Value RK = 25812.80745; // Ohm
 
     // Josephson constant KJ = 2e/h
-    static constexpr Value KJ = 483597.8484e9;
+    static constexpr Value KJ = 483597.8484e9; // Hz/V
 
     // Magnetic flux quantum ?0 = h/(2e)
     static constexpr Value phi0 = 2.067833848e-15;
 
+    // — Standard atmosphere
+    static constexpr Value atm = 101325.0; // Pa
+
+    // — Electron volt
+    static constexpr Value eV = 1.602176634e-19; // J
+
+    // — Unified atomic mass unit (u)
+    static constexpr Value u = 1.66053906660e-27; // kg
+
+    // — Bohr radius
+    static constexpr Value a0 = 5.29177210903e-11; // m
+
+    // — Hartree energy
+    static constexpr Value Eh = 4.3597447222071e-18; // J
+
+    // — Electron Compton wavelength
+    static constexpr Value lambda_e = 2.42631023867e-12; // m
+
+    // — Reduced electron Compton wavelength
+    static constexpr Value lambda_bar_e = 3.8615926764e-13; // m
+
+    // Electron mass
+    static constexpr Value me = 9.1093837139e-31; // kg
+    static constexpr Value me_u = 5.485799090441e-4; // atomic mass unit
+    static constexpr Value me_MeV = 0.51099895069; // MeV
+
+    // Proton mass
+    static constexpr Value mp = 1.67262192595e-27; // kg
+    static constexpr Value mp_u = 1.0072764665789; // u
+    static constexpr Value mp_MeV = 938.27208943; // MeV
+
+    // Neutron mass
+    static constexpr Value mn = 1.67492750056e-27; // kg
+    static constexpr Value mn_u = 1.00866491606; // u
+    static constexpr Value mn_MeV = 939.56542194; // MeV
+
+    // Deuteron mass
+    static constexpr Value md = 3.3435837768e-27; // kg
+    static constexpr Value md_u = 2.013553212544; // u
+    static constexpr Value md_MeV = 1875.612945; // MeV
+
+    // Alpha particle mass
+    static constexpr Value malpha = 6.6446573450e-27; // kg
+    static constexpr Value malpha_u = 4.001506179129; // u
+    static constexpr Value malpha_MeV = 3727.3794118; // MeV
+
+    // Helion (3He nucleus) mass
+    static constexpr Value mh = 5.0064127862e-27; // kg
+    static constexpr Value mh_u = 3.014932246932; // u
+    static constexpr Value mh_MeV = 2808.39161112; // MeV
+
+    // Atomic mass constant
+    static constexpr Value mu = 1.66053906892e-27; // kg
+
+    // Electron-proton mass ratio
+    static constexpr Value me_mp = 5.446170214889e-4;
+
+    // Electron-muon mass ratio
+    static constexpr Value me_mm = 4.83633170e-3;
+
+    // Neutron-proton mass ratio
+    static constexpr Value mn_mp = 1.00137841946;
+
+    // Deuteron-proton mass ratio
+    static constexpr Value md_mp = 1.9990075012699;
+
+    // Bohr magneton
+    static constexpr Value muB = 9.2740100657e-24; // J T^-1
+
+    // Nuclear magneton
+    static constexpr Value muN = 5.0507837393e-27; // J T^-1
+
+    // Electron magnetic moment
+    static constexpr Value mue = -9.2847646917e-24; // J T^-1
+
+    // Proton magnetic moment
+    static constexpr Value mup = 1.41060679545e-26; // J T^-1
+
+    // Neutron magnetic moment
+    static constexpr Value mun = -9.6623653e-27; // J T^-1
+
+    // Deuteron magnetic moment
+    static constexpr Value mud = 4.330735087e-27; // J T^-1
+
+    // Alpha particle magnetic moment
+    static constexpr Value mualpha = 0.0; // spin-0, zero magnetic moment
+
+    // Reduced Compton wavelength of electron
+    static constexpr Value lambdaC = 3.8615926744e-13; // m
+
+    // Compton wavelength of electron
+    static constexpr Value lambdaC_e = 2.42631023538e-12; // m
+
+    // Classical electron radius
+    static constexpr Value re = 2.8179403205e-15; // m
+
+    // Thomson cross section
+    static constexpr Value sigmae = 6.6524587051e-29; // m^2
 }
 
 // -------------------------------------------------------------
@@ -239,78 +341,6 @@ namespace nuclear {
 } // namespace nuclear
 
 // -------------------------------------------------------------
-// DERIVED PHYSICAL CONSTANTS & CONVERSION FACTORS
-// -------------------------------------------------------------
-namespace derived {
-
-    // — Standard atmosphere
-    static constexpr Value atm = 101325.0; // Pa
-
-    // — Electron volt
-    static constexpr Value eV = 1.602176634e-19; // J
-
-    // — Unified atomic mass unit (u)
-    static constexpr Value u = 1.66053906660e-27; // kg
-
-    // — Speed of light (for derived calculations)
-    static constexpr Value c = 299792458.0; // m/s
-
-    // — Planck constant (for energy-frequency relation)
-    static constexpr Value h = 6.62607015e-34; 
-
-    // — Reduced Planck constant
-    static constexpr Value hbar = 1.0545718176461565e-34; 
-
-    // — Bohr radius
-    static constexpr Value a0 = 5.29177210903e-11; // m
-
-    // — Hartree energy
-    static constexpr Value Eh = 4.3597447222071e-18; // J
-
-    // — Fine structure constant
-    static constexpr Value alpha = 7.2973525693e-3;
-
-    // — Vacuum permeability
-    static constexpr Value mu0 = 1.25663706212e-6; // N/A^2
-
-    // — Vacuum permittivity
-    static constexpr Value epsilon0 = 8.8541878128e-12; // F/m
-
-    // — Bohr magneton
-    static constexpr Value muB = 9.2740100783e-24; // J/T
-
-    // — Electron Compton wavelength
-    static constexpr Value lambda_e = 2.42631023867e-12; // m
-
-    // — Reduced electron Compton wavelength
-    static constexpr Value lambda_bar_e = 3.8615926764e-13; // m
-
-    // — Rydberg constant
-    static constexpr Value R_inf = 10973731.568160; // m^-1
-
-    // — Avogadro constant
-    static constexpr Value NA = 6.02214076e23;
-
-    // — Molar gas constant
-    static constexpr Value R = 8.31446261815324; // J mol^-1 K^-1
-
-    // — Faraday constant
-    static constexpr Value F = 96485.33212; // C/mol
-
-    // — Stefan-Boltzmann constant
-    static constexpr Value sigma = 5.670374419e-8; // W/m^2 K^4
-
-    // — Josephson constant
-    static constexpr Value KJ = 483597.8484e9; // Hz/V
-
-    // — von Klitzing constant
-    static constexpr Value RK = 25812.80745; // Ohm
-
-    // — Conductance quantum
-    static constexpr Value G0 = 7.748091729e-5; // S
-} // namespace derived
-
-// -------------------------------------------------------------
 // ATOMIC UNITS
 // -------------------------------------------------------------
 namespace atomic {
@@ -403,126 +433,6 @@ namespace astronomy {
     static constexpr Value g0 = 9.80665; // m/s^2
 }
 
-// -------------------------------------------------------------
-// MISCELLANEOUS PHYSICAL CONSTANTS
-// -------------------------------------------------------------
-namespace misc {
-
-    // — Stefan-Boltzmann constant
-    static constexpr Value sigma = 5.670374419e-8; // W/m^2 K^4
-
-    // — Boltzmann constant
-    static constexpr Value kB = 1.380649e-23; // J/K
-
-    // — Gas constant
-    static constexpr Value R = 8.31446261815324; // J/(mol K)
-
-    // — Faraday constant
-    static constexpr Value F = 96485.33212; // C/mol
-
-    // — Avogadro constant
-    static constexpr Value NA = 6.02214076e23; // mol^-1
-
-    // — Rydberg constant
-    static constexpr Value R_inf = 10973731.568160; // m^-1
-
-    // — Magnetic constant ?0
-    static constexpr Value mu0 = 1.25663706212e-6; // N/A^2
-
-    // — Electric constant ?0
-    static constexpr Value epsilon0 = 8.8541878128e-12; // F/m
-
-    // — Fine-structure constant
-    static constexpr Value alpha = 7.2973525693e-3; 
-
-    // — Elementary charge
-    static constexpr Value e = 1.602176634e-19; // C
-}
-
-// -------------------------------------------------------------
-// MASS, CHARGE, ATOMIC UNITS (SI)
-// -------------------------------------------------------------
-namespace physical {
-
-    // Electron mass
-    static constexpr Value me = 9.1093837139e-31; // kg
-    static constexpr Value me_u = 5.485799090441e-4; // atomic mass unit
-    static constexpr Value me_MeV = 0.51099895069; // MeV
-
-    // Proton mass
-    static constexpr Value mp = 1.67262192595e-27; // kg
-    static constexpr Value mp_u = 1.0072764665789; // u
-    static constexpr Value mp_MeV = 938.27208943; // MeV
-
-    // Neutron mass
-    static constexpr Value mn = 1.67492750056e-27; // kg
-    static constexpr Value mn_u = 1.00866491606; // u
-    static constexpr Value mn_MeV = 939.56542194; // MeV
-
-    // Deuteron mass
-    static constexpr Value md = 3.3435837768e-27; // kg
-    static constexpr Value md_u = 2.013553212544; // u
-    static constexpr Value md_MeV = 1875.612945; // MeV
-
-    // Alpha particle mass
-    static constexpr Value malpha = 6.6446573450e-27; // kg
-    static constexpr Value malpha_u = 4.001506179129; // u
-    static constexpr Value malpha_MeV = 3727.3794118; // MeV
-
-    // Helion (3He nucleus) mass
-    static constexpr Value mh = 5.0064127862e-27; // kg
-    static constexpr Value mh_u = 3.014932246932; // u
-    static constexpr Value mh_MeV = 2808.39161112; // MeV
-
-    // Atomic mass constant
-    static constexpr Value mu = 1.66053906892e-27; // kg
-
-    // Electron-proton mass ratio
-    static constexpr Value me_mp = 5.446170214889e-4;
-
-    // Electron-muon mass ratio
-    static constexpr Value me_mm = 4.83633170e-3;
-
-    // Neutron-proton mass ratio
-    static constexpr Value mn_mp = 1.00137841946;
-
-    // Deuteron-proton mass ratio
-    static constexpr Value md_mp = 1.9990075012699;
-
-    // Bohr magneton
-    static constexpr Value muB = 9.2740100657e-24; // J T^-1
-
-    // Nuclear magneton
-    static constexpr Value muN = 5.0507837393e-27; // J T^-1
-
-    // Electron magnetic moment
-    static constexpr Value mue = -9.2847646917e-24; // J T^-1
-
-    // Proton magnetic moment
-    static constexpr Value mup = 1.41060679545e-26; // J T^-1
-
-    // Neutron magnetic moment
-    static constexpr Value mun = -9.6623653e-27; // J T^-1
-
-    // Deuteron magnetic moment
-    static constexpr Value mud = 4.330735087e-27; // J T^-1
-
-    // Alpha particle magnetic moment
-    static constexpr Value mualpha = 0.0; // spin-0, zero magnetic moment
-
-    // Reduced Compton wavelength of electron
-    static constexpr Value lambdaC = 3.8615926744e-13; // m
-
-    // Compton wavelength of electron
-    static constexpr Value lambdaC_e = 2.42631023538e-12; // m
-
-    // Classical electron radius
-    static constexpr Value re = 2.8179403205e-15; // m
-
-    // Thomson cross section
-    static constexpr Value sigmae = 6.6524587051e-29; // m^2
-
-}
 } // namespace codata2022
 
 #endif // CODATA2022_HPP

@@ -195,7 +195,6 @@ namespace Identifiers
 		//---------------------------------------------------------------------------
 		// http://physics.nist.gov/constants
 		// CODATA2022 constants (single, canonical set)
-		// Physical constants (top-level physical namespace in codata2022.hpp)
 		{ "c", constant<physical::c>() },
 		{ "mu0", constant<physical::mu0>() },
 		{ "epsilon0", constant<physical::epsilon0>() },
@@ -213,7 +212,54 @@ namespace Identifiers
 		{ "RK", constant<physical::RK>() },
 		{ "KJ", constant<physical::KJ>() },
 		{ "phi0", constant<physical::phi0>() },
-
+		{ "atm", constant<physical::atm>() },
+		{ "eV", constant<physical::eV>() },
+		{ "u", constant<physical::u>() },
+		{ "a0", constant<physical::a0>() },
+		{ "Eh", constant<physical::Eh>() },
+		{ "muB", constant<physical::muB>() },
+		{ "lambda_e", constant<physical::lambda_e>() },
+		{ "lambda_bar_e", constant<physical::lambda_bar_e>() },
+		{ "R", constant<physical::R>() },
+		{ "F", constant<physical::F>() },
+		{ "KJ", constant<physical::KJ>() },
+		{ "RK", constant<physical::RK>() },
+		{ "G0", constant<physical::G0>() },
+		// Physical (mass/charge/atomic units - the second 'physical' namespace in codata file)
+		{ "me", constant<physical::me>() },
+		{ "me_u", constant<physical::me_u>() },
+		{ "me_MeV", constant<physical::me_MeV>() },
+		{ "mp", constant<physical::mp>() },
+		{ "mp_u", constant<physical::mp_u>() },
+		{ "mp_MeV", constant<physical::mp_MeV>() },
+		{ "mn", constant<physical::mn>() },
+		{ "mn_u", constant<physical::mn_u>() },
+		{ "mn_MeV", constant<physical::mn_MeV>() },
+		{ "md", constant<physical::md>() },
+		{ "md_u", constant<physical::md_u>() },
+		{ "md_MeV", constant<physical::md_MeV>() },
+		{ "malpha", constant<physical::malpha>() },
+		{ "malpha_u", constant<physical::malpha_u>() },
+		{ "malpha_MeV", constant<physical::malpha_MeV>() },
+		{ "mh", constant<physical::mh>() },
+		{ "mh_u", constant<physical::mh_u>() },
+		{ "mh_MeV", constant<physical::mh_MeV>() },
+		{ "mu", constant<physical::mu>() },
+		{ "me_mp", constant<physical::me_mp>() },
+		{ "me_mm", constant<physical::me_mm>() },
+		{ "mn_mp", constant<physical::mn_mp>() },
+		{ "md_mp", constant<physical::md_mp>() },
+		{ "muB", constant<physical::muB>() },
+		{ "muN", constant<physical::muN>() },
+		{ "mue", constant<physical::mue>() },
+		{ "mup", constant<physical::mup>() },
+		{ "mun", constant<physical::mun>() },
+		{ "mud", constant<physical::mud>() },
+		{ "mualpha", constant<physical::mualpha>() },
+		{ "lambdaC", constant<physical::lambdaC>() },
+		{ "lambdaC_e", constant<physical::lambdaC_e>() },
+		{ "re", constant<physical::re>() },
+		{ "sigmae", constant<physical::sigmae>() },
 #ifdef CALC_TESTS_ENABLED
 		// Particle constants
 		{ "electron_mass", constant<particle::electron_mass>() },
@@ -328,23 +374,6 @@ namespace Identifiers
 		{ "neutron_mass_energy_MeV", constant<nuclear::neutron_mass_energy_MeV>() },
 		{ "nuclear_magneton", constant<nuclear::nuclear_magneton>() },
 #endif
-
-		// Derived physical constants & conversion factors
-		{ "atm", constant<derived::atm>() },
-		{ "eV_joule", constant<derived::eV>() }, // prefer distinct name for electron-volt (J)
-		{ "u", constant<derived::u>() },
-		{ "a0", constant<derived::a0>() },
-		{ "Eh", constant<derived::Eh>() },
-		{ "muB", constant<derived::muB>() },
-		{ "lambda_e", constant<derived::lambda_e>() },
-		{ "lambda_bar_e", constant<derived::lambda_bar_e>() },
-		{ "NA", constant<derived::NA>() },
-		{ "R", constant<derived::R>() },
-		{ "F", constant<derived::F>() },
-		{ "KJ", constant<derived::KJ>() },
-		{ "RK", constant<derived::RK>() },
-		{ "G0", constant<derived::G0>() },
-
 		// Atomic (second atomic namespace - atomic units)
 		{ "m_e", constant<atomic::m_e>() },
 		{ "a0", constant<atomic::a0>() },
@@ -376,56 +405,9 @@ namespace Identifiers
 		{ "G", constant<astronomy::G>() },
 		{ "g0", constant<astronomy::g0>() },
 
-		// Miscellaneous physical constants
-		{ "kB", constant<misc::kB>() },
-		{ "R", constant<misc::R>() },
-		{ "F", constant<misc::F>() },
-		{ "NA", constant<misc::NA>() },
-		{ "R_inf", constant<misc::R_inf>() },
-		{ "mu0", constant<misc::mu0>() },
-		{ "epsilon0", constant<misc::epsilon0>() },
-		{ "alpha", constant<misc::alpha>() },
-
-		// Physical (mass/charge/atomic units - the second 'physical' namespace in codata file)
-		{ "me", constant<physical::me>() },
-		{ "me_u", constant<physical::me_u>() },
-		{ "me_MeV", constant<physical::me_MeV>() },
-		{ "mp", constant<physical::mp>() },
-		{ "mp_u", constant<physical::mp_u>() },
-		{ "mp_MeV", constant<physical::mp_MeV>() },
-		{ "mn", constant<physical::mn>() },
-		{ "mn_u", constant<physical::mn_u>() },
-		{ "mn_MeV", constant<physical::mn_MeV>() },
-		{ "md", constant<physical::md>() },
-		{ "md_u", constant<physical::md_u>() },
-		{ "md_MeV", constant<physical::md_MeV>() },
-		{ "malpha", constant<physical::malpha>() },
-		{ "malpha_u", constant<physical::malpha_u>() },
-		{ "malpha_MeV", constant<physical::malpha_MeV>() },
-		{ "mh", constant<physical::mh>() },
-		{ "mh_u", constant<physical::mh_u>() },
-		{ "mh_MeV", constant<physical::mh_MeV>() },
-		{ "mu", constant<physical::mu>() },
-		{ "me_mp", constant<physical::me_mp>() },
-		{ "me_mm", constant<physical::me_mm>() },
-		{ "mn_mp", constant<physical::mn_mp>() },
-		{ "md_mp", constant<physical::md_mp>() },
-		{ "muB", constant<physical::muB>() },
-		{ "muN", constant<physical::muN>() },
-		{ "mue", constant<physical::mue>() },
-		{ "mup", constant<physical::mup>() },
-		{ "mun", constant<physical::mun>() },
-		{ "mud", constant<physical::mud>() },
-		{ "mualpha", constant<physical::mualpha>() },
-		{ "lambdaC", constant<physical::lambdaC>() },
-		{ "lambdaC_e", constant<physical::lambdaC_e>() },
-		{ "re", constant<physical::re>() },
-		{ "sigmae", constant<physical::sigmae>() },
-
 		// TODO additional constant
 		{ "J", constant<3.058198247456354132564564787888767>() }, // Constants of Gauss field
 		{ "Z_0", constant<376.7303134617706554681984004203193082686>() }, // characteristic impedance of vacuum (Ohm)
-		{ "eV",  constant<1.602176634e-19>() }, // Electronvolt (J)
 
 		//---------------------------------------------------------------------------
 		// https://en.cppreference.com/w/cpp/numeric/math
