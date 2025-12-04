@@ -21,11 +21,11 @@ namespace physical {
     // Speed of light in vacuum (exact)
     static constexpr Value c = 299792458.0; // m/s
 
-    // Magnetic constant ?0 (exactly defined)
-    static constexpr Value mu0 = 1.25663706212e-6; // N/A^2
+    // Magnetic constant, permeab­ility of free space, vacuum permeability (exactly defined)
+    static constexpr Value mu0 = 1.25663706127e-6; // N/A^2
 
-    // Electric constant ?0 = 1/(?0 c^2)
-    static constexpr Value epsilon0 = 8.8541878128e-12; // F/m
+    // Eelectric constant, permit­ivitty of free space, vacuum permitivitty = 1/(?0 c^2)
+    static constexpr Value epsilon0 = 8.8541878188e-12; // F/m
 
     // Planck constant (for energy-frequency relation)
     static constexpr Value h = 6.62607015e-34;
@@ -43,7 +43,7 @@ namespace physical {
     static constexpr Value kB = 1.380649e-23; // J/K
 
     // Faraday constant
-    static constexpr Value F = 96485.33212; // C/mol
+    static constexpr Value F = 9.64853321233100184e4; // C/mol
 
     // Molar gas constant
     static constexpr Value R = 8.31446261815324; // J mol^-1 K^-1

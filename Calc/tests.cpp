@@ -38,9 +38,9 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>
 
 	// check constants
 	// https://en.cppreference.com/w/cpp/numeric/constants
-	{ "phi", 1.6180339887498948482045868343656381177203091798057628621 }, // https://en.wikipedia.org/wiki/Golden_ratio
+	{ "phi", 1.618033988749894848204586834365638117720309179805762862135448622705260462818902449707207204189391137 }, // https://en.wikipedia.org/wiki/Golden_ratio
 	{ "pi", 3.141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342117067982148086513282306647093844609550582231725359408128481117450284102701938521105559644622948954930381964428810975665933446128475648233786783165271201909145648566923460348610454326648213393607260249141273724587006606315588174881520920962829254091715364367892590360011330530548820466521384146951941511609433057270365759591953092186117381932611793105118548074462379962749567351885752724891227938183011949129833673362440656643086021394946395224737190702179860943702770539217176293176752384674818467669405132000568127145263560827785771342757789609173637178721468440901224953430146549585371050792279689258923542019956112129021960864034418159813629774771309960518707211349999998372978 }, // https://en.wikipedia.org/wiki/Pi_(mathematical_constant)
-	{ "e", 2.718281828459045235360287471352 }, // https://en.wikipedia.org/wiki/E_(mathematical_constant)
+	{ "e", 2.718281828459045235360287471352662497757247093699959574966967627724076630353547594571382178525166427 }, // https://en.wikipedia.org/wiki/E_(mathematical_constant)
 	{ "egamma", 0.57721566490153286060651209008240243104215933593992 }, // https://en.wikipedia.org/wiki/Euler%27s_constant
 
 	// check precission of other constants
@@ -72,8 +72,7 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>
 
 	//---------------------------------------------------------------------------
 	{ "c", 299792458.0 }, // Speed of light in vacuum (m*s^-1)
-	{ "G", 6.6743015151515151515151515151515151e-11 }, // Newtonian constant of gravitation (m^3*kg^−1*s^−2)
-	{ "J", 3.058198247456354132564564787888767 }, // Constants of Gauss field
+	{ "G", 6.6743e-11 }, // Newtonian constant of gravitation (m^3*kg^−1*s^−2)
 	{ "atm", 101325.0 }, // Standard atmosphere (Pa)
 	{ "g0", 9.80665 }, // standard acceleration of gravity (m*s^-2)
 	{ "NA", 6.02214076e23 }, // Avogadro's number (mol^−1)
@@ -81,22 +80,21 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>
 	{ "F", 9.64853321233100184e4 }, // Faraday constant (C*mol^−1)
 	{ "R", 8.31446261815324 }, // Molar gas constant (J*K^−1*mol^−1)
 	{ "h", 6.62607015e-34 }, // Planck constant (J*s)
-	{ "G0", 7.748091729729729729729729729729729729729729729729729e-5 }, // Conductance quantum (S)
-	{ "l_p", 1.616255181818181818181818181818181818181818e-35 }, // Planck length (m)
-	{ "m_p", 2.176434242424242424242424242424242424242424e-8 }, // Planck mass (kg)
-	{ "T_p", 1.4167841616161616161616161616161616161616161616161616e32 }, // Planck temperature (K)
-	{ "t_p", 5.391247606060606060606060606060606060606060606060e-44 }, // Planck time (s)
-	{ "mu0", 1.2566370621219191919191919191919191919e-6 }, // magnetic constant (exactly 4 pi * 10^-7)
-	{ "epsilon0", 8.854187817620389850536563031710750260608e-12 }, // electric constant (Ohm) (F*m^-1)
-	{ "Z_0", 376.7303134617706554681984004203193082686 }, // characteristic impedance of vacuum (Ohm)
+	{ "hbar", 1.0545718176461565e-34 }, // Reduced planck constant
+	{ "G0", 7.748091729e-5 }, // Conductance quantum (S)
+	{ "l_p", 1.616255e-35 }, // Planck length (m)
+	{ "m_p", 2.176434e-8 }, // Planck mass (kg)
+	{ "T_p", 1.416784e32 }, // Planck temperature (K)
+	{ "t_p", 5.391247e-44 }, // Planck time (s)
+	{ "mu0", 1.25663706127e-6 }, // magnetic constant (exactly 4 pi * 10^-7)
+	{ "epsilon0", 8.8541878188e-12 }, // electric constant (Ohm) (F*m^-1)
+	{ "Z0", 376.730313461 }, // characteristic impedance of vacuum (Ohm)
 	{ "e_charge", 1.602176634e-19 }, // Elementary charge (C)
 	{ "eV",  1.602176634e-19 }, // Electronvolt (J)
-	{ "me", 9.1093837139282828282828282828282828282828282828282828282828282828e-31 }, // Electron mass (kg)
-	{ "mp", 1.67262192595525252525252525252525252525252525252525252525252525252e-27 }, // Proton mass (kg)
-	{ "mn", 1.67492750056858585858585858585858585858585858585858585858585858585e-27 }, // Neutron mass (kg)
+	{ "me", 9.1093837139e-31 }, // Electron mass (kg)
+	{ "mp", 1.67262192595e-27 }, // Proton mass (kg)
+	{ "mn", 1.67492750056e-27 }, // Neutron mass (kg)
 	{ "mu", 1.66053906892e-27 }, // Atomic mass constant (kg)
-	
-
 
 	// check additional constants
 	// Gelfond's constant https://en.wikipedia.org/wiki/Gelfond%27s_constant

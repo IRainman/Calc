@@ -406,8 +406,7 @@ namespace Identifiers
 		{ "g0", constant<astronomy::g0>() },
 
 		// TODO additional constant
-		{ "J", constant<3.058198247456354132564564787888767>() }, // Constants of Gauss field
-		{ "Z_0", constant<376.7303134617706554681984004203193082686>() }, // characteristic impedance of vacuum (Ohm)
+		{ "Z0", constant<376.730313461>() }, // characteristic impedance of vacuum (Ohm)
 
 		//---------------------------------------------------------------------------
 		// https://en.cppreference.com/w/cpp/numeric/math
