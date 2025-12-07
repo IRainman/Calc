@@ -249,6 +249,7 @@ public:
             font = Font(dpi);
 
 			// Rescale dialog window
+            SendMessageA(dlg, WM_SETFONT, reinterpret_cast<WPARAM>(get_font()), MAKELPARAM(TRUE, 0));
             RECT wr [[indeterminate]];
             if (GetWindowRect(dlg, &wr)) {
 				MoveWindow(dlg, wr.left, wr.top, 
@@ -256,7 +257,6 @@ public:
                     std::lround(static_cast<double>(wr.bottom - wr.top) * factor),
 					TRUE);
             }
-            SendMessageA(dlg, WM_SETFONT, reinterpret_cast<WPARAM>(get_font()), MAKELPARAM(TRUE, 0));
 
             // Rescale anchors
             for (auto& a : anchors) {
@@ -267,8 +267,8 @@ public:
                 // move the control
                 const auto hCtrl = GetDlgItem(dlg, a.id);
                 if (hCtrl) {
-                    MoveWindow(hCtrl, a.get_x(), a.get_y(), a.get_width(), a.get_heigth(), TRUE);
                     SendMessageA(hCtrl, WM_SETFONT, reinterpret_cast<WPARAM>(get_font()), MAKELPARAM(TRUE, 0));
+                    MoveWindow(hCtrl, a.get_x(), a.get_y(), a.get_width(), a.get_heigth(), TRUE);
                 }
             }
         }
@@ -369,7 +369,10 @@ private:
             }
             };
 
-        set_dpi(hWnd, currentDpi);
+		min_width = to_physical(baseline.min_width);
+		min_heigth = to_physical(baseline.min_heigth);
+
+        dpi = currentDpi;
 
         wp.rcNormalPosition.left = sLeft ? to_physical(sLeft) : 100;
         wp.rcNormalPosition.top = sTop ? to_physical(sTop) : 100;
