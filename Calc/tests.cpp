@@ -46,29 +46,33 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>
 	// check precission of other constants
 	//{ "sqrt(pi/2)", std::numbers::sqrt_pi_v<Value> / std::numbers::sqrt_2_v<Value> },
 	//{ "sqrt(2 * pi)", std::numbers::sqrt_2_v<Value> * std::numbers::sqrt_pi_v<Value> },
-	//{ "tau", std::numbers::tau_v<Value> },
-	{ "pi / 2", std::numbers::pi_v<Value> / 2.0 },
-	{ "pi / 3", std::numbers::pi_v<Value> / 3.0 },
-	{ "pi / 4", std::numbers::pi_v<Value> / 4.0 },
-	{ "pi / 6", std::numbers::pi_v<Value> / 6.0 },
-	{ "2 / pi", 2.0 / std::numbers::pi_v<Value> },
-	{ "3 / pi", 3.0 / std::numbers::pi_v<Value> },
-	{ "4 / pi", 4.0 / std::numbers::pi_v<Value> },
-	{ "6 / pi", 6.0 / std::numbers::pi_v<Value> },
-	{ "e / 2", std::numbers::e_v<Value> / 2.0 },
-	{ "e / 3", std::numbers::e_v<Value> / 3.0 },
-	{ "e / 4", std::numbers::e_v<Value> / 4.0 },
-	{ "e / 6", std::numbers::e_v<Value> / 6.0 },
-	//{ "sqrt(e)", std::numbers::sqrt_e_v<Value> },
+	{ "2*pi", 6.283185307179586476925286766559005768394338798750211641949889184615632812572417997256069650684234234135964296172173026564613294187689219121101165663456256256962234900568205403877043211119289289245897909860763928857621951331866892256950129491296467573566330542403818291297133846920696820908652966426786214520498282547449174013212631176349763761041841925658508547430728735784771720022661061097640933042768292903883023179189142764356050365519183906184372234763865223586210237096148924148148376248436926703770150488564849756876 }, // tau
+	{ "pi/2", std::numbers::pi_v<Value> / 2.0 },
+	{ "pi/3", std::numbers::pi_v<Value> / 3.0 },
+	{ "pi/4", std::numbers::pi_v<Value> / 4.0 },
+	{ "pi/5", std::numbers::pi_v<Value> / 5.0 },
+	{ "pi/6", std::numbers::pi_v<Value> / 6.0 },
+	{ "pi/7", std::numbers::pi_v<Value> / 7.0 },
+	{ "pi/8", std::numbers::pi_v<Value> / 8.0 },
+	{ "pi/9", std::numbers::pi_v<Value> / 9.0 },
+	{ "ln(e)", 1.0 },
 	{ "log2(e)", std::numbers::log2e_v<Value> },
 	{ "log10(e)", std::numbers::log10e_v<Value> },
-	{ "1 / pi", std::numbers::inv_pi_v<Value> },
-	{ "1 / sqrt(pi)", std::numbers::inv_sqrtpi_v<Value> },
+	{ "1/pi", std::numbers::inv_pi_v<Value> },
+	{ "sqrt(pi)", 1.772453850905516027298167483341145182797549456122387128213807789852911284591032181374950656738544665410998838 },
+	{ "1/sqrt(pi)", std::numbers::inv_sqrtpi_v<Value> },
 	{ "ln(2)", std::numbers::ln2_v<Value> },
 	{ "ln(10)", std::numbers::ln10_v<Value> },
 	{ "sqrt(2)", std::numbers::sqrt2_v<Value> },
 	{ "sqrt(3)", std::numbers::sqrt3_v<Value> },
-	{ "1 / sqrt(3)", std::numbers::inv_sqrt3_v<Value> },
+	{ "1/sqrt(3)", std::numbers::inv_sqrt3_v<Value> },
+
+
+	// check additional constants
+	// Gelfond's and Ramanujan's constants https://en.wikipedia.org/wiki/Gelfond%27s_constant
+	{ "e ^ pi", 23.14069263277926900572 },
+	{ "pi ^ e", 22.45915771836104547342 },
+	{ "e ^ ( pi * sqrt(163) )", 262537412640768743.99999999999925007259 },
 
 	//---------------------------------------------------------------------------
 	// physical constants from NIST 2022 CODATA (May 2024) http://physics.nist.gov/constants
@@ -91,17 +95,17 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>
 	{ "epsilon0", 8.8541878188e-12 }, // electric constant (Ohm) (F*m^-1)
 	{ "Z0", 376.730313461 }, // characteristic impedance of vacuum (Ohm)
 	{ "e_charge", 1.602176634e-19 }, // Elementary charge (C)
-	{ "eV",       1.602176634e-19 }, // Electronvolt (J)
 	{ "me", 9.1093837139e-31 }, // Electron mass (kg)
 	{ "mp", 1.67262192595e-27 }, // Proton mass (kg)
 	{ "mn", 1.67492750056e-27 }, // Neutron mass (kg)
 	{ "mu", 1.66053906892e-27 }, // Atomic mass constant (kg)
-
-	// check additional constants
-	// Gelfond's and Ramanujan's constants https://en.wikipedia.org/wiki/Gelfond%27s_constant
-	{ "e ^ pi", 23.14069263277926900572 },
-	{ "pi ^ e", 22.45915771836104547342 },
-	{ "e ^ ( pi * sqrt(163) )", 262537412640768743.99999999999925007259 },
+	{ "a0", 5.29177210544e-11 }, // Bohr radius (m)
+	{ "Eh", 4.3597447222060e-18 }, // Hartree energy (J)
+	{ "muB", 9.2740100657e-24 }, // Bohr magneton (J*T^-1)
+	{ "lambda_e", 2.42631023538e-12 }, // Compton wavelength of electron (m)
+	{ "lambda_bar_e", 3.8615926744e-13 }, // reduced Compton wavelength of electron (m)
+	{ "re", 2.8179403205e-15 }, // classical electron radius (m)
+	{ "sigmae", 6.6524587051e-29 }, // Thomson cross section (m^2)
 
 	// check long mantissa to produce correct output without noise
 	{ "0.000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
@@ -136,9 +140,26 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>
 	{ "exp(0)", 1.0 },
 	{ "log1p(1e-16)", 1.0e-16 },
 	{ "expm1(1e-16)", 1.0e-16 },
+
+	// https://en.wikipedia.org/wiki/Gamma_function
 	{ "tgamma(5)", 24.0 },  // 4! = 24
-	//{ "lgamma(5)", std::log(24) },
-	{ "beta(2, 2)", 0.166666666666666666666666666666666666666666666 },
+	{ "lgamma(5)", 3.1780538303479456196469416012970554084870228089145452532020737273802015819093119516825779293116 }, // ln(24)
+	{ "tgamma(5)", 24.0 },  // 4! = 24
+	{ "tgamma(0.5)", 1.772453850905516027298167483341145182797549456122387128213807789852911284591032181374950656738544665410998838 }, // sqrt(pi)
+	// https://en.wikipedia.org/wiki/Beta_function
+	{ "beta(1, 1)", 1.0 },
+	{ "beta(0.5, 0.5)", 3.141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342117067982148086513282306647093844609550582231725359408128481117450284102701938521105559644622948954930381964428810975665933446128475648233786783165271201909145648566923460348610454326648213393607260249141273724587006606315588174881520920962829254091715364367892590360011330530548820466521384146951941511609433057270365759591953092186117381932611793105118548074462379962749567351885752724891227938183011949129833673362440656643086021394946395224737190702179860943702770539217176293176752384674818467669405132000568127145263560827785771342757789609173637178721468440901224953430146549585371050792279689258923542019956112129021960864034418159813629774771309960518707211349999998372978 }, // https://en.wikipedia.org/wiki/Pi_(mathematical_constant)
+	{ "beta(2, 2)", 0.16666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666 },
+
+	{ "factorial(5)", 120.0 }, // 5! = 120
+	{ "factorial(170)", 7.257415615307998967396728211134228405832777681741635518467287920039555626168303389596217634437728512e306 }, // 170! = big number
+	{ "factorial(171)", std::numeric_limits<Value>::infinity() }, // 171! = inf
+
+	// https://en.wikipedia.org/wiki/Permutation
+	{ "permutations(5, 3)", 60.0 }, // P(5, 3) = 60
+	// https://en.wikipedia.org/wiki/Combination
+	{ "combinations(5, 3)", 10.0 }, // C(5, 3) = 10
+
 	{ "erf(0)", 0.0 },
 	{ "erfc(0)", 1.0 },
 	{ "mod(5, 2)", 1.0 },
@@ -183,10 +204,11 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>
 	{ "pow( sin( pi / 2 ) / 0.001 + 24, 2 )", 1048576.0 },
 	{ "pow(exp2(32), 1/4)", 256.0 },
 	{ "sqrt(cos(rad(30))^2+sin(rad(30))^2)", 1.0 },
+	{ "deg(arcsin(sin(rad(30))))", 30 },
 
 	// precision
-	{ "10000 / 540 * 3", 55.5555555555555555555555555555555 },
-	{ "500 / 9", 55.5555555555555555555555555555555 },
+	{ "10000 / 540 * 3", 55.555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555 },
+	{ "500 / 9", 55.55555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555 },
 	{ "1 / 3 * 3", 1.0 },
 	{ "9876543.210123456789", 9876543.210123456789 },
 	{ "0.1 + 0.1", 0.2 },
@@ -458,7 +480,8 @@ std::string calc_tests()
 	std::string output;
 #ifdef CALC_TESTS_DEV_ENABLED
 	output.reserve(65536);
-	size_t failed = 0;
+	unsigned int failed = 0;
+	unsigned int doubtful_but_okey = 0;
 #endif
 
 	const auto start = std::chrono::steady_clock::now();
@@ -476,17 +499,24 @@ std::string calc_tests()
 			[[maybe_unused]] const auto value = p.parse();
 			const auto has_errors = IssueManager::has_errors();
 #ifdef CALC_TESTS_DEV_ENABLED
-			const auto ok = (has_errors && std::isnan(t.second)) || (std::isnan(value) && std::isnan(t.second)) || (Formatter::format(value) == Formatter::format(t.second));
+			const auto formated_value = Formatter::format(value);
+			const auto exactly = (has_errors && std::isnan(t.second)) || (std::isnan(value) && std::isnan(t.second)) 
+				|| (formated_value == Formatter::format(t.second));
+			const auto less_than_epsilon = (value - t.second < std::numeric_limits<Value>::epsilon());
 
-			if(!ok)
+			if(!exactly)
 			{
 				++failed;
+			}
+			if (!less_than_epsilon)
+			{
+				++doubtful_but_okey;
 			}
 			output += fmt::format(FMT_COMPILE(
 				"Test {}: {}\r\n"
 				"{}\r\n"
 				"{}\r\n"),
-				ok ? "OK" : "FAILED",
+				exactly ? "OK" : "FAILED",
 				t.first,
 					fmt::format(FMT_COMPILE(
 					"return = {}\r\n"
@@ -494,7 +524,7 @@ std::string calc_tests()
 					"output = {}"),
 					value,
 					t.second,
-					Formatter::format(value)
+					formated_value
 					),
 				Formatter::create_summary());
 #endif
@@ -510,12 +540,12 @@ std::string calc_tests()
 	// Don't use fmt here, because it isn't compile.
 	output += std::format("Tests"
 #ifdef CALC_TESTS_DEV_ENABLED
-		":\r\n ok: {},\r\n failed: {}\r\n"
+		":\r\n less than epsilon: {},\r\n exactly: {},\r\n failed: {}\r\n"
 		"fegetround() == {}\r\n"
 #endif
 		" time is: {}.",
 #ifdef CALC_TESTS_DEV_ENABLED
-		tests.size() - failed, failed,
+		tests.size() - doubtful_but_okey, tests.size() - failed, failed,
 		round_name(fegetround()),
 #endif
 		std::chrono::duration_cast<std::chrono::

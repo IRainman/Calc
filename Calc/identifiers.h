@@ -42,11 +42,11 @@ namespace Identifiers
 	 */
 	[[nodiscard]] const map& get() noexcept;
 
-	[[nodiscard]] /*constexpr*/ Value pow(Value x, Value y) noexcept;
+	[[nodiscard]] /*constexpr*/ Value pow(const Value x, const Value y) noexcept;
 
-	[[nodiscard]] constexpr Value rad(Value x) noexcept;
+	[[nodiscard]] constexpr Value degrees_to_radians(const Value x) noexcept;
 
-	[[nodiscard]] constexpr Value deg(Value x) noexcept;
+	[[nodiscard]] constexpr Value radians_to_degrees(const Value x) noexcept;
 
 	[[nodiscard]] /*constexpr*/ bool compare(const Value a, const Value b) noexcept;
 };

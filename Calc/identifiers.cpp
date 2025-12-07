@@ -11,8 +11,6 @@
 
 namespace Identifiers
 {
-	using namespace codata2022;
-
 	template <const ParamCount>
 	using WrappedFnImplArg = Value;
 
@@ -56,12 +54,12 @@ namespace Identifiers
 		return { { 0, 0 }, constant_impl<value> };
 	}
 
-	[[nodiscard]] constexpr Value min(std::span<Value> params) noexcept
+	[[nodiscard]] static constexpr Value min(std::span<Value> params) noexcept
 	{
 		return std::ranges::min(params);
 	}
 
-	[[nodiscard]] constexpr Value max(std::span<Value> params) noexcept
+	[[nodiscard]] static constexpr Value max(std::span<Value> params) noexcept
 	{
 		return std::ranges::max(params);
 	}
@@ -71,10 +69,138 @@ namespace Identifiers
 		return std::abs(a - b) <= std::numeric_limits<Value>::epsilon() * std::max(std::abs(a), std::abs(b));
 	}
 
-	[[nodiscard]] constexpr Value rad(Value x) noexcept { return x * std::numbers::pi_v<Value> / 180.0; }
-	[[nodiscard]] constexpr Value deg(Value x) noexcept { return x * 180.0 / std::numbers::pi_v<Value>; }
+	[[nodiscard]] constexpr Value degrees_to_radians(const Value x) noexcept
+	{
+		return x * std::numbers::pi_v<Value> / 180.0;
+	}
 
-	[[nodiscard]] constexpr Value hypot(std::span<Value> params) noexcept
+	[[nodiscard]] constexpr Value radians_to_degrees(const Value x) noexcept
+	{
+		return x * 180.0 / std::numbers::pi_v<Value>;
+	}
+
+	[[nodiscard]] constexpr Value grad_to_radians(const Value x) noexcept
+	{
+		return x * std::numbers::pi_v<Value> / 200.0;
+	}
+
+	[[nodiscard]] constexpr Value radians_to_grad(const Value x) noexcept
+	{
+		return x * 200.0 / std::numbers::pi_v<Value>;
+	}
+
+	[[nodiscard]] constexpr Value turn_to_radians(const Value x) noexcept
+	{
+		return x * 2.0 * std::numbers::pi_v<Value>;
+	}
+
+	[[nodiscard]] constexpr Value radians_to_turn(const Value x) noexcept
+	{
+		return x / (2.0 * std::numbers::pi_v<Value>);
+	}
+
+	[[nodiscard]] static /*constexpr*/ Value OR(const Value n, const Value m) noexcept
+	{
+		return static_cast<Value>(static_cast<std::uint64_t>(std::lrint(n)) | static_cast<std::uint64_t>(std::lrint(m)));
+	}
+
+	[[nodiscard]] static /*constexpr*/ Value XOR(const Value n, const Value m) noexcept
+	{
+		return static_cast<Value>(static_cast<std::uint64_t>(std::lrint(n)) ^ static_cast<std::uint64_t>(std::lrint(m)));
+	}
+
+	[[nodiscard]] static /*constexpr*/ Value AND(const Value n, const Value m) noexcept
+	{
+		return static_cast<Value>(static_cast<std::uint64_t>(std::lrint(n)) & static_cast<std::uint64_t>(std::lrint(m)));
+	}
+
+	[[nodiscard]] static /*constexpr*/ Value NOT(const Value n) noexcept
+	{
+		return static_cast<Value>(~(static_cast<std::uint64_t>(std::lrint(n))));
+	}
+
+	[[nodiscard]] static /*constexpr*/ Value SHL(const Value n) noexcept
+	{
+		return static_cast<Value>(static_cast<std::uint64_t>(std::lrint(n)) << 1);
+	}
+
+	[[nodiscard]] static /*constexpr*/ Value SHR(const Value n) noexcept
+	{
+		return static_cast<Value>(static_cast<std::uint64_t>(std::lrint(n)) >> 1);
+	}
+
+	[[nodiscard]] static /*constexpr*/ Value SAR(const Value n) noexcept
+	{
+		return static_cast<Value>(static_cast<std::int64_t>(std::lrint(n)) >> 1);
+	}
+
+	[[nodiscard]] static /*constexpr*/ Value factorial(const Value n) noexcept
+	{
+		long num = std::lrint(n);
+		Value result = 1.0;
+		if (0.0 <= num && num == n)
+		{
+			while (num > 0.0) {
+				if (!std::isfinite(result))
+				{
+					break;
+				}
+				result = result * num;
+				num = num - 1;
+			}
+			return result;
+		}
+		return std::numeric_limits<Value>::quiet_NaN();
+	}
+
+	[[nodiscard]] static /*constexpr*/ Value permutations(const Value n, const Value r) noexcept
+	{
+		long num = std::lrint(n);
+		long den = std::lrint(r);
+		Value result = 1.0;
+		if (0.0 <= num && 0.0 <= den && den <= num && num == n && den == r)
+		{
+			while (den > 0.0)
+			{
+				if (!std::isfinite(result))
+				{
+					break;
+				}
+				result = result * num;
+				--num;
+				--den;
+			}
+			return result;
+		}
+		return std::numeric_limits<Value>::quiet_NaN();
+	}
+
+	[[nodiscard]] static /*constexpr*/ Value combinations(const Value n, const Value r) noexcept
+	{
+		long num = std::lrint(n);
+		long den = std::lrint(r);
+		Value res1 = 1.0;
+		Value res2 = 1.0;
+		if (0 <= num && 0 <= den && den <= num && num == n && den == r)
+		{
+			while (den > 0)
+			{
+				if (!std::isfinite(res1))
+				{
+					break;
+				}
+				res1 = res1 * num;
+				res2 = res2 * den;
+				--num;
+				--den;
+			}
+			return res1 / res2;
+		}
+		return std::numeric_limits<Value>::quiet_NaN();
+
+	}
+
+	[[nodiscard]] static constexpr Value hypot(std::span<Value> params) noexcept
 	{
 		switch (params.size())
 		{
@@ -85,12 +211,12 @@ namespace Identifiers
 		};
 		std::unreachable();
 	}
-#ifdef CALC_TESTS_ENABLED
-	[[nodiscard]] constexpr Value parabola(std::span<Value> params) noexcept
+
+	[[nodiscard]] static constexpr Value parabola(std::span<Value> params) noexcept
 	{
 		return params[0] * params[0] + 1.0;
 	}
-#endif
+
 	[[nodiscard]] /*constexpr*/ Value pow(Value x, Value y) noexcept
 	{
 		if (compare(x, std::numbers::e_v<Value>))
@@ -173,8 +299,13 @@ namespace Identifiers
 	}
 #endif
 
+	using namespace codata2022;
+
 	static const map ids =
 	{
+		//---------------------------------------------------------------------------
+		{ "inf", constant<std::numeric_limits<Value>::infinity()>() }, // added for optimization, reduce code size and speedup float parsing.
+		//---------------------------------------------------------------------------
 		// https://en.cppreference.com/w/cpp/numeric/constants 
 		{ "pi", constant<std::numbers::pi_v<Value>>() }, // https://en.wikipedia.org/wiki/Pi_(mathematical_constant)
 		{ "e", constant<std::numbers::e_v<Value>>() }, // https://en.wikipedia.org/wiki/E_(mathematical_constant)
@@ -191,219 +322,208 @@ namespace Identifiers
 		{ "sqrt3", constant<std::numbers::sqrt3_v<Value>>() },
 		{ "inv_sqrt3", constant<std::numbers::inv_sqrt3_v<Value>>() },
 #endif
-		{ "inf", constant<std::numeric_limits<Value>::infinity()>() }, // added for optimization, reduce code size and speedup float parsing.
 		//---------------------------------------------------------------------------
 		// http://physics.nist.gov/constants
-		// CODATA2022 constants (single, canonical set)
-		{ "c", constant<physical::c>() },
-		{ "mu0", constant<physical::mu0>() },
-		{ "epsilon0", constant<physical::epsilon0>() },
-		{ "h", constant<physical::h>() },
-		{ "hbar", constant<physical::hbar>() },
-		{ "e_charge", constant<physical::e>() }, // use distinct name to avoid collision with math "e"
-		{ "NA", constant<physical::NA>() },
-		{ "kB", constant<physical::kB>() },
-		{ "F", constant<physical::F>() },
-		{ "R", constant<physical::R>() },
-		{ "sigma", constant<physical::sigma>() },
-		{ "R_inf", constant<physical::R_inf>() },
-		{ "alpha", constant<physical::alpha>() },
-		{ "G0", constant<physical::G0>() },
-		{ "RK", constant<physical::RK>() },
-		{ "KJ", constant<physical::KJ>() },
-		{ "phi0", constant<physical::phi0>() },
-		{ "atm", constant<physical::atm>() },
-		{ "eV", constant<physical::eV>() },
-		{ "u", constant<physical::u>() },
-		{ "a0", constant<physical::a0>() },
-		{ "Eh", constant<physical::Eh>() },
-		{ "muB", constant<physical::muB>() },
-		{ "lambda_e", constant<physical::lambda_e>() },
-		{ "lambda_bar_e", constant<physical::lambda_bar_e>() },
-		{ "R", constant<physical::R>() },
-		{ "F", constant<physical::F>() },
-		{ "KJ", constant<physical::KJ>() },
-		{ "RK", constant<physical::RK>() },
-		{ "G0", constant<physical::G0>() },
-		// Physical (mass/charge/atomic units - the second 'physical' namespace in codata file)
-		{ "me", constant<physical::me>() },
-		{ "me_u", constant<physical::me_u>() },
-		{ "me_MeV", constant<physical::me_MeV>() },
-		{ "mp", constant<physical::mp>() },
-		{ "mp_u", constant<physical::mp_u>() },
-		{ "mp_MeV", constant<physical::mp_MeV>() },
-		{ "mn", constant<physical::mn>() },
-		{ "mn_u", constant<physical::mn_u>() },
-		{ "mn_MeV", constant<physical::mn_MeV>() },
-		{ "md", constant<physical::md>() },
-		{ "md_u", constant<physical::md_u>() },
-		{ "md_MeV", constant<physical::md_MeV>() },
-		{ "malpha", constant<physical::malpha>() },
-		{ "malpha_u", constant<physical::malpha_u>() },
-		{ "malpha_MeV", constant<physical::malpha_MeV>() },
-		{ "mh", constant<physical::mh>() },
-		{ "mh_u", constant<physical::mh_u>() },
-		{ "mh_MeV", constant<physical::mh_MeV>() },
-		{ "mu", constant<physical::mu>() },
-		{ "me_mp", constant<physical::me_mp>() },
-		{ "me_mm", constant<physical::me_mm>() },
-		{ "mn_mp", constant<physical::mn_mp>() },
-		{ "md_mp", constant<physical::md_mp>() },
-		{ "muB", constant<physical::muB>() },
-		{ "muN", constant<physical::muN>() },
-		{ "mue", constant<physical::mue>() },
-		{ "mup", constant<physical::mup>() },
-		{ "mun", constant<physical::mun>() },
-		{ "mud", constant<physical::mud>() },
-		{ "mualpha", constant<physical::mualpha>() },
-		{ "lambdaC", constant<physical::lambdaC>() },
-		{ "lambdaC_e", constant<physical::lambdaC_e>() },
-		{ "re", constant<physical::re>() },
-		{ "sigmae", constant<physical::sigmae>() },
+		// CODATA2022 constants
 
-		// Particle constants
-		{ "electron_mass", constant<particle::electron_mass>() },
-		{ "proton_mass", constant<particle::proton_mass>() },
-		{ "neutron_mass", constant<particle::neutron_mass>() },
-		{ "deuteron_mass", constant<particle::deuteron_mass>() },
-		{ "triton_mass", constant<particle::triton_mass>() },
-		{ "alpha_particle_mass", constant<particle::alpha_particle_mass>() },
+		{ "electron_mass", constant<electron_mass>() },
+		{ "proton_mass", constant<proton_mass>() },
+		{ "neutron_mass", constant<neutron_mass>() },
+		{ "deuteron_mass", constant<deuteron_mass>() },
+		{ "triton_mass", constant<triton_mass>() },
+		{ "alpha_particle_mass", constant<alpha_particle_mass>() },
 
-		{ "electron_mass_energy_J", constant<particle::electron_mass_energy_J>() },
-		{ "proton_mass_energy_J", constant<particle::proton_mass_energy_J>() },
-		{ "neutron_mass_energy_J", constant<particle::neutron_mass_energy_J>() },
-		{ "deuteron_mass_energy_J", constant<particle::deuteron_mass_energy_J>() },
-		{ "triton_mass_energy_J", constant<particle::triton_mass_energy_J>() },
-		{ "alpha_particle_mass_energy_J", constant<particle::alpha_particle_mass_energy_J>() },
+		{ "electron_mass_energy_J", constant<electron_mass_energy_J>() },
+		{ "proton_mass_energy_J", constant<proton_mass_energy_J>() },
+		{ "neutron_mass_energy_J", constant<neutron_mass_energy_J>() },
+		{ "deuteron_mass_energy_J", constant<deuteron_mass_energy_J>() },
+		{ "triton_mass_energy_J", constant<triton_mass_energy_J>() },
+		{ "alpha_particle_mass_energy_J", constant<alpha_particle_mass_energy_J>() },
 
-		{ "electron_mass_energy_MeV", constant<particle::electron_mass_energy_MeV>() },
-		{ "proton_mass_energy_MeV", constant<particle::proton_mass_energy_MeV>() },
-		{ "neutron_mass_energy_MeV", constant<particle::neutron_mass_energy_MeV>() },
-		{ "deuteron_mass_energy_MeV", constant<particle::deuteron_mass_energy_MeV>() },
-		{ "triton_mass_energy_MeV", constant<particle::triton_mass_energy_MeV>() },
-		{ "alpha_particle_mass_energy_MeV", constant<particle::alpha_particle_mass_energy_MeV>() },
+		{ "electron_mass_energy_MeV", constant<electron_mass_energy_MeV>() },
+		{ "proton_mass_energy_MeV", constant<proton_mass_energy_MeV>() },
+		{ "neutron_mass_energy_MeV", constant<neutron_mass_energy_MeV>() },
+		{ "deuteron_mass_energy_MeV", constant<deuteron_mass_energy_MeV>() },
+		{ "triton_mass_energy_MeV", constant<triton_mass_energy_MeV>() },
+		{ "alpha_particle_mass_energy_MeV", constant<alpha_particle_mass_energy_MeV>() },
 
-		{ "proton_electron_mass_ratio", constant<particle::proton_electron_mass_ratio>() },
-		{ "neutron_proton_mass_ratio", constant<particle::neutron_proton_mass_ratio>() },
-		{ "deuteron_electron_mass_ratio", constant<particle::deuteron_electron_mass_ratio>() },
-		{ "alpha_electron_mass_ratio", constant<particle::alpha_electron_mass_ratio>() },
+		{ "proton_electron_mass_ratio", constant<proton_electron_mass_ratio>() },
+		{ "neutron_proton_mass_ratio", constant<neutron_proton_mass_ratio>() },
+		{ "deuteron_electron_mass_ratio", constant<deuteron_electron_mass_ratio>() },
+		{ "alpha_electron_mass_ratio", constant<alpha_electron_mass_ratio>() },
 
-		{ "classical_electron_radius", constant<particle::classical_electron_radius>() },
-		{ "electron_compton_wavelength", constant<particle::electron_compton_wavelength>() },
-		{ "proton_compton_wavelength", constant<particle::proton_compton_wavelength>() },
-		{ "neutron_compton_wavelength", constant<particle::neutron_compton_wavelength>() },
-		{ "reduced_compton_wavelength", constant<particle::reduced_compton_wavelength>() },
+		{ "classical_electron_radius", constant<classical_electron_radius>() },
+		{ "electron_compton_wavelength", constant<electron_compton_wavelength>() },
+		{ "proton_compton_wavelength", constant<proton_compton_wavelength>() },
+		{ "neutron_compton_wavelength", constant<neutron_compton_wavelength>() },
+		{ "reduced_compton_wavelength", constant<reduced_compton_wavelength>() },
 
-		{ "bohr_magneton", constant<particle::bohr_magneton>() },
-		{ "nuclear_magneton", constant<particle::nuclear_magneton>() },
-		{ "electron_magnetic_moment", constant<particle::electron_magnetic_moment>() },
-		{ "proton_magnetic_moment", constant<particle::proton_magnetic_moment>() },
-		{ "neutron_magnetic_moment", constant<particle::neutron_magnetic_moment>() },
+		{ "bohr_magneton", constant<bohr_magneton>() },
+		{ "nuclear_magneton", constant<nuclear_magneton>() },
+		{ "electron_magnetic_moment", constant<electron_magnetic_moment>() },
+		{ "proton_magnetic_moment", constant<proton_magnetic_moment>() },
+		{ "neutron_magnetic_moment", constant<neutron_magnetic_moment>() },
 
-		{ "electron_gyro_ratio", constant<particle::electron_gyro_ratio>() },
-		{ "proton_gyro_ratio", constant<particle::proton_gyro_ratio>() },
-		{ "neutron_gyro_ratio", constant<particle::neutron_gyro_ratio>() },
+		{ "electron_gyro_ratio", constant<electron_gyro_ratio>() },
+		{ "proton_gyro_ratio", constant<proton_gyro_ratio>() },
+		{ "neutron_gyro_ratio", constant<neutron_gyro_ratio>() },
 
-		{ "electron_g_factor", constant<particle::electron_g_factor>() },
-		{ "proton_g_factor", constant<particle::proton_g_factor>() },
-		{ "neutron_g_factor", constant<particle::neutron_g_factor>() },
+		{ "electron_g_factor", constant<electron_g_factor>() },
+		{ "proton_g_factor", constant<proton_g_factor>() },
+		{ "neutron_g_factor", constant<neutron_g_factor>() },
 
-		{ "proton_to_bohr_moment_ratio", constant<particle::proton_to_bohr_moment_ratio>() },
-		{ "neutron_to_bohr_moment_ratio", constant<particle::neutron_to_bohr_moment_ratio>() },
+		{ "proton_to_bohr_moment_ratio", constant<proton_to_bohr_moment_ratio>() },
+		{ "neutron_to_bohr_moment_ratio", constant<neutron_to_bohr_moment_ratio>() },
 
-		{ "neutron_proton_mass_difference", constant<particle::neutron_proton_mass_difference>() },
-		{ "neutron_proton_mass_diff_energy_J", constant<particle::neutron_proton_mass_diff_energy_J>() },
-		{ "neutron_proton_mass_diff_energy_MeV", constant<particle::neutron_proton_mass_diff_energy_MeV>() },
+		{ "neutron_proton_mass_difference", constant<neutron_proton_mass_difference>() },
+		{ "neutron_proton_mass_diff_energy_J", constant<neutron_proton_mass_diff_energy_J>() },
+		{ "neutron_proton_mass_diff_energy_MeV", constant<neutron_proton_mass_diff_energy_MeV>() },
 
-		// Atomic / atomic-unit constants (first atomic namespace)
-		{ "atomic_mass_unit", constant<atomic::atomic_mass_unit>() },
-		{ "atomic_mass_unit_u", constant<atomic::atomic_mass_unit_u>() },
-		{ "bohr_radius", constant<atomic::bohr_radius>() },
-		{ "hartree_energy_J", constant<atomic::hartree_energy_J>() },
-		{ "hartree_energy_eV", constant<atomic::hartree_energy_eV>() },
+		{ "atomic_mass_unit", constant<atomic_mass_unit>() },
+		{ "bohr_radius", constant<bohr_radius>() },
+		{ "hartree_energy_J", constant<hartree_energy_J>() },
+		{ "hartree_energy_eV", constant<hartree_energy_eV>() },
 
-		{ "atomic_unit_length", constant<atomic::atomic_unit_length>() },
-		{ "atomic_unit_mass", constant<atomic::atomic_unit_mass>() },
-		{ "atomic_unit_time", constant<atomic::atomic_unit_time>() },
-		{ "atomic_unit_velocity", constant<atomic::atomic_unit_velocity>() },
+		{ "atomic_unit_length", constant<atomic_unit_length>() },
+		{ "atomic_unit_mass", constant<atomic_unit_mass>() },
+		{ "atomic_unit_time", constant<atomic_unit_time>() },
+		{ "atomic_unit_velocity", constant<atomic_unit_velocity>() },
 
-		{ "atomic_unit_energy_J", constant<atomic::atomic_unit_energy_J>() },
-		{ "atomic_unit_action_Js", constant<atomic::atomic_unit_action_Js>() },
-		{ "atomic_unit_momentum", constant<atomic::atomic_unit_momentum>() },
+		{ "atomic_unit_energy_J", constant<atomic_unit_energy_J>() },
+		{ "atomic_unit_action_Js", constant<atomic_unit_action_Js>() },
+		{ "atomic_unit_momentum", constant<atomic_unit_momentum>() },
 
-		{ "atomic_unit_charge", constant<atomic::atomic_unit_charge>() },
-		{ "atomic_unit_dipole_moment", constant<atomic::atomic_unit_dipole_moment>() },
-		{ "atomic_unit_electric_field", constant<atomic::atomic_unit_electric_field>() },
-		{ "atomic_unit_potential", constant<atomic::atomic_unit_potential>() },
-		{ "atomic_unit_force", constant<atomic::atomic_unit_force>() },
-		{ "atomic_unit_polarizability", constant<atomic::atomic_unit_polarizability>() },
-		{ "atomic_unit_magnetic_dipole", constant<atomic::atomic_unit_magnetic_dipole>() },
-		{ "atomic_unit_flux_density", constant<atomic::atomic_unit_flux_density>() },
-		{ "atomic_unit_current", constant<atomic::atomic_unit_current>() },
+		{ "atomic_unit_charge", constant<atomic_unit_charge>() },
+		{ "atomic_unit_dipole_moment", constant<atomic_unit_dipole_moment>() },
+		{ "atomic_unit_electric_field", constant<atomic_unit_electric_field>() },
+		{ "atomic_unit_potential", constant<atomic_unit_potential>() },
+		{ "atomic_unit_force", constant<atomic_unit_force>() },
+		{ "atomic_unit_polarizability", constant<atomic_unit_polarizability>() },
+		{ "atomic_unit_magnetic_dipole", constant<atomic_unit_magnetic_dipole>() },
+		{ "atomic_unit_flux_density", constant<atomic_unit_flux_density>() },
+		{ "atomic_unit_current", constant<atomic_unit_current>() },
 
-		// Nuclear / isotope constants
-		{ "deuteron_mass", constant<nuclear::deuteron_mass>() },
-		{ "deuteron_mass_energy_J", constant<nuclear::deuteron_mass_energy_J>() },
-		{ "deuteron_mass_energy_MeV", constant<nuclear::deuteron_mass_energy_MeV>() },
-		{ "deuteron_g_factor", constant<nuclear::deuteron_g_factor>() },
-		{ "deuteron_magnetic_moment", constant<nuclear::deuteron_magnetic_moment>() },
-		{ "deuteron_compton_wavelength", constant<nuclear::deuteron_compton_wavelength>() },
+		{ "deuteron_mass", constant<deuteron_mass>() },
+		{ "deuteron_mass_energy_J", constant<deuteron_mass_energy_J>() },
+		{ "deuteron_mass_energy_MeV", constant<deuteron_mass_energy_MeV>() },
+		{ "deuteron_g_factor", constant<deuteron_g_factor>() },
+		{ "deuteron_magnetic_moment", constant<deuteron_magnetic_moment>() },
+		{ "deuteron_compton_wavelength", constant<deuteron_compton_wavelength>() },
 
-		{ "triton_mass", constant<nuclear::triton_mass>() },
-		{ "triton_mass_energy_J", constant<nuclear::triton_mass_energy_J>() },
-		{ "triton_mass_energy_MeV", constant<nuclear::triton_mass_energy_MeV>() },
-		{ "triton_g_factor", constant<nuclear::triton_g_factor>() },
-		{ "triton_magnetic_moment", constant<nuclear::triton_magnetic_moment>() },
-		{ "triton_compton_wavelength", constant<nuclear::triton_compton_wavelength>() },
+		{ "triton_mass", constant<triton_mass>() },
+		{ "triton_mass_energy_J", constant<triton_mass_energy_J>() },
+		{ "triton_mass_energy_MeV", constant<triton_mass_energy_MeV>() },
+		{ "triton_g_factor", constant<triton_g_factor>() },
+		{ "triton_magnetic_moment", constant<triton_magnetic_moment>() },
+		{ "triton_compton_wavelength", constant<triton_compton_wavelength>() },
 
-		{ "helion_mass", constant<nuclear::helion_mass>() },
-		{ "helion_mass_energy_J", constant<nuclear::helion_mass_energy_J>() },
-		{ "helion_mass_energy_MeV", constant<nuclear::helion_mass_energy_MeV>() },
-		{ "helion_g_factor", constant<nuclear::helion_g_factor>() },
-		{ "helion_magnetic_moment", constant<nuclear::helion_magnetic_moment>() },
-		{ "helion_compton_wavelength", constant<nuclear::helion_compton_wavelength>() },
+		{ "helion_mass", constant<helion_mass>() },
+		{ "helion_mass_energy_J", constant<helion_mass_energy_J>() },
+		{ "helion_mass_energy_MeV", constant<helion_mass_energy_MeV>() },
+		{ "helion_g_factor", constant<helion_g_factor>() },
+		{ "helion_magnetic_moment", constant<helion_magnetic_moment>() },
+		{ "helion_compton_wavelength", constant<helion_compton_wavelength>() },
 
-		{ "alpha_mass", constant<nuclear::alpha_mass>() },
-		{ "alpha_mass_energy_J", constant<nuclear::alpha_mass_energy_J>() },
-		{ "alpha_mass_energy_MeV", constant<nuclear::alpha_mass_energy_MeV>() },
-		{ "alpha_g_factor", constant<nuclear::alpha_g_factor>() },
-		{ "alpha_magnetic_moment", constant<nuclear::alpha_magnetic_moment>() },
-		{ "alpha_compton_wavelength", constant<nuclear::alpha_compton_wavelength>() },
+		{ "alpha_mass", constant<alpha_mass>() },
+		{ "alpha_mass_energy_J", constant<alpha_mass_energy_J>() },
+		{ "alpha_mass_energy_MeV", constant<alpha_mass_energy_MeV>() },
+		{ "alpha_g_factor", constant<alpha_g_factor>() },
+		{ "alpha_magnetic_moment", constant<alpha_magnetic_moment>() },
+		{ "alpha_compton_wavelength", constant<alpha_compton_wavelength>() },
 
-		{ "proton_mass_energy_MeV", constant<nuclear::proton_mass_energy_MeV>() },
-		{ "neutron_mass_energy_MeV", constant<nuclear::neutron_mass_energy_MeV>() },
-		{ "nuclear_magneton", constant<nuclear::nuclear_magneton>() },
+		{ "proton_mass_energy_MeV", constant<proton_mass_energy_MeV>() },
+		{ "neutron_mass_energy_MeV", constant<neutron_mass_energy_MeV>() },
+		{ "nuclear_magneton", constant<nuclear_magneton>() },
 
-		// Atomic (second atomic namespace - atomic units)
-		{ "m_e", constant<atomic::m_e>() },
-		{ "a0", constant<atomic::a0>() },
-		{ "t_a", constant<atomic::t_a>() },
-		{ "Eh", constant<atomic::Eh>() },
-		{ "E_h", constant<atomic::E_h>() },
-		{ "V_h", constant<atomic::V_h>() },
-		{ "e_atomic", constant<atomic::e>() }, // use distinct name to avoid collision with math "e"
-		{ "I_h", constant<atomic::I_h>() },
-		{ "mu_h", constant<atomic::mu_h>() },
+		{ "m_e", constant<m_e>() },
+		{ "a0", constant<a0>() },
+		{ "t_a", constant<t_a>() },
+		{ "Eh", constant<Eh>() },
+		{ "E_h", constant<E_h>() },
+		{ "V_h", constant<V_h>() },
+		{ "e_atomic", constant<e>() }, // use distinct name to avoid collision with math "e"
+		{ "I_h", constant<I_h>() },
+		{ "mu_h", constant<mu_h>() },
 
-		// Planck units
-		{ "l_p", constant<planck::l_p>() },
-		{ "m_p", constant<planck::m_p>() },
-		{ "t_p", constant<planck::t_p>() },
-		{ "q_p", constant<planck::q_p>() },
-		{ "T_p", constant<planck::T_p>() },
-		{ "E_p", constant<planck::E_p>() },
+		{ "l_p", constant<l_p>() },
+		{ "m_p", constant<m_p>() },
+		{ "t_p", constant<t_p>() },
+		{ "q_p", constant<q_p>() },
+		{ "T_p", constant<T_p>() },
+		{ "E_p", constant<E_p>() },
 
-		// Astronomy
-		{ "au", constant<astronomy::au>() },
-		{ "ly", constant<astronomy::ly>() },
-		{ "pc", constant<astronomy::pc>() },
-		{ "M_sun", constant<astronomy::M_sun>() },
-		{ "M_earth", constant<astronomy::M_earth>() },
-		{ "M_jupiter", constant<astronomy::M_jupiter>() },
-		{ "R_sun", constant<astronomy::R_sun>() },
-		{ "R_earth", constant<astronomy::R_earth>() },
-		{ "G", constant<astronomy::G>() },
-		{ "g0", constant<astronomy::g0>() },
+		{ "au", constant<au>() },
+		{ "ly", constant<ly>() },
+		{ "pc", constant<pc>() },
+		{ "M_sun", constant<M_sun>() },
+		{ "M_earth", constant<M_earth>() },
+		{ "M_jupiter", constant<M_jupiter>() },
+		{ "R_sun", constant<R_sun>() },
+		{ "R_earth", constant<R_earth>() },
+		{ "G", constant<G>() },
+		{ "g0", constant<g0>() },
+
+		{ "c", constant<c>() },
+		{ "mu0", constant<mu0>() },
+		{ "epsilon0", constant<epsilon0>() },
+		{ "h", constant<h>() },
+		{ "hbar", constant<hbar>() },
+		{ "e_charge", constant<e>() }, // use distinct name to avoid collision with math "e"
+		{ "NA", constant<NA>() },
+		{ "kB", constant<kB>() },
+		{ "F", constant<F>() },
+		{ "R", constant<R>() },
+		{ "sigma", constant<sigma>() },
+		{ "R_inf", constant<R_inf>() },
+		{ "alpha", constant<alpha>() },
+		{ "G0", constant<G0>() },
+		{ "RK", constant<RK>() },
+		{ "KJ", constant<KJ>() },
+		{ "phi0", constant<phi0>() },
+		{ "atm", constant<atm>() },
+		{ "u", constant<u>() },
+		{ "a0", constant<a0>() },
+		{ "Eh", constant<Eh>() },
+		{ "muB", constant<muB>() },
+		{ "lambda_e", constant<lambda_e>() },
+		{ "lambda_bar_e", constant<lambda_bar_e>() },
+		{ "R", constant<R>() },
+		{ "F", constant<F>() },
+		{ "KJ", constant<KJ>() },
+		{ "RK", constant<RK>() },
+		{ "G0", constant<G0>() },
+		{ "me", constant<me>() },
+		{ "me_u", constant<me_u>() },
+		{ "me_MeV", constant<me_MeV>() },
+		{ "mp", constant<mp>() },
+		{ "mp_u", constant<mp_u>() },
+		{ "mp_MeV", constant<mp_MeV>() },
+		{ "mn", constant<mn>() },
+		{ "mn_u", constant<mn_u>() },
+		{ "mn_MeV", constant<mn_MeV>() },
+		{ "md", constant<md>() },
+		{ "md_u", constant<md_u>() },
+		{ "md_MeV", constant<md_MeV>() },
+		{ "malpha", constant<malpha>() },
+		{ "malpha_u", constant<malpha_u>() },
+		{ "malpha_MeV", constant<malpha_MeV>() },
+		{ "mh", constant<mh>() },
+		{ "mh_u", constant<mh_u>() },
+		{ "mh_MeV", constant<mh_MeV>() },
+		{ "mu", constant<mu>() },
+		{ "me_mp", constant<me_mp>() },
+		{ "me_mm", constant<me_mm>() },
+		{ "mn_mp", constant<mn_mp>() },
+		{ "md_mp", constant<md_mp>() },
+		{ "muB", constant<muB>() },
+		{ "muN", constant<muN>() },
+		{ "mue", constant<mue>() },
+		{ "mup", constant<mup>() },
+		{ "mun", constant<mun>() },
+		{ "mud", constant<mud>() },
+		{ "mualpha", constant<mualpha>() },
+		{ "re", constant<re>() },
+		{ "sigmae", constant<sigmae>() },
 
 		// TODO additional constant
 		{ "Z0", constant<376.730313461>() }, // characteristic impedance of vacuum (Ohm)
@@ -417,10 +537,15 @@ namespace Identifiers
 		{ "arcsin", function_pointer<1, std::asin>() },
 		{ "arctan", function_pointer<1, std::atan>() },
 
+		{ "factorial", function_pointer <1, factorial>() },
+
+		{ "permutations", function_pointer <2, permutations>() },
+		{ "P",            function_pointer <2, permutations>() },
+		{ "combinations", function_pointer <2, combinations>() },
+		{ "C",            function_pointer <2, combinations>() },
+
 		{ "hypot", {{2, 3}, hypot} },
-#ifdef CALC_TESTS_ENABLED
 		{ "parabola", {{1, 1}, parabola} },
-#endif
 
 		{ "sh", function_pointer<1, std::sinh>() },
 		{ "ch", function_pointer<1, std::cosh>() },
@@ -454,8 +579,25 @@ namespace Identifiers
 #ifdef CALC_TESTS_ENABLED
 		{ "atan2",function_pointer<2, std::atan2>() },
 #endif
-		{ "rad", function_pointer<1, rad>() },
-		{ "deg", function_pointer<1, deg>() },
+		{ "degrees_to_radians", function_pointer<1, degrees_to_radians>() },
+		{ "rad",                function_pointer<1, degrees_to_radians>() },
+
+		{ "radians_to_degrees", function_pointer<1, radians_to_degrees>() },
+		{ "deg",                function_pointer<1, radians_to_degrees>() },
+
+		{ "grad_to_radians", function_pointer<1, grad_to_radians>() },
+		{ "radians_to_grad", function_pointer<1, radians_to_grad>() },
+
+		{ "turn_to_radians", function_pointer<1, turn_to_radians>() },
+		{ "radians_to_turn", function_pointer<1, radians_to_turn>() },
+
+		{ "not", function_pointer<1, NOT>() },
+		{ "and", function_pointer<2, AND>() },
+		{ "or",  function_pointer<2, OR>() },
+		{ "xor", function_pointer<2, XOR>() },
+		{ "shl", function_pointer<1, SHL>() },
+		{ "shr", function_pointer<1, SHR>() },
+		{ "sar", function_pointer<1, SAR>() },
 
 		{ "min", {{1, std::numeric_limits<ParamCount>::max()}, min} },
 		{ "max", {{1, std::numeric_limits<ParamCount>::max()}, max} },
@@ -512,7 +654,6 @@ namespace Identifiers
 #ifdef CALC_TESTS_ENABLED
 		{ "distance", {{2, std::numeric_limits<ParamCount>::max()}, distance} },
 #endif
-
 
 		//---------------------------------------------------------------------------
 	};
