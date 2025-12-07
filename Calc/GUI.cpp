@@ -367,7 +367,6 @@ private:
         wp.rcNormalPosition.left = sLeft ? to_physical(sLeft) : 100;
         wp.rcNormalPosition.top = sTop ? to_physical(sTop) : 100;
         wp.rcNormalPosition.right = sRight ? to_physical(sRight) : static_cast<LONG>(get_min_width() + 100);
-        // Use min height for bottom default rather than min width
         wp.rcNormalPosition.bottom = sBottom ? to_physical(sBottom) : static_cast<LONG>(get_min_heigth() + 100);
 
         const auto hMon = MonitorFromRect(&wp.rcNormalPosition, MONITOR_DEFAULTTONEAREST);
@@ -511,10 +510,6 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND hDlg, const UINT uMsg, const W
         }
         return FALSE;
     }
-    case WM_SIZE: {
-        CalcWindow.resize(hDlg, LOWORD(lParam), HIWORD(lParam));
-        return TRUE;
-    }
     case WM_GETMINMAXINFO: {
         const auto lpMMI = reinterpret_cast<LPMINMAXINFO>(lParam);
         if (lpMMI) {
@@ -535,7 +530,11 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND hDlg, const UINT uMsg, const W
                 lpMMI->ptMinTrackSize.y = requiredClient.bottom - requiredClient.top;
             }
         }
-        return FALSE;
+        return TRUE;
+    }
+    case WM_SIZE: {
+        CalcWindow.resize(hDlg, LOWORD(lParam), HIWORD(lParam));
+        return TRUE;
     }
     case WM_SYSCOMMAND: {
         if ((wParam & 0xFFF0) == IDM_ABOUTBOX) {
