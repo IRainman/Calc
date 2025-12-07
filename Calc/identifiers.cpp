@@ -277,7 +277,6 @@ namespace Identifiers
 		return std::sph_neumann(static_cast<unsigned int>(params[0]), params[1]); //-V2004
 	}
 
-#ifdef CALC_TESTS_ENABLED
 	[[nodiscard]] /*constexpr*/static Value distance(std::span<Value> params) noexcept
 	{
 		// Minkowski distance: parameters contains p all other parameters is distances d[i] = v[i] - w[i] for two vectors v and w
@@ -297,7 +296,6 @@ namespace Identifiers
 			: !std::isnormal(ex) && !std::signbit(params[0]) ? max_d
 			: pow(ex, 1.0 / params[0]);
 	}
-#endif
 
 	using namespace codata2022;
 
@@ -547,6 +545,7 @@ namespace Identifiers
 		{ "atan2",function_pointer<2, std::atan2>() },
 		{ "hypot", {{2, 3}, hypot} },
 		{ "parabola", {{1, 1}, parabola} },
+		{ "distance", {{2, std::numeric_limits<ParamCount>::max()}, distance} },
 
 		{ "sh", function_pointer<1, std::sinh>() },
 		{ "ch", function_pointer<1, std::cosh>() },
@@ -627,7 +626,7 @@ namespace Identifiers
 		{ "popcount", function_pointer<1, std::popcount>() },
 #endif
 		//---------------------------------------------------------------------------
-		// TODO https://en.cppreference.com/w/cpp/numeric/special_math
+		// https://en.cppreference.com/w/cpp/numeric/special_math
 		{ "beta", function_pointer<2, std::beta>() },
 
 		{ "assoc_legendre", {{3, 3}, assoc_legendre} },
@@ -658,11 +657,6 @@ namespace Identifiers
 		{ "hermite", {{2, 2}, hermite} },
 
 		{ "riemann_zeta", function_pointer<1, std::riemann_zeta>() },
-
-		//---------------------------------------------------------------------------
-#ifdef CALC_TESTS_ENABLED
-		{ "distance", {{2, std::numeric_limits<ParamCount>::max()}, distance} },
-#endif
 
 		//---------------------------------------------------------------------------
 	};
