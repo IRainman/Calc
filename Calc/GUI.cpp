@@ -147,7 +147,7 @@ class CalcWindowState {
         auto get_width() const {
             return rc.right - rc.left;
         }
-        auto get_height() const {
+        auto get_heigth() const {
             return rc.bottom - rc.top;
         }
     };
@@ -248,6 +248,14 @@ public:
             // Recreate font for new DPI (move-assign safely)
             font = Font(dpi);
 
+			// Rescale dialog window
+            RECT wr [[indeterminate]];
+            if (GetWindowRect(dlg, &wr)) {
+				MoveWindow(dlg, wr.left, wr.top, 
+                    std::lround(static_cast<double>(wr.right - wr.left) * factor),
+                    std::lround(static_cast<double>(wr.bottom - wr.top) * factor),
+					TRUE);
+            }
             SendMessageA(dlg, WM_SETFONT, reinterpret_cast<WPARAM>(get_font()), MAKELPARAM(TRUE, 0));
 
             // Rescale anchors
@@ -259,7 +267,7 @@ public:
                 // move the control
                 const auto hCtrl = GetDlgItem(dlg, a.id);
                 if (hCtrl) {
-                    MoveWindow(hCtrl, a.get_x(), a.get_y(), a.get_width(), a.get_height(), TRUE);
+                    MoveWindow(hCtrl, a.get_x(), a.get_y(), a.get_width(), a.get_heigth(), TRUE);
                     SendMessageA(hCtrl, WM_SETFONT, reinterpret_cast<WPARAM>(get_font()), MAKELPARAM(TRUE, 0));
                 }
             }
@@ -287,7 +295,7 @@ public:
                 // move the control
                 const auto hCtrl = GetDlgItem(dlg, a.id);
                 if (hCtrl) {
-                    MoveWindow(hCtrl, a.get_x(), a.get_y(), a.get_width(), a.get_height(), TRUE);
+                    MoveWindow(hCtrl, a.get_x(), a.get_y(), a.get_width(), a.get_heigth(), TRUE);
                 }
             }
         }
@@ -351,7 +359,6 @@ private:
         const auto currentDpi = get_window_dpi(hWnd);
 
         const auto to_physical = [&](const std::optional<DWORD>& val) -> LONG {
-            if (!val) return 0;
             // If savedDpi exists we assume stored value is logical (96-based), convert to current DPI.
             // If savedDpi absent: legacy raw pixels are left unchanged.
             if (sSavedDpi) {
@@ -361,8 +368,6 @@ private:
                 return *val;
             }
             };
-
-        set_dpi(hWnd, currentDpi);
 
         wp.rcNormalPosition.left = sLeft ? to_physical(sLeft) : 100;
         wp.rcNormalPosition.top = sTop ? to_physical(sTop) : 100;
@@ -388,9 +393,8 @@ private:
     void save_window_placement(const HWND hWnd) const {
         WINDOWPLACEMENT wp [[indeterminate]]; wp.length = sizeof(wp);
         if (GetWindowPlacement(hWnd, &wp)) {
-            // Persist placement in logical coordinates (96 DPI base) so saved placement survives DPI changes.
+            // Persist placement in baseline.dpi so saved placement survives DPI changes.
             const auto to_logical = [&](LONG phys) -> DWORD {
-                // logical = phys * 96 / curDpi
                 return static_cast<DWORD>(std::lround(static_cast<double>(phys) * static_cast<double>(baseline.dpi) / static_cast<double>(dpi)));
                 };
 
