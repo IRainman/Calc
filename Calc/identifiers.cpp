@@ -536,6 +536,10 @@ namespace Identifiers
 		{ "arctan", function_pointer<1, std::atan>() },
 
 		{ "factorial", function_pointer <1, factorial>() },
+#ifdef CALC_TESTS_ENABLED
+		{ "gcd", function_pointer<2, std::gcd>() },
+		{ "lcm", function_pointer<2, std::lcm>() },
+#endif
 
 		{ "permutations", function_pointer <2, permutations>() },
 		{ "P",            function_pointer <2, permutations>() },
@@ -605,11 +609,11 @@ namespace Identifiers
 		{ "floor",function_pointer<1, std::floor>() },
 
 		{ "mod", function_pointer<2, std::fmod>() },
-#ifdef CALC_TESTS_ENABLED
-		{ "gcd", function_pointer<2, std::gcd>() },
-		{ "lcm", function_pointer<2, std::lcm>() },
 
+#ifdef CALC_TESTS_ENABLED
 		{ "clamp", function_pointer<3, std::clamp>() },
+		{ "midpoint", function_pointer < 2, std::midpoint>() },
+		{ "lerp", function_pointer<3, std::std::lerp>() },
 #endif
 		{ "not", function_pointer<1, NOT>() },
 		{ "and", function_pointer<2, AND>() },
