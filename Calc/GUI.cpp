@@ -85,8 +85,8 @@ static std::array<char, 64 * 1024> g_input [[indeterminate]]; // 65535 for symbo
 class CalcWindowState {
     struct Baseline {
         constexpr static int dpi = 96;
-        constexpr static int min_heigth = 280;
-        constexpr static int min_width = 240;
+        constexpr static int min_width = 292;
+        constexpr static int min_heigth = 357;
         constexpr static int point_size = 10; // matches RC font 10 pt in resource template
     };
     constexpr static Baseline baseline;
@@ -193,13 +193,7 @@ public:
         EndDialog(hWnd, 0);
     }
     void initialize(const HWND hWnd) {
-        // IMPORTANT: use client rect here. WM_SIZE provides client area sizes.
-        RECT cr [[indeterminate]];
-        if (GetClientRect(hWnd, &cr)) {
-            width = (cr.right - cr.left);
-            heigth = (cr.bottom - cr.top);
-        }
-        init_anchors(hWnd);
+
         load_window_placement(hWnd);
 
 #ifdef CALC_TESTS_ENABLED
@@ -214,11 +208,11 @@ public:
         add_about_menu_to_system_menu(hWnd);
         set_window_icons(hWnd);
     }
-    static INT get_window_dpi(const HWND hWnd) {
+    static int get_window_dpi(const HWND hWnd) {
         // Try GetDpiForWindow (Windows 10+). Dynamically resolve to keep compatibility.
         const auto user32 = GetModuleHandleA("user32.dll");
         if (user32) {
-            using GetDpiForWindow_t = INT(WINAPI*)(HWND);
+            using GetDpiForWindow_t = int(WINAPI*)(HWND);
             auto fn = reinterpret_cast<GetDpiForWindow_t>(GetProcAddress(user32, "GetDpiForWindow"));
             if (fn) {
                 const auto dpi = fn(hWnd);
@@ -260,37 +254,35 @@ public:
             }
 
             // Rescale minimum sizes
-            min_width = static_cast<INT>(std::lround(static_cast<double>(baseline.min_width) * factor));
-            min_heigth = static_cast<INT>(std::lround(static_cast<double>(baseline.min_heigth) * factor));
+            min_width = std::lround(static_cast<double>(baseline.min_width) * factor);
+            min_heigth = std::lround(static_cast<double>(baseline.min_heigth) * factor);
 
             // Rescale current sizes (width/heigth are client-area sizes)
             resize(dlg,
-                static_cast<UINT>(std::lround(static_cast<double>(width) * factor)),
-                static_cast<UINT>(std::lround(static_cast<double>(heigth) * factor))
+                std::lround(static_cast<double>(width) * factor),
+                std::lround(static_cast<double>(heigth) * factor)
             );
         }
     }
-    void resize(const HWND dlg, INT clientW, INT clientH) {
-        clientW = std::max(clientW, get_min_width());
-        clientH = std::max(clientH, get_min_heigth());
-
+    void resize(const HWND dlg, const INT clientW, const INT clientH) {
         // compute delta between previous client size and new client size
         const INT w = width - clientW;
         const INT h = heigth - clientH;
 
+		// no size changes
         if (!w && !h)
             return;
 
         for (auto& a : anchors) {
-            // If anchored to bottom, move bottom edge by delta h
+            // if anchored to bottom, move bottom edge by delta h
             a.rc.bottom = a.bottom ? (a.rc.bottom - h) : a.rc.bottom;
-            // If not anchored to left, shift left coordinate by delta w
+            // if not anchored to left, shift left coordinate by delta w
             a.rc.left = a.left ? a.rc.left : (a.rc.left - w);
-            // If not anchored to top, shift top coordinate by delta h
+            // if not anchored to top, shift top coordinate by delta h
             a.rc.top = a.top ? a.rc.top : (a.rc.top - h);
-            // If anchored to right, move right edge by delta w
+            // if anchored to right, move right edge by delta w
             a.rc.right = a.right ? (a.rc.right - w) : a.rc.right;
-			// Move the control
+			// move the control
             const HWND hCtrl = GetDlgItem(dlg, a.id);
             if (hCtrl) {
                 MoveWindow(hCtrl, a.get_x(), a.get_y(), a.get_width(), a.get_height(), TRUE);
@@ -302,22 +294,6 @@ public:
         heigth = clientH;
     }
 private:
-    void init_anchors(const HWND dlg) {
-        const auto add = [&](const int id, const bool left, const bool top, const bool right, const bool bottom) {
-            const auto h = GetDlgItem(dlg, id);
-            if (!h) return;
-
-            RECT wr [[indeterminate]]; if (!GetWindowRect(h, &wr)) return;
-            POINT p{ wr.left, wr.top }; ScreenToClient(dlg, &p);
-            RECT rcClient{ p.x, p.y, p.x + (wr.right - wr.left), p.y + (wr.bottom - wr.top) };
-            anchors.emplace_back(Anchor{ id, rcClient, left, top, right, bottom });
-            };
-
-        add(IDC_EDIT_INPUT, true, true, true, true);    // flexible input
-        add(IDC_EDIT_RESULT, true, false, true, true);  // bottom anchored
-        add(IDC_EDIT_MESSAGE, true, false, true, true); // bottom anchored
-        add(IDC_BUTTON_CALC, false, false, true, true); // button bottom-right
-    }
     static void center_window_on_monitor(const HWND hWnd, const HMONITOR hMon) {
         RECT wr [[indeterminate]];
         if (GetWindowRect(hWnd, &wr)) {
@@ -335,7 +311,29 @@ private:
             SetWindowPos(hWnd, nullptr, 100, 100, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
         }
     }
-    void load_window_placement(const HWND hWnd) const {
+    void load_window_placement(const HWND hWnd) {
+        // IMPORTANT: use client rect here. WM_SIZE provides client area sizes.
+        RECT cr [[indeterminate]];
+        if (GetClientRect(hWnd, &cr)) {
+            width = (cr.right - cr.left);
+            heigth = (cr.bottom - cr.top);
+        }
+
+        const auto add = [&](const int id, const bool left, const bool top, const bool right, const bool bottom) {
+            const auto h = GetDlgItem(hWnd, id);
+            if (!h) return;
+
+            RECT wr [[indeterminate]]; if (!GetWindowRect(h, &wr)) return;
+            POINT p{ wr.left, wr.top }; ScreenToClient(hWnd, &p);
+            RECT rcClient{ p.x, p.y, p.x + (wr.right - wr.left), p.y + (wr.bottom - wr.top) };
+            anchors.emplace_back(Anchor{ id, rcClient, left, top, right, bottom });
+            };
+
+        add(IDC_EDIT_INPUT, true, true, true, true);    // flexible input
+        add(IDC_EDIT_RESULT, true, false, true, true);  // bottom anchored
+        add(IDC_EDIT_MESSAGE, true, false, true, true); // bottom anchored
+        add(IDC_BUTTON_CALC, false, false, true, true); // button bottom-right
+
         // Read stored placement. New behaviour: stored coords are logical (96 DPI base).
         // If a savedDpi key exists we assume values were written by the new code (logical),
         // otherwise treat registry values as legacy raw pixels.
@@ -351,19 +349,21 @@ private:
         wp.showCmd = static_cast<int>(sShow ? *sShow : SW_SHOWNORMAL);
         wp.flags = static_cast<UINT>(sFlags ? *sFlags : 0u);
 
-        const UINT currentDpi = get_window_dpi(hWnd);
+        const auto currentDpi = get_window_dpi(hWnd);
 
-        auto to_physical = [&](const std::optional<DWORD>& val) -> LONG {
+        const auto to_physical = [&](const std::optional<DWORD>& val) -> LONG {
             if (!val) return 0;
             // If savedDpi exists we assume stored value is logical (96-based), convert to current DPI.
             // If savedDpi absent: legacy raw pixels are left unchanged.
             if (sSavedDpi) {
-                return static_cast<LONG>(std::lround(static_cast<double>(*val) * static_cast<double>(currentDpi) / static_cast<double>(baseline.dpi)));
+                return std::lround(static_cast<double>(*val) * static_cast<double>(currentDpi) / static_cast<double>(baseline.dpi));
             }
             else {
-                return static_cast<LONG>(*val);
+                return *val;
             }
             };
+
+        set_dpi(hWnd, currentDpi);
 
         wp.rcNormalPosition.left = sLeft ? to_physical(sLeft) : 100;
         wp.rcNormalPosition.top = sTop ? to_physical(sTop) : 100;
@@ -391,11 +391,9 @@ private:
         WINDOWPLACEMENT wp [[indeterminate]]; wp.length = sizeof(wp);
         if (GetWindowPlacement(hWnd, &wp)) {
             // Persist placement in logical coordinates (96 DPI base) so saved placement survives DPI changes.
-            const UINT curDpi = get_window_dpi(hWnd);
-
-            auto to_logical = [&](LONG phys) -> DWORD {
+            const auto to_logical = [&](LONG phys) -> DWORD {
                 // logical = phys * 96 / curDpi
-                return static_cast<DWORD>(std::lround(static_cast<double>(phys) * static_cast<double>(baseline.dpi) / static_cast<double>(curDpi)));
+                return static_cast<DWORD>(std::lround(static_cast<double>(phys) * static_cast<double>(baseline.dpi) / static_cast<double>(dpi)));
                 };
 
             RegWriteDword(HKEY_CURRENT_USER, kRegKey, "showCmd", static_cast<DWORD>(wp.showCmd));
@@ -405,7 +403,7 @@ private:
             RegWriteDword(HKEY_CURRENT_USER, kRegKey, "right", to_logical(wp.rcNormalPosition.right));
             RegWriteDword(HKEY_CURRENT_USER, kRegKey, "bottom", to_logical(wp.rcNormalPosition.bottom));
             // Write savedDpi marker so loader knows values are logical units (new format).
-            RegWriteDword(HKEY_CURRENT_USER, kRegKey, "savedDpi", static_cast<DWORD>(curDpi));
+            RegWriteDword(HKEY_CURRENT_USER, kRegKey, "savedDpi", static_cast<DWORD>(dpi));
         }
     }
     // ---------- Create menu ----------
@@ -521,7 +519,6 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND hDlg, const UINT uMsg, const W
     case WM_GETMINMAXINFO: {
         const auto lpMMI = reinterpret_cast<LPMINMAXINFO>(lParam);
         if (lpMMI) {
-            /*
             // Convert minimum client area size to window (outer) size so the user can't resize window
             // smaller than the intended client area. WM_GETMINMAXINFO expects window dimensions.
             RECT requiredClient{ 0, 0, CalcWindow.get_min_x(), CalcWindow.get_min_y() };
@@ -538,11 +535,11 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND hDlg, const UINT uMsg, const W
                 lpMMI->ptMinTrackSize.x = requiredClient.right - requiredClient.left;
                 lpMMI->ptMinTrackSize.y = requiredClient.bottom - requiredClient.top;
             }
-            else {*/
+            else {
                 // Fallback: use client sizes directly (better than nothing)
                 lpMMI->ptMinTrackSize.x = CalcWindow.get_min_x();
                 lpMMI->ptMinTrackSize.y = CalcWindow.get_min_y();
-            //}
+            }
         }
         return FALSE;
     }
