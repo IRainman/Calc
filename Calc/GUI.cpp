@@ -96,19 +96,11 @@ class CalcWindowState {
         Font() noexcept {
             font = nullptr;
         }
-        [[nodiscard]] Font(const HWND dlg, const UINT dpi) noexcept {
+        [[nodiscard]] Font(const UINT dpi) noexcept {
             font = CreateFontA(-MulDiv(baseline.point_size, dpi, 72), // negative height for character height
                 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, ANSI_CHARSET,
                 OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
                 DEFAULT_PITCH | FF_DONTCARE, "Segoe UI");
-            if (font) {
-                SendMessageA(dlg, WM_SETFONT, reinterpret_cast<WPARAM>(font), MAKELPARAM(TRUE, 0));
-                constexpr int controlIds[] = { IDC_EDIT_INPUT, IDC_EDIT_RESULT, IDC_EDIT_MESSAGE, IDC_BUTTON_CALC };
-                for (auto id : controlIds) {
-                    const auto h = GetDlgItem(dlg, id);
-                    if (h) SendMessageA(h, WM_SETFONT, reinterpret_cast<WPARAM>(font), MAKELPARAM(TRUE, 0));
-                }
-            }
         }
         // non-copyable
         Font(const Font&) = delete;
@@ -127,6 +119,9 @@ class CalcWindowState {
             if (font) {
                 DeleteObject(font);
             }
+        }
+        auto get_font() const {
+            return font;
         }
     private:
         HFONT font;
@@ -170,8 +165,8 @@ public:
     CalcWindowState(const CalcWindowState&) = delete;
     CalcWindowState(CalcWindowState&&) = delete;
     ~CalcWindowState() = default;
-    const Font& get_font() const {
-        return font;
+    auto get_font() const {
+        return font.get_font();
     }
     auto get_dpi() const {
         return dpi;
@@ -242,8 +237,18 @@ public:
 
             dpi = new_dpi;
 
+            // Rescale minimum sizes
+            min_width = std::lround(static_cast<double>(baseline.min_width) * factor);
+            min_heigth = std::lround(static_cast<double>(baseline.min_heigth) * factor);
+
+            // Rescale current sizes (width/heigth are client-area sizes)
+            width = std::lround(static_cast<double>(width) * factor);
+            heigth = std::lround(static_cast<double>(heigth) * factor);
+
             // Recreate font for new DPI (move-assign safely)
-            font = Font(dlg, dpi);
+            font = Font(dpi);
+
+            SendMessageA(dlg, WM_SETFONT, reinterpret_cast<WPARAM>(get_font()), MAKELPARAM(TRUE, 0));
 
             // Rescale anchors
             for (auto& a : anchors) {
@@ -251,47 +256,41 @@ public:
                 a.rc.top = std::lround(a.rc.top * factor);
                 a.rc.right = std::lround(a.rc.right * factor);
                 a.rc.bottom = std::lround(a.rc.bottom * factor);
+                // move the control
+                const auto hCtrl = GetDlgItem(dlg, a.id);
+                if (hCtrl) {
+                    MoveWindow(hCtrl, a.get_x(), a.get_y(), a.get_width(), a.get_height(), TRUE);
+                    SendMessageA(hCtrl, WM_SETFONT, reinterpret_cast<WPARAM>(get_font()), MAKELPARAM(TRUE, 0));
+                }
             }
-
-            // Rescale minimum sizes
-            min_width = std::lround(static_cast<double>(baseline.min_width) * factor);
-            min_heigth = std::lround(static_cast<double>(baseline.min_heigth) * factor);
-
-            // Rescale current sizes (width/heigth are client-area sizes)
-            resize(dlg,
-                std::lround(static_cast<double>(width) * factor),
-                std::lround(static_cast<double>(heigth) * factor)
-            );
         }
     }
     void resize(const HWND dlg, const INT clientW, const INT clientH) {
-        // compute delta between previous client size and new client size
-        const INT w = width - clientW;
-        const INT h = heigth - clientH;
+        if (width != clientW || heigth != clientH) {
+            // compute delta between previous client size and new client size
+            const INT deltaW = width - clientW;
+            const INT deltaH = heigth - clientH;
 
-		// no size changes
-        if (!w && !h)
-            return;
+            // store new client size
+            width = clientW;
+            heigth = clientH;
 
-        for (auto& a : anchors) {
-            // if anchored to bottom, move bottom edge by delta h
-            a.rc.bottom = a.bottom ? (a.rc.bottom - h) : a.rc.bottom;
-            // if not anchored to left, shift left coordinate by delta w
-            a.rc.left = a.left ? a.rc.left : (a.rc.left - w);
-            // if not anchored to top, shift top coordinate by delta h
-            a.rc.top = a.top ? a.rc.top : (a.rc.top - h);
-            // if anchored to right, move right edge by delta w
-            a.rc.right = a.right ? (a.rc.right - w) : a.rc.right;
-			// move the control
-            const HWND hCtrl = GetDlgItem(dlg, a.id);
-            if (hCtrl) {
-                MoveWindow(hCtrl, a.get_x(), a.get_y(), a.get_width(), a.get_height(), TRUE);
+            for (auto& a : anchors) {
+                // if anchored to bottom, move bottom edge by deltaH
+                a.rc.bottom = a.bottom ? (a.rc.bottom - deltaH) : a.rc.bottom;
+                // if not anchored to left, shift left coordinate by deltaW
+                a.rc.left = a.left ? a.rc.left : (a.rc.left - deltaW);
+                // if not anchored to top, shift top coordinate by deltaH
+                a.rc.top = a.top ? a.rc.top : (a.rc.top - deltaH);
+                // if anchored to right, move right edge by deltaW
+                a.rc.right = a.right ? (a.rc.right - deltaW) : a.rc.right;
+                // move the control
+                const auto hCtrl = GetDlgItem(dlg, a.id);
+                if (hCtrl) {
+                    MoveWindow(hCtrl, a.get_x(), a.get_y(), a.get_width(), a.get_height(), TRUE);
+                }
             }
         }
-
-        // store new client size
-        width = clientW;
-        heigth = clientH;
     }
 private:
     static void center_window_on_monitor(const HWND hWnd, const HMONITOR hMon) {
@@ -535,11 +534,6 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND hDlg, const UINT uMsg, const W
                 lpMMI->ptMinTrackSize.x = requiredClient.right - requiredClient.left;
                 lpMMI->ptMinTrackSize.y = requiredClient.bottom - requiredClient.top;
             }
-            else {
-                // Fallback: use client sizes directly (better than nothing)
-                lpMMI->ptMinTrackSize.x = CalcWindow.get_min_x();
-                lpMMI->ptMinTrackSize.y = CalcWindow.get_min_y();
-            }
         }
         return FALSE;
     }
@@ -550,10 +544,10 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND hDlg, const UINT uMsg, const W
         }
         return FALSE;
     }
-    case WM_DISPLAYCHANGE: {
-        CalcWindow.set_dpi(hDlg, CalcWindow.get_window_dpi(hDlg));
-        return TRUE;
-    }
+    //case WM_DISPLAYCHANGE: {
+    //    CalcWindow.set_dpi(hDlg, CalcWindow.get_window_dpi(hDlg));
+    //    return TRUE;
+    //}
     case WM_DPICHANGED: {
         CalcWindow.set_dpi(hDlg, HIWORD(wParam));
         return TRUE;
