@@ -544,6 +544,7 @@ namespace Identifiers
 		{ "combinations", function_pointer <2, combinations>() },
 		{ "C",            function_pointer <2, combinations>() },
 
+		{ "atan2",function_pointer<2, std::atan2>() },
 		{ "hypot", {{2, 3}, hypot} },
 		{ "parabola", {{1, 1}, parabola} },
 
@@ -576,9 +577,6 @@ namespace Identifiers
 #ifdef CALC_TESTS_ENABLED
 		{ "fma", function_pointer<3, std::fma>() },
 #endif
-#ifdef CALC_TESTS_ENABLED
-		{ "atan2",function_pointer<2, std::atan2>() },
-#endif
 		{ "degrees_to_radians", function_pointer<1, degrees_to_radians>() },
 		{ "rad",                function_pointer<1, degrees_to_radians>() },
 
@@ -590,14 +588,6 @@ namespace Identifiers
 
 		{ "turn_to_radians", function_pointer<1, turn_to_radians>() },
 		{ "radians_to_turn", function_pointer<1, radians_to_turn>() },
-
-		{ "not", function_pointer<1, NOT>() },
-		{ "and", function_pointer<2, AND>() },
-		{ "or",  function_pointer<2, OR>() },
-		{ "xor", function_pointer<2, XOR>() },
-		{ "shl", function_pointer<1, SHL>() },
-		{ "shr", function_pointer<1, SHR>() },
-		{ "sar", function_pointer<1, SAR>() },
 
 		{ "min", {{1, std::numeric_limits<ParamCount>::max()}, min} },
 		{ "max", {{1, std::numeric_limits<ParamCount>::max()}, max} },
@@ -616,7 +606,26 @@ namespace Identifiers
 		{ "floor",function_pointer<1, std::floor>() },
 
 		{ "mod", function_pointer<2, std::fmod>() },
-
+#ifdef CALC_TESTS_ENABLED
+		{ "gcd", function_pointer<2, std::gcd>() },
+		{ "lcm", function_pointer<2, std::lcm>() },
+#endif
+		{ "not", function_pointer<1, NOT>() },
+		{ "and", function_pointer<2, AND>() },
+		{ "or",  function_pointer<2, OR>() },
+		{ "xor", function_pointer<2, XOR>() },
+		{ "shl", function_pointer<1, SHL>() },
+		{ "shr", function_pointer<1, SHR>() },
+		{ "sar", function_pointer<1, SAR>() },
+#ifdef CALC_TESTS_ENABLED
+		{ "rotl", function_pointer<2, std::rotl>() },
+		{ "rotr", function_pointer<2, std::rotr>() },
+		{ "countl_zero", function_pointer<1, std::countl_zero>() },
+		{ "countl_one", function_pointer<1, std::countl_one>() },
+		{ "countr_zero", function_pointer<1, std::countr_zero>() },
+		{ "countr_one", function_pointer<1, std::countr_one>() },
+		{ "popcount", function_pointer<1, std::popcount>() },
+#endif
 		//---------------------------------------------------------------------------
 		// TODO https://en.cppreference.com/w/cpp/numeric/special_math
 		{ "beta", function_pointer<2, std::beta>() },
