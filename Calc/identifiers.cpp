@@ -608,6 +608,8 @@ namespace Identifiers
 #ifdef CALC_TESTS_ENABLED
 		{ "gcd", function_pointer<2, std::gcd>() },
 		{ "lcm", function_pointer<2, std::lcm>() },
+
+		{ "clamp", function_pointer<3, std::clamp>() },
 #endif
 		{ "not", function_pointer<1, NOT>() },
 		{ "and", function_pointer<2, AND>() },
