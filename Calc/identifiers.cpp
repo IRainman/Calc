@@ -536,7 +536,7 @@ namespace Identifiers
 		{ "arctan", function_pointer<1, std::atan>() },
 
 		{ "factorial", function_pointer <1, factorial>() },
-#ifdef CALC_TESTS_ENABLED
+#if 0 //def CALC_TESTS_ENABLED
 		{ "gcd", function_pointer<2, std::gcd>() },
 		{ "lcm", function_pointer<2, std::lcm>() },
 #endif
@@ -610,7 +610,7 @@ namespace Identifiers
 
 		{ "mod", function_pointer<2, std::fmod>() },
 
-#ifdef CALC_TESTS_ENABLED
+#if 0 //def CALC_TESTS_ENABLED
 		{ "clamp", function_pointer<3, std::clamp>() },
 		{ "midpoint", function_pointer < 2, std::midpoint>() },
 		{ "lerp", function_pointer<3, std::std::lerp>() },
@@ -622,7 +622,7 @@ namespace Identifiers
 		{ "shl", function_pointer<1, SHL>() },
 		{ "shr", function_pointer<1, SHR>() },
 		{ "sar", function_pointer<1, SAR>() },
-#ifdef CALC_TESTS_ENABLED
+#if 0 //def CALC_TESTS_ENABLED
 		{ "rotl", function_pointer<2, std::rotl>() },
 		{ "rotr", function_pointer<2, std::rotr>() },
 		{ "countl_zero", function_pointer<1, std::countl_zero>() },
