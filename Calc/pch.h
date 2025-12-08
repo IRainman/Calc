@@ -26,7 +26,7 @@
 
 #include "flags.h"
 
-#define CALC_USING_MY_FMT // TODO: waiting for vcpkg version is updated.
+#define CALC_USING_LOCAL_FMT // TODO: waiting for vcpkg version is updated.
 
 #define FMT_OPTIMIZE_SIZE 2 /* Tests time is: 49612ms. */
 #define FMT_BUILTIN_TYPES 0 /* Tests time is: 49980ms. */
@@ -43,7 +43,7 @@
 #define FMT_USE_LOCALE 0
 #define FMT_STATIC_THOUSANDS_SEPARATOR '\''
 
-#ifdef CALC_USING_MY_FMT
+#ifdef CALC_USING_LOCAL_FMT
 #include "../../fmt/include/fmt/base.h"
 #include "../../fmt/include/fmt/compile.h"
 #else
@@ -58,7 +58,6 @@
 #define FASTFLOAT_ONLY_POSITIVE_C_NUMBER_WO_INF_NAN
 #define FASTFLOAT_ONLY_ROUNDS_TO_NEAREST_SUPPORTED
 #define FASTFLOAT_ISNOT_CHECKED_BOUNDS
-// #define FASTFLOAT_ONLY_CHAR_STRING_SUPPORTED TODO?
 #include "../../fast_float/include/fast_float/fast_float.h"
 #else
 /* Tests time is: 55430ms. */

@@ -540,12 +540,12 @@ std::string calc_tests()
 	// Don't use fmt here, because it isn't compile.
 	output += std::format("Tests"
 #ifdef CALC_TESTS_DEV_ENABLED
-		":\r\n less than epsilon: {},\r\n exactly: {},\r\n failed: {}\r\n"
+		":\r\n exactly: {},\r\n less than epsilon: {},\r\n failed: {}\r\n"
 		"fegetround() == {}\r\n"
 #endif
 		" time is: {}.",
 #ifdef CALC_TESTS_DEV_ENABLED
-		tests.size() - doubtful_but_okey, tests.size() - failed, failed,
+		tests.size() - failed - doubtful_but_okey, doubtful_but_okey, failed,
 		round_name(fegetround()),
 #endif
 		std::chrono::duration_cast<std::chrono::
