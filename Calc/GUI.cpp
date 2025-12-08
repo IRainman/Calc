@@ -581,11 +581,6 @@ int WINAPI WinMain(const HINSTANCE hInstance, [[maybe_unused]] const HINSTANCE h
     // Set flush-to-zero and denormals-are-zero mode (SSE2):
     _mm_setcsr(_mm_getcsr() | 0x8040);
 
-    // TODO: move this code to the core.
-#if !defined(CALC_USE_ERROR_TOKEN) && !defined(CALC_USING_STATIC_VECTOR)
-    IssueManager::speedup();
-#endif
-
     INITCOMMONCONTROLSEX InitCtrls [[indeterminate]];
     InitCtrls.dwSize = sizeof(InitCtrls);
     InitCtrls.dwICC = ICC_STANDARD_CLASSES;

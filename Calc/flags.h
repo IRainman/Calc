@@ -29,6 +29,7 @@ using EquationSize = size_t;
 using Value = std::float128_t;
 #else
 #warning "128-bit float type isn't supported. Calc is using 64-bit double implementation."
+//using Value = std::float64_t;
 using Value = double;
 #endif
 
@@ -40,9 +41,7 @@ using ParamCount = char;
 //#define CALC_TEST_FASTFLOAT
 
 //#define CALC_USE_ERROR_TOKEN // WIP
-// CALC_USE_FULL_TOKENS // deprecated
 // CALC_TESTS_USE_ADDITIONAL_OPTIONS // deprecated
-// ISSUE_MANAGER_HAVE_SEVERITY // deprecated
 #endif
 //---------------------------------------------------------------------------
 // Usage of fmt is improve performance.
@@ -51,29 +50,6 @@ using ParamCount = char;
 Tests:
  time is: 24744ms.
 */
-//---------------------------------------------------------------------------
-#ifndef CALC_USE_ERROR_TOKEN
-//#define CALC_USING_STATIC_VECTOR
-// TODO: boost is working but without options and noexcept
-// maybe better to use inplace_vector when it's available,
-// and drop boost completely
-/*
- Tests: exactly: 115, almost: 9,
- failed: 4,
- time is: 31949ms.
- 
- std::vector<Issue> + reserve(10)
-*/
-
-/*
-Tests: exactly: 115, almost: 9,
- failed: 4,
- time is: 31621ms.
- 
- boost::container::static_vector<Issue, 10>
-*/
-constexpr size_t CALC_MAX_ISSUES = 10;
-#endif
 //---------------------------------------------------------------------------
 //std::map<std::string_view, const Fn> // Tests: time is: 37931ms.
 //std::unordered_map<std::string_view, const Fn> // Tests: time is: 31515ms.
