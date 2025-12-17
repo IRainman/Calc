@@ -44,7 +44,7 @@
 	for (const auto& error : IssueManager::_errors)
 	{
 		//fmt::memory_buffer buffer;
-		ret += fmt::format(FMT_COMPILE("Error at pos {}: "), error.pos) + error.text + "\r\n";
+		ret += fmt::format(FMT_COMPILE("Error at pos {}: "), error.pos) + std::string(error.text) + "\r\n";
 		//ret += std::string(buffer.data(), buffer.size());
 	}
 	return ret;

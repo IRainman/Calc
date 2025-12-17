@@ -27,10 +27,12 @@ using EquationSize = size_t;
 
 #if __STDCPP_FLOAT128_T__ == 1
 using Value = std::float128_t;
+#define CALC_USE_128_BIT_FLOAT 1 // WIP
 #else
 #warning "128-bit float type isn't supported. Calc is using 64-bit double implementation."
 //using Value = std::float64_t;
 using Value = double;
+#define CALC_USE_128_BIT_FLOAT 0
 #endif
 
 using ParamCount = char;

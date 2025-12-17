@@ -11,12 +11,12 @@
 class Issue
 {
 	public:
-		Issue(std::string&& _text, const EquationSize _pos) noexcept : text(_text), pos(_pos) {};
+		Issue(std::string_view&& _text, const EquationSize _pos) noexcept : text(_text), pos(_pos) {};
 		Issue(const Issue&) = delete;
 		Issue(Issue&&) = default;
 	private:
 		// Issue describing of the message.
-		const std::string text;
+		const std::string_view text;
 
 		// Position within the context at which the issue has occurred.
 		const EquationSize pos; //-V122
@@ -34,7 +34,7 @@ class IssueManager
 		/**
 		 * Report a new error.
 		 */
-		static void report_error(const EquationSize pos, std::string&& text) noexcept;
+		static void report_error(const EquationSize pos, std::string_view&& text) noexcept;
 		
 		/**
 		 * Indicate whether any messages have been reported so far.

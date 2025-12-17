@@ -13,7 +13,7 @@ IssueManager::Issues IssueManager::_errors;
 /**
  * Report a new error.
  */
-void IssueManager::report_error(const EquationSize pos, std::string&& text) noexcept
+void IssueManager::report_error(const EquationSize pos, std::string_view&& text) noexcept
 {
 	_errors.emplace_back(Issue(std::move(text), pos));
 }

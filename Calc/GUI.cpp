@@ -10,6 +10,8 @@
 
 #include "pch.h"
 
+#include <optional>
+
 #include "lexer.h"
 #include "parser.h"
 #include "issue_manager.h"
@@ -34,6 +36,7 @@
 
 #include "targetver.h"
 
+// TODO: Move to the core!
 #include <immintrin.h>
 
 #include <windows.h>
@@ -443,7 +446,7 @@ static CalcWindowState CalcWindow;
 // ------------------------------------------------------------------
 // Calc!
 // ------------------------------------------------------------------
-static inline void ExecuteCalculation(const HWND hDlg) {
+static void ExecuteCalculation(const HWND hDlg) {
     const auto copied = GetDlgItemTextA(hDlg, IDC_EDIT_INPUT, g_input.data(), static_cast<int>(g_input.size()));
     if (!copied) {
         SetDlgItemTextA(hDlg, IDC_EDIT_RESULT, "");
@@ -588,7 +591,7 @@ int WINAPI WinMain(const HINSTANCE hInstance, [[maybe_unused]] const HINSTANCE h
 
     const auto ret = DialogBoxParamA(hInstance, MAKEINTRESOURCEA(IDD_CALC_DIALOG), nullptr, CalcDialogProc, 0);
     if (ret == -1) {
-        MessageBoxA(nullptr, "Failed to create main dialog.", "Startup Error", MB_OK | MB_ICONERROR);
+        MessageBoxA(nullptr, "Failed to create main dialog", "Startup Error", MB_OK | MB_ICONERROR);
         return -1;
     }
     return 0;
