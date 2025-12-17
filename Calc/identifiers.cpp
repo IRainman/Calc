@@ -489,7 +489,6 @@ namespace Identifiers
 		{ "F", constant<F>() },
 		{ "KJ", constant<KJ>() },
 		{ "RK", constant<RK>() },
-		{ "G0", constant<G0>() },
 		{ "me", constant<me>() },
 		{ "me_u", constant<me_u>() },
 		{ "me_MeV", constant<me_MeV>() },
@@ -523,7 +522,7 @@ namespace Identifiers
 		{ "re", constant<re>() },
 		{ "sigmae", constant<sigmae>() },
 
-		// TODO additional constant
+		// TODO additional constants
 		{ "Z0", constant<376.730313461>() }, // characteristic impedance of vacuum (Ohm)
 
 		//---------------------------------------------------------------------------
