@@ -10,8 +10,6 @@
 
 #include "pch.h"
 
-#include <optional>
-
 #include "lexer.h"
 #include "parser.h"
 #include "issue_manager.h"
@@ -23,6 +21,8 @@
 // ================= GUI ===============
 
 #ifdef _WIN32
+
+#include <optional>
 
 //#define CALC_SUPPORT_WINDOWS_XP // deprecated by Windows SDK
 //#define CALC_SUPPORT_WINDOWS_7_8_81 // deprecated by Windows SDK since version 18 of the MSVC compiler.
@@ -68,8 +68,9 @@ static void RegWriteDword(const HKEY root, const std::string_view subkey, const 
 // ------------------------------------------------------------------
 static std::optional<DWORD> RegReadDword(const HKEY root, const std::string_view subkey, const std::string_view name) {
     HKEY hKey [[indeterminate]];
-    if (RegOpenKeyExA(root, subkey.data(), 0, KEY_READ, &hKey) != ERROR_SUCCESS) return std::nullopt;
-
+    if (RegOpenKeyExA(root, subkey.data(), 0, KEY_READ, &hKey) != ERROR_SUCCESS) {
+        return std::nullopt;
+    }
     DWORD out [[indeterminate]]; DWORD outSize = sizeof(out); DWORD type [[indeterminate]];
     if (RegQueryValueExA(hKey, name.data(), nullptr, &type, reinterpret_cast<LPBYTE>(&out), &outSize) != ERROR_SUCCESS) {
         RegCloseKey(hKey);
@@ -206,33 +207,6 @@ public:
         add_about_menu_to_system_menu(hWnd);
         set_window_icons(hWnd);
     }
-    static int get_window_dpi(const HWND hWnd) {
-        // Try GetDpiForWindow (Windows 10+). Dynamically resolve to keep compatibility.
-        const auto user32 = GetModuleHandleA("user32.dll");
-        if (user32) {
-            using GetDpiForWindow_t = int(WINAPI*)(HWND);
-            auto fn = reinterpret_cast<GetDpiForWindow_t>(GetProcAddress(user32, "GetDpiForWindow"));
-            if (fn) {
-                const auto dpi = fn(hWnd);
-                if (dpi > 0) return dpi;
-            }
-        }
-        // Fallback: get device caps from nearest monitor / device context.
-        const auto hdc = GetDC(hWnd);
-        if (hdc) {
-            const auto dpiY = GetDeviceCaps(hdc, LOGPIXELSY);
-            ReleaseDC(hWnd, hdc);
-            if (dpiY > 0) return dpiY;
-        }
-        // Last fallback, query primary screen
-        const auto screen = GetDC(nullptr);
-        if (screen) {
-            const auto dpiY = GetDeviceCaps(screen, LOGPIXELSY);
-            ReleaseDC(nullptr, screen);
-            if (dpiY > 0) return dpiY;
-        }
-        return baseline.dpi;
-    }
     void set_dpi(const HWND dlg, const INT new_dpi) {
         if (dpi != new_dpi) {
             // Compute scale factor relative to current dpi
@@ -320,6 +294,33 @@ private:
         else {
             SetWindowPos(hWnd, nullptr, 100, 100, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
         }
+    }
+    static int get_window_dpi(const HWND hWnd) {
+        // Try GetDpiForWindow (Windows 10+). Dynamically resolve to keep compatibility.
+        const auto user32 = GetModuleHandleA("user32.dll");
+        if (user32) {
+            using GetDpiForWindow_t = int(WINAPI*)(HWND);
+            auto fn = reinterpret_cast<GetDpiForWindow_t>(GetProcAddress(user32, "GetDpiForWindow"));
+            if (fn) {
+                const auto dpi = fn(hWnd);
+                if (dpi > 0) return dpi;
+            }
+        }
+        // Fallback: get device caps from nearest monitor / device context.
+        const auto hdc = GetDC(hWnd);
+        if (hdc) {
+            const auto dpiY = GetDeviceCaps(hdc, LOGPIXELSY);
+            ReleaseDC(hWnd, hdc);
+            if (dpiY > 0) return dpiY;
+        }
+        // Last fallback, query primary screen
+        const auto screen = GetDC(nullptr);
+        if (screen) {
+            const auto dpiY = GetDeviceCaps(screen, LOGPIXELSY);
+            ReleaseDC(nullptr, screen);
+            if (dpiY > 0) return dpiY;
+        }
+        return baseline.dpi;
     }
     void load_window_placement(const HWND hWnd) {
         // IMPORTANT: use client rect here. WM_SIZE provides client area sizes.
@@ -460,7 +461,7 @@ static void ExecuteCalculation(const HWND hDlg) {
         const auto result = p.parse();
 
 #if defined(CALC_USE_ERROR_TOKEN)
-        const bool hasErr = false;
+        const bool hasErr = 
 #else
         const auto hasErr = IssueManager::has_errors();
 #endif
