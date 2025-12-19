@@ -60,53 +60,14 @@ std::pair<int64_t, int64_t> decimalToFraction(Value number)
 
 [[nodiscard]] std::string Formatter::format(Value value) noexcept
 {
-#ifdef CALC_USE_FORMATTED_STRING_CORRECTION
-	std::string res = fmt::format(FMT_COMPILE("{}"), value);
-
-	constexpr uint_fast16_t max_digits = std::numeric_limits<Value>::max_digits10 + 1 /* for \0 string termination */;
-	const auto inf_nan = res == "nan" || res == "inf" || res == "-nan" || res == "-inf";
-	if (!inf_nan)
-	{
-		const auto s = res.size();
-		const auto pt = res.find_first_of('.');
-		const auto e = res.rfind('e');
-
-		const auto sign = res[0] == '-';
-		if (s <= max_digits)
-		{
-			return res;
-		}
-		if (pt != std::string::npos && e != std::string::npos && e - pt < max_digits)
-		{
-			return res;
-		}
-		if (pt != std::string::npos && pt == 1 && res[pt - 1] == '0')
-		{
-			return res;
-		}
-		return res;
-	}
-	return res;
-#else
 	// Various experiments with formatting options:
-#ifdef CALC_SUPPORT_FRACTIONAL_OUTPUT
-	const auto fraction = decimalToFraction(value);
-	if (fraction.second != 1)
-	{
-		return fmt::format(FMT_COMPILE("{} = {}/{}"), value, fraction.first, fraction.second);
-	}
-	else
-#endif
-	{
-		// TODO add to GUI?: constexpr uint8_t kValueDigits10[3] = { (std::numeric_limits<Value>::digits10 - (std::numeric_limits<Value>::max_digits10 - std::numeric_limits<Value>::digits10) - 1), std::numeric_limits<Value>::digits10, std::numeric_limits<Value>::max_digits10 };
-		//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 3 /*12*/);	// exactly: 310, less than epsilon: 19, failed: 9
-		//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 2);			// exactly: 309, less than epsilon: 19, failed: 10
-		//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 1);			// exactly: 308, less than epsilon: 19, failed: 11
-		//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10     /*15*/);	// exactly: 304, less than epsilon: 19, failed: 15
-		//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::max_digits10 /*17*/);	// exactly: 235, less than epsilon: 19, failed: 84
-		return fmt::to_string(value);//return fmt::format(FMT_COMPILE("{}"), value /*17*/);						// exactly: 235, less than epsilon: 19, failed: 84
-	}
-#endif
+	// TODO add to GUI?: constexpr uint8_t kValueDigits10[3] = { (std::numeric_limits<Value>::digits10 - (std::numeric_limits<Value>::max_digits10 - std::numeric_limits<Value>::digits10) - 1), std::numeric_limits<Value>::digits10, std::numeric_limits<Value>::max_digits10 };
+	//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 3 /*12*/);	// exactly: 310, less than epsilon: 19, failed: 9
+	//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 2);			// exactly: 309, less than epsilon: 19, failed: 10
+	//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 1);			// exactly: 308, less than epsilon: 19, failed: 11
+	//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10     /*15*/);	// exactly: 304, less than epsilon: 19, failed: 15
+	//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::max_digits10 /*17*/);	// exactly: 235, less than epsilon: 19, failed: 84
+	return fmt::to_string(value);//return fmt::format(FMT_COMPILE("{}"), value /*17*/);						// exactly: 235, less than epsilon: 19, failed: 84
 }
 
 #ifndef CALC_USE_ERROR_TOKEN
@@ -117,8 +78,8 @@ std::pair<int64_t, int64_t> decimalToFraction(Value number)
 	for (const auto& error : IssueManager::_errors)
 	{
 		//fmt::memory_buffer buffer;
-		ret += fmt::format(FMT_COMPILE("Error at pos {}: "), error.pos) + std::string(error.text) + "\r\n";
-		//ret += std::string(buffer.data(), buffer.size());
+		ret += fmt::format(FMT_COMPILE("Error at pos {}: {}\r\n"), error.pos, error.text);
+		//ret += fmt::to_string(buffer);
 	}
 	return ret;
 }
