@@ -54,11 +54,12 @@ inline void Lexer::advance(EquationSize n) noexcept
 	const auto n = static_cast<EquationSize>(res.ptr - begin);
 	if (res.ec == std::errc{}) [[likely]]
 	{
-		[[assume(token.number >= 0 && token.number <= std::numeric_limits<Value>::max() && !std::isnan(token.number))]];
+		[[assume(token.number >= 0 && token.number <= std::numeric_limits<Value>::max())]];
 		token.type = Token::Type::NUM;
 		return n;
 	}
 	
+	// Handles the situation with a value that is either too small or too large to parse correctly.
 	[[unlikely]]
 	return read_unparsable(token);
 }

@@ -22,12 +22,12 @@ class Parser
 		 *
 		 * expr_0 = '(' expr_4 ')'
 		 *        | NUM
-		 *        | function_or_constant
+		 *        | parse_function
 		 *        ;
 		 *
-		 * function_or_constant = IDENT ( '(' function_params )?
+		 * parse_function = FUNCT ( '(' parameters )?
 		 *
-		 * function_params = expr_4 ( ',' expr_4 )* ')'
+		 * parameters = expr_4 ( ',' expr_4 )* ')'
 		 *
 		 */
 		

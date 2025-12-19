@@ -9,31 +9,104 @@
 #include "formatter.h"
 #include "issue_manager.h"
 
+#ifdef CALC_SUPPORT_FRACTIONAL_OUTPUT
+// Recursive function to
+// return GCD of a and b
+int64_t gcd(int64_t a, int64_t b)
+{
+	if (a == 0)
+		return b;
+	else if (b == 0)
+		return a;
+	if (a < b)
+		return gcd(a, b % a);
+	else
+		return gcd(b, a % b);
+}
+
+// Function to convert decimal to fraction
+std::pair<int64_t, int64_t> decimalToFraction(Value number)
+{
+	if (std::isnan(number) || std::isinf(number))
+		return { 0,1 };
+
+	// Fetch integral value of the decimal
+	Value intVal = std::floor(number);
+
+	// Fetch fractional part of the decimal
+	Value fVal = number - intVal;
+
+	// Consider precision value to
+	// convert fractional part to
+	// integral equivalent
+	constexpr int64_t pVal = 1e15;
+
+	// Calculate GCD of integral
+	// equivalent of fractional
+	// part and precision value
+	int64_t gcdVal = gcd(std::round(fVal * pVal), pVal);
+
+	// Calculate num and deno
+	int64_t num = std::round(fVal * pVal) / gcdVal;
+	int64_t deno = pVal / gcdVal;
+
+	if (std::abs(num) > 1e14 || deno == 1 || deno > 1e14)
+		return { 0,1 };
+
+	// Return the fraction
+	return std::make_pair((intVal * deno) + num, deno);
+}
+#endif
+
 [[nodiscard]] std::string Formatter::format(Value value) noexcept
 {
-	// Various experiments with formatting options:
-	// TODO add to GUI?: constexpr uint8_t kValueDigits10[3] = { (std::numeric_limits<Value>::digits10 - (std::numeric_limits<Value>::max_digits10 - std::numeric_limits<Value>::digits10) - 1), std::numeric_limits<Value>::digits10, std::numeric_limits<Value>::max_digits10 };
-	//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 / 2);			// exactly: 308, less than epsilon: 19, failed: 11
-	//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 3 /*12*/);	// exactly: 310, less than epsilon: 19, failed: 9
-	//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 2);			// exactly: 309, less than epsilon: 19, failed: 10
-	//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 1);			// exactly: 308, less than epsilon: 19, failed: 11
-	//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10     /*15*/);	// exactly: 304, less than epsilon: 19, failed: 15
-	//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::max_digits10 /*17*/);	// exactly: 235, less than epsilon: 19, failed: 84
-	return fmt::format(FMT_COMPILE("{}"), value);															// exactly: 235, less than epsilon: 19, failed: 84
-
-	/*
+#ifdef CALC_USE_FORMATTED_STRING_CORRECTION
 	std::string res = fmt::format(FMT_COMPILE("{}"), value);
-	uint_fast16_t max_digits = std::numeric_limits<Value>::max_digits10;
-	const auto inf_nan = res == "nan" || res == "inf";
+
+	constexpr uint_fast16_t max_digits = std::numeric_limits<Value>::max_digits10 + 1 /* for \0 string termination */;
+	const auto inf_nan = res == "nan" || res == "inf" || res == "-nan" || res == "-inf";
 	if (!inf_nan)
 	{
 		const auto s = res.size();
 		const auto pt = res.find_first_of('.');
 		const auto e = res.rfind('e');
+
+		const auto sign = res[0] == '-';
+		if (s <= max_digits)
+		{
+			return res;
+		}
+		if (pt != std::string::npos && e != std::string::npos && e - pt < max_digits)
+		{
+			return res;
+		}
+		if (pt != std::string::npos && pt == 1 && res[pt - 1] == '0')
+		{
+			return res;
+		}
 		return res;
 	}
 	return res;
-	*/
+#else
+	// Various experiments with formatting options:
+#ifdef CALC_SUPPORT_FRACTIONAL_OUTPUT
+	const auto fraction = decimalToFraction(value);
+	if (fraction.second != 1)
+	{
+		return fmt::format(FMT_COMPILE("{} = {}/{}"), value, fraction.first, fraction.second);
+	}
+	else
+#endif
+	{
+		// TODO add to GUI?: constexpr uint8_t kValueDigits10[3] = { (std::numeric_limits<Value>::digits10 - (std::numeric_limits<Value>::max_digits10 - std::numeric_limits<Value>::digits10) - 1), std::numeric_limits<Value>::digits10, std::numeric_limits<Value>::max_digits10 };
+		//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 3 /*12*/);	// exactly: 310, less than epsilon: 19, failed: 9
+		//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 2);			// exactly: 309, less than epsilon: 19, failed: 10
+		//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 1);			// exactly: 308, less than epsilon: 19, failed: 11
+		//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10     /*15*/);	// exactly: 304, less than epsilon: 19, failed: 15
+		//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::max_digits10 /*17*/);	// exactly: 235, less than epsilon: 19, failed: 84
+		return fmt::to_string(value);//return fmt::format(FMT_COMPILE("{}"), value /*17*/);						// exactly: 235, less than epsilon: 19, failed: 84
+	}
+#endif
 }
 
 #ifndef CALC_USE_ERROR_TOKEN
