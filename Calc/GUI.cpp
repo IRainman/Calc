@@ -303,14 +303,14 @@ private:
         }
         return baseline.dpi;
     }
-    static void RegWriteDword(const HKEY root, const std::string_view subkey, const std::string_view name, const DWORD value) {
+    __declspec(noinline) static void RegWriteDword(const HKEY root, const std::string_view subkey, const std::string_view name, const DWORD value) {
         HKEY hKey [[indeterminate]];
         if (RegCreateKeyExA(root, subkey.data(), 0, nullptr, 0, KEY_WRITE, nullptr, &hKey, nullptr) == ERROR_SUCCESS) {
             RegSetValueExA(hKey, name.data(), 0, REG_DWORD, reinterpret_cast<const BYTE*>(&value), sizeof(value));
             RegCloseKey(hKey);
         }
     }
-    static std::optional<DWORD> RegReadDword(const HKEY root, const std::string_view subkey, const std::string_view name) {
+    __declspec(noinline) static std::optional<DWORD> RegReadDword(const HKEY root, const std::string_view subkey, const std::string_view name) {
         HKEY hKey [[indeterminate]];
         if (RegOpenKeyExA(root, subkey.data(), 0, KEY_READ, &hKey) != ERROR_SUCCESS) {
             return std::nullopt;
@@ -451,7 +451,7 @@ static CalcWindowState CalcWindow;
 // ------------------------------------------------------------------
 // Calc!
 // ------------------------------------------------------------------
-static inline void perform_calculation(const HWND hDlg) {
+static void perform_calculation(const HWND hDlg) {
     // ANSI multiline EDIT max is 64 KiB for classic Edit control
     std::array<char, 64 * 1024> input [[indeterminate]]; // 65535 for symbols and 1 for null C string API terminator
 
