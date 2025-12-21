@@ -55,7 +55,7 @@ static constexpr std::string_view kRegKey = "Software\\HedgehogInTheCPP\\Calc";
 // ------------------------------------------------------------------
 // registry helper
 // ------------------------------------------------------------------
-static void RegWriteDword(const HKEY root, const std::string_view subkey, const std::string_view name, const DWORD value) {
+static inline void RegWriteDword(const HKEY root, const std::string_view subkey, const std::string_view name, const DWORD value) {
     HKEY hKey [[indeterminate]];
     if (RegCreateKeyExA(root, subkey.data(), 0, nullptr, 0, KEY_WRITE, nullptr, &hKey, nullptr) == ERROR_SUCCESS) {
         RegSetValueExA(hKey, name.data(), 0, REG_DWORD, reinterpret_cast<const BYTE*>(&value), sizeof(value));
@@ -66,7 +66,7 @@ static void RegWriteDword(const HKEY root, const std::string_view subkey, const 
 // ------------------------------------------------------------------
 // registry helper
 // ------------------------------------------------------------------
-static std::optional<DWORD> RegReadDword(const HKEY root, const std::string_view subkey, const std::string_view name) {
+static inline std::optional<DWORD> RegReadDword(const HKEY root, const std::string_view subkey, const std::string_view name) {
     HKEY hKey [[indeterminate]];
     if (RegOpenKeyExA(root, subkey.data(), 0, KEY_READ, &hKey) != ERROR_SUCCESS) {
         return std::nullopt;
@@ -82,9 +82,6 @@ static std::optional<DWORD> RegReadDword(const HKEY root, const std::string_view
     }
     return out;
 }
-
-// ANSI multiline EDIT max is 64 KiB for classic Edit control
-static std::array<char, 64 * 1024> g_input [[indeterminate]]; // 65535 for symbols and 1 for null C string API terminator
 
 class CalcWindowState {
     struct Baseline {
@@ -447,14 +444,18 @@ static CalcWindowState CalcWindow;
 // ------------------------------------------------------------------
 // Calc!
 // ------------------------------------------------------------------
-static void ExecuteCalculation(const HWND hDlg) {
-    const auto copied = GetDlgItemTextA(hDlg, IDC_EDIT_INPUT, g_input.data(), static_cast<int>(g_input.size()));
+static inline void ExecuteCalculation(const HWND hDlg) {
+
+    // ANSI multiline EDIT max is 64 KiB for classic Edit control
+    std::array<char, 64 * 1024> input [[indeterminate]]; // 65535 for symbols and 1 for null C string API terminator
+
+    const auto copied = GetDlgItemTextA(hDlg, IDC_EDIT_INPUT, input.data(), static_cast<int>(input.size()));
     if (!copied) {
         SetDlgItemTextA(hDlg, IDC_EDIT_RESULT, "");
         SetDlgItemTextA(hDlg, IDC_EDIT_MESSAGE, "");
     }
     else {
-        const std::string_view sv{ g_input.data(), copied };
+        const std::string_view sv{ input.data(), copied };
 
         Lexer l(sv);
         Parser p(l);
