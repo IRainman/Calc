@@ -49,41 +49,10 @@
 #pragma comment(lib, "comctl32.lib")
 #pragma comment(lib, "imm32.lib")
 
-// ---------- configuration ----------
-static constexpr std::string_view kRegKey = "Software\\HedgehogInTheCPP\\Calc";
-
-// ------------------------------------------------------------------
-// registry helper
-// ------------------------------------------------------------------
-static inline void RegWriteDword(const HKEY root, const std::string_view subkey, const std::string_view name, const DWORD value) {
-    HKEY hKey [[indeterminate]];
-    if (RegCreateKeyExA(root, subkey.data(), 0, nullptr, 0, KEY_WRITE, nullptr, &hKey, nullptr) == ERROR_SUCCESS) {
-        RegSetValueExA(hKey, name.data(), 0, REG_DWORD, reinterpret_cast<const BYTE*>(&value), sizeof(value));
-        RegCloseKey(hKey);
-    }
-}
-
-// ------------------------------------------------------------------
-// registry helper
-// ------------------------------------------------------------------
-static inline std::optional<DWORD> RegReadDword(const HKEY root, const std::string_view subkey, const std::string_view name) {
-    HKEY hKey [[indeterminate]];
-    if (RegOpenKeyExA(root, subkey.data(), 0, KEY_READ, &hKey) != ERROR_SUCCESS) {
-        return std::nullopt;
-    }
-    DWORD out [[indeterminate]]; DWORD outSize = sizeof(out); DWORD type [[indeterminate]];
-    if (RegQueryValueExA(hKey, name.data(), nullptr, &type, reinterpret_cast<LPBYTE>(&out), &outSize) != ERROR_SUCCESS) {
-        RegCloseKey(hKey);
-        return std::nullopt;
-    }
-    RegCloseKey(hKey);
-    if (type != REG_DWORD) {
-        return std::nullopt;
-    }
-    return out;
-}
-
 class CalcWindowState {
+    // ---------- configuration ----------
+    static constexpr std::string_view kRegKey = "Software\\HedgehogInTheCPP\\Calc";
+
     struct Baseline {
         constexpr static int dpi = 96;
         constexpr static int min_width = 292;
@@ -135,6 +104,19 @@ class CalcWindowState {
     int width [[indeterminate]];
     int heigth [[indeterminate]];
 
+    auto get_min_width() const {
+        return min_width;
+    }
+    auto get_min_heigth() const {
+        return min_heigth;
+    }
+    auto get_min_x() const {
+        return get_min_width();
+    }
+    auto get_min_y() const {
+        return get_min_heigth();
+    }
+
     struct Anchor {
         int id;
         RECT rc;
@@ -166,24 +148,6 @@ public:
     CalcWindowState(const CalcWindowState&) = delete;
     CalcWindowState(CalcWindowState&&) = delete;
     ~CalcWindowState() = default;
-    auto get_font() const {
-        return font.get_font();
-    }
-    auto get_dpi() const {
-        return dpi;
-    }
-    auto get_min_width() const {
-        return min_width;
-    }
-    auto get_min_heigth() const {
-        return min_heigth;
-    }
-    auto get_min_x() const {
-        return get_min_width();
-    }
-    auto get_min_y() const {
-        return get_min_heigth();
-    }
     void close(const HWND hWnd) const {
         save_window_placement(hWnd);
         EndDialog(hWnd, 0);
@@ -223,7 +187,7 @@ public:
             font = Font(dpi);
 
 			// Rescale dialog window
-            SendMessageA(dlg, WM_SETFONT, reinterpret_cast<WPARAM>(get_font()), MAKELPARAM(TRUE, 0));
+            SendMessageA(dlg, WM_SETFONT, reinterpret_cast<WPARAM>(font.get_font()), MAKELPARAM(TRUE, 0));
             RECT wr [[indeterminate]];
             if (GetWindowRect(dlg, &wr)) {
 				MoveWindow(dlg, wr.left, wr.top, 
@@ -241,7 +205,7 @@ public:
                 // move the control
                 const auto hCtrl = GetDlgItem(dlg, a.id);
                 if (hCtrl) {
-                    SendMessageA(hCtrl, WM_SETFONT, reinterpret_cast<WPARAM>(get_font()), MAKELPARAM(TRUE, 0));
+                    SendMessageA(hCtrl, WM_SETFONT, reinterpret_cast<WPARAM>(font.get_font()), MAKELPARAM(TRUE, 0));
                     MoveWindow(hCtrl, a.get_x(), a.get_y(), a.get_width(), a.get_heigth(), TRUE);
                 }
             }
@@ -273,6 +237,26 @@ public:
                 }
             }
         }
+    }
+    void get_minmaxinfo(const HWND hDlg, const LPMINMAXINFO lpMMI) const {
+        if (lpMMI) {
+            // Convert minimum client area size to window (outer) size so the user can't resize window
+            // smaller than the intended client area. WM_GETMINMAXINFO expects window dimensions.
+            RECT requiredClient{ 0, 0, get_min_x(), get_min_y() };
+
+            // Retrieve window styles to adjust for non-client area.
+            const auto stylePtr = GetWindowLongPtrA(hDlg, GWL_STYLE);
+            const auto exStylePtr = GetWindowLongPtrA(hDlg, GWL_EXSTYLE);
+            const auto style = static_cast<DWORD>(stylePtr);
+            const auto exStyle = static_cast<DWORD>(exStylePtr);
+
+            // AdjustWindowRectEx will expand the rectangle so that the resulting outer window
+            // will have the requested client size.
+            if (AdjustWindowRectEx(&requiredClient, style, FALSE, exStyle)) {
+                lpMMI->ptMinTrackSize.x = requiredClient.right - requiredClient.left;
+                lpMMI->ptMinTrackSize.y = requiredClient.bottom - requiredClient.top;
+            }
+        };
     }
 private:
     static void center_window_on_monitor(const HWND hWnd, const HMONITOR hMon) {
@@ -318,6 +302,29 @@ private:
             if (dpiY > 0) return dpiY;
         }
         return baseline.dpi;
+    }
+    static void RegWriteDword(const HKEY root, const std::string_view subkey, const std::string_view name, const DWORD value) {
+        HKEY hKey [[indeterminate]];
+        if (RegCreateKeyExA(root, subkey.data(), 0, nullptr, 0, KEY_WRITE, nullptr, &hKey, nullptr) == ERROR_SUCCESS) {
+            RegSetValueExA(hKey, name.data(), 0, REG_DWORD, reinterpret_cast<const BYTE*>(&value), sizeof(value));
+            RegCloseKey(hKey);
+        }
+    }
+    static std::optional<DWORD> RegReadDword(const HKEY root, const std::string_view subkey, const std::string_view name) {
+        HKEY hKey [[indeterminate]];
+        if (RegOpenKeyExA(root, subkey.data(), 0, KEY_READ, &hKey) != ERROR_SUCCESS) {
+            return std::nullopt;
+        }
+        DWORD out [[indeterminate]]; DWORD outSize = sizeof(out); DWORD type [[indeterminate]];
+        if (RegQueryValueExA(hKey, name.data(), nullptr, &type, reinterpret_cast<LPBYTE>(&out), &outSize) != ERROR_SUCCESS) {
+            RegCloseKey(hKey);
+            return std::nullopt;
+        }
+        RegCloseKey(hKey);
+        if (type != REG_DWORD) {
+            return std::nullopt;
+        }
+        return out;
     }
     void load_window_placement(const HWND hWnd) {
         // IMPORTANT: use client rect here. WM_SIZE provides client area sizes.
@@ -444,8 +451,7 @@ static CalcWindowState CalcWindow;
 // ------------------------------------------------------------------
 // Calc!
 // ------------------------------------------------------------------
-static inline void ExecuteCalculation(const HWND hDlg) {
-
+static inline void perform_calculation(const HWND hDlg) {
     // ANSI multiline EDIT max is 64 KiB for classic Edit control
     std::array<char, 64 * 1024> input [[indeterminate]]; // 65535 for symbols and 1 for null C string API terminator
 
@@ -519,31 +525,13 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND hDlg, const UINT uMsg, const W
     switch (uMsg) {
     case WM_COMMAND: {
         if (LOWORD(wParam) == IDC_BUTTON_CALC && HIWORD(wParam) == BN_CLICKED) {
-            ExecuteCalculation(hDlg);
+            perform_calculation(hDlg);
             return TRUE;
         }
         return FALSE;
     }
     case WM_GETMINMAXINFO: {
-        const auto lpMMI = reinterpret_cast<LPMINMAXINFO>(lParam);
-        if (lpMMI) {
-            // Convert minimum client area size to window (outer) size so the user can't resize window
-            // smaller than the intended client area. WM_GETMINMAXINFO expects window dimensions.
-            RECT requiredClient{ 0, 0, CalcWindow.get_min_x(), CalcWindow.get_min_y() };
-
-            // Retrieve window styles to adjust for non-client area.
-            const auto stylePtr = GetWindowLongPtrA(hDlg, GWL_STYLE);
-            const auto exStylePtr = GetWindowLongPtrA(hDlg, GWL_EXSTYLE);
-            const auto style = static_cast<DWORD>(stylePtr);
-            const auto exStyle = static_cast<DWORD>(exStylePtr);
-
-            // AdjustWindowRectEx will expand the rectangle so that the resulting outer window
-            // will have the requested client size.
-            if (AdjustWindowRectEx(&requiredClient, style, FALSE, exStyle)) {
-                lpMMI->ptMinTrackSize.x = requiredClient.right - requiredClient.left;
-                lpMMI->ptMinTrackSize.y = requiredClient.bottom - requiredClient.top;
-            }
-        }
+		CalcWindow.get_minmaxinfo(hDlg, reinterpret_cast<LPMINMAXINFO>(lParam));
         return TRUE;
     }
     case WM_SIZE: {
