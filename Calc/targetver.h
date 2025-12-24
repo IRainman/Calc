@@ -25,6 +25,9 @@
 
 #include <SDKDDKVer.h>
 
-#if(_WIN32_WINNT >= _WIN32_WINNT_WIN7)
-#define CALC_SUPPORT_DPI_CHANGES // Enable DPI change support for Windows 7 and later.
+#if(_WIN32_WINNT >= 0x0601)
+#define CALC_SUPPORT_DPI_CHANGES // WM_DPICHANGED
+#if(_WIN32_WINNT >= 0x0605)
+#define CALC_SUPPORT_PER_WINDOW_DPI // GetDpiForWindow
+#endif
 #endif

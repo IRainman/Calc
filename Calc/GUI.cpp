@@ -173,8 +173,8 @@ public:
     void resize(const HWND dlg, const INT clientW, const INT clientH) {
         if (width != clientW || heigth != clientH) {
             // compute delta between previous client size and new client size
-            const INT deltaW = width - clientW;
-            const INT deltaH = heigth - clientH;
+            const auto deltaW = width - clientW;
+            const auto deltaH = heigth - clientH;
 
             // store new client size
             width = clientW;
@@ -221,17 +221,17 @@ public:
     void set_dpi(const HWND dlg, const INT new_dpi) {
         if (dpi != new_dpi) {
             // Compute scale factor relative to current dpi
-            const auto factor = static_cast<double>(new_dpi) / static_cast<double>(dpi);
+            const auto factor = static_cast<float>(new_dpi) / static_cast<float>(dpi);
 
             dpi = new_dpi;
 
             // Rescale minimum sizes
-            min_width = std::lround(static_cast<double>(baseline.min_width) * factor);
-            min_heigth = std::lround(static_cast<double>(baseline.min_heigth) * factor);
+            min_width = std::lroundf(static_cast<float>(baseline.min_width) * factor);
+            min_heigth = std::lroundf(static_cast<float>(baseline.min_heigth) * factor);
 
             // Rescale current sizes (width/heigth are client-area sizes)
-            width = std::lround(static_cast<double>(width) * factor);
-            heigth = std::lround(static_cast<double>(heigth) * factor);
+            width = std::lroundf(static_cast<float>(width) * factor);
+            heigth = std::lroundf(static_cast<float>(heigth) * factor);
 
             // Recreate font for new DPI (move-assign safely)
             font = Font(dpi);
@@ -241,17 +241,17 @@ public:
             RECT wr [[indeterminate]];
             if (GetWindowRect(dlg, &wr)) {
                 MoveWindow(dlg, wr.left, wr.top,
-                    std::lround(static_cast<double>(wr.right - wr.left) * factor),
-                    std::lround(static_cast<double>(wr.bottom - wr.top) * factor),
+                    std::lroundf(static_cast<float>(wr.right - wr.left) * factor),
+                    std::lroundf(static_cast<float>(wr.bottom - wr.top) * factor),
                     TRUE);
             }
 
             // Rescale anchors
             for (auto& a : anchors) {
-                a.rc.left = std::lround(a.rc.left * factor);
-                a.rc.top = std::lround(a.rc.top * factor);
-                a.rc.right = std::lround(a.rc.right * factor);
-                a.rc.bottom = std::lround(a.rc.bottom * factor);
+                a.rc.left = std::lroundf(a.rc.left * factor);
+                a.rc.top = std::lroundf(a.rc.top * factor);
+                a.rc.right = std::lroundf(a.rc.right * factor);
+                a.rc.bottom = std::lroundf(a.rc.bottom * factor);
                 // move the control
                 const auto hCtrl = GetDlgItem(dlg, a.id);
                 if (hCtrl) {
@@ -262,19 +262,17 @@ public:
         }
     }
     static int get_window_dpi(const HWND hWnd) {
-#if(_WIN32_WINNT >= 0x0605)
+#ifdef CALC_SUPPORT_PER_WINDOW_DPI
 		// Preferred: use per-window DPI if available.
-        const auto dpi = GetDpiForWindow(hWnd);
-        if (dpi > 0) return dpi;
+        return GetDpiForWindow(hWnd);
 #else
         // Try GetDpiForWindow (Windows 10+). Dynamically resolve to keep compatibility.
         const auto user32 = GetModuleHandleA("user32.dll");
         if (user32) {
             using GetDpiForWindow_t = int(WINAPI*)(HWND);
-            auto fn = reinterpret_cast<GetDpiForWindow_t>(GetProcAddress(user32, "GetDpiForWindow"));
+            const auto fn = reinterpret_cast<GetDpiForWindow_t>(GetProcAddress(user32, "GetDpiForWindow"));
             if (fn) {
-                const auto dpi = fn(hWnd);
-                if (dpi > 0) return dpi;
+                return fn(hWnd);
             }
         }
         // Fallback: get device caps from nearest monitor / device context.
@@ -291,8 +289,8 @@ public:
             ReleaseDC(nullptr, screen);
             if (dpiY > 0) return dpiY;
         }
-#endif
         return baseline.dpi;
+#endif
     }
 #endif
 private:
@@ -313,14 +311,14 @@ private:
             SetWindowPos(hWnd, nullptr, 100, 100, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
         }
     }
-    __declspec(noinline) static void RegWriteDword(const HKEY root, const std::string_view subkey, const std::string_view name, const DWORD value) {
+    static void RegWriteDword(const HKEY root, const std::string_view subkey, const std::string_view name, const DWORD value) {
         HKEY hKey [[indeterminate]];
         if (RegCreateKeyExA(root, subkey.data(), 0, nullptr, 0, KEY_WRITE, nullptr, &hKey, nullptr) == ERROR_SUCCESS) {
             RegSetValueExA(hKey, name.data(), 0, REG_DWORD, reinterpret_cast<const BYTE*>(&value), sizeof(value));
             RegCloseKey(hKey);
         }
     }
-    __declspec(noinline) static std::optional<DWORD> RegReadDword(const HKEY root, const std::string_view subkey, const std::string_view name) {
+    static std::optional<DWORD> RegReadDword(const HKEY root, const std::string_view subkey, const std::string_view name) {
         HKEY hKey [[indeterminate]];
         if (RegOpenKeyExA(root, subkey.data(), 0, KEY_READ, &hKey) != ERROR_SUCCESS) {
             return std::nullopt;
@@ -383,7 +381,7 @@ private:
             // If savedDpi exists we assume stored value is logical (96-based), convert to current DPI.
             // If savedDpi absent: legacy raw pixels are left unchanged.
             if (sSavedDpi) {
-                return std::lround(static_cast<double>(*val) * static_cast<double>(currentDpi) / static_cast<double>(baseline.dpi));
+                return std::lroundf(static_cast<float>(*val) * static_cast<float>(currentDpi) / static_cast<float>(baseline.dpi));
             }
             else {
                 return *val;
@@ -427,7 +425,7 @@ private:
 #ifdef CALC_SUPPORT_DPI_CHANGES
             // Persist placement in baseline.dpi so saved placement survives DPI changes.
             const auto to_logical = [&](LONG phys) -> DWORD {
-                return static_cast<DWORD>(std::lround(static_cast<double>(phys) * static_cast<double>(baseline.dpi) / static_cast<double>(dpi)));
+                return static_cast<DWORD>(std::lroundf(static_cast<float>(phys) * static_cast<float>(baseline.dpi) / static_cast<float>(dpi)));
                 };
 #else
             const auto to_logical = [&](LONG phys) -> DWORD {
@@ -481,12 +479,7 @@ static void perform_calculation(const HWND hDlg) {
     // ANSI multiline EDIT max is 64 KiB for classic Edit control
     std::array<char, 64 * 1024> input [[indeterminate]]; // 65535 for symbols and 1 for null C string API terminator
 
-    const auto copied = GetDlgItemTextA(hDlg, IDC_EDIT_INPUT, input.data(), static_cast<int>(input.size()));
-    if (!copied) {
-        SetDlgItemTextA(hDlg, IDC_EDIT_RESULT, "");
-        SetDlgItemTextA(hDlg, IDC_EDIT_MESSAGE, "");
-    }
-    else {
+    if (const auto copied = GetDlgItemTextA(hDlg, IDC_EDIT_INPUT, input.data(), static_cast<int>(input.size()))) {
         const std::string_view sv{ input.data(), copied };
 
         Lexer l(sv);
@@ -521,9 +514,6 @@ static void perform_calculation(const HWND hDlg) {
 // ------------------------------------------------------------------
 static INT_PTR CALLBACK AboutDlgProc(const HWND hDlg, const UINT uMsg, const WPARAM wParam, const LPARAM lParam) {
     switch (uMsg) {
-    //case WM_INITDIALOG: {
-    //    return TRUE;
-    //}
     case WM_COMMAND:
         if (LOWORD(wParam) == IDCANCEL) {
             EndDialog(hDlg, 0); return TRUE;
@@ -556,6 +546,13 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND hDlg, const UINT uMsg, const W
         }
         return FALSE;
     }
+    case WM_SYSCOMMAND: {
+        if ((wParam & 0xFFF0) == IDM_ABOUTBOX) {
+            DialogBoxParamA(GetModuleHandleA(nullptr), MAKEINTRESOURCEA(IDD_ABOUTBOX), hDlg, AboutDlgProc, 0);
+            return TRUE;
+        }
+        return FALSE;
+    }
     case WM_GETMINMAXINFO: {
 		CalcWindow.get_minmaxinfo(hDlg, reinterpret_cast<LPMINMAXINFO>(lParam));
         return TRUE;
@@ -563,13 +560,6 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND hDlg, const UINT uMsg, const W
     case WM_SIZE: {
         CalcWindow.resize(hDlg, LOWORD(lParam), HIWORD(lParam));
         return TRUE;
-    }
-    case WM_SYSCOMMAND: {
-        if ((wParam & 0xFFF0) == IDM_ABOUTBOX) {
-            DialogBoxParamA(GetModuleHandleA(nullptr), MAKEINTRESOURCEA(IDD_ABOUTBOX), hDlg, AboutDlgProc, 0);
-            return TRUE;
-        }
-        return FALSE;
     }
 #ifdef CALC_SUPPORT_DPI_CHANGES
     case WM_DPICHANGED: {
@@ -607,11 +597,8 @@ int WINAPI WinMain(const HINSTANCE hInstance, [[maybe_unused]] const HINSTANCE h
     InitCtrls.dwICC = ICC_STANDARD_CLASSES;
     InitCommonControlsEx(&InitCtrls);
 
-    const auto ret = DialogBoxParamA(hInstance, MAKEINTRESOURCEA(IDD_CALC_DIALOG), nullptr, CalcDialogProc, 0);
-    if (ret == -1) {
-        MessageBoxA(nullptr, "Failed to create main dialog", "Startup Error", MB_OK | MB_ICONERROR);
-        return -1;
-    }
+    DialogBoxParamA(hInstance, MAKEINTRESOURCEA(IDD_CALC_DIALOG), nullptr, CalcDialogProc, 0);
+
     return 0;
 }
 
