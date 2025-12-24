@@ -523,9 +523,7 @@ static INT_PTR CALLBACK AboutDlgProc(const HWND hDlg, const UINT uMsg, const WPA
         const auto nm = reinterpret_cast<LPNMHDR>(lParam);
         if (nm && nm->idFrom == IDC_LINK_HOMEPAGE && nm->code == NM_CLICK) {
             const auto link = reinterpret_cast<NMLINK*>(lParam);
-            if (link && link->item.szUrl) {
-                ShellExecuteW(nullptr, L"open", link->item.szUrl, nullptr, nullptr, SW_SHOWNORMAL);
-            }
+            ShellExecuteW(nullptr, L"open", link->item.szUrl, nullptr, nullptr, SW_SHOWNORMAL);
             return TRUE;
         }
         return FALSE;

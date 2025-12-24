@@ -138,7 +138,7 @@ namespace Identifiers
 	{
 		long num = std::lrint(n);
 		Value result = 1.0;
-		if (0.0 <= num && num == n)
+		if (0.0 <= num && num == n) //-V550
 		{
 			while (num > 0.0) {
 				if (!std::isfinite(result))
@@ -158,7 +158,7 @@ namespace Identifiers
 		long num = std::lrint(n);
 		long den = std::lrint(r);
 		Value result = 1.0;
-		if (0.0 <= num && 0.0 <= den && den <= num && num == n && den == r)
+		if (0.0 <= num && 0.0 <= den && den <= num && num == n && den == r) //-V550
 		{
 			while (den > 0.0)
 			{
@@ -181,7 +181,7 @@ namespace Identifiers
 		long den = std::lrint(r);
 		Value res1 = 1.0;
 		Value res2 = 1.0;
-		if (0 <= num && 0 <= den && den <= num && num == n && den == r)
+		if (0 <= num && 0 <= den && den <= num && num == n && den == r) //-V550
 		{
 			while (den > 0)
 			{
@@ -401,16 +401,10 @@ namespace Identifiers
 		{ "atomic_unit_flux_density", constant<atomic_unit_flux_density>() },
 		{ "atomic_unit_current", constant<atomic_unit_current>() },
 
-		{ "deuteron_mass", constant<deuteron_mass>() },
-		{ "deuteron_mass_energy_J", constant<deuteron_mass_energy_J>() },
-		{ "deuteron_mass_energy_MeV", constant<deuteron_mass_energy_MeV>() },
 		{ "deuteron_g_factor", constant<deuteron_g_factor>() },
 		{ "deuteron_magnetic_moment", constant<deuteron_magnetic_moment>() },
 		{ "deuteron_compton_wavelength", constant<deuteron_compton_wavelength>() },
 
-		{ "triton_mass", constant<triton_mass>() },
-		{ "triton_mass_energy_J", constant<triton_mass_energy_J>() },
-		{ "triton_mass_energy_MeV", constant<triton_mass_energy_MeV>() },
 		{ "triton_g_factor", constant<triton_g_factor>() },
 		{ "triton_magnetic_moment", constant<triton_magnetic_moment>() },
 		{ "triton_compton_wavelength", constant<triton_compton_wavelength>() },
@@ -428,10 +422,6 @@ namespace Identifiers
 		{ "alpha_g_factor", constant<alpha_g_factor>() },
 		{ "alpha_magnetic_moment", constant<alpha_magnetic_moment>() },
 		{ "alpha_compton_wavelength", constant<alpha_compton_wavelength>() },
-
-		{ "proton_mass_energy_MeV", constant<proton_mass_energy_MeV>() },
-		{ "neutron_mass_energy_MeV", constant<neutron_mass_energy_MeV>() },
-		{ "nuclear_magneton", constant<nuclear_magneton>() },
 
 		{ "m_e", constant<m_e>() },
 		{ "a0", constant<a0>() },
@@ -480,15 +470,8 @@ namespace Identifiers
 		{ "phi0", constant<phi0>() },
 		{ "atm", constant<atm>() },
 		{ "u", constant<u>() },
-		{ "a0", constant<a0>() },
-		{ "Eh", constant<Eh>() },
-		{ "muB", constant<muB>() },
 		{ "lambda_e", constant<lambda_e>() },
 		{ "lambda_bar_e", constant<lambda_bar_e>() },
-		{ "R", constant<R>() },
-		{ "F", constant<F>() },
-		{ "KJ", constant<KJ>() },
-		{ "RK", constant<RK>() },
 		{ "me", constant<me>() },
 		{ "me_u", constant<me_u>() },
 		{ "me_MeV", constant<me_MeV>() },
