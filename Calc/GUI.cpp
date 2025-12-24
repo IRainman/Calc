@@ -589,7 +589,11 @@ int WINAPI WinMain(const HINSTANCE hInstance, [[maybe_unused]] const HINSTANCE h
     _mm_setcsr(_mm_getcsr() | 0x8040);
 
 #ifdef CALC_SUPPORT_DPI_CHANGES
+#ifdef CALC_SUPPORT_PER_WINDOW_DPI
+    SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE);
+#else
     SetProcessDPIAware();
+#endif
 #endif
 
     INITCOMMONCONTROLSEX InitCtrls [[indeterminate]];
