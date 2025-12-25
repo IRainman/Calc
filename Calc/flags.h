@@ -41,7 +41,7 @@ using ParamCount = char;
 #define CALC_TESTS_ENABLED
 #define CALC_TESTS_DEV_ENABLED // if commented test is measurement performance
 #ifdef CALC_TESTS_DEV_ENABLED
-#define CALC_TEST_FASTFLOAT
+//#define CALC_TEST_FASTFLOAT
 #endif
 
 //#define CALC_USE_ERROR_TOKEN // WIP

@@ -64,11 +64,11 @@
 #define FASTFLOAT_ONLY_POSITIVE_C_NUMBER_WO_INF_NAN
 #define FASTFLOAT_ONLY_ROUNDS_TO_NEAREST_SUPPORTED
 #define FASTFLOAT_ISNOT_CHECKED_BOUNDS
-#define FASTFLOAT_TABLE_HACK_CHAR_DIGIT_LUT_DISABLED
 #include "../../fast_float/include/fast_float/fast_float.h"
 #else
 /* Tests time is: 55430ms. */
-#include <fast_float/fast_float.h>
+#include "../../fast_float_orig/include/fast_float/fast_float.h"
+//#include <fast_float/fast_float.h>
 #endif
 
 #endif //PCH_H
