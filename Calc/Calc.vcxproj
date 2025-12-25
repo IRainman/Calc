@@ -144,7 +144,6 @@
       <UseUnicodeForAssemblerListing>true</UseUnicodeForAssemblerListing>
       <UseStandardPreprocessor>true</UseStandardPreprocessor>
       <CompileAs>CompileAsCpp</CompileAs>
-      <FloatingPointModel>Fast</FloatingPointModel>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -194,7 +193,6 @@
       <UseUnicodeForAssemblerListing>true</UseUnicodeForAssemblerListing>
       <UseStandardPreprocessor>true</UseStandardPreprocessor>
       <CompileAs>CompileAsCpp</CompileAs>
-      <FloatingPointModel>Fast</FloatingPointModel>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -256,7 +254,6 @@
       <UseUnicodeForAssemblerListing>true</UseUnicodeForAssemblerListing>
       <UseStandardPreprocessor>true</UseStandardPreprocessor>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <FloatingPointModel>Fast</FloatingPointModel>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -323,7 +320,6 @@
       <UseUnicodeForAssemblerListing>true</UseUnicodeForAssemblerListing>
       <UseStandardPreprocessor>true</UseStandardPreprocessor>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <FloatingPointModel>Fast</FloatingPointModel>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>

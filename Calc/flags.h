@@ -40,7 +40,9 @@ using ParamCount = char;
 #ifdef _DEBUG
 #define CALC_TESTS_ENABLED
 #define CALC_TESTS_DEV_ENABLED // if commented test is measurement performance
-//#define CALC_TEST_FASTFLOAT
+#ifdef CALC_TESTS_DEV_ENABLED
+#define CALC_TEST_FASTFLOAT
+#endif
 
 //#define CALC_USE_ERROR_TOKEN // WIP
 // CALC_TESTS_USE_ADDITIONAL_OPTIONS // deprecated

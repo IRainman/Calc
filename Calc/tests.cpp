@@ -450,9 +450,9 @@ static std::string test_fast_float_parsing()
 {
 	uint32_t bin_val, hex_val;
 	float f_val;
-	constexpr std::string_view data_bin = "1010010010000011001001010101001";
+	constexpr std::string_view data_bin = "10101011110011011110111101101001";
 	auto res = fast_float::from_chars(data_bin.data(), data_bin.data() + data_bin.size(), bin_val, 2);
-	constexpr std::string_view data_hex = "abCdEf69";
+	constexpr std::string_view data_hex = "ABCDEF69";
 	res = fast_float::from_chars(data_hex.data(), data_hex.data() + data_hex.size(), hex_val, 16);
 	constexpr std::string_view data_float = "12345678e-9";
 	res = fast_float::from_chars(data_float.data(), data_float.data() + data_float.size(), f_val);
@@ -504,7 +504,7 @@ std::string calc_tests()
 			const auto formated_value = Formatter::format(value);
 			const auto exactly = (has_errors && std::isnan(t.second)) || (std::isnan(value) && std::isnan(t.second)) 
 				|| (formated_value == Formatter::format(t.second));
-			const auto less_than_epsilon = (value - t.second < std::numeric_limits<Value>::epsilon());
+			const auto less_than_epsilon = Identifiers::compare(value, t.second);
 
 			if(!exactly)
 			{

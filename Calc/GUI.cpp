@@ -601,7 +601,7 @@ int WINAPI WinMain(const HINSTANCE hInstance, [[maybe_unused]] const HINSTANCE h
 
     DialogBoxParamA(hInstance, MAKEINTRESOURCEA(IDD_CALC_DIALOG), nullptr, CalcDialogProc, 0);
 
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 #if defined _M_IX86
