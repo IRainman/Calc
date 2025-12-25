@@ -421,7 +421,7 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>
 	});
 
 #ifdef CALC_TEST_FASTFLOAT
-[[nodiscard]] inline Value bin(const std::string_view& x) noexcept
+[[nodiscard]] constexpr Value bin(const std::string_view& x) noexcept
 {
 	uint32_t bin_val;
 	auto res = fast_float::from_chars(x.data(), x.data() + x.size(), bin_val, 2);
@@ -433,7 +433,7 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>
 	[[unlikely]]
 	return std::numeric_limits<Value>::quiet_NaN();
 }
-[[nodiscard]] inline Value hex(const std::string_view& x) noexcept
+[[nodiscard]] constexpr Value hex(const std::string_view& x) noexcept
 {
 	uint32_t hex_val;
 	auto res = fast_float::from_chars(x.data(), x.data() + x.size(), hex_val, 16);
@@ -446,17 +446,24 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>
 	return std::numeric_limits<Value>::quiet_NaN();
 }
 
-static std::string test_fast_float_parsing()
+constexpr std::string test_fast_float_parsing()
 {
 	uint32_t bin_val, hex_val;
 	float f_val;
+	double d_val, d_val2, d_val3;
 	constexpr std::string_view data_bin = "10101011110011011110111101101001";
 	auto res = fast_float::from_chars(data_bin.data(), data_bin.data() + data_bin.size(), bin_val, 2);
 	constexpr std::string_view data_hex = "ABCDEF69";
 	res = fast_float::from_chars(data_hex.data(), data_hex.data() + data_hex.size(), hex_val, 16);
 	constexpr std::string_view data_float = "12345678e-9";
 	res = fast_float::from_chars(data_float.data(), data_float.data() + data_float.size(), f_val);
-	return fmt::format(FMT_COMPILE("bin:{}: {},\r\nhex:{}: {},\r\nfloat:{}: {}"), data_bin, bin_val, data_hex, hex_val, data_float, f_val);
+	constexpr std::string_view data_double  = "2.225073858507201e-308";
+	constexpr std::string_view data_double2 = "2.22507385850720138309e-308";
+	constexpr std::string_view data_double3 = "2.2250738585072013e-308";
+	res = fast_float::from_chars(data_double.data(),  data_double.data() +  data_double.size(),  d_val);
+	res = fast_float::from_chars(data_double2.data(), data_double2.data() + data_double2.size(), d_val2);
+	res = fast_float::from_chars(data_double3.data(), data_double3.data() + data_double3.size(), d_val3);
+	return fmt::format(FMT_COMPILE("bin:{}: {},\r\nhex:{}: {},\r\nfloat:{}: {},\r\ndouble:{}: {},\r\ndouble:{}: {},\r\ndouble:{} : {}"), data_bin, bin_val, data_hex, hex_val, data_float, f_val, data_double, d_val, data_double2, d_val2, data_double3, d_val3);
 }
 #endif
 
