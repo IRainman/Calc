@@ -213,6 +213,8 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>> ({
 #ifdef CALC_TEST_FASTFLOAT
 	{ "104110013277974872254e-225",
 	   104110013277974872254e-225 },
+	{ "2.22507385850720113605740979670913197593481954635164564e-308",
+	   2.22507385850720113605740979670913197593481954635164564e-308 },
 	{ "3254505089005000000000000000000000e-284",
 	   3254505089005000000000000000000000e-284 },
 	{ "1090544144181609348835077142190",
@@ -470,10 +472,11 @@ constexpr std::string test_fast_float_parsing()
 
 	constexpr std::string_view data_hex = "ABCDEF69";
 	res = fast_float::from_chars(data_hex.data(), data_hex.data() + data_hex.size(), hex_val, 16);
+
 	constexpr std::string_view data_float = "1.00000000001e-2147483638";
 	res = fast_float::from_chars(data_float.data(), data_float.data() + data_float.size(), f_val);
-
-	constexpr std::string_view data_double = "3254505089005000000000000000000000e-284";
+	
+	constexpr std::string_view data_double = "2.22507385850720113605740979670913197593481954635164564e-308";
 	res = fast_float::from_chars(data_double.data(),  data_double.data() +  data_double.size(),  d_val);
 
 	constexpr std::string_view data_double2 = "1090544144181609348835077142190";
