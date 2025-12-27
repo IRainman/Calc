@@ -35,7 +35,7 @@ using Value = double;
 #define CALC_USE_128_BIT_FLOAT 0
 #endif
 
-using ParamCount = char;
+using ParamCount = signed char;
 //---------------------------------------------------------------------------
 #ifdef _DEBUG
 #define CALC_TESTS_ENABLED

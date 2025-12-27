@@ -15,8 +15,7 @@
 #include "formatter.h"
 #include "tests.h"
 
-constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>
-({
+constexpr auto tests = std::to_array<std::pair<std::string_view, Value>> ({
 	// syntax errors
 	{ "2 + )", std::numeric_limits<Value>::quiet_NaN() },
 	{ "2 + (", std::numeric_limits<Value>::quiet_NaN() },
@@ -33,8 +32,12 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>
 	{ "+1.4e-3", std::numeric_limits<Value>::quiet_NaN() },
 
 	// very big or very small numbers: it's should return NAN, we don't need to round it to 0 or inf.
-	{ "9999999999999999999e1000000000000000000000000000000", std::numeric_limits<Value>::quiet_NaN() },
-	{ "999999999999999999e-1000000000000000000000000000000", std::numeric_limits<Value>::quiet_NaN() },
+	{ "9999999999999999999e1000000000000000000000000000000",	std::numeric_limits<Value>::quiet_NaN() },
+	{ "999999999999999999e-1000000000000000000000000000000",	std::numeric_limits<Value>::quiet_NaN() },
+#ifdef CALC_TEST_FASTFLOAT
+	{ "1.00000000001e-2147483638",								std::numeric_limits<Value>::quiet_NaN() },
+	{ "1.00000000001e+2147483638",								std::numeric_limits<Value>::quiet_NaN() },
+#endif
 
 	// check constants
 	// https://en.cppreference.com/w/cpp/numeric/constants
@@ -109,9 +112,9 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>
 
 	// check long mantissa to produce correct output without noise
 	{ "0.000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
-	0.000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890 },
+	   0.000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890 },
 	{ "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890.123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
-	123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890.123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890 },
+	   123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890.123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890 },
 
 	// scientific notation
 	{ "1.4e-3", 0.0014 },
@@ -207,6 +210,16 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>
 	{ "deg(arcsin(sin(rad(30))))", 30 },
 
 	// precision
+#ifdef CALC_TEST_FASTFLOAT
+	{ "104110013277974872254e-225",
+	   104110013277974872254e-225 },
+	{ "3254505089005000000000000000000000e-284",
+	   3254505089005000000000000000000000e-284 },
+	{ "1090544144181609348835077142190",
+	   1090544144181609348835077142190.0 },
+	{ "7275957614183425903320312500000000e81",
+	   7275957614183425903320312500000000e81 },
+#endif
 	{ "10000 / 540 * 3", 55.555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555 },
 	{ "500 / 9", 55.55555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555 },
 	{ "1 / 3 * 3", 1.0 },
@@ -418,7 +431,7 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>
 
 	// additional special
 	{ "distance(1, 1, 2, 3)", 6.0 }
-	});
+});
 
 #ifdef CALC_TEST_FASTFLOAT
 [[nodiscard]] constexpr Value bin(const std::string_view& x) noexcept
@@ -450,38 +463,38 @@ constexpr std::string test_fast_float_parsing()
 {
 	uint32_t bin_val, hex_val;
 	float f_val;
-	//double d_val, d_val2, d_val3;
+	double d_val, d_val2, d_val3;
 	std::string ret;
 	constexpr std::string_view data_bin = "10101011110011011110111101101001";
 	auto res = fast_float::from_chars(data_bin.data(), data_bin.data() + data_bin.size(), bin_val, 2);
 
 	constexpr std::string_view data_hex = "ABCDEF69";
 	res = fast_float::from_chars(data_hex.data(), data_hex.data() + data_hex.size(), hex_val, 16);
-	constexpr std::string_view data_float = "12345678e-9";
+	constexpr std::string_view data_float = "1.00000000001e-2147483638";
 	res = fast_float::from_chars(data_float.data(), data_float.data() + data_float.size(), f_val);
 
-	//constexpr std::string_view data_double = "2.225073858507201e-308";
-	//res = fast_float::from_chars(data_double.data(),  data_double.data() +  data_double.size(),  d_val);
+	constexpr std::string_view data_double = "3254505089005000000000000000000000e-284";
+	res = fast_float::from_chars(data_double.data(),  data_double.data() +  data_double.size(),  d_val);
 
-	//constexpr std::string_view data_double2 = "2.22507385850720138309e-308";
-	//res = fast_float::from_chars(data_double2.data(), data_double2.data() + data_double2.size(), d_val2);
+	constexpr std::string_view data_double2 = "1090544144181609348835077142190";
+	res = fast_float::from_chars(data_double2.data(), data_double2.data() + data_double2.size(), d_val2);
 
-	//constexpr std::string_view data_double3 = "2.2250738585072013e-308";
-	//res = fast_float::from_chars(data_double3.data(), data_double3.data() + data_double3.size(), d_val3);
+	constexpr std::string_view data_double3 = "7275957614183425903320312500000000e81";
+	res = fast_float::from_chars(data_double3.data(), data_double3.data() + data_double3.size(), d_val3);
 
 
 	ret += fmt::format(FMT_COMPILE("bin:{}: {},\r\n"
 		"hex: {} : {},\r\n"
 		"float: {} : {},\r\n"
-		//"double: {} : {},\r\n"
-		//"double: {} : {},\r\n"
-		//"double: {} : {}"
+		"double: {} : {},\r\n"
+		"double: {} : {},\r\n"
+		"double: {} : {}"
 	), data_bin, bin_val
 		,data_hex, hex_val
 		,data_float, f_val
-		//,data_double, d_val
-		//,data_double2, d_val2
-		//,data_double3, d_val3
+		,data_double, d_val
+		,data_double2, d_val2
+		,data_double3, d_val3
 		);
 
 	return ret;
@@ -554,7 +567,7 @@ std::string calc_tests()
 					"output = {}"),
 					value,
 					t.second,
-					formated_value
+					has_errors ? "" : formated_value
 					),
 				Formatter::create_summary());
 #endif
