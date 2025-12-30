@@ -37,13 +37,12 @@
 
 #include <windows.h>
 #include <commctrl.h>
+#ifdef CALC_SUPPORT_DPI_CHANGES
 #include <dwmapi.h>
+#endif
 #include <imm.h>
 #include <shellapi.h>
 #include "resource.h"        // main symbols
-
-#pragma comment(lib, "comctl32.lib")
-#pragma comment(lib, "imm32.lib")
 
 class CalcWindowState {
     // ---------- configuration ----------
@@ -57,6 +56,25 @@ class CalcWindowState {
         constexpr static int min_heigth = 357;
     };
     constexpr static Baseline baseline;
+
+    struct Anchor {
+        int id;
+        RECT rc;
+        const bool left, top, right, bottom;
+        auto get_x() const {
+            return rc.left;
+        }
+        auto get_y() const {
+            return rc.top;
+        }
+        auto get_width() const {
+            return rc.right - rc.left;
+        }
+        auto get_heigth() const {
+            return rc.bottom - rc.top;
+        }
+    };
+    std::vector<Anchor> anchors;
 
 #ifdef CALC_SUPPORT_DPI_CHANGES
     class Font {
@@ -99,8 +117,8 @@ class CalcWindowState {
     int dpi;
 #endif
 
-    int min_width;
-    int min_heigth;
+    int min_width [[indeterminate]];
+    int min_heigth [[indeterminate]];
     int width [[indeterminate]];
     int heigth [[indeterminate]];
 
@@ -117,36 +135,8 @@ class CalcWindowState {
         return get_min_heigth();
     }
 
-    struct Anchor {
-        int id;
-        RECT rc;
-        const bool left, top, right, bottom;
-        auto get_x() const {
-            return rc.left;
-        }
-        auto get_y() const {
-            return rc.top;
-        }
-        auto get_width() const {
-            return rc.right - rc.left;
-        }
-        auto get_heigth() const {
-            return rc.bottom - rc.top;
-        }
-    };
-    std::vector<Anchor> anchors;
-
 public:
-	CalcWindowState() noexcept :
-#ifdef CALC_SUPPORT_DPI_CHANGES
-        dpi(baseline.dpi),
-#endif
-		min_width(baseline.min_width),
-		min_heigth(baseline.min_heigth),
-		width(baseline.min_width),
-		heigth(baseline.min_heigth)
-    {
-    }
+    CalcWindowState() noexcept = default;
     CalcWindowState(const CalcWindowState&) = delete;
     CalcWindowState(CalcWindowState&&) = delete;
     ~CalcWindowState() = default;
@@ -154,21 +144,25 @@ public:
         save_window_placement(hWnd);
         EndDialog(hWnd, 0);
     }
-    void initialize(const HWND hWnd) {
-
+    void init(const HWND hWnd) {
         load_window_placement(hWnd);
+
+        add_about_menu_to_system_menu(hWnd);
+        set_window_icons(hWnd);
 
 #ifdef CALC_TESTS_ENABLED
         SetDlgItemTextA(hWnd, IDC_EDIT_MESSAGE, calc_tests().c_str());
 #endif
         const auto hInput = GetDlgItem(hWnd, IDC_EDIT_INPUT);
-        if (hInput) {
-            // IME: associate default context for multiline edit
-            ImmAssociateContextEx(hInput, nullptr, IACE_DEFAULT);
-            SetFocus(hInput);
-        }
-        add_about_menu_to_system_menu(hWnd);
-        set_window_icons(hWnd);
+#ifdef CALC_USE_IME
+        // IME: associate default context for multiline edit
+        ImmAssociateContextEx(hInput, nullptr, IACE_DEFAULT);
+#else
+        // Disable IME for input edit control
+		ImmAssociateContextEx(hInput, nullptr, IACE_IGNORENOCONTEXT);
+#endif
+		// set focus to input edit control
+        SetFocus(hInput);
     }
     void resize(const HWND dlg, const INT clientW, const INT clientH) {
         if (width != clientW || heigth != clientH) {
@@ -198,24 +192,23 @@ public:
         }
     }
     void get_minmaxinfo(const HWND hDlg, const LPMINMAXINFO lpMMI) const {
-        if (lpMMI) {
-            // Convert minimum client area size to window (outer) size so the user can't resize window
-            // smaller than the intended client area. WM_GETMINMAXINFO expects window dimensions.
-            RECT requiredClient{ 0, 0, get_min_x(), get_min_y() };
+        assert(lpMMI);
+        // Convert minimum client area size to window (outer) size so the user can't resize window
+        // smaller than the intended client area. WM_GETMINMAXINFO expects window dimensions.
+        RECT requiredClient{ 0, 0, get_min_x(), get_min_y() };
 
-            // Retrieve window styles to adjust for non-client area.
-            const auto stylePtr = GetWindowLongPtrA(hDlg, GWL_STYLE);
-            const auto exStylePtr = GetWindowLongPtrA(hDlg, GWL_EXSTYLE);
-            const auto style = static_cast<DWORD>(stylePtr);
-            const auto exStyle = static_cast<DWORD>(exStylePtr);
+        // Retrieve window styles to adjust for non-client area.
+        const auto stylePtr = GetWindowLongPtrA(hDlg, GWL_STYLE);
+        const auto exStylePtr = GetWindowLongPtrA(hDlg, GWL_EXSTYLE);
+        const auto style = static_cast<DWORD>(stylePtr);
+        const auto exStyle = static_cast<DWORD>(exStylePtr);
 
-            // AdjustWindowRectEx will expand the rectangle so that the resulting outer window
-            // will have the requested client size.
-            if (AdjustWindowRectEx(&requiredClient, style, FALSE, exStyle)) {
-                lpMMI->ptMinTrackSize.x = requiredClient.right - requiredClient.left;
-                lpMMI->ptMinTrackSize.y = requiredClient.bottom - requiredClient.top;
-            }
-        };
+        // AdjustWindowRectEx will expand the rectangle so that the resulting outer window
+        // will have the requested client size.
+        if (AdjustWindowRectEx(&requiredClient, style, FALSE, exStyle)) {
+            lpMMI->ptMinTrackSize.x = requiredClient.right - requiredClient.left;
+            lpMMI->ptMinTrackSize.y = requiredClient.bottom - requiredClient.top;
+        }
     }
 #ifdef CALC_SUPPORT_DPI_CHANGES
     void set_dpi(const HWND dlg, const INT new_dpi) {
@@ -235,9 +228,9 @@ public:
 
             // Recreate font for new DPI (move-assign safely)
             font = Font(dpi);
+            SendMessageA(dlg, WM_SETFONT, reinterpret_cast<WPARAM>(font.get_font()), MAKELPARAM(TRUE, 0));
 
             // Rescale dialog window
-            SendMessageA(dlg, WM_SETFONT, reinterpret_cast<WPARAM>(font.get_font()), MAKELPARAM(TRUE, 0));
             RECT wr [[indeterminate]];
             if (GetWindowRect(dlg, &wr)) {
                 MoveWindow(dlg, wr.left, wr.top,
@@ -254,10 +247,9 @@ public:
                 a.rc.bottom = std::lroundf(a.rc.bottom * factor);
                 // move the control
                 const auto hCtrl = GetDlgItem(dlg, a.id);
-                if (hCtrl) {
-                    SendMessageA(hCtrl, WM_SETFONT, reinterpret_cast<WPARAM>(font.get_font()), MAKELPARAM(TRUE, 0));
-                    MoveWindow(hCtrl, a.get_x(), a.get_y(), a.get_width(), a.get_heigth(), TRUE);
-                }
+                assert(hCtrl);
+                SendMessageA(hCtrl, WM_SETFONT, reinterpret_cast<WPARAM>(font.get_font()), MAKELPARAM(TRUE, 0));
+                MoveWindow(hCtrl, a.get_x(), a.get_y(), a.get_width(), a.get_heigth(), TRUE);
             }
         }
     }
@@ -299,7 +291,7 @@ private:
         if (GetWindowRect(hWnd, &wr)) {
 
             MONITORINFO mi [[indeterminate]]; mi.cbSize = sizeof(mi);
-            if (!GetMonitorInfo(hMon, &mi)) {
+            if (!GetMonitorInfoA(hMon, &mi)) {
                 SystemParametersInfoW(SPI_GETWORKAREA, 0, &mi.rcWork, 0);
             }
             const auto w = wr.right - wr.left, h = wr.bottom - wr.top;
@@ -388,15 +380,14 @@ private:
             }
             };
 
-		min_width = to_physical(baseline.min_width);
-		min_heigth = to_physical(baseline.min_heigth);
-
         dpi = currentDpi;
 #else
         const auto to_physical = [&](const std::optional<DWORD>& val) -> LONG {
             return *val;
 			};
 #endif
+        min_width = to_physical(baseline.min_width);
+        min_heigth = to_physical(baseline.min_heigth);
 
         wp.rcNormalPosition.left = sLeft ? to_physical(sLeft) : 100;
         wp.rcNormalPosition.top = sTop ? to_physical(sTop) : 100;
@@ -453,10 +444,9 @@ private:
         static_assert(IDM_ABOUTBOX < 0xF000);
 
         const auto hSys = GetSystemMenu(hDlg, FALSE);
-        if (hSys) {
-            AppendMenuA(hSys, MF_SEPARATOR, 0, nullptr);
-            AppendMenuA(hSys, MF_STRING, IDM_ABOUTBOX, "&About...");
-        }
+        assert(hSys);
+        AppendMenuA(hSys, MF_SEPARATOR, 0, nullptr);
+        AppendMenuA(hSys, MF_STRING, IDM_ABOUTBOX, "&About...");
     }
     // ------------------------------------------------------------------
     // Utility: set dialog icon (small & big) from IDR_MAINFRAME
@@ -464,12 +454,12 @@ private:
     static void set_window_icons(const HWND hDlg) {
         // Set icons (large and small)
         const auto icon = LoadIconA(GetModuleHandleA(nullptr), MAKEINTRESOURCEA(IDR_MAINFRAME));
-        if (icon) {
-            SendMessageA(hDlg, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(icon));
-            SendMessageA(hDlg, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(icon));
-        }
+        assert(icon);
+        SendMessageA(hDlg, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(icon));
+        SendMessageA(hDlg, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(icon));
     }
 };
+
 static CalcWindowState CalcWindow;
 
 // ------------------------------------------------------------------
@@ -516,12 +506,13 @@ static INT_PTR CALLBACK AboutDlgProc(const HWND hDlg, const UINT uMsg, const WPA
     switch (uMsg) {
     case WM_COMMAND:
         if (LOWORD(wParam) == IDCANCEL) {
-            EndDialog(hDlg, 0); return TRUE;
+            EndDialog(hDlg, 0);
+            return TRUE;
         }
         return FALSE;
     case WM_NOTIFY: {
         const auto nm = reinterpret_cast<LPNMHDR>(lParam);
-        if (nm && nm->idFrom == IDC_LINK_HOMEPAGE && nm->code == NM_CLICK) {
+        if (nm->idFrom == IDC_LINK_HOMEPAGE && nm->code == NM_CLICK) {
             const auto link = reinterpret_cast<NMLINK*>(lParam);
             ShellExecuteW(nullptr, L"open", link->item.szUrl, nullptr, nullptr, SW_SHOWNORMAL);
             return TRUE;
@@ -566,7 +557,7 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND hDlg, const UINT uMsg, const W
     }
 #endif
     case WM_INITDIALOG: {
-        CalcWindow.initialize(hDlg);
+        CalcWindow.init(hDlg);
         return FALSE;
     }
     case WM_CLOSE: {
@@ -585,6 +576,10 @@ int WINAPI WinMain(const HINSTANCE hInstance, [[maybe_unused]] const HINSTANCE h
     /* It is strongly recommended to set the flush-to-zero mode unless you have special reasons to use subnormal numbers. You may, in addition, set the denormals-are-zero mode if vector regsiters are available:*/
     // Set flush-to-zero and denormals-are-zero mode (SSE2):
     _mm_setcsr(_mm_getcsr() | 0x8040);
+
+#ifndef CALC_USE_IME
+    ImmDisableIME(0);
+#endif
 
 #ifdef CALC_SUPPORT_DPI_CHANGES
 #ifdef CALC_SUPPORT_PER_WINDOW_DPI
@@ -611,6 +606,9 @@ int WINAPI WinMain(const HINSTANCE hInstance, [[maybe_unused]] const HINSTANCE h
 #else
 #pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #endif
+
+#pragma comment(lib, "comctl32.lib")
+#pragma comment(lib, "imm32.lib")
 
 #else
 

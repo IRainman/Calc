@@ -31,3 +31,7 @@
 #define CALC_SUPPORT_PER_WINDOW_DPI // GetDpiForWindow
 #endif
 #endif
+
+/* not enabled because we use only ANSI input in GUI
+#define CALC_USE_IME // Input Method Manager support for international text input.
+*/
