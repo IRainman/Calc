@@ -462,7 +462,7 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>> ({
 });
 
 #ifdef CALC_TEST_FASTFLOAT
-[[nodiscard]] constexpr Value bin(const std::string_view& x) noexcept
+[[nodiscard]] constexpr Value bin(const std::string_view x) noexcept
 {
 	uint32_t bin_val;
 	auto res = fast_float::from_chars(x.data(), x.data() + x.size(), bin_val, 2);
@@ -474,7 +474,7 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>> ({
 	[[unlikely]]
 	return std::numeric_limits<Value>::quiet_NaN();
 }
-[[nodiscard]] constexpr Value hex(const std::string_view& x) noexcept
+[[nodiscard]] constexpr Value hex(const std::string_view x) noexcept
 {
 	uint32_t hex_val;
 	auto res = fast_float::from_chars(x.data(), x.data() + x.size(), hex_val, 16);
