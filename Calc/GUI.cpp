@@ -37,9 +37,6 @@
 
 #include <windows.h>
 #include <commctrl.h>
-#ifdef CALC_SUPPORT_DPI_CHANGES
-#include <dwmapi.h>
-#endif
 #include <imm.h>
 #include <shellapi.h>
 #include "resource.h"        // main symbols
