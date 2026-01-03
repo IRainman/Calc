@@ -46,11 +46,11 @@ class CalcWindowState {
     static constexpr std::string_view kRegKey = "Software\\HedgehogInTheCPP\\Calc";
     struct Baseline {
 #ifdef CALC_SUPPORT_DPI_CHANGES
-        constexpr static int dpi = USER_DEFAULT_SCREEN_DPI;
-        constexpr static int point_size = 10; // matches RC font 10 pt in resource template
+        constexpr static UINT dpi = USER_DEFAULT_SCREEN_DPI;
+        constexpr static WORD point_size = 10; // matches RC font 10 pt in resource template
 #endif
-        constexpr static int min_width = 292;
-        constexpr static int min_heigth = 357;
+        constexpr static LONG min_width = 292;
+        constexpr static LONG min_heigth = 357;
     };
     constexpr static Baseline baseline;
 
@@ -73,13 +73,18 @@ class CalcWindowState {
     };
     std::vector<Anchor> anchors;
 
+    LONG min_width [[indeterminate]];
+    LONG min_heigth [[indeterminate]];
+    LONG width [[indeterminate]];
+    LONG heigth [[indeterminate]];
+
 #ifdef CALC_SUPPORT_DPI_CHANGES
     class Font {
     public:
         Font() noexcept {
             font = nullptr;
         }
-        [[nodiscard]] Font(const UINT dpi) noexcept {
+        [[nodiscard]] Font(const WORD dpi) noexcept {
             font = CreateFontA(-MulDiv(baseline.point_size, dpi, 72), // negative height for character height
                 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, ANSI_CHARSET,
                 OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
@@ -92,32 +97,30 @@ class CalcWindowState {
         Font(Font&& other) noexcept : font(other.font) { other.font = nullptr; }
         Font& operator=(Font&& other) noexcept {
             if (this != &other) {
-                if (font) DeleteObject(font);
+                cleanup();
                 font = other.font;
                 other.font = nullptr;
             }
             return *this;
         }
         ~Font() {
+            cleanup();
+        }
+        auto get() const {
+            return font;
+        }
+    private:
+        void cleanup() {
             if (font) {
                 DeleteObject(font);
             }
         }
-        auto get_font() const {
-            return font;
-        }
-    private:
         HFONT font;
     };
     Font font;
 
-    int dpi;
+    UINT dpi;
 #endif
-
-    int min_width [[indeterminate]];
-    int min_heigth [[indeterminate]];
-    int width [[indeterminate]];
-    int heigth [[indeterminate]];
 
     auto get_min_width() const {
         return min_width;
@@ -161,7 +164,7 @@ public:
 		// set focus to input edit control
         SetFocus(hInput);
     }
-    void resize(const HWND dlg, const INT clientW, const INT clientH) {
+    void resize(const HWND dlg, const WORD clientW, const WORD clientH) {
         if (width != clientW || heigth != clientH) {
             // compute delta between previous client size and new client size
             const auto deltaW = width - clientW;
@@ -182,9 +185,8 @@ public:
                 a.rc.right = a.right ? (a.rc.right - deltaW) : a.rc.right;
                 // move the control
                 const auto hCtrl = GetDlgItem(dlg, a.id);
-                if (hCtrl) {
-                    MoveWindow(hCtrl, a.get_x(), a.get_y(), a.get_width(), a.get_heigth(), TRUE);
-                }
+                assert(hCtrl);
+                MoveWindow(hCtrl, a.get_x(), a.get_y(), a.get_width(), a.get_heigth(), TRUE);
             }
         }
     }
@@ -208,11 +210,16 @@ public:
         }
     }
 #ifdef CALC_SUPPORT_DPI_CHANGES
-    void set_dpi(const HWND dlg, const INT new_dpi) {
+    void set_dpi(const HWND dlg, const WORD new_dpi) {
         if (dpi != new_dpi) {
+            // Recreate font for new DPI (move-assign safely)
+            font = Font(new_dpi);
+            SendMessageA(dlg, WM_SETFONT, reinterpret_cast<WPARAM>(font.get()), MAKELPARAM(TRUE, 0));
+
             // Compute scale factor relative to current dpi
             const auto factor = static_cast<float>(new_dpi) / static_cast<float>(dpi);
 
+			// Store new DPI
             dpi = new_dpi;
 
             // Rescale minimum sizes
@@ -223,18 +230,13 @@ public:
             width = std::lroundf(static_cast<float>(width) * factor);
             heigth = std::lroundf(static_cast<float>(heigth) * factor);
 
-            // Recreate font for new DPI (move-assign safely)
-            font = Font(dpi);
-            SendMessageA(dlg, WM_SETFONT, reinterpret_cast<WPARAM>(font.get_font()), MAKELPARAM(TRUE, 0));
-
             // Rescale dialog window
             RECT wr [[indeterminate]];
-            if (GetWindowRect(dlg, &wr)) {
-                MoveWindow(dlg, wr.left, wr.top,
-                    std::lroundf(static_cast<float>(wr.right - wr.left) * factor),
-                    std::lroundf(static_cast<float>(wr.bottom - wr.top) * factor),
-                    TRUE);
-            }
+            GetWindowRect(dlg, &wr);
+            MoveWindow(dlg, wr.left, wr.top,
+                std::lroundf(static_cast<float>(wr.right - wr.left) * factor),
+                std::lroundf(static_cast<float>(wr.bottom - wr.top) * factor),
+                TRUE);
 
             // Rescale anchors
             for (auto& a : anchors) {
@@ -245,12 +247,12 @@ public:
                 // move the control
                 const auto hCtrl = GetDlgItem(dlg, a.id);
                 assert(hCtrl);
-                SendMessageA(hCtrl, WM_SETFONT, reinterpret_cast<WPARAM>(font.get_font()), MAKELPARAM(TRUE, 0));
+                SendMessageA(hCtrl, WM_SETFONT, reinterpret_cast<WPARAM>(font.get()), MAKELPARAM(TRUE, 0));
                 MoveWindow(hCtrl, a.get_x(), a.get_y(), a.get_width(), a.get_heigth(), TRUE);
             }
         }
     }
-    static int get_window_dpi(const HWND hWnd) {
+    static UINT get_window_dpi(const HWND hWnd) {
 #ifdef CALC_SUPPORT_PER_WINDOW_DPI
 		// Preferred: use per-window DPI if available.
         return GetDpiForWindow(hWnd);
