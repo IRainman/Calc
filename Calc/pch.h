@@ -57,16 +57,16 @@
 #if CALC_USE_128_BIT_FLOAT
 #warning "128-bit float type isn't supported by fast_float. The library convert any user input values to 64-bit double."
 #endif
-/* Tests time is: 55040ms. */
+/* Tests time is: 53605ms. */
 #define CALC_USING_MY_FASTFLOAT // TODO: waiting for PR is approved and vcpkg version is updated.
 #ifdef CALC_USING_MY_FASTFLOAT
-/* Tests time is: 50601ms. */
+/* Tests time is: 48481ms. */
 #define FASTFLOAT_ONLY_POSITIVE_C_NUMBER_WO_INF_NAN
 #define FASTFLOAT_ONLY_ROUNDS_TO_NEAREST_SUPPORTED
 #define FASTFLOAT_ISNOT_CHECKED_BOUNDS
 #include "../../fast_float/include/fast_float/fast_float.h"
 #else
-/* Tests time is: 56967ms. */
+/* Tests time is: 55706ms. */
 #include "../../fast_float_orig/include/fast_float/fast_float.h"
 //#include <fast_float/fast_float.h>
 #endif
