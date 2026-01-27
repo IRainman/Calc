@@ -77,11 +77,12 @@ std::pair<int64_t, int64_t> decimalToFraction(Value number)
 {
 	// https://fmt.dev/11.1/api/#range-and-tuple-formatting
 	std::string ret;
+	//ret.resize(1024);
+	//auto begin = ret.data();
 	for (const auto& error : IssueManager::_errors)
 	{
-		//fmt::memory_buffer buffer;
 		ret += fmt::format(FMT_COMPILE("Error at pos {}: {}\r\n"), error.pos, error.text);
-		//ret += fmt::to_string(buffer);
+		//begin = fmt::format_to(begin, FMT_COMPILE("Error at pos {}: {}\r\n"), error.pos, error.text);
 	}
 	return ret;
 }

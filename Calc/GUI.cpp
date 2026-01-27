@@ -493,7 +493,8 @@ static void perform_calculation(const HWND hDlg) {
         else {
 #ifdef CALC_USE_ZMIJ
             char buffer[zmij::double_buffer_size];
-            SetDlgItemTextA(hDlg, IDC_EDIT_RESULT, zmij::detail::write(result, buffer));
+            zmij::detail::write(result, buffer);
+            SetDlgItemTextA(hDlg, IDC_EDIT_RESULT, buffer);
 #else
             const auto out = Formatter::format(result);
             SetDlgItemTextA(hDlg, IDC_EDIT_RESULT, out.data());
