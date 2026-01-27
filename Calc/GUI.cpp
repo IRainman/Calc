@@ -476,22 +476,28 @@ static void perform_calculation(const HWND hDlg) {
         const auto result = p.parse();
 
 #if defined(CALC_USE_ERROR_TOKEN)
-        const bool hasErr = 
+        const bool hasErr = xxx;
+        if (hasErr) {
+            yyy;
+        }
 #else
         const auto hasErr = IssueManager::has_errors();
-#endif
 
         if (hasErr) {
             SetDlgItemTextA(hDlg, IDC_EDIT_RESULT, "");
             const auto summary = Formatter::create_summary();
             SetDlgItemTextA(hDlg, IDC_EDIT_MESSAGE, summary.data());
-#ifndef CALC_USE_ERROR_TOKEN
             IssueManager::clear();
-#endif
         }
+#endif
         else {
+#ifdef CALC_USE_ZMIJ
+            char buffer[zmij::double_buffer_size];
+            SetDlgItemTextA(hDlg, IDC_EDIT_RESULT, zmij::detail::write(result, buffer));
+#else
             const auto out = Formatter::format(result);
             SetDlgItemTextA(hDlg, IDC_EDIT_RESULT, out.data());
+#endif
             SetDlgItemTextA(hDlg, IDC_EDIT_MESSAGE, "");
         }
     }

@@ -114,8 +114,15 @@ inline void Parser::advance() noexcept
 	
 	if (count == static_cast<ParamCount>(values.size())) [[unlikely]]
 	{
+#ifdef CALC_USE_ERROR_TOKEN
+		constexpr static auto err_str = "too many ^ in expression";
+		_current.error_text = err_str;
+		_current.error_position = _lex.get_position();
+		return _current; ?
+#else
 		IssueManager::report_error(_lex.get_position(), "too many ^ in expression");
 		return _current.number;
+#endif
 	}
 	
 	Value& result = values[count];
@@ -153,8 +160,15 @@ inline void Parser::advance() noexcept
 			}
 			else [[unlikely]]
 			{
+#ifdef CALC_USE_ERROR_TOKEN
+				constexpr static auto err_str = "expected parenthesis";
+				_current.error_text = err_str;
+				_current.error_position = _lex.get_position();
+				return _current; ?
+#else
 				IssueManager::report_error(_lex.get_position(), "expected parenthesis");
 				return _current.number;
+#endif
 			}
 		}
 		case Token::Type::NUM: [[likely]]
@@ -169,8 +183,15 @@ inline void Parser::advance() noexcept
 		}
 		default: [[unlikely]]
 		{
+#ifdef CALC_USE_ERROR_TOKEN
+			constexpr static auto err_str = "unexpected";
+			_current.error_text = err_str;
+			_current.error_position = _lex.get_position();
+			return _current; ?
+#else
 			IssueManager::report_error(_lex.get_position(), "unexpected");
 			return _current.number;
+#endif
 		}
 	}
 }
@@ -207,8 +228,15 @@ inline void Parser::advance() noexcept
 					else [[unlikely]]
 					{
 						function_start_pos -= i->first.size();
+#ifdef CALC_USE_ERROR_TOKEN
+						constexpr static auto err_str = "incorrect parameters count";
+						_current.error_text = err_str;
+						_current.error_position = function_start_pos;
+						return _current; ?
+#else
 						IssueManager::report_error(function_start_pos, "incorrect parameters count");
 						return _current.number;
+#endif
 					}
 				}
 				case Token::Type::COMA: [[likely]]
@@ -218,19 +246,40 @@ inline void Parser::advance() noexcept
 				}
 				default: [[unlikely]]
 				{
+#ifdef CALC_USE_ERROR_TOKEN
+					constexpr static auto err_str = "expected parenthesis";
+					_current.error_text = err_str;
+					_current.error_position = _lex.get_position();
+					return _current; ?
+#else
 					IssueManager::report_error(_lex.get_position(), "expected parenthesis");
 					return _current.number;
+#endif
 				}
 			}
 		}
 		while (count != static_cast<ParamCount>(parameters.size())); [[likely]]
 
+#ifdef CALC_USE_ERROR_TOKEN
+			constexpr static auto err_str = "too many parameters";
+		_current.error_text = err_str;
+		_current.error_position = _lex.get_position();
+		return _current; ?
+#else
 		IssueManager::report_error(_lex.get_position(), "too many parameters");
 		return _current.number;
+#endif
 	}
 	else [[unlikely]]
 	{
+#ifdef CALC_USE_ERROR_TOKEN
+		constexpr static auto err_str = "expected parenthesis";
+		_current.error_text = err_str;
+		_current.error_position = _lex.get_position();
+		return _current; ?
+#else
 		IssueManager::report_error(_lex.get_position(), "expected parenthesis");
 		return _current.number;
+#endif
 	}
 }

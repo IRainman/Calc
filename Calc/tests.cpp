@@ -580,6 +580,15 @@ std::string calc_tests()
 					has_errors ? "" : formated_value
 					),
 				Formatter::create_summary());
+#else
+#ifdef CALC_TESTS_PRINTING_PERFORMANCE
+#ifdef CALC_USE_ZMIJ
+			char buffer[zmij::double_buffer_size];
+			[[maybe_unused]] const auto formated_value = zmij::detail::write(value, buffer);
+#else
+			[[maybe_unused]] const auto formated_value = Formatter::format(value);
+#endif
+#endif
 #endif
 			if (has_errors)
 			{

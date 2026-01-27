@@ -58,6 +58,7 @@ std::pair<int64_t, int64_t> decimalToFraction(Value number)
 }
 #endif
 
+#if !defined(CALC_USE_ZMIJ) || defined (CALC_TESTS_DEV_ENABLED) && !defined(CALC_USE_ERROR_TOKEN)
 [[nodiscard]] std::string Formatter::format(Value value) noexcept
 {
 	// Various experiments with formatting options:
@@ -69,6 +70,7 @@ std::pair<int64_t, int64_t> decimalToFraction(Value number)
 	//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::max_digits10 /*17*/);	// exactly: 235, less than epsilon: 19, failed: 84
 	return fmt::to_string(value);//return fmt::format(FMT_COMPILE("{}"), value /*17*/);						// exactly: 235, less than epsilon: 19, failed: 84
 }
+#endif
 
 #ifndef CALC_USE_ERROR_TOKEN
 [[nodiscard]] std::string Formatter::create_summary() noexcept

@@ -24,18 +24,35 @@
 
 #include "flags.h"
 
+#define CALC_USE_ZMIJ // Tests time is: 59614ms.
+// Without: Tests time is: 106873ms.
+
+#ifdef CALC_USE_ZMIJ
+#include "../../zmij/zmij.cc"
+#if CALC_USE_128_BIT_FLOAT
+#warning "128-bit float type isn't supported by zmij. The library convert any user input values to 64-bit double."
+#endif
+#endif
+
+#if !defined(CALC_USE_ERROR_TOKEN) || defined(CALC_TEST_FASTFLOAT)
+
 #define CALC_USING_LOCAL_FMT // TODO: waiting for vcpkg version is updated.
 
 #define FMT_OPTIMIZE_SIZE 2 /* Tests time is: 49612ms. */
 #define FMT_BUILTIN_TYPES 0 /* Tests time is: 49980ms. */
 #define FMT_HEADER_ONLY 1
 #define FMT_USE_FLOAT 0
+#if defined(CALC_USE_ZMIJ) && !defined (CALC_TESTS_DEV_ENABLED)
+#define FMT_USE_DOUBLE 0
+#define FMT_USE_FLOAT128 0
+#else
 #if CALC_USE_128_BIT_FLOAT
 #define FMT_USE_DOUBLE 0
 #define FMT_USE_FLOAT128 1
 #else
 #define FMT_USE_DOUBLE 1
 #define FMT_USE_FLOAT128 0
+#endif
 #endif
 #define FMT_USE_LONG_DOUBLE 0
 #define FMT_REDUCE_INT_INSTANTIATIONS 1
@@ -52,6 +69,8 @@
 #else
 #include <fmt/base.h>
 #include <fmt/compile.h>
+#endif
+
 #endif
 
 #if CALC_USE_128_BIT_FLOAT

@@ -27,7 +27,13 @@ inline void Lexer::advance(EquationSize n) noexcept
 
 [[nodiscard]] inline EquationSize Lexer::read_unparsable(Token& token) const noexcept
 {
+#ifdef CALC_USE_ERROR_TOKEN
+	constexpr static auto err_str = "unparsable";
+	token.error_text = err_str;
+	token.error_position = get_position();
+#else
 	IssueManager::report_error(get_position(), "unparsable");
+#endif
 	token.type = Token::Type::ERROR;
 	return 0;
 }
