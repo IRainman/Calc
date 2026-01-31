@@ -24,13 +24,13 @@ namespace
 	if (_current.type == Token::Type::ERROR) [[unlikely]]
 	{
 #ifdef CALC_USE_ERROR_TOKEN
-		return error_position;
+		return error_position; return _current; ? needs to form nan with adress of an error.
 #endif
 	}
 	else [[unlikely]]
 	{
 #ifdef CALC_USE_ERROR_TOKEN
-		return error_position + extraneous input;
+		return error_position + extraneous input; return _current; ? needs to form nan with adress of an error.
 #else
 		IssueManager::report_error(_lex.get_position(), "extraneous input");
 #endif
@@ -118,7 +118,7 @@ inline void Parser::advance() noexcept
 		constexpr static auto err_str = "too many ^ in expression";
 		_current.error_text = err_str;
 		_current.error_position = _lex.get_position();
-		return _current; ?
+		return _current; ? needs to form nan with adress of an error.
 #else
 		IssueManager::report_error(_lex.get_position(), "too many ^ in expression");
 		return _current.number;
@@ -164,7 +164,7 @@ inline void Parser::advance() noexcept
 				constexpr static auto err_str = "expected parenthesis";
 				_current.error_text = err_str;
 				_current.error_position = _lex.get_position();
-				return _current; ?
+				return _current; ? needs to form nan with adress of an error.
 #else
 				IssueManager::report_error(_lex.get_position(), "expected parenthesis");
 				return _current.number;
@@ -187,7 +187,7 @@ inline void Parser::advance() noexcept
 			constexpr static auto err_str = "unexpected";
 			_current.error_text = err_str;
 			_current.error_position = _lex.get_position();
-			return _current; ?
+			return _current; ? needs to form nan with adress of an error.
 #else
 			IssueManager::report_error(_lex.get_position(), "unexpected");
 			return _current.number;
@@ -232,7 +232,7 @@ inline void Parser::advance() noexcept
 						constexpr static auto err_str = "incorrect parameters count";
 						_current.error_text = err_str;
 						_current.error_position = function_start_pos;
-						return _current; ?
+						return _current; ? needs to form nan with adress of an error.
 #else
 						IssueManager::report_error(function_start_pos, "incorrect parameters count");
 						return _current.number;
@@ -250,7 +250,7 @@ inline void Parser::advance() noexcept
 					constexpr static auto err_str = "expected parenthesis";
 					_current.error_text = err_str;
 					_current.error_position = _lex.get_position();
-					return _current; ?
+					return _current; ? needs to form nan with adress of an error.
 #else
 					IssueManager::report_error(_lex.get_position(), "expected parenthesis");
 					return _current.number;
@@ -264,7 +264,7 @@ inline void Parser::advance() noexcept
 			constexpr static auto err_str = "too many parameters";
 		_current.error_text = err_str;
 		_current.error_position = _lex.get_position();
-		return _current; ?
+		return _current; ? needs to form nan with adress of an error.
 #else
 		IssueManager::report_error(_lex.get_position(), "too many parameters");
 		return _current.number;
@@ -276,7 +276,7 @@ inline void Parser::advance() noexcept
 		constexpr static auto err_str = "expected parenthesis";
 		_current.error_text = err_str;
 		_current.error_position = _lex.get_position();
-		return _current; ?
+		return _current; ? needs to form nan with adress of an error.
 #else
 		IssueManager::report_error(_lex.get_position(), "expected parenthesis");
 		return _current.number;

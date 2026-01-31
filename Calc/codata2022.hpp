@@ -174,7 +174,7 @@ namespace codata2022 {
     // ATOMIC UNITS
     // -------------------------------------------------------------
 
-        // — Atomic unit of mass
+    // — Atomic unit of mass
     static constexpr Value m_e = electron_mass; // kg
 
     // — Atomic unit of length (Bohr radius)
