@@ -76,7 +76,7 @@
 
 #include <windows.h>
 #include <commctrl.h>
-#include <imm.h>
+#include <imm.h> // CALC_USE_IME or ImmDisableIME
 #include <shellapi.h>
 #include "resource.h"        // main symbols
 
@@ -623,6 +623,10 @@ int WINAPI WinMain(const HINSTANCE hInstance, [[maybe_unused]] const HINSTANCE h
 
 #ifndef CALC_USE_IME
     ImmDisableIME(0);
+#else
+#ifdef CALC_DISABLE_LEGACY_IME
+    ImmDisableLegacyIME();
+#endif
 #endif
 
 #ifdef CALC_SUPPORT_DPI_CHANGES

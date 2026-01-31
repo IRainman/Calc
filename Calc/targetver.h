@@ -27,8 +27,11 @@
 
 #if(_WIN32_WINNT >= 0x0601)
 #define CALC_SUPPORT_DPI_CHANGES // WM_DPICHANGED
+#if(_WIN32_WINNT >= 0x0602)
+#define CALC_DISABLE_LEGACY_IME // ImmDisableLegacyIME
 #if(_WIN32_WINNT >= 0x0605)
 #define CALC_SUPPORT_PER_WINDOW_DPI // GetDpiForWindow
+#endif
 #endif
 #endif
 
