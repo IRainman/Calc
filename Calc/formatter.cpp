@@ -58,7 +58,7 @@ std::pair<int64_t, int64_t> decimalToFraction(Value number)
 }
 #endif
 
-#if !defined(CALC_USE_ZMIJ) || defined (CALC_TESTS_DEV_ENABLED) && !defined(CALC_USE_ERROR_TOKEN)
+#ifndef CALC_USE_ZMIJ
 [[nodiscard]] std::string Formatter::format(Value value) noexcept
 {
 	// Various experiments with formatting options:
@@ -66,24 +66,23 @@ std::pair<int64_t, int64_t> decimalToFraction(Value number)
 	//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 3 /*12*/);	// exactly: 310, less than epsilon: 19, failed: 9
 	//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 2);			// exactly: 309, less than epsilon: 19, failed: 10
 	//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 1);			// exactly: 308, less than epsilon: 19, failed: 11
-	return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10     /*15*/);	// exactly: 304, less than epsilon: 19, failed: 15
+	//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10     /*15*/);	// exactly: 304, less than epsilon: 19, failed: 15
 	//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::max_digits10 /*17*/);	// exactly: 235, less than epsilon: 19, failed: 84
-	//return fmt::to_string(value);//return fmt::format(FMT_COMPILE("{}"), value /*17*/);						// exactly: 235, less than epsilon: 19, failed: 84
+	return fmt::to_string(value);//return fmt::format(FMT_COMPILE("{}"), value /*17*/);						// exactly: 235, less than epsilon: 19, failed: 84
 }
 #endif
 
 #ifndef CALC_USE_ERROR_TOKEN
 [[nodiscard]] std::string Formatter::create_summary() noexcept
 {
-	// https://fmt.dev/11.1/api/#range-and-tuple-formatting
 	std::string ret;
-	//ret.resize(1024);
-	//auto begin = ret.data();
+	ret.resize(1024);
+	auto begin = ret.data();
 	for (const auto& error : IssueManager::_errors)
 	{
-		ret += fmt::format(FMT_COMPILE("Error at pos {}: {}\r\n"), error.pos, error.text);
-		//begin = fmt::format_to(begin, FMT_COMPILE("Error at pos {}: {}\r\n"), error.pos, error.text);
+		begin = fmt::format_to(begin, FMT_COMPILE("Error at pos {}: {}\r\n"), error.pos, error.text);
 	}
+	ret.resize(begin - ret.data());
 	return ret;
 }
 #endif

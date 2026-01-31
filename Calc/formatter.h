@@ -7,7 +7,7 @@
 class Formatter
 {
 	public:
-#if !defined(CALC_USE_ZMIJ) || defined (CALC_TESTS_DEV_ENABLED) && !defined(CALC_USE_ERROR_TOKEN)
+#ifndef CALC_USE_ZMIJ
 		/**
 		 * Format output value of the expression returned.
 		 */

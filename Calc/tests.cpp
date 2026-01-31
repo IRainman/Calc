@@ -317,6 +317,8 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>> ({
 	{ "10.0 - 1.19", 8.81 },
 	{ "10.0 - 1.2",  8.8 },
 	{ "( 3 * 14468371.32764871 + 3 * 2858973.58793243 + 3 * 3938402.12874453 ) / ( 14468371.32764871 + 2858973.58793243 + 3938402.12874453 )" , 3.0 },
+	{ "( 7 * 14468371.32764871 + 7 * 2858973.58793243 + 7 * 3938402.12874453 ) / ( 14468371.32764871 + 2858973.58793243 + 3938402.12874453 )" , 7.0 },
+	{ "( 9 * 14468371.32764871 + 9 * 2858973.58793243 + 9 * 3938402.12874453 ) / ( 14468371.32764871 + 2858973.58793243 + 3938402.12874453 )" , 7.0 },
 
 	// trigonometric precision especially with pi
 	{ "sin(pi/2)", 1.0 },
@@ -553,9 +555,17 @@ std::string calc_tests()
 			[[maybe_unused]] const auto value = p.parse();
 			const auto has_errors = IssueManager::has_errors();
 #ifdef CALC_TESTS_DEV_ENABLED
+#ifdef CALC_USE_ZMIJ
+			char buffer_value[zmij::double_buffer_size] [[indeterminate]];
+			char buffer_test[zmij::double_buffer_size] [[indeterminate]];
+			const std::string_view formated_value(buffer_value, zmij::detail::write(value, buffer_value));
+			const auto exactly = (has_errors && std::isnan(t.second)) || (std::isnan(value) && std::isnan(t.second))
+				|| (formated_value == std::string_view(buffer_test, zmij::detail::write(t.second, buffer_test)));
+#else
 			const auto formated_value = Formatter::format(value);
 			const auto exactly = (has_errors && std::isnan(t.second)) || (std::isnan(value) && std::isnan(t.second)) 
 				|| (formated_value == Formatter::format(t.second));
+#endif
 			const auto less_than_epsilon = Identifiers::compare(value, t.second);
 
 			if(!exactly)

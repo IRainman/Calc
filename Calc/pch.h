@@ -24,8 +24,8 @@
 
 #include "flags.h"
 
-//#define CALC_USE_ZMIJ // Tests time is: 59614ms.
-// Without: Tests time is: 106873ms.
+#define CALC_USE_ZMIJ // Tests time is: 61603ms.
+// Without: Tests time is: 94962ms.
 
 #ifdef CALC_USE_ZMIJ
 #include "../../zmij/zmij.cc"
