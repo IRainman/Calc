@@ -62,6 +62,7 @@
 #define FMT_USE_FULL_CACHE_DRAGONBOX 0 /* Tests time is: 50111ms. */
 #define FMT_USE_LOCALE 0
 #define FMT_STATIC_THOUSANDS_SEPARATOR '\''
+#define FMT_ENFORCE_COMPILE_STRING
 
 #ifdef CALC_USING_LOCAL_FMT
 #include "../../fmt/include/fmt/base.h"
