@@ -461,7 +461,16 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>> ({
 	{ "fma(0.2, 0.1, 0.3)", 0.32 },
 
 	// additional special
-	{ "distance(1, 1, 2, 3)", 6.0 }
+	{ "distance(1, 1, 2, 3)", 6.0 },
+
+	// TODO: equation support, for input test https://xrjunque.nom.es/AllInOne:
+	// These three lines should be equivalent.
+	{ "(x=((−b±sqrt((b^2)−4*a*c))/(2a))*pi)", 0.0 },
+	// needs to be supported in the GUI and converted to plain text before Calc processes it.
+	// convert Unicode to ANSI plain: replace π with pi, and ⋅ with *, etc.
+	{ "(x=((−b±sqrt((b^2)−4⋅a⋅c))/(2a))⋅π)", 0.0 },
+	// convert MathML to plain:
+	{ "<math><mrow><mi>x</mi><mo>=</mo><mfrac><mrow><mo ... skip this! >−</mo><mi>b</mi><mo>±</mo><msqrt><mrow><msup><mi>b</mi><mn>2</mn></msup><mo>−</mo><mn>4</mn><mi>a</mi><mi>c</mi></mrow></msqrt></mrow><mrow><mn>2</mn><mi>a</mi></mrow></mfrac><mo>⋅</mo><mi>π</mi></mrow></math>", 0.0 }
 });
 
 #ifdef CALC_TEST_FASTFLOAT
