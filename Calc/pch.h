@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2025 Solomina Elle, a.rainman on gmail point com
+ * Copyright 2009-present Elle Solomina, a.rainman on gmail point com
  */
 // pch.h: This is a precompiled header file.
 // Files listed below are compiled only once, improving build performance for future builds.
@@ -23,9 +23,6 @@
 #include <unordered_map>
 
 #include "flags.h"
-
-#define CALC_USE_ZMIJ // Tests time is: 61603ms.
-// Without: Tests time is: 94962ms.
 
 #ifdef CALC_USE_ZMIJ
 #include "../../zmij/zmij.cc"
@@ -77,6 +74,7 @@
 #if CALC_USE_128_BIT_FLOAT
 #warning "128-bit float type isn't supported by fast_float. The library convert any user input values to 64-bit double."
 #endif
+
 /* Tests time is: 53278ms. */
 #define CALC_USING_MY_FASTFLOAT // TODO: waiting for PR is approved and vcpkg version is updated.
 #ifdef CALC_USING_MY_FASTFLOAT

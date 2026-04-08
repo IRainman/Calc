@@ -1,6 +1,6 @@
 #pragma once
 /*
- * Copyright 2009-2025 Solomina Elle, a.rainman on gmail point com
+ * Copyright 2009-present Elle Solomina, a.rainman on gmail point com
  */
 
 //---------------------------------------------------------------------------
@@ -60,6 +60,9 @@ using ParamCount = char;
 Tests:
  time is: 24744ms.
 */
+// Currently zmij only for test, this is component of the future fmt and now it's not supported output precission with it critical for the Calc.
+//#define CALC_USE_ZMIJ // Tests time is: 61603ms.
+// Without: Tests time is: 94962ms.
 //---------------------------------------------------------------------------
 //std::map<std::string_view, const Fn> // Tests: time is: 37931ms.
 //std::unordered_map<std::string_view, const Fn> // Tests: time is: 31515ms.

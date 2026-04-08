@@ -2,7 +2,7 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 /*
- * Copyright 2023-2025 Solomina Elle, a.rainman on gmail point com
+ * Copyright 2023-present Elle Solomina, a.rainman on gmail point com
  */
 
 #include "pch.h"
@@ -63,12 +63,13 @@ std::pair<int64_t, int64_t> decimalToFraction(Value number)
 {
 	// Various experiments with formatting options:
 	// TODO add to GUI?: constexpr uint8_t kValueDigits10[3] = { (std::numeric_limits<Value>::digits10 - (std::numeric_limits<Value>::max_digits10 - std::numeric_limits<Value>::digits10) - 1), std::numeric_limits<Value>::digits10, std::numeric_limits<Value>::max_digits10 };
-	//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 3 /*12*/);	// exactly: 310, less than epsilon: 19, failed: 9
-	//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 2);			// exactly: 309, less than epsilon: 19, failed: 10
-	//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 1);			// exactly: 308, less than epsilon: 19, failed: 11
-	//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10     /*15*/);	// exactly: 304, less than epsilon: 19, failed: 15
-	//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::max_digits10 /*17*/);	// exactly: 235, less than epsilon: 19, failed: 84
-	return fmt::to_string(value);//return fmt::format(FMT_COMPILE("{}"), value /*17*/);						// exactly: 235, less than epsilon: 19, failed: 84
+	//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 3	/*12*/);	// exactly: 269, less than epsilon: 77, failed: 11
+	//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 2	/*13*/);	// exactly: 268, less than epsilon: 77, failed: 12
+	//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 1	/*14*/);	// exactly: 267, less than epsilon: 77, failed: 13
+	//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10			/*15*/);	// exactly: 262, less than epsilon: 77, failed: 18
+	//return fmt::format(FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::max_digits10	/*17*/);	// exactly: 189, less than epsilon: 77, failed: 91
+	//return fmt::format(FMT_COMPILE("{}"), value														/*17*/);	// exactly: 189, less than epsilon: 77, failed: 91
+	return fmt::to_string(value																		/*17*/);	// exactly: 189, less than epsilon: 77, failed: 91
 }
 #endif
 
@@ -76,11 +77,11 @@ std::pair<int64_t, int64_t> decimalToFraction(Value number)
 [[nodiscard]] std::string Formatter::create_summary() noexcept
 {
 	std::string ret;
-	ret.resize(1024);
+	ret.resize(128);
 	auto begin = ret.data();
 	for (const auto& error : IssueManager::_errors)
 	{
-		begin = fmt::format_to(begin, FMT_COMPILE("Error at pos {}: {}\r\n"), error.pos, error.text);
+		begin = fmt::format_to(begin, FMT_COMPILE("{}: {}\r\n"), error.pos, error.text);
 	}
 	ret.resize(begin - ret.data());
 	return ret;

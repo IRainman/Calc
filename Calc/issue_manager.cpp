@@ -2,7 +2,7 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 /*
- * Copyright 2023-2025 Solomina Elle, a.rainman on gmail point com
+ * Copyright 2023-present Elle Solomina, a.rainman on gmail point com
  */
 
 #include "pch.h"
