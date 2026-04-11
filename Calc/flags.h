@@ -43,7 +43,7 @@ using ParamCount = char;
 #define CALC_TESTS_DEV_ENABLED // if commented test is measurement performance
 #endif
 #ifdef CALC_TESTS_DEV_ENABLED
-#define CALC_TEST_FASTFLOAT
+//#define CALC_TEST_FASTFLOAT
 #endif
 
 //#define CALC_USE_ERROR_TOKEN // WIP
@@ -56,8 +56,8 @@ using ParamCount = char;
 Tests:
  time is: 24744ms.
 */
-// Currently zmij only for test, this is component of the future fmt and now it's not supported output precission with it critical for the Calc.
-#define CALC_USE_ZMIJ // Tests time is: 64978ms.
+// Currently zmij only for test, this is a component of the future fmt and now it's not support output precission with it critical for the Calc.
+//#define CALC_USE_ZMIJ // Tests time is: 64978ms.
 // Without: Tests time is: 78336ms.
 //---------------------------------------------------------------------------
 //std::map<std::string_view, const Fn> // Tests: time is: 37931ms.

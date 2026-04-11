@@ -198,7 +198,7 @@ namespace Identifiers
 		}
 		return std::numeric_limits<Value>::quiet_NaN();
 	}
-
+#if 0
 	[[nodiscard]] static constexpr Value accumulate(std::span<Value> params) noexcept
 	{
 		return std::accumulate(params.begin(), params.end(), 0.0);
@@ -208,7 +208,7 @@ namespace Identifiers
 	{
 		return std::reduce(params.begin(), params.end());
 	}
-
+#endif
 	[[nodiscard]] static constexpr Value hypot(std::span<Value> params) noexcept
 	{
 		switch (params.size())
@@ -536,10 +536,10 @@ namespace Identifiers
 		{ "P",            function_pointer <2, permutation>() },
 		{ "combination", function_pointer <2, combination>() },
 		{ "C",            function_pointer <2, combination>() },
-
+#if 0
 		{ "accumulate", {{2, std::numeric_limits<ParamCount>::max()}, accumulate} },
 		{ "reduce", {{2, std::numeric_limits<ParamCount>::max()}, reduce} },
-
+#endif
 		{ "atan2",function_pointer<2, std::atan2>() },
 		{ "hypot", {{2, 3}, hypot} },
 		{ "parabola", {{1, 1}, parabola} },

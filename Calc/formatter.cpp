@@ -72,16 +72,17 @@ char* Formatter::format(Value value, Result& ret) noexcept
 	return zmij::detail::write(value, ret.data());
 #else
 	// TODO add to GUI?: constexpr uint8_t kValueDigits10[3] = { (std::numeric_limits<Value>::digits10 - (std::numeric_limits<Value>::max_digits10 - std::numeric_limits<Value>::digits10) - 1), std::numeric_limits<Value>::digits10, std::numeric_limits<Value>::max_digits10 };
-	//return fmt::format_to(ret.data(), FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 6	/*9*/);	// exactly: 269, less than epsilon: 77, failed: 11
-	//return fmt::format_to(ret.data(), FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 5	/*10*/);	// exactly: 269, less than epsilon: 77, failed: 11
-	//return fmt::format_to(ret.data(), FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 4	/*11*/);	// exactly: 269, less than epsilon: 77, failed: 11
-	//return fmt::format_to(ret.data(), FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 3	/*12*/);	// exactly: 269, less than epsilon: 77, failed: 11
-	//return fmt::format_to(ret.data(), FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 2	/*13*/);	// exactly: 268, less than epsilon: 77, failed: 12
-	//return fmt::format_to(ret.data(), FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 1	/*14*/);	// exactly: 267, less than epsilon: 77, failed: 13
-	//return fmt::format_to(ret.data(), FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10			/*15*/);	// exactly: 262, less than epsilon: 77, failed: 18
-	//return fmt::format_to(ret.data(), FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::max_digits10	/*17*/);	// exactly: 189, less than epsilon: 77, failed: 91
-	return fmt::format_to(ret.data(), FMT_COMPILE("{}"), value														/*17*/);	// exactly: 189, less than epsilon: 77, failed: 91
-	//return fmt::format_to(ret.data(), FMT_COMPILE("{:.{}g}"), value, 40												/*40*/);
+	//return fmt::format_to(ret.data(), FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 7	/*08*/);	// exactly: 271, less than epsilon: 77, failed: 12
+	//return fmt::format_to(ret.data(), FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 6	/*09*/);	// exactly: 271, less than epsilon: 77, failed: 12
+	//return fmt::format_to(ret.data(), FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 5	/*10*/);	// exactly: 272, less than epsilon: 77, failed: 11
+	//return fmt::format_to(ret.data(), FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 4	/*11*/);	// exactly: 272, less than epsilon: 77, failed: 11
+	//return fmt::format_to(ret.data(), FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 3	/*12*/);	// exactly: 271, less than epsilon: 77, failed: 12
+	//return fmt::format_to(ret.data(), FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 2	/*13*/);	// exactly: 270, less than epsilon: 77, failed: 13
+	//return fmt::format_to(ret.data(), FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 1	/*14*/);	// exactly: 269, less than epsilon: 77, failed: 14
+	return fmt::format_to(ret.data(), FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10		/*15*/);	// exactly: 264, less than epsilon: 77, failed: 19
+	//return fmt::format_to(ret.data(), FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 + 1	/*16*/);	// exactly: 214, less than epsilon: 78, failed: 69
+	//return fmt::format_to(ret.data(), FMT_COMPILE("{}"), value												/*17*/);	// exactly: 189, less than epsilon: 78, failed: 94
+	//return fmt::format_to(ret.data(), FMT_COMPILE("{:.{}g}"), value, 40										/*40*/);
 #endif
 }
 

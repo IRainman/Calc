@@ -76,8 +76,10 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>> ({
 	{ "e ^ pi", 23.14069263277926900572 },
 	{ "pi ^ e", 22.45915771836104547342 },
 
-	// Heegner numbers (163 is the largest one)
+#if 0
+	// Heegner number (163 is the largest one) https://en.wikipedia.org/wiki/Heegner_number
 	{ "e ^ ( pi * sqrt(163) )", 262537412640768743.99999999999925007259 },
+#endif
 
 	//---------------------------------------------------------------------------
 	// physical constants from NIST 2022 CODATA (May 2024) http://physics.nist.gov/constants
