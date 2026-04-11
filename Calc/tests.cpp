@@ -47,8 +47,8 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>> ({
 	{ "egamma", 0.57721566490153286060651209008240243104215933593992 }, // https://en.wikipedia.org/wiki/Euler%27s_constant
 
 	// check precission of other constants
-	//{ "sqrt(pi/2)", std::numbers::sqrt_pi_v<Value> / std::numbers::sqrt_2_v<Value> },
-	//{ "sqrt(2 * pi)", std::numbers::sqrt_2_v<Value> * std::numbers::sqrt_pi_v<Value> },
+	{ "sqrt(pi/2)", 1.2533141373155002512078826424055226265034933703050 },
+	{ "sqrt(2*pi)", 2.5066282746310005024157652848110452530069867406099 },
 	{ "2*pi", 6.283185307179586476925286766559005768394338798750211641949889184615632812572417997256069650684234234135964296172173026564613294187689219121101165663456256256962234900568205403877043211119289289245897909860763928857621951331866892256950129491296467573566330542403818291297133846920696820908652966426786214520498282547449174013212631176349763761041841925658508547430728735784771720022661061097640933042768292903883023179189142764356050365519183906184372234763865223586210237096148924148148376248436926703770150488564849756876 }, // tau
 	{ "pi/2", std::numbers::pi_v<Value> / 2.0 },
 	{ "pi/3", std::numbers::pi_v<Value> / 3.0 },
@@ -75,6 +75,8 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>> ({
 	// Gelfond's and Ramanujan's constants https://en.wikipedia.org/wiki/Gelfond%27s_constant
 	{ "e ^ pi", 23.14069263277926900572 },
 	{ "pi ^ e", 22.45915771836104547342 },
+
+	// Heegner numbers (163 is the largest one)
 	{ "e ^ ( pi * sqrt(163) )", 262537412640768743.99999999999925007259 },
 
 	//---------------------------------------------------------------------------
@@ -159,9 +161,9 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>> ({
 	{ "factorial(171)", std::numeric_limits<Value>::infinity() }, // 171! = inf
 
 	// https://en.wikipedia.org/wiki/Permutation
-	{ "permutations(5, 3)", 60.0 }, // P(5, 3) = 60
+	{ "permutation(5, 3)", 60.0 }, // P(5, 3) = 60
 	// https://en.wikipedia.org/wiki/Combination
-	{ "combinations(5, 3)", 10.0 }, // C(5, 3) = 10
+	{ "combination(5, 3)", 10.0 }, // C(5, 3) = 10
 
 	{ "erf(0)", 0.0 },
 	{ "erfc(0)", 1.0 },
@@ -213,6 +215,8 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>> ({
 #ifdef CALC_TEST_FASTFLOAT
 	{ "104110013277974872254e-225",
 	   104110013277974872254e-225 },
+	{ "2.225073858507201e-308",
+	   2.225073858507201e-308 },
 	{ "2.22507385850720113605740979670913197593481954635164564e-308",
 	   2.22507385850720113605740979670913197593481954635164564e-308 },
 	{ "3254505089005000000000000000000000e-284",
@@ -243,6 +247,7 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>> ({
 	{ "0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1", 0.8 },
 	{ "0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1", 0.9 },
 	{ "0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1", 1.0 },
+	{ "1000.0 - 999.99", 0.01 },
 	{ "100.0 - 99.99", 0.01 },
 	{ "10.0 - 9.99", 0.01 },
 	{ "1.0 - 0.99", 0.01 },
@@ -537,7 +542,7 @@ std::string calc_tests()
 {
 	std::string output;
 #ifdef CALC_TESTS_DEV_ENABLED
-	output.reserve(65536);
+	output.reserve(64 * 1024);
 	unsigned int failed = 0;
 	unsigned int doubtful_but_okey = 0;
 #endif
@@ -555,19 +560,16 @@ std::string calc_tests()
 			Parser p(l);
 
 			[[maybe_unused]] const auto value = p.parse();
+
 			const auto has_errors = IssueManager::has_errors();
+
 #ifdef CALC_TESTS_DEV_ENABLED
-#ifdef CALC_USE_ZMIJ
-			char buffer_value[zmij::double_buffer_size] [[indeterminate]];
-			char buffer_test[zmij::double_buffer_size] [[indeterminate]];
-			const std::string_view formated_value(buffer_value, zmij::detail::write(value, buffer_value));
+			Formatter::Result buffer_value [[indeterminate]];
+			Formatter::Result buffer_test [[indeterminate]];
+			const std::string_view formated_value(buffer_value.data(), Formatter::format(value, buffer_value));
 			const auto exactly = (has_errors && std::isnan(t.second)) || (std::isnan(value) && std::isnan(t.second))
-				|| (formated_value == std::string_view(buffer_test, zmij::detail::write(t.second, buffer_test)));
-#else
-			const auto formated_value = Formatter::format(value);
-			const auto exactly = (has_errors && std::isnan(t.second)) || (std::isnan(value) && std::isnan(t.second)) 
-				|| (formated_value == Formatter::format(t.second));
-#endif
+				|| (formated_value == std::string_view(buffer_test.data(), Formatter::format(t.second, buffer_test)));
+
 			const auto less_than_epsilon = Identifiers::compare(value, t.second);
 
 			if(!exactly)
@@ -578,35 +580,39 @@ std::string calc_tests()
 			{
 				++doubtful_but_okey;
 			}
+
+			Formatter::Summary buffer_summary [[indeterminate]];
+			const std::string_view formated_summary(buffer_summary.data(), Formatter::create_summary(buffer_summary));
+			IssueManager::clear();
+
 			output += fmt::format(FMT_COMPILE(
 				"Test {}: {}\r\n"
+				"return = {}\r\n"
+				"expect = {}\r\n"
+				"output = {}\r\n"
 				"{}\r\n"
-				"{}\r\n"),
-				exactly ? "OK" : "FAILED",
-				t.first,
-					fmt::format(FMT_COMPILE(
-					"return = {}\r\n"
-					"expect = {}\r\n"
-					"output = {}"),
-					value,
-					t.second,
-					has_errors ? "" : formated_value
-					),
-				Formatter::create_summary());
+				),
+				exactly ? "OK" : "FAILED", t.first,
+				value,
+				t.second,
+				has_errors ? "" : formated_value,
+				has_errors ? formated_summary : ""
+			);
+
 #else
-#ifdef CALC_TESTS_PRINTING_PERFORMANCE
-#ifdef CALC_USE_ZMIJ
-			char buffer[zmij::double_buffer_size];
-			[[maybe_unused]] const auto formated_value = zmij::detail::write(value, buffer);
-#else
-			[[maybe_unused]] const auto formated_value = Formatter::format(value);
-#endif
-#endif
-#endif
+
 			if (has_errors)
 			{
 				IssueManager::clear();
 			}
+			else
+			{
+				Formatter::Result buffer_value [[indeterminate]];
+				[[maybe_unused]] const std::string_view formated_value(buffer_value.data(), Formatter::format(value, buffer_value));
+			}
+
+#endif
+
 		}
 	}
 

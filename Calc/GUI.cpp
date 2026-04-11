@@ -524,20 +524,16 @@ static void perform_calculation(const HWND hDlg) {
 
         if (hasErr) {
             SetDlgItemTextA(hDlg, IDC_EDIT_RESULT, "");
-            const auto summary = Formatter::create_summary();
-            SetDlgItemTextA(hDlg, IDC_EDIT_MESSAGE, summary.data());
+            Formatter::Summary summary [[indeterminate]];
+            Formatter::create_summary(summary);
             IssueManager::clear();
+            SetDlgItemTextA(hDlg, IDC_EDIT_MESSAGE, summary.data());
         }
 #endif
         else {
-#ifdef CALC_USE_ZMIJ
-            char buffer[zmij::double_buffer_size];
-            zmij::detail::write(result, buffer);
-            SetDlgItemTextA(hDlg, IDC_EDIT_RESULT, buffer);
-#else
-            const auto out = Formatter::format(result);
-            SetDlgItemTextA(hDlg, IDC_EDIT_RESULT, out.data());
-#endif
+            Formatter::Result result_text [[indeterminate]];
+            Formatter::format(result, result_text);
+            SetDlgItemTextA(hDlg, IDC_EDIT_RESULT, result_text.data());
             SetDlgItemTextA(hDlg, IDC_EDIT_MESSAGE, "");
         }
     }

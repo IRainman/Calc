@@ -16,6 +16,7 @@
 #include <array>
 #include <limits>
 #include <numbers>
+#include <numeric>
 #include <ranges>
 #include <span>
 #include <string_view>
@@ -23,13 +24,6 @@
 #include <unordered_map>
 
 #include "flags.h"
-
-#ifdef CALC_USE_ZMIJ
-#include "../../zmij/zmij.cc"
-#if CALC_USE_128_BIT_FLOAT
-#warning "128-bit float type isn't supported by zmij. The library convert any user input values to 64-bit double."
-#endif
-#endif
 
 #if !defined(CALC_USE_ERROR_TOKEN) || defined(CALC_TEST_FASTFLOAT)
 
@@ -62,10 +56,8 @@
 #define FMT_ENFORCE_COMPILE_STRING
 
 #ifdef CALC_USING_LOCAL_FMT
-#include "../../fmt/include/fmt/base.h"
 #include "../../fmt/include/fmt/compile.h"
 #else
-#include <fmt/base.h>
 #include <fmt/compile.h>
 #endif
 

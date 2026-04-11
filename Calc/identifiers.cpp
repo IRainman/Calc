@@ -153,7 +153,7 @@ namespace Identifiers
 		return std::numeric_limits<Value>::quiet_NaN();
 	}
 
-	[[nodiscard]] static /*constexpr*/ Value permutations(const Value n, const Value r) noexcept
+	[[nodiscard]] static /*constexpr*/ Value permutation(const Value n, const Value r) noexcept
 	{
 		long num = std::lrint(n);
 		long den = std::lrint(r);
@@ -175,7 +175,7 @@ namespace Identifiers
 		return std::numeric_limits<Value>::quiet_NaN();
 	}
 
-	[[nodiscard]] static /*constexpr*/ Value combinations(const Value n, const Value r) noexcept
+	[[nodiscard]] static /*constexpr*/ Value combination(const Value n, const Value r) noexcept
 	{
 		long num = std::lrint(n);
 		long den = std::lrint(r);
@@ -197,7 +197,16 @@ namespace Identifiers
 			return res1 / res2;
 		}
 		return std::numeric_limits<Value>::quiet_NaN();
+	}
 
+	[[nodiscard]] static constexpr Value accumulate(std::span<Value> params) noexcept
+	{
+		return std::accumulate(params.begin(), params.end(), 0.0);
+	}
+
+	[[nodiscard]] static constexpr Value reduce(std::span<Value> params) noexcept
+	{
+		return std::reduce(params.begin(), params.end());
 	}
 
 	[[nodiscard]] static constexpr Value hypot(std::span<Value> params) noexcept
@@ -523,10 +532,13 @@ namespace Identifiers
 		{ "lcm", function_pointer<2, std::lcm>() },
 #endif
 
-		{ "permutations", function_pointer <2, permutations>() },
-		{ "P",            function_pointer <2, permutations>() },
-		{ "combinations", function_pointer <2, combinations>() },
-		{ "C",            function_pointer <2, combinations>() },
+		{ "permutation", function_pointer <2, permutation>() },
+		{ "P",            function_pointer <2, permutation>() },
+		{ "combination", function_pointer <2, combination>() },
+		{ "C",            function_pointer <2, combination>() },
+
+		{ "accumulate", {{2, std::numeric_limits<ParamCount>::max()}, accumulate} },
+		{ "reduce", {{2, std::numeric_limits<ParamCount>::max()}, reduce} },
 
 		{ "atan2",function_pointer<2, std::atan2>() },
 		{ "hypot", {{2, 3}, hypot} },

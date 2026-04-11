@@ -6,18 +6,18 @@
 
 class Formatter
 {
-	public:
-#ifndef CALC_USE_ZMIJ
+	public:		
+		using Result = std::array<char, 64>;
+		using Summary = std::array<char, 128>;
 		/**
-		 * Format output value of the expression returned.
+		 * Format output value of the expression returned. Return the end of formated value.
 		 */
-		[[nodiscard]] static std::string format(Value value) noexcept;
-#endif
+		static char* format(Value value, Result& ret) noexcept;
 #ifndef CALC_USE_ERROR_TOKEN
 		/**
-		 * Create full report of expression processing.
+		 * Create full report of expression processing. Return the end of formated summary.
 		 */
-		[[nodiscard]] static std::string create_summary() noexcept;
+		static char* create_summary(Summary& ret) noexcept;
 #endif
 };
 

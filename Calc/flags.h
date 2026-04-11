@@ -46,10 +46,6 @@ using ParamCount = char;
 #define CALC_TEST_FASTFLOAT
 #endif
 
-#ifndef CALC_TESTS_DEV_ENABLED
-#define CALC_TESTS_PRINTING_PERFORMANCE
-#endif
-
 //#define CALC_USE_ERROR_TOKEN // WIP
 // CALC_TESTS_USE_ADDITIONAL_OPTIONS // deprecated
 #endif
@@ -61,8 +57,8 @@ Tests:
  time is: 24744ms.
 */
 // Currently zmij only for test, this is component of the future fmt and now it's not supported output precission with it critical for the Calc.
-//#define CALC_USE_ZMIJ // Tests time is: 61603ms.
-// Without: Tests time is: 94962ms.
+#define CALC_USE_ZMIJ // Tests time is: 64978ms.
+// Without: Tests time is: 78336ms.
 //---------------------------------------------------------------------------
 //std::map<std::string_view, const Fn> // Tests: time is: 37931ms.
 //std::unordered_map<std::string_view, const Fn> // Tests: time is: 31515ms.
