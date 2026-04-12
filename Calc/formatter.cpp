@@ -5,9 +5,9 @@
  * Copyright 2023-present Elle Solomina, a.rainman on gmail point com
  */
 
-#include "pch.h"
-#include "formatter.h"
-#include "issue_manager.h"
+#include "pch.hpp"
+#include "formatter.hpp"
+#include "issue_manager.hpp"
 
 #ifdef CALC_USE_ZMIJ
 #include "../../zmij/zmij.cc"
@@ -79,10 +79,9 @@ char* Formatter::format(Value value, Result& ret) noexcept
 	//return fmt::format_to(ret.data(), FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 3	/*12*/);	// exactly: 271, less than epsilon: 77, failed: 12
 	//return fmt::format_to(ret.data(), FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 2	/*13*/);	// exactly: 270, less than epsilon: 77, failed: 13
 	//return fmt::format_to(ret.data(), FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 1	/*14*/);	// exactly: 269, less than epsilon: 77, failed: 14
-	return fmt::format_to(ret.data(), FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10		/*15*/);	// exactly: 264, less than epsilon: 77, failed: 19
+	//return fmt::format_to(ret.data(), FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10		/*15*/);	// exactly: 264, less than epsilon: 77, failed: 19
 	//return fmt::format_to(ret.data(), FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 + 1	/*16*/);	// exactly: 214, less than epsilon: 78, failed: 69
-	//return fmt::format_to(ret.data(), FMT_COMPILE("{}"), value												/*17*/);	// exactly: 189, less than epsilon: 78, failed: 94
-	//return fmt::format_to(ret.data(), FMT_COMPILE("{:.{}g}"), value, 40										/*40*/);
+	return fmt::format_to(ret.data(), FMT_COMPILE("{}"), value												/*17*/);	// exactly: 189, less than epsilon: 78, failed: 94
 #endif
 }
 

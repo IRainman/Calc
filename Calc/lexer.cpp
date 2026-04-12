@@ -5,9 +5,9 @@
  * Copyright 2023-present Elle Solomina, a.rainman on gmail point com
  */
 
-#include "pch.h"
-#include "issue_manager.h"
-#include "lexer.h"
+#include "pch.hpp"
+#include "issue_manager.hpp"
+#include "lexer.hpp"
 
 namespace
 {

@@ -136,7 +136,7 @@
       <OpenMPSupport>false</OpenMPSupport>
       <SupportJustMyCode>true</SupportJustMyCode>
       <CompileAsManaged>false</CompileAsManaged>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>pch.hpp</PrecompiledHeaderFile>
       <ControlFlowGuard>Guard</ControlFlowGuard>
       <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
       <UseUnicodeForAssemblerListing>true</UseUnicodeForAssemblerListing>
@@ -185,7 +185,7 @@
       <OpenMPSupport>false</OpenMPSupport>
       <SupportJustMyCode>true</SupportJustMyCode>
       <CompileAsManaged>false</CompileAsManaged>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>pch.hpp</PrecompiledHeaderFile>
       <ControlFlowGuard>Guard</ControlFlowGuard>
       <CallingConvention>FastCall</CallingConvention>
       <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
@@ -244,7 +244,7 @@
       <OmitFramePointers>true</OmitFramePointers>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <SDLCheck>false</SDLCheck>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>pch.hpp</PrecompiledHeaderFile>
       <GuardEHContMetadata>false</GuardEHContMetadata>
       <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
@@ -309,7 +309,7 @@
       <OmitFramePointers>true</OmitFramePointers>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <SDLCheck>false</SDLCheck>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>pch.hpp</PrecompiledHeaderFile>
       <GuardEHContMetadata>false</GuardEHContMetadata>
       <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
@@ -360,17 +360,17 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="codata2022.hpp" />
-    <ClInclude Include="flags.h" />
-    <ClInclude Include="formatter.h" />
-    <ClInclude Include="issue_manager.h" />
-    <ClInclude Include="lexer.h" />
-    <ClInclude Include="parser.h" />
+    <ClInclude Include="flags.hpp" />
+    <ClInclude Include="formatter.hpp" />
+    <ClInclude Include="issue_manager.hpp" />
+    <ClInclude Include="lexer.hpp" />
+    <ClInclude Include="parser.hpp" />
     <ClInclude Include="Resource.h" />
-    <ClInclude Include="pch.h" />
+    <ClInclude Include="pch.hpp" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="tests.h" />
-    <ClInclude Include="identifiers.h" />
-    <ClInclude Include="token.h" />
+    <ClInclude Include="tests.hpp" />
+    <ClInclude Include="identifiers.hpp" />
+    <ClInclude Include="token.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\C.ico" />

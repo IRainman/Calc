@@ -5,8 +5,8 @@
  * Copyright 2023-present Elle Solomina, a.rainman on gmail point com
  */
 
-#include "pch.h"
-#include "identifiers.h"
+#include "pch.hpp"
+#include "identifiers.hpp"
 #include "codata2022.hpp"
 
 namespace Identifiers
@@ -606,7 +606,7 @@ namespace Identifiers
 
 #if 0 //def CALC_TESTS_ENABLED
 		{ "clamp", function_pointer<3, std::clamp>() },
-		{ "midpoint", function_pointer < 2, std::midpoint>() },
+		{ "midpoint", function_pointer <2, std::midpoint>() },
 		{ "lerp", function_pointer<3, std::std::lerp>() },
 #endif
 		{ "not", function_pointer<1, NOT>() },

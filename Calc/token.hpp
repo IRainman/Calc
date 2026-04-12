@@ -3,7 +3,7 @@
  * Copyright 2023-present Elle Solomina, a.rainman on gmail point com
  */
 
-#include "identifiers.h"
+#include "identifiers.hpp"
 
 struct Token
 {

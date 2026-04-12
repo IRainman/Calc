@@ -41,37 +41,37 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="flags.h">
+    <ClInclude Include="flags.hpp">
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="Resource.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="pch.h">
+    <ClInclude Include="pch.hpp">
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="targetver.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="tests.h">
+    <ClInclude Include="tests.hpp">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="issue_manager.h">
+    <ClInclude Include="issue_manager.hpp">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="lexer.h">
+    <ClInclude Include="lexer.hpp">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="parser.h">
+    <ClInclude Include="parser.hpp">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="formatter.h">
+    <ClInclude Include="formatter.hpp">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="identifiers.h">
+    <ClInclude Include="identifiers.hpp">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="token.h">
+    <ClInclude Include="token.hpp">
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="codata2022.hpp">

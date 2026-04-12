@@ -5,9 +5,9 @@
  * Copyright 2023-present Elle Solomina, a.rainman on gmail point com
  */
 
-#include "pch.h"
+#include "pch.hpp"
 #ifndef CALC_USE_ERROR_TOKEN
-#include "issue_manager.h"
+#include "issue_manager.hpp"
 
 IssueManager::Issues IssueManager::_errors;
 /**

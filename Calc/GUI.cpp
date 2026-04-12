@@ -8,14 +8,14 @@
 // GUI.cpp : Defines the user iteraction behaviors for the application.
 //
 
-#include "pch.h"
+#include "pch.hpp"
 
-#include "lexer.h"
-#include "parser.h"
-#include "issue_manager.h"
-#include "formatter.h"
+#include "lexer.hpp"
+#include "parser.hpp"
+#include "issue_manager.hpp"
+#include "formatter.hpp"
 #ifdef CALC_TESTS_ENABLED
-#include "tests.h"
+#include "tests.hpp"
 #endif
 
 // ================= GUI ===============

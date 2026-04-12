@@ -14,6 +14,7 @@
 
 #include <algorithm>
 #include <array>
+//#include <flat_map> // TODO: check this
 #include <limits>
 #include <numbers>
 //#include <numeric>
@@ -23,7 +24,7 @@
 #include <stdfloat>
 #include <unordered_map>
 
-#include "flags.h"
+#include "flags.hpp"
 
 #if !defined(CALC_USE_ERROR_TOKEN) || defined(CALC_TEST_FASTFLOAT) || defined (CALC_TESTS_DEV_ENABLED)
 

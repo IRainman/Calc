@@ -3,7 +3,7 @@
  * Copyright 2023-present Elle Solomina, a.rainman on gmail point com
  */
 
-#include "token.h"
+#include "token.hpp"
 
 class Lexer
 {
