@@ -489,7 +489,7 @@ private:
     // ------------------------------------------------------------------
     // Utility: set dialog icon (small & big) from IDR_MAINFRAME
     // ------------------------------------------------------------------
-    static void set_window_icons(const HWND hDlg) {
+    static void set_window_icons(const HWND hDlg) { // OK
         // Set icons (large and small)
         const auto icon = LoadIconA(GetModuleHandleA(nullptr), MAKEINTRESOURCEA(IDR_MAINFRAME));
         assert(icon);
@@ -503,7 +503,7 @@ static CalcWindowState CalcWindow;
 // ------------------------------------------------------------------
 // Calc!
 // ------------------------------------------------------------------
-static void perform_calculation(const HWND hDlg) {
+static void perform_calculation(const HWND hDlg) { // OK
     // ANSI multiline EDIT max is 64 KiB for classic Edit control
     std::array<char, 64 * 1024> input [[indeterminate]]; // 65535 for symbols and 1 for null C string API terminator
 
@@ -543,7 +543,7 @@ static void perform_calculation(const HWND hDlg) {
 // ------------------------------------------------------------------
 // About dialog proc (resource-based).
 // ------------------------------------------------------------------
-static INT_PTR CALLBACK AboutDlgProc(const HWND hDlg, const UINT uMsg, const WPARAM wParam, const LPARAM lParam) {
+static INT_PTR CALLBACK AboutDlgProc(const HWND hDlg, const UINT uMsg, const WPARAM wParam, const LPARAM lParam) { // OK
     switch (uMsg) {
     case WM_COMMAND:
         if (LOWORD(wParam) == IDCANCEL) {
@@ -567,7 +567,7 @@ static INT_PTR CALLBACK AboutDlgProc(const HWND hDlg, const UINT uMsg, const WPA
 // ------------------------------------------------------------------
 // Calc dialog proc (resource-based).
 // ------------------------------------------------------------------
-static INT_PTR CALLBACK CalcDialogProc(const HWND hDlg, const UINT uMsg, const WPARAM wParam, const LPARAM lParam) {
+static INT_PTR CALLBACK CalcDialogProc(const HWND hDlg, const UINT uMsg, const WPARAM wParam, const LPARAM lParam) { // OK
     switch (uMsg) {
     case WM_COMMAND: {
         if (LOWORD(wParam) == IDC_BUTTON_CALC && HIWORD(wParam) == BN_CLICKED) {
@@ -608,9 +608,10 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND hDlg, const UINT uMsg, const W
     }
     return FALSE;
 }
-
-// ---------- WinMain ----------
-int WINAPI WinMain(const HINSTANCE hInstance, [[maybe_unused]] const HINSTANCE hPrev, [[maybe_unused]] const LPSTR lpCmdLine, const int) { // OK
+// ------------------------------------------------------------------
+// WinMain - entrypoint
+// ------------------------------------------------------------------
+int WINAPI WinMain(const HINSTANCE hInstance, const HINSTANCE /*hPrev*/ , const LPSTR /*lpCmdLine*/, const int) { // OK
 
     // TODO: move this code to the core.
     /* Applications that generate floating point underflow in vector registers can benefit from setting the flush-to-zero mode rather than generating subnormal numbers in case of underflow:*/
@@ -632,11 +633,6 @@ int WINAPI WinMain(const HINSTANCE hInstance, [[maybe_unused]] const HINSTANCE h
     SetProcessDPIAware();
 #endif
 #endif
-
-    INITCOMMONCONTROLSEX InitCtrls [[indeterminate]];
-    InitCtrls.dwSize = sizeof(InitCtrls);
-    InitCtrls.dwICC = ICC_STANDARD_CLASSES;
-    InitCommonControlsEx(&InitCtrls);
 
     DialogBoxParamA(hInstance, MAKEINTRESOURCEA(IDD_CALC_DIALOG), nullptr, CalcDialogProc, 0);
 

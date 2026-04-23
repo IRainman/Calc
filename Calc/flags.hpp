@@ -7,23 +7,8 @@
 /*
  * Type using as a type for calculation.
  */
-#define CALC_USE_UINT_FAST16_T_FOR_EQUATION_SIZE 0
-#if CALC_USE_UINT_FAST16_T_FOR_EQUATION_SIZE
-// Don't need more than 65536 symbols for equation, because GUI input limit is 64 KiB.
-using EquationSize = uint_fast16_t;
-#else
-#warning "TODO needs to rewrite size type usage in the containers."
-/* Currently, but be more : 
-In 64 bit build:
-
-uint32_t
-Tests time is: 50430ms.
-
-size_t
-Tests time is: 49737ms.
-*/
+// Don't need more than 65536 symbols for equation, because GUI input limit is 64 KiB right now. But use only size_t here because it's a CPU related hardware type.
 using EquationSize = size_t;
-#endif
 
 #if __STDCPP_FLOAT128_T__ == 1
 using Value = std::float128_t;
