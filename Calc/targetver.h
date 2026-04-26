@@ -36,6 +36,10 @@
 #endif
 #endif
 
+/* not enabled. TODO: very hard to realise.
+#define CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
+*/
+
 /* not enabled because we use only ANSI input in GUI
 #define CALC_USE_IME // Input Method Manager support for international text input.
 */

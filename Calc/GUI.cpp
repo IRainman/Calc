@@ -1,4 +1,4 @@
-// This is an independent project of an individual developer. Dear PVS-Studio, please check it.
+﻿// This is an independent project of an individual developer. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 /*
@@ -24,9 +24,7 @@
 
 #include <optional>
 
-#ifndef VC_EXTRALEAN
 #define VC_EXTRALEAN            // Exclude rarely-used stuff from Windows headers
-#endif
 
 #define WIN32_LEAN_AND_MEAN
 
@@ -67,7 +65,7 @@
 #define NOKANJI - Kanji support stuff.
 #define NOHELP - Help engine interface.
 #define NOPROFILER - Profiler interface.
-#define NODEFERWINDOWPOS - DeferWindowPos routines
+//#define NODEFERWINDOWPOS - DeferWindowPos routines
 #define NOMCX - Modem Configuration Extensions
 
 #include "targetver.h"
@@ -78,46 +76,178 @@
 #include <commctrl.h>
 #include <imm.h> // CALC_USE_IME or ImmDisableIME
 #include <shellapi.h>
-#include "resource.h"        // main symbols
+#include "resource.h" // main symbols
 
 class CalcWindowState {
-    // ---------- configuration ----------
+    // Configuration
     static constexpr std::string_view kRegKey = "Software\\HedgehogInTheCPP\\Calc";
     struct Baseline {
 #ifdef CALC_SUPPORT_DPI_CHANGES
         constexpr static UINT dpi = USER_DEFAULT_SCREEN_DPI;
         constexpr static WORD point_size = 10; // matches RC font 10 pt in resource template
 #endif
-        constexpr static LONG min_width = 292;
-        constexpr static LONG min_heigth = 357;
+        constexpr static LONG min_width = 292; // matches RC
+        constexpr static LONG min_height = 357; // matches RC
+        constexpr static size_t elements_count = 4; // matches RC
+        
+        // Win32 ANSI multiline EDIT max is 64 KiB for classic Edit control:
+        constexpr static size_t input_max_data_size = 64 * 1024;
+        // because the number above including C zero terminator maximum symbols are:
+        constexpr static size_t input_max_symbols = input_max_data_size - 1;
     };
+    // ~Configuration
+public:
     constexpr static Baseline baseline;
 
-    struct Anchor {
-        int id;
-        RECT rc;
-        const bool left, top, right, bottom;
-        auto get_x() const {
-            return rc.left;
+    struct Rectangle : public RECT {
+        auto get_x() const noexcept {
+            return left;
         }
-        auto get_y() const {
-            return rc.top;
+        auto get_y() const noexcept {
+            return top;
         }
-        auto get_width() const {
-            return rc.right - rc.left;
+        auto get_width() const noexcept {
+            return right - left;
         }
-        auto get_heigth() const {
-            return rc.bottom - rc.top;
+        auto get_heigth() const noexcept {
+            return bottom - top;
         }
     };
-    std::vector<Anchor> anchors;
+    using Rectangle_ptr = Rectangle*;
 
-    LONG min_width [[indeterminate]];
-    LONG min_heigth [[indeterminate]];
-    LONG width [[indeterminate]];
-    LONG heigth [[indeterminate]];
+private:
+
+    class LayoutManager {
+    public:
+        enum class HMode : BYTE { Left, Right, Stretch };
+        enum class VMode : BYTE { Top, Bottom, Stretch };
+
+        struct Anchor {
+            HMode h [[indeterminate]];
+            VMode v [[indeterminate]];
+        };
+
+        struct Constraint {
+            int id [[indeterminate]];
+
+            // Margins relative to parent client rect at init time
+            LONG left [[indeterminate]];
+            LONG top [[indeterminate]];
+            LONG right [[indeterminate]];
+            LONG bottom [[indeterminate]];
+
+            LONG width [[indeterminate]];
+            LONG height [[indeterminate]];
+
+            Anchor anchor [[indeterminate]];
+        };
+
+        void initialize(const HWND parent) {
+            Rectangle client [[indeterminate]];
+            GetClientRect(parent, &client);
+
+            width = client.right;
+            height = client.bottom;
+        }
+        void initAnchor(const HWND parent, const size_t idx, const int id, const Anchor a) {
+            HWND h = GetDlgItem(parent, id);
+            Rectangle wr [[indeterminate]];
+            GetWindowRect(h, &wr);
+
+            POINT p{ wr.left, wr.top };
+            ScreenToClient(parent, &p);
+
+            Rectangle cr [[indeterminate]];
+            cr.left = p.x;
+            cr.top = p.y;
+            cr.right = p.x + wr.get_width();
+            cr.bottom = p.y + wr.get_heigth();
+
+            Constraint& c = constraints[idx];
+            c.id = id;
+            c.left = cr.left;
+            c.top = cr.top;
+            c.right = width - cr.right;
+            c.bottom = height - cr.bottom;
+            c.width = cr.get_width();
+            c.height = cr.get_heigth();
+            c.anchor = a;
+        }
+        void resize(const HWND parent, const int newW, const int newH) {
+            width = newW;
+            height = newH;
+
+            HDWP hdwp = BeginDeferWindowPos((int)constraints.size());
+            for (auto& c : constraints) {
+                HWND h = GetDlgItem(parent, c.id);
+                if (!h) continue;
+
+                Rectangle r [[indeterminate]];
+
+                // Horizontal
+                switch (c.anchor.h) {
+                case HMode::Left:
+                    r.left = c.left;
+                    r.right = c.left + c.width;
+                    break;
+
+                case HMode::Right:
+                    r.right = newW - c.right;
+                    r.left = r.right - c.width;
+                    break;
+
+                case HMode::Stretch:
+                    r.left = c.left;
+                    r.right = newW - c.right;
+                    break;
+                }
+
+                // Vertical
+                switch (c.anchor.v) {
+                case VMode::Top:
+                    r.top = c.top;
+                    r.bottom = c.top + c.height;
+                    break;
+
+                case VMode::Bottom:
+                    r.bottom = newH - c.bottom;
+                    r.top = r.bottom - c.height;
+                    break;
+
+                case VMode::Stretch:
+                    r.top = c.top;
+                    r.bottom = newH - c.bottom;
+                    break;
+                }
+
+                hdwp = DeferWindowPos(
+                    hdwp,
+                    h,
+                    nullptr,
+                    r.left,
+                    r.top,
+                    r.get_width(),
+                    r.get_heigth(),
+                    SWP_NOZORDER | SWP_NOACTIVATE
+                );
+            }
+            EndDeferWindowPos(hdwp);
+        }
+
+        LONG min_width [[indeterminate]];
+        LONG min_height [[indeterminate]];
+
+    private:
+        LONG width [[indeterminate]];
+        LONG height [[indeterminate]];
+
+        std::array<Constraint, baseline.elements_count> constraints [[indeterminate]];
+    };
+
+    LayoutManager layout [[indeterminate]];
 
 #ifdef CALC_SUPPORT_DPI_CHANGES
+#ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
     class Font {
     public:
         Font() noexcept {
@@ -149,7 +279,7 @@ class CalcWindowState {
             return font;
         }
     private:
-        void cleanup() {
+        void cleanup() const {
             if (font) {
                 DeleteObject(font);
             }
@@ -157,15 +287,15 @@ class CalcWindowState {
         HFONT font;
     };
     Font font;
-
+#endif
     UINT dpi;
 #endif
 
     auto get_min_width() const {
-        return min_width;
+        return layout.min_width;
     }
     auto get_min_heigth() const {
-        return min_heigth;
+        return layout.min_height;
     }
     auto get_min_x() const {
         return get_min_width();
@@ -193,6 +323,8 @@ public:
         SetDlgItemTextA(hWnd, IDC_EDIT_MESSAGE, calc_tests().c_str());
 #endif
         const auto hInput = GetDlgItem(hWnd, IDC_EDIT_INPUT);
+
+        SendMessageA(hInput, EM_LIMITTEXT, static_cast<WPARAM>(baseline.input_max_symbols), 0);
 #ifdef CALC_USE_IME
         // IME: associate default context for multiline edit
         ImmAssociateContextEx(hInput, nullptr, IACE_DEFAULT);
@@ -203,63 +335,37 @@ public:
 		// set focus to input edit control
         SetFocus(hInput);
     }
-    void resize(const HWND dlg, const WORD clientW, const WORD clientH) {
-        if (width != clientW || heigth != clientH) {
-            // compute delta between previous client size and new client size
-            const auto deltaW = width - clientW;
-            const auto deltaH = heigth - clientH;
-
-            // store new client size
-            width = clientW;
-            heigth = clientH;
-
-            for (auto& a : anchors) {
-                // if anchored to bottom, move bottom edge by deltaH
-                a.rc.bottom = a.bottom ? (a.rc.bottom - deltaH) : a.rc.bottom;
-                // if not anchored to left, shift left coordinate by deltaW
-                a.rc.left = a.left ? a.rc.left : (a.rc.left - deltaW);
-                // if not anchored to top, shift top coordinate by deltaH
-                a.rc.top = a.top ? a.rc.top : (a.rc.top - deltaH);
-                // if anchored to right, move right edge by deltaW
-                a.rc.right = a.right ? (a.rc.right - deltaW) : a.rc.right;
-                // move the control
-                const auto hCtrl = GetDlgItem(dlg, a.id);
-                assert(hCtrl);
-                MoveWindow(hCtrl, a.get_x(), a.get_y(), a.get_width(), a.get_heigth(), TRUE);
-            }
-        }
+    void resize(HWND dlg, WORD w, WORD h) {
+        layout.resize(dlg, w, h);
     }
     void get_minmaxinfo(const HWND hDlg, const LPMINMAXINFO lpMMI) const {
-        assert(lpMMI);
         // Convert minimum client area size to window (outer) size so the user can't resize window
         // smaller than the intended client area. WM_GETMINMAXINFO expects window dimensions.
-        RECT requiredClient{ 0, 0, get_min_x(), get_min_y() };
+        Rectangle requiredClient{ 0, 0, get_min_x(), get_min_y() };
 
         // Retrieve window styles to adjust for non-client area.
-        const auto stylePtr = GetWindowLongPtrA(hDlg, GWL_STYLE);
-        const auto exStylePtr = GetWindowLongPtrA(hDlg, GWL_EXSTYLE);
-        const auto style = static_cast<DWORD>(stylePtr);
-        const auto exStyle = static_cast<DWORD>(exStylePtr);
+        const auto style = static_cast<DWORD>(GetWindowLongPtrA(hDlg, GWL_STYLE));
+        const auto exStyle = static_cast<DWORD>(GetWindowLongPtrA(hDlg, GWL_EXSTYLE));
 
         // AdjustWindowRectEx will expand the rectangle so that the resulting outer window
         // will have the requested client size.
         if (AdjustWindowRectEx(&requiredClient, style, FALSE, exStyle)) {
-            lpMMI->ptMinTrackSize.x = requiredClient.right - requiredClient.left;
-            lpMMI->ptMinTrackSize.y = requiredClient.bottom - requiredClient.top;
+            lpMMI->ptMinTrackSize.x = requiredClient.get_width();
+            lpMMI->ptMinTrackSize.y = requiredClient.get_heigth();
         }
     }
 #ifdef CALC_SUPPORT_DPI_CHANGES
-    void set_dpi(const HWND dlg, const WORD new_dpi) {
+    void set_dpi(const HWND dlg, const WORD new_dpi, Rectangle_ptr new_rect) {
         if (dpi != new_dpi) {
+            // Rescale main window to suggestion and move the window to the position
+            MoveWindow(dlg, new_rect->get_x(), new_rect->get_y(), new_rect->get_width(), new_rect->get_heigth(), TRUE);
+#ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
             // Recreate font for new DPI (move-assign safely)
             font = Font(new_dpi);
             SendMessageA(dlg, WM_SETFONT, reinterpret_cast<WPARAM>(font.get()), MAKELPARAM(TRUE, 0));
 
             // Compute scale factor relative to current dpi
             const auto factor = static_cast<float>(new_dpi) / static_cast<float>(dpi);
-
-			// Store new DPI
-            dpi = new_dpi;
 
             // Rescale minimum sizes
             min_width = std::lroundf(static_cast<float>(baseline.min_width) * factor);
@@ -269,15 +375,6 @@ public:
             width = std::lroundf(static_cast<float>(width) * factor);
             heigth = std::lroundf(static_cast<float>(heigth) * factor);
 
-            // Rescale dialog window
-            RECT wr [[indeterminate]];
-            GetWindowRect(dlg, &wr);
-            MoveWindow(dlg, wr.left, wr.top,
-                std::lroundf(static_cast<float>(wr.right - wr.left) * factor),
-                std::lroundf(static_cast<float>(wr.bottom - wr.top) * factor),
-                TRUE);
-
-            // Rescale anchors
             for (auto& a : anchors) {
                 a.rc.left = std::lroundf(a.rc.left * factor);
                 a.rc.top = std::lroundf(a.rc.top * factor);
@@ -285,10 +382,12 @@ public:
                 a.rc.bottom = std::lroundf(a.rc.bottom * factor);
                 // move the control
                 const auto hCtrl = GetDlgItem(dlg, a.id);
-                assert(hCtrl);
                 SendMessageA(hCtrl, WM_SETFONT, reinterpret_cast<WPARAM>(font.get()), MAKELPARAM(TRUE, 0));
                 MoveWindow(hCtrl, a.get_x(), a.get_y(), a.get_width(), a.get_heigth(), TRUE);
             }
+#endif
+            // Store new DPI
+            dpi = new_dpi;
         }
     }
     static UINT get_window_dpi(const HWND hWnd) {
@@ -325,16 +424,15 @@ public:
 #endif
 private:
     static void center_window_on_monitor(const HWND hWnd, const HMONITOR hMon) {
-        RECT wr [[indeterminate]];
+        Rectangle wr [[indeterminate]];
         if (GetWindowRect(hWnd, &wr)) {
 
             MONITORINFO mi [[indeterminate]]; mi.cbSize = sizeof(mi);
             if (!GetMonitorInfoA(hMon, &mi)) {
                 SystemParametersInfoW(SPI_GETWORKAREA, 0, &mi.rcWork, 0);
             }
-            const auto w = wr.right - wr.left, h = wr.bottom - wr.top;
-            const auto x = mi.rcWork.left + ((mi.rcWork.right - mi.rcWork.left) - w) / 2;
-            const auto y = mi.rcWork.top + ((mi.rcWork.bottom - mi.rcWork.top) - h) / 2;
+            const auto x = mi.rcWork.left + ((mi.rcWork.right - mi.rcWork.left) - wr.get_width()) / 2;
+            const auto y = mi.rcWork.top + ((mi.rcWork.bottom - mi.rcWork.top) - wr.get_heigth()) / 2;
             SetWindowPos(hWnd, nullptr, x, y, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
         }
         else {
@@ -343,10 +441,9 @@ private:
     }
     static void RegWriteDword(const HKEY root, const std::string_view subkey, const std::string_view name, const DWORD value) {
         HKEY hKey [[indeterminate]];
-        if (RegCreateKeyExA(root, subkey.data(), 0, nullptr, 0, KEY_WRITE, nullptr, &hKey, nullptr) == ERROR_SUCCESS) {
-            RegSetValueExA(hKey, name.data(), 0, REG_DWORD, reinterpret_cast<const BYTE*>(&value), sizeof(value));
-            RegCloseKey(hKey);
-        }
+        RegCreateKeyExA(root, subkey.data(), 0, nullptr, 0, KEY_WRITE, nullptr, &hKey, nullptr);
+        RegSetValueExA(hKey, name.data(), 0, REG_DWORD, reinterpret_cast<const BYTE*>(&value), sizeof(value));
+        RegCloseKey(hKey);
     }
     static std::optional<DWORD> RegReadDword(const HKEY root, const std::string_view subkey, const std::string_view name) {
         HKEY hKey [[indeterminate]];
@@ -354,38 +451,20 @@ private:
             return std::nullopt;
         }
         DWORD out [[indeterminate]]; DWORD outSize = sizeof(out); DWORD type [[indeterminate]];
-        if (RegQueryValueExA(hKey, name.data(), nullptr, &type, reinterpret_cast<LPBYTE>(&out), &outSize) != ERROR_SUCCESS) {
+        if (RegQueryValueExA(hKey, name.data(), nullptr, &type, reinterpret_cast<LPBYTE>(&out), &outSize) != ERROR_SUCCESS || type != REG_DWORD) {
             RegCloseKey(hKey);
             return std::nullopt;
         }
         RegCloseKey(hKey);
-        if (type != REG_DWORD) {
-            return std::nullopt;
-        }
         return out;
     }
     void load_window_placement(const HWND hWnd) {
-        // IMPORTANT: use client rect here. WM_SIZE provides client area sizes.
-        RECT cr [[indeterminate]];
-        if (GetClientRect(hWnd, &cr)) {
-            width = (cr.right - cr.left);
-            heigth = (cr.bottom - cr.top);
-        }
-
-        const auto add = [&](const int id, const bool left, const bool top, const bool right, const bool bottom) {
-            const auto h = GetDlgItem(hWnd, id);
-            if (!h) return;
-
-            RECT wr [[indeterminate]]; if (!GetWindowRect(h, &wr)) return;
-            POINT p{ wr.left, wr.top }; ScreenToClient(hWnd, &p);
-            RECT rcClient{ p.x, p.y, p.x + (wr.right - wr.left), p.y + (wr.bottom - wr.top) };
-            anchors.emplace_back(Anchor{ id, rcClient, left, top, right, bottom });
-            };
-
-        add(IDC_EDIT_INPUT, true, true, true, true);    // flexible input
-        add(IDC_EDIT_RESULT, true, false, true, true);  // bottom anchored
-        add(IDC_EDIT_MESSAGE, true, false, true, true); // bottom anchored
-        add(IDC_BUTTON_CALC, false, false, true, true); // button bottom-right
+        layout.initialize(hWnd);
+        layout.initAnchor(hWnd, 0, IDC_EDIT_INPUT, LayoutManager::Anchor{ LayoutManager::HMode::Stretch, LayoutManager::VMode::Stretch });
+        layout.initAnchor(hWnd, 1, IDC_EDIT_RESULT, LayoutManager::Anchor{ LayoutManager::HMode::Stretch, LayoutManager::VMode::Bottom });
+        layout.initAnchor(hWnd, 2, IDC_EDIT_MESSAGE, LayoutManager::Anchor{ LayoutManager::HMode::Stretch, LayoutManager::VMode::Bottom });
+        layout.initAnchor(hWnd, 3, IDC_BUTTON_CALC, LayoutManager::Anchor{ LayoutManager::HMode::Right,   LayoutManager::VMode::Bottom });
+        static_assert(          4 == baseline.elements_count);
 
         // Read stored placement. New behaviour: stored coords are logical (96 DPI base).
         // If a savedDpi key exists we assume values were written by the new code (logical),
@@ -424,8 +503,8 @@ private:
             return *val;
 			};
 #endif
-        min_width = to_physical(baseline.min_width);
-        min_heigth = to_physical(baseline.min_heigth);
+        layout.min_width = to_physical(baseline.min_width);
+        layout.min_height = to_physical(baseline.min_height);
 
         wp.rcNormalPosition.left = sLeft ? to_physical(sLeft) : 100;
         wp.rcNormalPosition.top = sTop ? to_physical(sTop) : 100;
@@ -482,7 +561,6 @@ private:
         static_assert(IDM_ABOUTBOX < 0xF000);
 
         const auto hSys = GetSystemMenu(hDlg, FALSE);
-        assert(hSys);
         AppendMenuA(hSys, MF_SEPARATOR, 0, nullptr);
         AppendMenuA(hSys, MF_STRING, IDM_ABOUTBOX, "&About...");
     }
@@ -492,20 +570,22 @@ private:
     static void set_window_icons(const HWND hDlg) { // OK
         // Set icons (large and small)
         const auto icon = LoadIconA(GetModuleHandleA(nullptr), MAKEINTRESOURCEA(IDR_MAINFRAME));
-        assert(icon);
         SendMessageA(hDlg, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(icon));
         SendMessageA(hDlg, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(icon));
     }
 };
 
-static CalcWindowState CalcWindow;
+using CalcWindowState_ptr = CalcWindowState*;
+
+static CalcWindowState_ptr GetState(const HWND hDlg) {
+    return reinterpret_cast<CalcWindowState_ptr>(GetWindowLongPtrA(hDlg, GWLP_USERDATA));
+}
 
 // ------------------------------------------------------------------
 // Calc!
 // ------------------------------------------------------------------
 static void perform_calculation(const HWND hDlg) { // OK
-    // ANSI multiline EDIT max is 64 KiB for classic Edit control
-    std::array<char, 64 * 1024> input [[indeterminate]]; // 65535 for symbols and 1 for null C string API terminator
+    std::array<char, CalcWindowState::baseline.input_max_data_size> input [[indeterminate]];
 
     if (const auto copied = GetDlgItemTextA(hDlg, IDC_EDIT_INPUT, input.data(), static_cast<int>(input.size()))) {
         const std::string_view sv{ input.data(), copied };
@@ -537,7 +617,6 @@ static void perform_calculation(const HWND hDlg) { // OK
             SetDlgItemTextA(hDlg, IDC_EDIT_MESSAGE, "");
         }
     }
-    SetFocus(GetDlgItem(hDlg, IDC_EDIT_INPUT));
 }
 
 // ------------------------------------------------------------------
@@ -584,25 +663,30 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND hDlg, const UINT uMsg, const W
         return FALSE;
     }
     case WM_GETMINMAXINFO: {
-		CalcWindow.get_minmaxinfo(hDlg, reinterpret_cast<LPMINMAXINFO>(lParam));
+        GetState(hDlg)->get_minmaxinfo(hDlg, reinterpret_cast<LPMINMAXINFO>(lParam));
         return TRUE;
     }
     case WM_SIZE: {
-        CalcWindow.resize(hDlg, LOWORD(lParam), HIWORD(lParam));
+        GetState(hDlg)->resize(hDlg, LOWORD(lParam), HIWORD(lParam));
         return TRUE;
     }
 #ifdef CALC_SUPPORT_DPI_CHANGES
     case WM_DPICHANGED: {
-        CalcWindow.set_dpi(hDlg, HIWORD(wParam));
+        GetState(hDlg)->set_dpi(hDlg, HIWORD(wParam), reinterpret_cast<const CalcWindowState::Rectangle_ptr>(lParam));
         return TRUE;
     }
 #endif
     case WM_INITDIALOG: {
-        CalcWindow.init(hDlg);
+        CalcWindowState_ptr state = new CalcWindowState();
+        SetWindowLongPtrA(hDlg, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(state));
+
+        state->init(hDlg);
         return FALSE;
     }
     case WM_CLOSE: {
-        CalcWindow.close(hDlg);
+        GetState(hDlg)->close(hDlg);
+
+        delete reinterpret_cast<CalcWindowState_ptr>(SetWindowLongPtrA(hDlg, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(nullptr)));
         return TRUE;
     }
     }
@@ -649,6 +733,7 @@ int WINAPI WinMain(const HINSTANCE hInstance, const HINSTANCE /*hPrev*/ , const 
 
 #pragma comment(lib, "comctl32.lib")
 #pragma comment(lib, "imm32.lib")
+#pragma comment(lib, "user32.lib")
 
 #else
 
