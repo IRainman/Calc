@@ -5,8 +5,8 @@
 
 class Formatter
 {
-	public:		
-		using Result = std::array<char, 32>;
+	public:
+		using Result = std::array<char, 64>;
 		/**
 		 * Format output value of the expression returned. Return the end of formated value.
 		 */

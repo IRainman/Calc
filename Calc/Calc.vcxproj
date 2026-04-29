@@ -192,7 +192,7 @@
       <UseUnicodeForAssemblerListing>true</UseUnicodeForAssemblerListing>
       <UseStandardPreprocessor>true</UseStandardPreprocessor>
       <CompileAs>CompileAsCpp</CompileAs>
-      <GuardEHContMetadata>false</GuardEHContMetadata>
+      <GuardEHContMetadata>true</GuardEHContMetadata>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>

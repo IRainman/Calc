@@ -26,7 +26,9 @@
 
 #include "flags.hpp"
 
-#if !defined(CALC_USE_ERROR_TOKEN) || defined(CALC_TEST_FASTFLOAT) || defined (CALC_TESTS_DEV_ENABLED)
+#if !defined(CALC_USE_ERROR_TOKEN) \
+  || defined(CALC_TEST_FASTFLOAT) \
+ || defined (CALC_TESTS_DEV_ENABLED)
 
 #define CALC_USING_LOCAL_FMT // TODO: waiting for vcpkg version is updated.
 
