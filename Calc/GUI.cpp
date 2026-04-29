@@ -327,13 +327,7 @@ public:
         const auto hInput = GetDlgItem(hWnd, IDC_EDIT_INPUT);
 
         SendMessageA(hInput, EM_LIMITTEXT, static_cast<WPARAM>(baseline.input_max_symbols), 0);
-#ifdef CALC_USE_IME
-        // IME: associate default context for multiline edit
-        ImmAssociateContextEx(hInput, nullptr, IACE_DEFAULT);
-#else
-        // Disable IME for input edit control
-		ImmAssociateContextEx(hInput, nullptr, IACE_IGNORENOCONTEXT);
-#endif
+
 		// set focus to input edit control
         SetFocus(hInput);
     }
@@ -425,6 +419,7 @@ public:
     }
 #endif
 private:
+#ifdef CALC_SUPPORT_MONITOR_API
     static void center_window_on_monitor(const HWND hWnd, const HMONITOR hMon) {
         Rectangle wr [[indeterminate]];
         if (GetWindowRect(hWnd, &wr)) {
@@ -441,6 +436,7 @@ private:
             SetWindowPos(hWnd, nullptr, 100, 100, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
         }
     }
+#endif
     static void RegWriteDword(const HKEY root, const std::string_view subkey, const std::string_view name, const DWORD value) {
         HKEY hKey [[indeterminate]];
         RegCreateKeyExA(root, subkey.data(), 0, nullptr, 0, KEY_WRITE, nullptr, &hKey, nullptr);
@@ -513,6 +509,7 @@ private:
         wp.rcNormalPosition.right = sRight ? to_physical(sRight) : static_cast<LONG>(get_min_width() + 100);
         wp.rcNormalPosition.bottom = sBottom ? to_physical(sBottom) : static_cast<LONG>(get_min_heigth() + 100);
 
+#ifdef CALC_SUPPORT_MONITOR_API
         const auto hMon = MonitorFromRect(&wp.rcNormalPosition, MONITOR_DEFAULTTONEAREST);
         MONITORINFO mi [[indeterminate]]; mi.cbSize = sizeof(mi);
         if (!GetMonitorInfoA(hMon, &mi)) {
@@ -527,6 +524,8 @@ private:
             center_window_on_monitor(hWnd, hMon);
             return;
         }
+#endif
+
         SetWindowPlacement(hWnd, &wp);
     }
     void save_window_placement(const HWND hWnd) const {
@@ -632,6 +631,7 @@ static INT_PTR CALLBACK AboutDlgProc(const HWND hDlg, const UINT uMsg, const WPA
             return TRUE;
         }
         return FALSE;
+#ifdef CALC_SUPPORT_LINK_WINDOW
     case WM_NOTIFY: {
         const auto nm = reinterpret_cast<LPNMHDR>(lParam);
         if (nm->idFrom == IDC_LINK_HOMEPAGE && nm->code == NM_CLICK) {
@@ -641,6 +641,7 @@ static INT_PTR CALLBACK AboutDlgProc(const HWND hDlg, const UINT uMsg, const WPA
         }
         return FALSE;
     }
+#endif
     }
     return FALSE;
 }
@@ -706,12 +707,8 @@ int WINAPI WinMain(const HINSTANCE hInstance, const HINSTANCE /*hPrev*/ , const 
     _mm_setcsr(_mm_getcsr() | _MM_FLUSH_ZERO_ON | _MM_DENORMALS_ZERO_ON);
 #endif
 
-#ifndef CALC_USE_IME
+#ifdef CALC_SUPPORT_IME
     ImmDisableIME(0);
-#else
-#ifdef CALC_DISABLE_LEGACY_IME
-    ImmDisableLegacyIME();
-#endif
 #endif
 
 #ifdef CALC_SUPPORT_DPI_CHANGES
