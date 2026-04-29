@@ -22,6 +22,10 @@
 
 #ifdef _WIN32
 
+#ifdef CALC_DONT_USE_SUBNORMALS
+#include <immintrin.h>// TODO: Move to the core!
+#endif
+
 #include <optional>
 
 #define VC_EXTRALEAN            // Exclude rarely-used stuff from Windows headers
@@ -69,8 +73,6 @@
 #define NOMCX - Modem Configuration Extensions
 
 #include "targetver.h"
-
-#include <immintrin.h>// TODO: Move to the core!
 
 #include <windows.h>
 #include <commctrl.h>
@@ -697,10 +699,12 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND hDlg, const UINT uMsg, const W
 // ------------------------------------------------------------------
 int WINAPI WinMain(const HINSTANCE hInstance, const HINSTANCE /*hPrev*/ , const LPSTR /*lpCmdLine*/, const int) { // OK
 
+#ifdef CALC_DONT_USE_SUBNORMALS
     // TODO: move this code to the core.
     /* Applications that generate floating point underflow in vector registers can benefit from setting the flush-to-zero mode rather than generating subnormal numbers in case of underflow:*/
     /* It is strongly recommended to set the flush-to-zero mode unless you have special reasons to use subnormal numbers. You may, in addition, set the denormals-are-zero mode if vector regsiters are available:*/
     _mm_setcsr(_mm_getcsr() | _MM_FLUSH_ZERO_ON | _MM_DENORMALS_ZERO_ON);
+#endif
 
 #ifndef CALC_USE_IME
     ImmDisableIME(0);

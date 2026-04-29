@@ -14,7 +14,7 @@ using EquationSize = size_t;
 using Value = std::float128_t;
 #define CALC_USE_128_BIT_FLOAT 1 // WIP
 #else
-#warning "128-bit float type isn't supported. Calc is using 64-bit double implementation."
+//#warning "128-bit float type isn't supported. Calc is using 64-bit double implementation."
 //using Value = std::float64_t;
 using Value = double;
 #define CALC_USE_128_BIT_FLOAT 0
@@ -30,6 +30,8 @@ using ParamCount = char;
 #ifdef CALC_TESTS_DEV_ENABLED
 //#define CALC_TEST_FASTFLOAT
 #endif
+
+#define CALC_DONT_USE_SUBNORMALS
 
 //#define CALC_USE_ERROR_TOKEN // WIP
 // CALC_TESTS_USE_ADDITIONAL_OPTIONS // deprecated
