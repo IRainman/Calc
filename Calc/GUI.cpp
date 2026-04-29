@@ -173,13 +173,9 @@ private:
             c.anchor = a;
         }
         void resize(const HWND parent, const int newW, const int newH) {
-            width = newW;
-            height = newH;
-
-            HDWP hdwp = BeginDeferWindowPos((int)constraints.size());
+            HDWP hdwp = BeginDeferWindowPos(static_cast<int>(constraints.size()));
             for (auto& c : constraints) {
                 HWND h = GetDlgItem(parent, c.id);
-                if (!h) continue;
 
                 Rectangle r [[indeterminate]];
 
@@ -199,6 +195,8 @@ private:
                     r.left = c.left;
                     r.right = newW - c.right;
                     break;
+
+                default: std::unreachable();
                 }
 
                 // Vertical
@@ -209,14 +207,16 @@ private:
                     break;
 
                 case VMode::Bottom:
-                    r.bottom = newH - c.bottom;
                     r.top = r.bottom - c.height;
+                    r.bottom = newH - c.bottom;
                     break;
 
                 case VMode::Stretch:
                     r.top = c.top;
                     r.bottom = newH - c.bottom;
                     break;
+
+                default: std::unreachable();
                 }
 
                 hdwp = DeferWindowPos(
@@ -231,6 +231,10 @@ private:
                 );
             }
             EndDeferWindowPos(hdwp);
+            
+            // Store new size
+            width = newW;
+            height = newH;
         }
 
         LONG min_width [[indeterminate]];
@@ -328,7 +332,7 @@ public:
 		// set focus to input edit control
         SetFocus(hInput);
     }
-    void resize(HWND dlg, WORD w, WORD h) {
+    inline void resize(HWND dlg, WORD w, WORD h) {
         layout.resize(dlg, w, h);
     }
     void get_minmaxinfo(const HWND hDlg, const LPMINMAXINFO lpMMI) const {

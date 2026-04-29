@@ -85,7 +85,7 @@ char* Formatter::format(Value value, Result& ret) noexcept
 }
 
 #ifndef CALC_USE_ERROR_TOKEN
-char* Formatter::create_summary(Summary& ret) noexcept
+char* Formatter::create_summary(Summary& ret) noexcept //-V2009
 {
 	auto begin = ret.data();
 	for (const auto& error : IssueManager::_errors)
