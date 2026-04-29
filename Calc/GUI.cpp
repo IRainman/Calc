@@ -182,8 +182,8 @@ private:
                 // Horizontal
                 switch (c.anchor.h) {
                 case HMode::Left:
-                    r.left = c.left;
                     r.right = c.left + c.width;
+                    r.left = c.left;
                     break;
 
                 case HMode::Right:
@@ -192,8 +192,8 @@ private:
                     break;
 
                 case HMode::Stretch:
-                    r.left = c.left;
                     r.right = newW - c.right;
+                    r.left = c.left;
                     break;
 
                 default: std::unreachable();
@@ -202,18 +202,18 @@ private:
                 // Vertical
                 switch (c.anchor.v) {
                 case VMode::Top:
-                    r.top = c.top;
                     r.bottom = c.top + c.height;
+                    r.top = c.top;
                     break;
 
                 case VMode::Bottom:
-                    r.top = r.bottom - c.height;
                     r.bottom = newH - c.bottom;
+                    r.top = r.bottom - c.height;
                     break;
 
                 case VMode::Stretch:
-                    r.top = c.top;
                     r.bottom = newH - c.bottom;
+                    r.top = c.top;
                     break;
 
                 default: std::unreachable();
