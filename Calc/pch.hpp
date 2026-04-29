@@ -78,7 +78,7 @@
 #include "../../fast_float/include/fast_float/fast_float.h"
 #else
 /* Tests time is: 56140ms. */
-#include "../../fast_float_orig/include/fast_float/fast_float.h"
+//#include "../../fast_float_orig/include/fast_float/fast_float.h"
 //#include <fast_float/fast_float.h>
 #endif
 

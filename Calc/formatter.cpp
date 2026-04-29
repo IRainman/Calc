@@ -1,6 +1,3 @@
-// This is an independent project of an individual developer. Dear PVS-Studio, please check it.
-// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
-
 /*
  * Copyright 2023-present Elle Solomina, a.rainman on gmail point com
  */
@@ -80,9 +77,9 @@ char* Formatter::format(Value value, Result& ret) noexcept
 	//return fmt::format_to(ret.data(), FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 3	/*12*/);	// exactly: 271, less than epsilon: 77, failed: 12
 	//return fmt::format_to(ret.data(), FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 2	/*13*/);	// exactly: 270, less than epsilon: 77, failed: 13
 	//return fmt::format_to(ret.data(), FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 - 1	/*14*/);	// exactly: 269, less than epsilon: 77, failed: 14
-	return fmt::format_to(ret.data(), FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10		/*15*/);	// exactly: 264, less than epsilon: 77, failed: 19
+	//return fmt::format_to(ret.data(), FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10		/*15*/);	// exactly: 264, less than epsilon: 77, failed: 19
 	//return fmt::format_to(ret.data(), FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::digits10 + 1	/*16*/);	// exactly: 214, less than epsilon: 78, failed: 69
-	//return fmt::format_to(ret.data(), FMT_COMPILE("{}"), value											/*15...17*/);	// exactly: 189, less than epsilon: 78, failed: 94
+	return fmt::format_to(ret.data(), FMT_COMPILE("{}"), value											/*15...17*/);	// exactly: 189, less than epsilon: 78, failed: 94
 	//return fmt::format_to(ret.data(), FMT_COMPILE("{:.{}g}"), value, std::numeric_limits<Value>::max_digits10	/*17*/);	// exactly: 214, less than epsilon: 78, failed: 69
 #endif
 }
