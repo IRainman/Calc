@@ -10,9 +10,9 @@
 // The minimal version of OS supported by Calc:
 //#define CALC_SUPPORT_WINDOWS_7 // uncomment this line to set minimal supported Windows version to Windows 7.
 #ifndef CALC_SUPPORT_WINDOWS_7
-//#define CALC_SUPPORT_WINDOWS_XP // uncomment this line to set minimal supported Windows version to Windows XP.
+//#define CALC_SUPPORT_WINDOWS_XP // uncomment this line to set minimal supported Windows version to Windows XP. In this configuration the link in the About box isn't working.
 #ifndef CALC_SUPPORT_WINDOWS_XP
-//#define CALC_SUPPORT_WINDOWS_NT4 // uncomment this line to set minimal supported Windows version to Windows NT4.0.
+//#define CALC_SUPPORT_WINDOWS_NT4 // uncomment this line to set minimal supported Windows version to Windows NT4.0. This is may be not working, sorry.
 #endif
 #endif
 // If none of above lines are uncommented, the minimal supported Windows version is Windows 10.
