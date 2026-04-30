@@ -16,6 +16,7 @@
 #include <array>
 //#include <flat_map> // TODO: needs to check this.
 #include <limits>
+#include <new>
 #include <numbers>
 //#include <numeric>
 #include <ranges>
@@ -26,11 +27,18 @@
 
 #include "flags.hpp"
 
+#ifdef CALC_USE_ZMIJ
+#include "../../zmij_elle/zmij.cc" // TODO: waiting for PR is approved https://github.com/vitaut/zmij/pull/135
+#if CALC_USE_128_BIT_FLOAT
+#warning "128-bit float type isn't supported by zmij. The library convert any output values to 64-bit double."
+#endif
+#endif
+
 #if !defined(CALC_USE_ERROR_TOKEN) \
   || defined(CALC_TEST_FASTFLOAT) \
  || defined (CALC_TESTS_DEV_ENABLED)
 
-#define CALC_USING_LOCAL_FMT // TODO: waiting for vcpkg version is updated.
+#define CALC_USING_LOCAL_FMT // TODO: waiting for vcpkg version is updated? or use local instead?
 
 #define FMT_OPTIMIZE_SIZE 2 /* Tests time is: 49612ms. */
 #define FMT_BUILTIN_TYPES 0 /* Tests time is: 49980ms. */
@@ -61,7 +69,7 @@
 #ifdef CALC_USING_LOCAL_FMT
 #include "../../fmt/include/fmt/compile.h"
 #else
-#include <fmt/compile.h>
+//#include <fmt/compile.h>
 #endif
 
 #endif
@@ -71,7 +79,7 @@
 #endif
 
 /* Tests time is: 53278ms. */
-#define CALC_USING_MY_FASTFLOAT // TODO: waiting for PR is approved and vcpkg version is updated.
+#define CALC_USING_MY_FASTFLOAT // TODO: waiting for PR is approved https://github.com/fastfloat/fast_float/pull/307 and vcpkg version is updated.
 #ifdef CALC_USING_MY_FASTFLOAT
 /* Tests time is: 48459ms. */
 #define FASTFLOAT_ONLY_POSITIVE_C_NUMBER_WO_INF_NAN
