@@ -577,11 +577,7 @@ private:
     }
 };
 
-using CalcWindowState_ptr = CalcWindowState*;
-
-static CalcWindowState_ptr GetState(const HWND hDlg) {
-    return reinterpret_cast<CalcWindowState_ptr>(GetWindowLongPtrA(hDlg, GWLP_USERDATA));
-}
+static CalcWindowState window_state;
 
 // ------------------------------------------------------------------
 // Calc!
@@ -667,30 +663,25 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND hDlg, const UINT uMsg, const W
         return FALSE;
     }
     case WM_GETMINMAXINFO: {
-        GetState(hDlg)->get_minmaxinfo(hDlg, reinterpret_cast<LPMINMAXINFO>(lParam));
+        window_state.get_minmaxinfo(hDlg, reinterpret_cast<LPMINMAXINFO>(lParam));
         return TRUE;
     }
     case WM_SIZE: {
-        GetState(hDlg)->resize(hDlg, LOWORD(lParam), HIWORD(lParam));
+        window_state.resize(hDlg, LOWORD(lParam), HIWORD(lParam));
         return TRUE;
     }
 #ifdef CALC_SUPPORT_DPI_CHANGES
     case WM_DPICHANGED: {
-        GetState(hDlg)->set_dpi(hDlg, HIWORD(wParam), reinterpret_cast<const CalcWindowState::Rectangle_ptr>(lParam));
+        window_state.set_dpi(hDlg, HIWORD(wParam), reinterpret_cast<const CalcWindowState::Rectangle_ptr>(lParam));
         return TRUE;
     }
 #endif
     case WM_INITDIALOG: {
-        CalcWindowState_ptr state = new CalcWindowState();
-        SetWindowLongPtrA(hDlg, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(state));
-
-        state->init(hDlg);
+        window_state.init(hDlg);
         return FALSE;
     }
     case WM_CLOSE: {
-        GetState(hDlg)->close(hDlg);
-
-        delete reinterpret_cast<CalcWindowState_ptr>(SetWindowLongPtrA(hDlg, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(nullptr)));
+        window_state.close(hDlg);
         return TRUE;
     }
     }
