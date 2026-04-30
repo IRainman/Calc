@@ -44,7 +44,7 @@ Tests:
  time is: 24744ms.
 */
 // Currently zmij only for test, this is a component of the future fmt and now it's not support output precission with it critical for the Calc.
-#define CALC_USE_ZMIJ // Tests time is: 64978ms.
+//#define CALC_USE_ZMIJ // Tests time is: 64978ms.
 // Without: Tests time is: 78336ms.
 //---------------------------------------------------------------------------
 //std::map<std::string_view, const Fn> // Tests: time is: 37931ms.
