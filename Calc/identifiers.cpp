@@ -133,7 +133,7 @@ namespace Identifiers
 
 	[[nodiscard]] static /*constexpr*/ Value factorial(const Value n) noexcept
 	{
-		long num = std::lrint(n);
+		auto num = std::lrint(n);
 		Value result = 1.0;
 		if (0.0 <= num && num == n) //-V550
 		{
@@ -152,8 +152,8 @@ namespace Identifiers
 
 	[[nodiscard]] static /*constexpr*/ Value permutation(const Value n, const Value r) noexcept
 	{
-		long num = std::lrint(n);
-		long den = std::lrint(r);
+		auto num = std::lrint(n);
+		auto den = std::lrint(r);
 		Value result = 1.0;
 		if (0.0 <= num && 0.0 <= den && den <= num && num == n && den == r) //-V550
 		{
@@ -174,8 +174,8 @@ namespace Identifiers
 
 	[[nodiscard]] static /*constexpr*/ Value combination(const Value n, const Value r) noexcept
 	{
-		long num = std::lrint(n);
-		long den = std::lrint(r);
+		auto num = std::lrint(n);
+		auto den = std::lrint(r);
 		Value res1 = 1.0;
 		Value res2 = 1.0;
 		if (0 <= num && 0 <= den && den <= num && num == n && den == r) //-V550
