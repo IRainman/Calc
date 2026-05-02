@@ -41,7 +41,7 @@
 #define CALC_USING_LOCAL_FMT // TODO: waiting for vcpkg version is updated? or use local instead?
 
 #define FMT_OPTIMIZE_SIZE 2 /* Tests time is: 49612ms. This is always needs to be enabled because we have cleaner output. */
-//#define FMT_BUILTIN_TYPES 0 /* Tests time is: 49980ms. */
+#define FMT_BUILTIN_TYPES 0 /* Tests time is: 49980ms. */
 #define FMT_HEADER_ONLY 1
 #define FMT_USE_FLOAT 0
 #if defined(CALC_USE_ZMIJ) && !defined (CALC_TESTS_DEV_ENABLED)
