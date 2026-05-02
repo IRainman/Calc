@@ -44,6 +44,7 @@
 #define FMT_BUILTIN_TYPES 0 /* Tests time is: 49980ms. */
 #define FMT_HEADER_ONLY 1
 #define FMT_USE_FLOAT 0
+#define FMT_USE_LONG_DOUBLE 0
 #if defined(CALC_USE_ZMIJ) && !defined (CALC_TESTS_DEV_ENABLED)
 #define FMT_USE_DOUBLE 0
 #define FMT_USE_FLOAT128 0
@@ -56,8 +57,6 @@
 #define FMT_USE_FLOAT128 0
 #endif
 #endif
-#define FMT_USE_LONG_DOUBLE 0
-#define FMT_REDUCE_INT_INSTANTIATIONS 1
 #define FMT_CPP_LIB_FILESYSTEM 0
 #define FMT_UNICODE 0
 #define FMT_USE_EXCEPTIONS 0

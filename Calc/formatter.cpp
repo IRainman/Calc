@@ -90,20 +90,7 @@ char* Formatter::create_summary(Summary& ret) noexcept //-V2009
 	auto end = ret.data();
 	for (const auto& error : IssueManager::_errors)
 	{
-#if 0 // Various experiments with formatting options:
 		end = fmt::format_to(end, FMT_COMPILE("{}: {}\r\n"), error.pos, error.text);
-#else
-		end = fmt::format_to(end, FMT_COMPILE("{}"), error.pos);
-
-		memcpy(end, ": ", 2);
-		end += 2;
-
-		memcpy(end, error.text.data(), error.text.size());
-		end += error.text.size();
-
-		memcpy(end, "\r\n", 2);
-		end += 2;
-#endif
 	}
 	*end = '\0';
 	return end;
