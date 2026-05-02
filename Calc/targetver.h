@@ -10,23 +10,29 @@
 // The minimal version of OS supported by Calc:
 //#define CALC_SUPPORT_WINDOWS_7 // uncomment this line to set minimal supported Windows version to Windows 7.
 #ifndef CALC_SUPPORT_WINDOWS_7
-//#define CALC_SUPPORT_WINDOWS_XP // uncomment this line to set minimal supported Windows version to Windows XP. In this configuration the link in the About box isn't working.
+//#define CALC_SUPPORT_WINDOWS_VISTA // uncomment this line to set minimal supported Windows version to Windows Vista.
+#ifndef CALC_SUPPORT_WINDOWS_VISTA
+//#define CALC_SUPPORT_WINDOWS_XP // uncomment this line to set minimal supported Windows version to Windows XP.
 #ifndef CALC_SUPPORT_WINDOWS_XP
-//#define CALC_SUPPORT_WINDOWS_NT4 // uncomment this line to set minimal supported Windows version to Windows NT4.0. This is may be not working, sorry.
+//#define CALC_SUPPORT_WINDOWS_2000 // uncomment this line to set minimal supported Windows version to Windows 2000.
+#endif
 #endif
 #endif
 // If none of above lines are uncommented, the minimal supported Windows version is Windows 10.
 
-#if defined (CALC_SUPPORT_WINDOWS_NT4) \
+#if defined (CALC_SUPPORT_WINDOWS_2000) \
   || defined(CALC_SUPPORT_WINDOWS_XP) \
+  || defined(CALC_SUPPORT_WINDOWS_VISTA) \
   || defined(CALC_SUPPORT_WINDOWS_7)
 #define DECLSPEC_DEPRECATED_DDK
 #endif
 
-#ifdef CALC_SUPPORT_WINDOWS_NT4
-#define _WIN32_WINNT _WIN32_WINNT_NT4
+#ifdef CALC_SUPPORT_WINDOWS_2000
+#define _WIN32_WINNT _WIN32_WINNT_WIN2K
 #elif defined(CALC_SUPPORT_WINDOWS_XP)
 #define _WIN32_WINNT _WIN32_WINNT_WINXP
+#elif defined(CALC_SUPPORT_WINDOWS_VISTA)
+#define _WIN32_WINNT _WIN32_WINNT_VISTA
 #elif defined(CALC_SUPPORT_WINDOWS_7)
 #define _WIN32_WINNT _WIN32_WINNT_WIN7
 #else
@@ -35,14 +41,15 @@
 
 #include <SDKDDKVer.h>
 
-#if(_WIN32_WINNT >= 0x040A)
-#define CALC_SUPPORT_IME // Disabled because we use only ANSI input in GUI
 #if(_WIN32_WINNT >= 0x0500)
-#define CALC_SUPPORT_MONITOR_API // Multimonitor API
+// Disabled after added settings to save user data.
+//#define CALC_SUPPORT_MONITOR_API // Multimonitor API.
 #if(_WIN32_WINNT >= 0x0501)
 #define CALC_SUPPORT_LINK_WINDOW // LinkWindow
+#if(_WIN32_WINNT >= 0x0600)
+#define CALC_SUPPORT_DPI_CHANGES // SetProcessDPIAware
 #if(_WIN32_WINNT >= 0x0601)
-#define CALC_SUPPORT_DPI_CHANGES // WM_DPICHANGED
+#define CALC_SUPPORT_DPI_CHANGES_SIGNAL // WM_DPICHANGED signal
 #if(_WIN32_WINNT >= 0x0605)
 #define CALC_SUPPORT_PER_WINDOW_DPI // GetDpiForWindow
 #endif
@@ -51,6 +58,7 @@
 #endif
 #endif
 
-// not enabled. TODO: very hard to realise.
+#ifdef CALC_SUPPORT_DPI_CHANGES_SIGNAL
+// not enabled. TODO: very hard to implement.
 //#define CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
-//
+#endif
