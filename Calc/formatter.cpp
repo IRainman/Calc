@@ -55,9 +55,9 @@ std::pair<int64_t, int64_t> decimalToFraction(Value number)
 }
 #endif
 
-constexpr auto maximum_printed_size_for_value = 1/*optional sign*/ + 1/*optional zero*/ + 1/*optional point*/ + std::numeric_limits<Value>::max_digits10 + 1/*optional e*/ + 1/*optional sign of e*/ + 3/*maximum numbers in the exponent for float64*/ + 1 /*zero terminator for C strings*/;
-static_assert(sizeof(Formatter::Result) >= maximum_printed_size_for_value); // Why https://github.com/vitaut/zmij/issues/134 it's not equal???
-static_assert(std::numeric_limits<Value>::max_exponent10 == 308); // now it's hardcoded.
+#ifdef CALC_USE_ZMIJ
+static_assert(sizeof(Formatter::Result) >= zmij::double_buffer_size); // https://github.com/vitaut/zmij/issues/134
+#endif
 
 
 char* Formatter::format(Value value, Result& ret) noexcept
@@ -90,7 +90,20 @@ char* Formatter::create_summary(Summary& ret) noexcept //-V2009
 	auto end = ret.data();
 	for (const auto& error : IssueManager::_errors)
 	{
+#if 0 // Various experiments with formatting options:
 		end = fmt::format_to(end, FMT_COMPILE("{}: {}\r\n"), error.pos, error.text);
+#else
+		end = fmt::format_to(end, FMT_COMPILE("{}"), error.pos);
+
+		memcpy(end, ": ", 2);
+		end += 2;
+
+		memcpy(end, error.text.data(), error.text.size());
+		end += error.text.size();
+
+		memcpy(end, "\r\n", 2);
+		end += 2;
+#endif
 	}
 	*end = '\0';
 	return end;

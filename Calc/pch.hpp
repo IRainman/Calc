@@ -28,7 +28,7 @@
 #include "flags.hpp"
 
 #ifdef CALC_USE_ZMIJ
-#include "../../zmij_elle/zmij.cc" // TODO: waiting for PR is approved https://github.com/vitaut/zmij/pull/135
+#include "../../zmij_orig/zmij.cc" // TODO: waiting for PR is approved https://github.com/vitaut/zmij/pull/135
 #if CALC_USE_128_BIT_FLOAT
 #warning "128-bit float type isn't supported by zmij. The library convert any output values to 64-bit double."
 #endif
@@ -40,8 +40,8 @@
 
 #define CALC_USING_LOCAL_FMT // TODO: waiting for vcpkg version is updated? or use local instead?
 
-#define FMT_OPTIMIZE_SIZE 2 /* Tests time is: 49612ms. */
-#define FMT_BUILTIN_TYPES 0 /* Tests time is: 49980ms. */
+#define FMT_OPTIMIZE_SIZE 2 /* Tests time is: 49612ms. This is always needs to be enabled because we have cleaner output. */
+//#define FMT_BUILTIN_TYPES 0 /* Tests time is: 49980ms. */
 #define FMT_HEADER_ONLY 1
 #define FMT_USE_FLOAT 0
 #if defined(CALC_USE_ZMIJ) && !defined (CALC_TESTS_DEV_ENABLED)
@@ -64,7 +64,7 @@
 #define FMT_USE_FULL_CACHE_DRAGONBOX 0 /* Tests time is: 50111ms. */
 #define FMT_USE_LOCALE 0
 #define FMT_STATIC_THOUSANDS_SEPARATOR '\''
-#define FMT_ENFORCE_COMPILE_STRING
+#define FMT_ENFORCE_COMPILE_STRING // Always needs to be enabled, I don't know why but in the other way it's generate much more complicated code.
 
 #ifdef CALC_USING_LOCAL_FMT
 #include "../../fmt/include/fmt/compile.h"
