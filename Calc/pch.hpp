@@ -38,8 +38,6 @@
   || defined(CALC_TEST_FASTFLOAT) \
  || defined (CALC_TESTS_DEV_ENABLED)
 
-#define CALC_USING_LOCAL_FMT // TODO: waiting for vcpkg version is updated? or use local instead?
-
 #define FMT_OPTIMIZE_SIZE 2 /* Tests time is: 49612ms. This is always needs to be enabled because we have cleaner output. */
 #define FMT_BUILTIN_TYPES 0 /* Tests time is: 49980ms. */
 #define FMT_HEADER_ONLY 1
@@ -65,11 +63,7 @@
 #define FMT_STATIC_THOUSANDS_SEPARATOR '\''
 #define FMT_ENFORCE_COMPILE_STRING // Always needs to be enabled, I don't know why but in the other way it's generate much more complicated code.
 
-#ifdef CALC_USING_LOCAL_FMT
 #include "../../fmt/include/fmt/compile.h"
-#else
-//#include <fmt/compile.h>
-#endif
 
 #endif
 
@@ -78,7 +72,7 @@
 #endif
 
 /* Tests time is: 53278ms. */
-#define CALC_USING_MY_FASTFLOAT // TODO: waiting for PR is approved https://github.com/fastfloat/fast_float/pull/307 and vcpkg version is updated.
+#define CALC_USING_MY_FASTFLOAT // TODO: waiting for PR is approved https://github.com/fastfloat/fast_float/pull/307
 #ifdef CALC_USING_MY_FASTFLOAT
 /* Tests time is: 48459ms. */
 #define FASTFLOAT_ONLY_POSITIVE_C_NUMBER_WO_INF_NAN
@@ -88,7 +82,6 @@
 #else
 /* Tests time is: 56140ms. */
 //#include "../../fast_float_orig/include/fast_float/fast_float.h"
-//#include <fast_float/fast_float.h>
 #endif
 
 #endif //PCH_H
