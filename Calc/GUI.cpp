@@ -470,7 +470,7 @@ private:
         main.initAnchor(hWnd, 1, IDC_EDIT_RESULT, LayoutManager::Anchor{ LayoutManager::HMode::Stretch, LayoutManager::VMode::Bottom });
         main.initAnchor(hWnd, 2, IDC_EDIT_MESSAGE, LayoutManager::Anchor{ LayoutManager::HMode::Stretch, LayoutManager::VMode::Bottom });
         main.initAnchor(hWnd, 3, IDC_BUTTON_CALC, LayoutManager::Anchor{ LayoutManager::HMode::Right,   LayoutManager::VMode::Bottom });
-        static_assert(          4 == baseline.elements_count);
+        static_assert(        4 == baseline.elements_count);
 
         // Read stored placement. New behaviour: stored coords are logical (96 DPI base).
         // If a savedDpi key exists we assume values were written by the new code (logical),
