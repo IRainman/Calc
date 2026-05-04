@@ -77,6 +77,9 @@
     <ClInclude Include="codata2022.hpp">
       <Filter>Headers</Filter>
     </ClInclude>
+    <ClInclude Include="tests_equasions.hpp">
+      <Filter>Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\C.ico">

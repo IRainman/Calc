@@ -374,6 +374,7 @@
     <ClInclude Include="targetver.h" />
     <ClInclude Include="tests.hpp" />
     <ClInclude Include="identifiers.hpp" />
+    <ClInclude Include="tests_equasions.hpp" />
     <ClInclude Include="token.hpp" />
   </ItemGroup>
   <ItemGroup>
