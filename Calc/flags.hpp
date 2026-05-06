@@ -21,6 +21,8 @@ using Value = double;
 #endif
 
 using ParamCount = char;
+
+#define CALC_DONT_USE_SUBNORMALS
 //---------------------------------------------------------------------------
 #ifdef _DEBUG
 #define CALC_TESTS_ENABLED
@@ -30,8 +32,6 @@ using ParamCount = char;
 #ifdef CALC_TESTS_DEV_ENABLED
 //#define CALC_TEST_FASTFLOAT
 #endif
-
-#define CALC_DONT_USE_SUBNORMALS
 
 //#define CALC_USE_ERROR_TOKEN // WIP
 // CALC_TESTS_USE_ADDITIONAL_OPTIONS // deprecated

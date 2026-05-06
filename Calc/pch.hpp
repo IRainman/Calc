@@ -7,10 +7,12 @@
 // However, files listed here are ALL re-compiled if any one of them is updated between builds.
 // Do not add files here that you will be updating frequently as this negates the performance advantage.
 
-#ifndef PCH_H
-#define PCH_H
+#ifndef PCH_HPP
+#define PCH_HPP
 
 // add headers that you want to pre-compile here
+
+#define _CRT_SECURE_NO_WARNINGS
 
 #include <algorithm>
 #include <array>
@@ -84,4 +86,4 @@
 //#include "../../fast_float_orig/include/fast_float/fast_float.h"
 #endif
 
-#endif //PCH_H
+#endif

@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="GUI.cpp">
+    <ClCompile Include="gui.cpp">
       <Filter>Modules</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp">
@@ -78,6 +78,9 @@
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="tests_equasions.hpp">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="gui.hpp">
       <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>
