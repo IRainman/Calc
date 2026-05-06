@@ -53,12 +53,12 @@ inline void Lexer::advance(EquationSize n) noexcept
 #endif
 	};
 	const auto res = fast_float::from_chars_advanced(begin, end, token.number, opt);
-	[[assume(res.ptr - begin >= 1)]];
-	const auto n = static_cast<EquationSize>(res.ptr - begin);
 	if (res.ec == std::errc{}) [[likely]]
 	{
 		[[assume(token.number >= 0 && token.number <= std::numeric_limits<Value>::max())]];
 		token.type = Token::Type::NUM;
+		[[assume(res.ptr - begin >= 1)]];
+		const auto n = static_cast<EquationSize>(res.ptr - begin);
 		return n;
 	}
 	
