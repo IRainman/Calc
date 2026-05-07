@@ -140,7 +140,7 @@ private:
         layout.init_window(hWnd);
         layout.init_min_sizes(hWnd, CalcConfiguration::min_width, CalcConfiguration::min_height
 #ifdef CALC_SUPPORT_PER_WINDOW_DPI
-            , static_cast<WORD>(dpi)
+            , dpi
 #endif
         );
 
@@ -172,8 +172,8 @@ private:
             const auto shift = to_physical(CalcConfiguration::default_shift_px);
             wp.rcNormalPosition.left = shift;
             wp.rcNormalPosition.top = shift;
-            wp.rcNormalPosition.right = static_cast<LONG>(layout.get_min_width() + shift);
-            wp.rcNormalPosition.bottom = static_cast<LONG>(layout.get_min_height() + shift);
+            wp.rcNormalPosition.right = layout.get_min_width() + shift;
+            wp.rcNormalPosition.bottom = layout.get_min_height() + shift;
         }
 
         SetWindowPlacement(hWnd, &wp);
@@ -207,8 +207,8 @@ private:
 
         WINDOWPLACEMENT wp [[indeterminate]]; wp.length = sizeof(wp);
         GetWindowPlacement(hWnd, &wp);
-        reg.write("flags", static_cast<DWORD>(wp.flags));
-        reg.write("showCmd", static_cast<DWORD>(wp.showCmd));
+        reg.write("flags", wp.flags);
+        reg.write("showCmd", wp.showCmd);
         reg.write("left", to_logical(wp.rcNormalPosition.left));
         reg.write("top", to_logical(wp.rcNormalPosition.top));
         reg.write("right", to_logical(wp.rcNormalPosition.right));
