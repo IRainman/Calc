@@ -7,27 +7,24 @@
 #include "issue_manager.hpp"
 
 IssueManager::Issues IssueManager::_errors;
+
 /**
  * Report a new error.
  */
-void IssueManager::report_error(const EquationSize pos, std::string_view&& text) noexcept
-{
-	_errors.emplace_back(Issue(std::move(text), pos));
+void IssueManager::report_error(const EquationSize pos,
+                                std::string_view &&text) noexcept {
+  _errors.emplace_back(Issue(std::move(text), pos));
 }
 
 /**
  * Indicate whether any messages have been reported so far.
  */
-[[nodiscard]] bool IssueManager::has_errors() noexcept
-{
-	return !_errors.empty();
+[[nodiscard]] bool IssueManager::has_errors() noexcept {
+  return !_errors.empty();
 }
 
 /**
  * Clear the manager.
  */
-void IssueManager::clear() noexcept
-{
-	_errors.clear();
-}
+void IssueManager::clear() noexcept { _errors.clear(); }
 #endif
