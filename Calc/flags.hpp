@@ -36,7 +36,6 @@ using ParamCount = char;
 #endif
 
 // #define CALC_USE_ERROR_TOKEN // WIP
-//  CALC_TESTS_USE_ADDITIONAL_OPTIONS // deprecated
 #endif
 //---------------------------------------------------------------------------
 // Usage of fmt is improve performance.

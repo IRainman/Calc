@@ -8,10 +8,10 @@
 #ifdef CALC_TEST_FASTFLOAT
 #include <cfenv>
 #endif
+#include "formatter.hpp"
+#include "issue_manager.hpp"
 #include "lexer.hpp"
 #include "parser.hpp"
-#include "issue_manager.hpp"
-#include "formatter.hpp"
 #include "tests.hpp"
 #include "tests_equasions.hpp"
 
@@ -91,14 +91,11 @@ std::string calc_tests() {
   {
     for (const auto &t : tests) {
       Lexer l(t.first);
-
       Parser p(l);
-
       [[maybe_unused]] const auto value = p.parse();
-
       const auto has_errors = IssueManager::has_errors();
 
-#ifdef CALC_TESTS_DEV_ENABLED
+#ifdef CALC_TESTS_DEV_ENABLED // Development
       Formatter::Result buffer_value [[indeterminate]];
       Formatter::Result buffer_test [[indeterminate]];
       const std::string_view formated_value(
@@ -123,27 +120,30 @@ std::string calc_tests() {
       const std::string_view formated_summary(
           buffer_summary.data(), Formatter::create_summary(buffer_summary));
       IssueManager::clear();
-
+      // clang-format off
       output_end = fmt::format_to(output_end,
-                                  FMT_COMPILE("Test {}: {}\r\n"
-                                              "return = {}\r\n"
-                                              "expect = {}\r\n"
-                                              "output = {}\r\n"
-                                              "{}\r\n"),
-                                  exactly ? "OK" : "FAILED", t.first, value,
-                                  t.second, has_errors ? "" : formated_value,
-                                  has_errors ? formated_summary : "");
-
-#else
-
+        FMT_COMPILE("Test {}: {}\r\n"
+                    "return = {}\r\n"
+                    "expect = {}\r\n"
+                    "output = {}\r\n"
+                    "{}\r\n"),
+          exactly ? "OK" : "FAILED", t.first,
+                                     value,
+                                     t.second,
+                   has_errors ? "" : formated_value,
+  !has_errors ? "" : formated_summary);
+      // clang-format on
+#else // Performance
       if (has_errors) {
+        Formatter::Summary buffer_summary [[indeterminate]];
+        [[maybe_unused]] const std::string_view formated_summary(
+            buffer_summary.data(), Formatter::create_summary(buffer_summary));
         IssueManager::clear();
       } else {
         Formatter::Result buffer_value [[indeterminate]];
         [[maybe_unused]] const std::string_view formated_value(
             buffer_value.data(), Formatter::format(value, buffer_value));
       }
-
 #endif
     }
   }

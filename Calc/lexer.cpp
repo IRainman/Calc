@@ -102,8 +102,8 @@ void Lexer::next(Token &token) noexcept {
   while (!_view.empty()) [[likely]] {
     // https://en.cppreference.com/w/cpp/language/ascii
     const auto &cur = _view.front();
-    if (cur == '+' || cur == '-' || cur == '*' || cur == '/' || cur == '^' ||
-        cur == '%' || cur == '(' || cur == ')' || cur == ',') [[likely]] {
+    if (cur == '%' || cur == '(' || cur == ')' || cur == '*' || cur == '+' ||
+        cur == ',' || cur == '-' || cur == '/' || cur == '^') [[likely]] {
       advance(read_operator(token));
       return;
     }
@@ -119,7 +119,7 @@ void Lexer::next(Token &token) noexcept {
       advance(1);
       continue;
     }
-#ifdef CALC_TESTS_USE_ADDITIONAL_OPTIONS
+#if 0
     if (cur == '\t' || cur == '\n' || cur == '\v' || cur == '\f' || cur == '\r')
         [[unlikely]] {
       advance(1);
