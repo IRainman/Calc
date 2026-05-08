@@ -113,8 +113,6 @@ private:
   HKEY key;
 };
 
-#include <optional>
-
 struct RegRead {
   RegRead() = delete;
 

@@ -69,9 +69,6 @@ char *Formatter::format(Value value, Result &ret) noexcept {
   auto end = fmt::format_to(ret.data(), FMT_COMPILE("{:.{}g}"), value,
                             std::numeric_limits<Value>::digits10);
 #endif
-#ifdef CALC_FORMATTER_USES_C_COMPATIBLE_API
-  *end = '\0';
-#endif
   return end;
 }
 
@@ -82,9 +79,6 @@ char *Formatter::create_summary(Summary &ret) noexcept //-V2009
   for (const auto &error : IssueManager::_errors) {
     end = fmt::format_to(end, FMT_COMPILE("{}: {}\r\n"), error.pos, error.text);
   }
-#ifdef CALC_FORMATTER_USES_C_COMPATIBLE_API
-  *end = '\0';
-#endif
   return end;
 }
 #endif

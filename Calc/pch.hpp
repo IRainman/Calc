@@ -1,6 +1,7 @@
 /*
  * Copyright 2009-present Elle Solomina, a.rainman on gmail point com
  */
+
 // pch.h: This is a precompiled header file.
 // Files listed below are compiled only once, improving build performance for
 // future builds. This also affects IntelliSense performance, including code
@@ -14,18 +15,19 @@
 
 // add headers that you want to pre-compile here
 
-#include <algorithm>
-#include <array>
+//#include <algorithm> // fast_float ?
+#include <array> // Calc ang Win32 GUI
+#include <limits>// Calc
+#include <new> // ?
+#include <numbers>// Calc
+#include <optional> // Win32 RegRead helper.
+#include <ranges>// Calc
+#include <span>// Calc
+#include <stdfloat>// Calc
+#include <string_view>// Calc
+#include <unordered_map>// Calc
+// #include <numeric> // ?
 // #include <flat_map> // TODO: needs to check this.
-#include <limits>
-#include <new>
-#include <numbers>
-// #include <numeric>
-#include <ranges>
-#include <span>
-#include <string_view>
-#include <stdfloat>
-#include <unordered_map>
 
 #include "flags.hpp"
 
@@ -40,10 +42,9 @@
 #if !defined(CALC_USE_ERROR_TOKEN) || defined(CALC_TEST_FASTFLOAT) ||          \
     defined(CALC_TESTS_DEV_ENABLED)
 
-#define FMT_OPTIMIZE_SIZE                                                      \
-  2 /* Tests time is: 49612ms. This is always needs to be enabled because we   \
-       have cleaner output. */
-#define FMT_BUILTIN_TYPES 0 /* Tests time is: 49980ms. */
+// FMT_OPTIMIZE_SIZE 2 because we have cleaner output.
+#define FMT_OPTIMIZE_SIZE 2 // Tests time is: 49612ms.
+
 #define FMT_HEADER_ONLY 1
 #define FMT_USE_FLOAT 0
 #define FMT_USE_LONG_DOUBLE 0
@@ -59,18 +60,18 @@
 #define FMT_USE_FLOAT128 0
 #endif
 #endif
+
+// reduce cache pressure:
+#define FMT_BUILTIN_TYPES 0 // Tests time is: 49980ms.
+#define FMT_USE_EXCEPTIONS 0
 #define FMT_CPP_LIB_FILESYSTEM 0
 #define FMT_UNICODE 0
-#define FMT_USE_EXCEPTIONS 0
-#define FMT_USE_FULL_CACHE_DRAGONBOX 0 /* Tests time is: 50111ms. */
+#define FMT_USE_FULL_CACHE_DRAGONBOX 0 // Tests time is: 50111ms.
 #define FMT_USE_LOCALE 0
 #define FMT_STATIC_THOUSANDS_SEPARATOR '\''
-#define FMT_ENFORCE_COMPILE_STRING // Always needs to be enabled, I don't know
-                                   // why but in the other way it's generate
-                                   // much more complicated code.
-
+// used because otherwise fmt produces much larger code:
+#define FMT_ENFORCE_COMPILE_STRING
 #include "../../fmt/include/fmt/compile.h"
-
 #endif
 
 #if CALC_USE_128_BIT_FLOAT
@@ -78,9 +79,12 @@
     "128-bit float type isn't supported by fast_float. The library convert any user input values to 64-bit double."
 #endif
 
+
 /* Tests time is: 53278ms. */
-#define CALC_USING_MY_FASTFLOAT // TODO: waiting for PR is approved
-                                // https://github.com/fastfloat/fast_float/pull/307
+
+// https://github.com/fastfloat/fast_float/pull/307
+#define CALC_USING_MY_FASTFLOAT
+
 #ifdef CALC_USING_MY_FASTFLOAT
 /* Tests time is: 48459ms. */
 #define FASTFLOAT_ONLY_POSITIVE_C_NUMBER_WO_INF_NAN

@@ -25,7 +25,10 @@
 
 #ifdef _WIN32
 
-std::array<char, CalcConfiguration::input_max_data_size> input
+/**
+ * Buffer for the GUI used for equasion processing
+ */
+static std::array<char, CalcConfiguration::input_max_data_size> input
     [[indeterminate]];
 
 class CalcWindow {
@@ -35,9 +38,9 @@ public:
   CalcWindow(CalcWindow &&) = delete;
   ~CalcWindow() = default;
 
-  // ------------------------------------------------------------------
-  // Calc!
-  // ------------------------------------------------------------------
+  /**
+   * Perform calculation from the GUI
+   */
   void perform_calculation() {
     const std::string_view equation(
         input.data(), static_cast<size_t>(GetWindowTextA(
@@ -46,7 +49,7 @@ public:
 
     Lexer l(equation);
     Parser p(l);
-    const auto result = p.parse();
+    const auto value = p.parse();
 
 #if defined(CALC_USE_ERROR_TOKEN)
     const bool has_errors = xxx;
@@ -58,16 +61,22 @@ public:
 
     if (has_errors) {
       Formatter::Summary summary [[indeterminate]];
-      Formatter::create_summary(summary);
+      const auto summary_text_end = Formatter::create_summary(summary);
       IssueManager::clear();
+
+      *summary_text_end = '\0'; // because of LPCSTR in the SetWindowTextA
       SetWindowTextA(layout.get_constraints_handle(2), summary.data());
+
       SetWindowTextA(layout.get_constraints_handle(1), nullptr);
     }
 #endif
     else {
-      Formatter::Result result_text [[indeterminate]];
-      Formatter::format(result, result_text);
-      SetWindowTextA(layout.get_constraints_handle(1), result_text.data());
+      Formatter::Result result [[indeterminate]];
+      const auto result_text_end = Formatter::format(value, result);
+
+      *result_text_end = '\0'; // because of LPCSTR in the SetWindowTextA
+      SetWindowTextA(layout.get_constraints_handle(1), result.data());
+
       SetWindowTextA(layout.get_constraints_handle(2), nullptr);
     }
   }
@@ -164,7 +173,7 @@ private:
         Layout::Anchor{Layout::HMode::Stretch, Layout::VMode::Stretch});
     layout.init_anchor(
         hWnd, 1, IDC_EDIT_RESULT,
-        Layout::Anchor{Layout::HMode::Stretch, Layout::VMode::Bottom});
+        Layout::Anchor{Layout::HMode::Right, Layout::VMode::Bottom});
     layout.init_anchor(
         hWnd, 2, IDC_EDIT_MESSAGE,
         Layout::Anchor{Layout::HMode::Stretch, Layout::VMode::Bottom});
@@ -260,9 +269,9 @@ private:
 
 static CalcWindow calc_window;
 
-// ------------------------------------------------------------------
-// About dialog proc (resource-based).
-// ------------------------------------------------------------------
+/**
+ * About dialog callback processing (resource-based).
+ */
 static INT_PTR CALLBACK AboutDlgProc(const HWND dlg, const UINT msg,
                                      const WPARAM wParam, const LPARAM lParam) {
   switch (msg) {
@@ -290,9 +299,9 @@ static INT_PTR CALLBACK AboutDlgProc(const HWND dlg, const UINT msg,
   }
 }
 
-// ------------------------------------------------------------------
-// Calc dialog proc (resource-based).
-// ------------------------------------------------------------------
+/**
+ * Calc dialog callback processing (resource-based).
+ */
 static INT_PTR CALLBACK CalcDialogProc(const HWND dlg, const UINT msg,
                                        const WPARAM wParam,
                                        const LPARAM lParam) {
@@ -345,9 +354,9 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND dlg, const UINT msg,
   }
 }
 
-// ------------------------------------------------------------------
-// WinMain - entrypoint
-// ------------------------------------------------------------------
+/**
+ * Calc entrypoint in Win32 GUI
+ */
 int WINAPI WinMain(const HINSTANCE hInstance, const HINSTANCE /*hPrevInstance*/,
                    const LPSTR /*pCmdLine*/, const int /*nCmdShow*/) {
 
@@ -426,7 +435,7 @@ bool MyApp::OnInit() {
 }
 
 void CalcFrame::CalcFrameOnClose(class wxCloseEvent &e) {
-  // Not working properly.
+  // FIXME: Not working properly.
   Close(true);
 }
 

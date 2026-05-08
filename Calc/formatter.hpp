@@ -6,17 +6,21 @@
 
 class Formatter {
 public:
+  /**
+   * Stack type for result formatting
+   */
   using Result = std::array<char, std::hardware_destructive_interference_size>;
   /**
-   * Format output value of the expression returned. Return the end of formated
-   * value.
+   * Format value. Return the end of the formated text.
    */
   static char *format(Value value, Result &ret) noexcept;
 #ifndef CALC_USE_ERROR_TOKEN
+  /**
+   * Stack type for summary of issues formatting
+   */
   using Summary = std::array<char, std::hardware_destructive_interference_size>;
   /**
-   * Create full report of expression processing. Return the end of formated
-   * summary.
+   * Create report from IssueManager. Return the end of formated text.
    */
   static char *create_summary(Summary &ret) noexcept;
 #endif

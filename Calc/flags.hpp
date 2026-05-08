@@ -26,12 +26,10 @@ using Value = double;
 
 using ParamCount = char;
 
-// Disable using of subnormals is neccessary because fast_cloat not support it,
+// Disable using of subnormals is neccessary because fast_float not support it,
 // also it's increase performance in SSS2
 #define CALC_DONT_USE_SUBNORMALS
 
-// Currently enabled because Win32 API use only pointer without size.
-#define CALC_FORMATTER_USES_C_COMPATIBLE_API
 //---------------------------------------------------------------------------
 #ifdef _DEBUG
 #define CALC_TESTS_ENABLED
