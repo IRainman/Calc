@@ -80,7 +80,6 @@ std::string calc_tests() {
   output.resize(64 * 1024);
   auto output_end = output.data();
   unsigned int failed = 0;
-  unsigned int doubtful_but_okey = 0;
 #endif
 
   const auto start = std::chrono::steady_clock::now();
@@ -98,28 +97,28 @@ std::string calc_tests() {
 #ifdef CALC_TESTS_DEV_ENABLED // Development
       Formatter::Result buffer_value [[indeterminate]];
       Formatter::Result buffer_test [[indeterminate]];
+
       const std::string_view formated_value(
           buffer_value.data(), Formatter::format(value, buffer_value));
-      const auto exactly =
-          (has_errors && std::isnan(t.second)) ||
-          (std::isnan(value) && std::isnan(t.second)) ||
-          (formated_value ==
-           std::string_view(buffer_test.data(),
-                            Formatter::format(t.second, buffer_test)));
 
-      const auto less_than_epsilon = Identifiers::compare(value, t.second);
+      const auto passed =
+          (/*may be error*/ std::isnan(t.second) && has_errors) ||
+          (/*may be nan*/ std::isnan(t.second) && std::isnan(value)) ||
+          (/*may be less than epsilon*/ Identifiers::compare(t.second,
+                                                             value)) ||
+          (/*may be identical output*/ std::string_view(
+               buffer_test.data(), Formatter::format(t.second, buffer_test)) ==
+           formated_value);
 
-      if (!exactly) {
+      if (!passed) {
         ++failed;
       }
-      if (!less_than_epsilon) {
-        ++doubtful_but_okey;
-      }
-
       Formatter::Summary buffer_summary [[indeterminate]];
       const std::string_view formated_summary(
           buffer_summary.data(), Formatter::create_summary(buffer_summary));
+
       IssueManager::clear();
+
       // clang-format off
       output_end = fmt::format_to(output_end,
         FMT_COMPILE("Test {}: {}\r\n"
@@ -127,11 +126,11 @@ std::string calc_tests() {
                     "expect = {}\r\n"
                     "output = {}\r\n"
                     "{}\r\n"),
-          exactly ? "OK" : "FAILED", t.first,
+          passed ? "OK" : "FAILED", t.first,
                                      value,
                                      t.second,
                    has_errors ? "" : formated_value,
-  !has_errors ? "" : formated_summary);
+                  !has_errors ? "" : formated_summary);
       // clang-format on
 #else // Performance
       if (has_errors) {
@@ -154,28 +153,27 @@ std::string calc_tests() {
 #endif
 
   // Don't use fmt here, because it isn't compile.
-  output += std::format(
-      "Tests"
+  output += std::format("Tests"
 #ifdef CALC_TESTS_DEV_ENABLED
-      ":\r\n exactly: {},\r\n less than epsilon: {},\r\n failed: {}\r\n"
+                        ":\r\n passed: {},\r\n failed: {}\r\n"
 #ifdef CALC_TEST_FASTFLOAT
-      "fegetround() == {}\r\n"
+                        "fegetround() == {}\r\n"
 #endif
 #endif
-      " time is: {}.",
+                        " time is: {}.",
 #ifdef CALC_TESTS_DEV_ENABLED
-      tests.size() - failed - doubtful_but_okey, doubtful_but_okey, failed,
+                        tests.size() - failed, failed,
 #ifdef CALC_TEST_FASTFLOAT
-      round_name(fegetround()),
+                        round_name(fegetround()),
 #endif
 #endif
-      std::chrono::duration_cast<std::chrono::
+                        std::chrono::duration_cast<std::chrono::
 #ifdef CALC_TESTS_DEV_ENABLED
-                                     microseconds
+                                                       microseconds
 #else
-                                     milliseconds
+                                                       milliseconds
 #endif
-                                 >(end - start));
+                                                   >(end - start));
 
 #ifdef CALC_TEST_FASTFLOAT
   output += "\r\n\r\n" + test_fast_float_parsing();

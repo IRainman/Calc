@@ -294,17 +294,18 @@ using namespace codata2022;
 
 static const map ids = {
     //---------------------------------------------------------------------------
-    // added for optimization, reduce code size and speedup float parsing.
+    /// added for optimization, reduce code size and speedup float parsing.
     {"inf", constant<std::numeric_limits<Value>::infinity()>()},
     //---------------------------------------------------------------------------
-    // C++20 https://en.cppreference.com/w/cpp/numeric/constants :
-    // https://en.wikipedia.org/wiki/Pi_(mathematical_constant)
+    /// C++20 https://en.cppreference.com/w/cpp/numeric/constants :
+    /// Archimedes' constant π
+    /// https://en.wikipedia.org/wiki/Pi_(mathematical_constant)
     {"pi", constant<std::numbers::pi_v<Value>>()},
-    // https://en.wikipedia.org/wiki/E_(mathematical_constant)
+    /// https://en.wikipedia.org/wiki/E_(mathematical_constant)
     {"e", constant<std::numbers::e_v<Value>>()},
-    // https://en.wikipedia.org/wiki/Golden_ratio
+    /// https://en.wikipedia.org/wiki/Golden_ratio
     {"phi", constant<std::numbers::phi_v<Value>>()},
-    // https://en.wikipedia.org/wiki/Euler%27s_constant
+    /// https://en.wikipedia.org/wiki/Euler%27s_constant
     {"e_gamma", constant<std::numbers::egamma_v<Value>>()},
 #ifdef CALC_TESTS_ENABLED
     {"log2e", constant<std::numbers::log2e_v<Value>>()},
@@ -318,8 +319,7 @@ static const map ids = {
     {"inv_sqrt3", constant<std::numbers::inv_sqrt3_v<Value>>()},
 #endif
     //---------------------------------------------------------------------------
-    // http://physics.nist.gov/constants
-    // CODATA2022 constants
+    /// CODATA2022 constants http://physics.nist.gov/constants :
 
     {"electron_mass", constant<electron_mass>()},
     {"proton_mass", constant<proton_mass>()},
