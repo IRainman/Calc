@@ -25,11 +25,6 @@ using Value = double;
 #endif
 
 using ParamCount = char;
-
-// Disable using of subnormals is neccessary because fast_float not support it,
-// also it's increase performance in SSS2
-#define CALC_DONT_USE_SUBNORMALS
-
 //---------------------------------------------------------------------------
 #ifdef _DEBUG
 #define CALC_TESTS_ENABLED

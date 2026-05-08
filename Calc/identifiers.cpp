@@ -294,13 +294,10 @@ using namespace codata2022;
 
 static const map ids = {
     //---------------------------------------------------------------------------
-    {"inf", constant<std::numeric_limits<
-                Value>::infinity()>()}, // added for optimization, reduce code
-                                        // size and speedup float parsing.
-
+    // added for optimization, reduce code size and speedup float parsing.
+    {"inf", constant<std::numeric_limits<Value>::infinity()>()},
     //---------------------------------------------------------------------------
-    // C++20 https://en.cppreference.com/w/cpp/numeric/constants
-
+    // C++20 https://en.cppreference.com/w/cpp/numeric/constants :
     // https://en.wikipedia.org/wiki/Pi_(mathematical_constant)
     {"pi", constant<std::numbers::pi_v<Value>>()},
     // https://en.wikipedia.org/wiki/E_(mathematical_constant)
@@ -308,7 +305,7 @@ static const map ids = {
     // https://en.wikipedia.org/wiki/Golden_ratio
     {"phi", constant<std::numbers::phi_v<Value>>()},
     // https://en.wikipedia.org/wiki/Euler%27s_constant
-    {"egamma", constant<std::numbers::egamma_v<Value>>()},
+    {"e_gamma", constant<std::numbers::egamma_v<Value>>()},
 #ifdef CALC_TESTS_ENABLED
     {"log2e", constant<std::numbers::log2e_v<Value>>()},
     {"log10e", constant<std::numbers::log10e_v<Value>>()},
@@ -433,8 +430,9 @@ static const map ids = {
     {"Eh", constant<Eh>()},
     {"E_h", constant<E_h>()},
     {"V_h", constant<V_h>()},
-    {"e_atomic",
-     constant<e>()}, // use distinct name to avoid collision with math "e"
+    // clang-format off
+    {"e_atomic", constant<e>()}, // use distinct name to avoid collision with math "e"
+    // clang-format on
     {"I_h", constant<I_h>()},
     {"mu_h", constant<mu_h>()},
 
@@ -461,8 +459,9 @@ static const map ids = {
     {"epsilon0", constant<epsilon0>()},
     {"h", constant<h>()},
     {"hbar", constant<hbar>()},
-    {"e_charge",
-     constant<e>()}, // use distinct name to avoid collision with math "e"
+    // clang-format off
+    {"e_charge", constant<e>()}, // use distinct name to avoid collision with math "e"
+    // clang-format on
     {"NA", constant<NA>()},
     {"kB", constant<kB>()},
     {"F", constant<F>()},
@@ -511,13 +510,13 @@ static const map ids = {
     {"re", constant<re>()},
     {"sigmae", constant<sigmae>()},
 
-    // TODO additional constants
+    // TODO additional constants:
 
     // characteristic impedance of vacuum (Ohm)
     {"Z0", constant<376.730313461>()},
 
     //---------------------------------------------------------------------------
-    // https://en.cppreference.com/w/cpp/numeric/math
+    // https://en.cppreference.com/w/cpp/numeric/math :
     {"sin", function_pointer<1, std::sin>()},
     {"cos", function_pointer<1, std::cos>()},
     {"tan", function_pointer<1, std::tan>()},
@@ -593,8 +592,10 @@ static const map ids = {
     {"erf", function_pointer<1, std::erf>()},
     {"erfc", function_pointer<1, std::erfc>()},
 
-    {"tgamma", function_pointer<1, std::tgamma>()},
+    {"gamma", function_pointer<1, std::tgamma>()},
+#ifdef CALC_TESTS_ENABLED
     {"lgamma", function_pointer<1, std::lgamma>()},
+#endif
 
     {"trunc", function_pointer<1, std::trunc>()},
     {"round", function_pointer<1, std::round>()},
@@ -642,6 +643,7 @@ static const map ids = {
     {"cyl_bessel_i", function_pointer<2, std::cyl_bessel_i>()},
     {"cyl_bessel_j", function_pointer<2, std::cyl_bessel_j>()},
     {"cyl_bessel_k", function_pointer<2, std::cyl_bessel_k>()},
+
     {"cyl_neumann", function_pointer<2, std::cyl_neumann>()},
 
     {"sph_bessel", {{2, 2}, sph_bessel}},

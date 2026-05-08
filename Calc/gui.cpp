@@ -15,10 +15,6 @@
 #include "tests.hpp"
 #endif
 
-#ifdef CALC_DONT_USE_SUBNORMALS
-#include <immintrin.h> // TODO: Move to the core!
-#endif
-
 // ================= GUI ===============
 
 #include "gui.hpp"
@@ -360,17 +356,6 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND dlg, const UINT msg,
 int WINAPI WinMain(const HINSTANCE hInstance, const HINSTANCE /*hPrevInstance*/,
                    const LPSTR /*pCmdLine*/, const int /*nCmdShow*/) {
 
-#ifdef CALC_DONT_USE_SUBNORMALS
-  // TODO: move this code to the core.
-  /* Applications that generate floating point underflow in vector registers can
-   * benefit from setting the flush-to-zero mode rather than generating
-   * subnormal numbers in case of underflow:*/
-  /* It is strongly recommended to set the flush-to-zero mode unless you have
-   * special reasons to use subnormal numbers. You may, in addition, set the
-   * denormals-are-zero mode if vector regsiters are available:*/
-  _mm_setcsr(_mm_getcsr() | _MM_FLUSH_ZERO_ON | _MM_DENORMALS_ZERO_ON);
-#endif
-
   // Disable IME completely because Calc use only ANSI input in GUI
   ImmDisableIME(0);
 
@@ -418,17 +403,6 @@ public:
 wxIMPLEMENT_APP(MyApp);
 
 bool MyApp::OnInit() {
-#ifdef CALC_DONT_USE_SUBNORMALS
-  // TODO: move this code to the core.
-  /* Applications that generate floating point underflow in vector registers can
-   * benefit from setting the flush-to-zero mode rather than generating
-   * subnormal numbers in case of underflow:*/
-  /* It is strongly recommended to set the flush-to-zero mode unless you have
-   * special reasons to use subnormal numbers. You may, in addition, set the
-   * denormals-are-zero mode if vector regsiters are available:*/
-  _mm_setcsr(_mm_getcsr() | _MM_FLUSH_ZERO_ON | _MM_DENORMALS_ZERO_ON);
-#endif
-
   CalcFrame *frame = new CalcFrame(nullptr);
   frame->Show();
   return true;

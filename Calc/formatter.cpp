@@ -73,8 +73,7 @@ char *Formatter::format(Value value, Result &ret) noexcept {
 }
 
 #ifndef CALC_USE_ERROR_TOKEN
-char *Formatter::create_summary(Summary &ret) noexcept //-V2009
-{
+char *Formatter::create_summary(Summary &ret) noexcept { //-V2009
   auto end = ret.data();
   for (const auto &error : IssueManager::_errors) {
     end = fmt::format_to(end, FMT_COMPILE("{}: {}\r\n"), error.pos, error.text);
