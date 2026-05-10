@@ -6,7 +6,7 @@
  */
 
 // CODATA 2022 – Fundamental Physical Constants --- Complete Listing
-// From:  http://physics.nist.gov/constants (May 2024)
+// From: https://physics.nist.gov/constants NIST SP 961 (May 2024)
 
 // -------------------------------------------------------------
 // PHYSICAL CONSTANTS (SI)
@@ -16,39 +16,39 @@ namespace codata2022 {
 // NUCLEAR / ISOTOPE CONSTANTS
 // -------------------------------------------------------------
 
-// — Deuteron
-constexpr Value deuteron_mass = 3.3435837768e-27;           // kg
-constexpr Value deuteron_mass_energy_J = 3.00506323491e-10; // J
-constexpr Value deuteron_mass_energy_MeV = 1875.61294500;   // MeV
-constexpr Value deuteron_g_factor = 0.8574382338;           // dimensionless
-constexpr Value deuteron_magnetic_moment = 4.33073548e-27;  // J/T
-constexpr Value deuteron_compton_wavelength = 1.32140985360e-15; // m
+// Deuteron
+constexpr Value deuteron_mass = 3.3435837768e-27;               // kg
+constexpr Value deuteron_mass_energy_J = 3.00506323491e-10;     // J
+constexpr Value deuteron_mass_energy_MeV = 1875.61294500;       // MeV
+constexpr Value deuteron_g_factor = 0.8574382338;               // dimensionless
+constexpr Value deuteron_magnetic_moment = 4.33073548e-27;      // J/T
+constexpr Value deuteron_compton_wavelength = 6.6260700396e-16; // m
 
-// — Triton
+// Triton
 constexpr Value triton_mass = 5.0073567512e-27;
 constexpr Value triton_mass_energy_J = 4.5003878119e-10;
 constexpr Value triton_mass_energy_MeV = 2808.92113668;
 constexpr Value triton_g_factor = 5.957924895;
 constexpr Value triton_magnetic_moment = 2.97896244e-26;
-constexpr Value triton_compton_wavelength = 1.32140985360e-15; // m
+constexpr Value triton_compton_wavelength = 4.7592429830e-16; // m
 
-// — Helion (3He nucleus)
+// Helion (3He nucleus)
 constexpr Value helion_mass = 5.0064127862e-27;
-constexpr Value helion_mass_energy_J = 4.499e-10;
-constexpr Value helion_mass_energy_MeV = 2808.391586;
-constexpr Value helion_g_factor = -4.255250613;
-constexpr Value helion_magnetic_moment = -2.1276253e-26;
-constexpr Value helion_compton_wavelength = 1.321409e-15;
+constexpr Value helion_mass_energy_J = 4.4995394185e-10;
+constexpr Value helion_mass_energy_MeV = 2808.39161112;
+constexpr Value helion_g_factor = -4.2552506995;
+constexpr Value helion_magnetic_moment = -1.07461755198e-26;
+constexpr Value helion_compton_wavelength = 4.4029672189e-16; // m
 
-// — Alpha particle (4He nucleus)
+// Alpha particle (4He nucleus)
 constexpr Value alpha_mass = 6.6446573450e-27;
 constexpr Value alpha_mass_energy_J = 5.9719201997e-10;
 constexpr Value alpha_mass_energy_MeV = 3727.3794118;
 constexpr Value alpha_g_factor = 0.0;
 constexpr Value alpha_magnetic_moment = 0.0; // spin-0, zero magnetic moment
-constexpr Value alpha_compton_wavelength = 1.32140985360e-15; // approximate
+constexpr Value alpha_compton_wavelength = 3.3233516020e-16; // m
 
-// — Nuclear magneton
+// Nuclear magneton
 constexpr Value nuclear_magneton = 5.0507837393e-27; // J/T
 
 // -------------------------------------------------------------
@@ -56,27 +56,27 @@ constexpr Value nuclear_magneton = 5.0507837393e-27; // J/T
 // -------------------------------------------------------------
 
 // — Masses (kg)
-constexpr Value electron_mass = 9.1093837139e-31; // electron mass
-constexpr Value proton_mass = 1.67262192595e-27;  // proton mass
-constexpr Value neutron_mass = 1.67492750056e-27; // neutron mass
-// constexpr Value deuteron_mass = 3.3435837768e-27;//deuteron mass
-// constexpr Value triton_mass = 5.0073567512e-27;   // triton mass
-constexpr Value alpha_particle_mass = alpha_mass; // alpha-particle mass
+constexpr Value electron_mass = 9.1093837139e-31;
+constexpr Value proton_mass = 1.67262192595e-27;
+constexpr Value neutron_mass = 1.67492750056e-27;
+// constexpr Value deuteron_mass = ;
+// constexpr Value triton_mass = ;
+constexpr Value alpha_particle_mass = alpha_mass;
 
 // — Mass energy equivalents (J)
 constexpr Value electron_mass_energy_J = 8.1871057880e-14;
 constexpr Value proton_mass_energy_J = 1.50327761802e-10;
 constexpr Value neutron_mass_energy_J = 1.50534976514e-10;
-// constexpr Value deuteron_mass_energy_J = 3.00506323491e-10;
-// constexpr Value triton_mass_energy_J = 4.5003878119e-10;
+// constexpr Value deuteron_mass_energy_J = ;
+// constexpr Value triton_mass_energy_J = ;
 constexpr Value alpha_particle_mass_energy_J = 5.9719201997e-10;
 
 // — Mass energy equivalents (MeV)
 constexpr Value electron_mass_energy_MeV = 0.51099895069;
 constexpr Value proton_mass_energy_MeV = 938.27208943;
 constexpr Value neutron_mass_energy_MeV = 939.56542194;
-// constexpr Value deuteron_mass_energy_MeV = 1875.61294500;
-// constexpr Value triton_mass_energy_MeV = 2808.92113668;
+// constexpr Value deuteron_mass_energy_MeV = ;
+// constexpr Value triton_mass_energy_MeV = ;
 constexpr Value alpha_particle_mass_energy_MeV = alpha_mass_energy_MeV;
 
 // — Mass ratios
@@ -94,7 +94,7 @@ constexpr Value reduced_compton_wavelength = 3.8615926744e-13;   // m
 
 // — Magnetic moments / gyromagnetic ratios
 constexpr Value bohr_magneton = 9.2740100657e-24; // J T^-1
-// constexpr Value nuclear_magneton = 5.0507837393e-27;   // J T^-1
+// constexpr Value nuclear_magneton = ;   // J T^-1
 constexpr Value electron_magnetic_moment = -9.2847646917e-24; // J T^-1
 constexpr Value proton_magnetic_moment = 1.41060679545e-26;   // J T^-1
 constexpr Value neutron_magnetic_moment = -9.6623653e-27;     // J T^-1
@@ -139,9 +139,9 @@ constexpr Value atomic_unit_time = 2.4188843265864e-17; // s
 constexpr Value atomic_unit_velocity = 2.18769126216e6; // m s^-1
 
 // — Atomic unit of energy / action / momentum
-constexpr Value atomic_unit_energy_J = hartree_energy_J;        // J
-constexpr Value atomic_unit_action_Js = 1.0545718176461565e-34; // J s (?)
-constexpr Value atomic_unit_momentum = 1.99285191545e-24;       // kg m s^-1
+constexpr Value atomic_unit_energy_J = hartree_energy_J;          // J
+constexpr Value reduced_planck_constant = 1.0545718176461565e-34; // J s (?)
+constexpr Value atomic_unit_momentum = 1.99285191545e-24;         // kg m s^-1
 
 // — Atomic unit of charge (same as elementary charge)
 constexpr Value atomic_unit_charge = 1.602176634e-19; // C
@@ -203,22 +203,28 @@ constexpr Value mu_h = bohr_magneton; // J/T
 // -------------------------------------------------------------
 
 // Planck length
-constexpr Value l_p = 1.616255e-35; // m
+constexpr Value l_P = 1.616255e-35; // m
 
 // Planck mass
-constexpr Value m_p = 2.176434e-8; // kg
+constexpr Value m_P = 2.176434e-8; // kg
+
+// Planck mass energy equivalent in GeV
+// https://physics.nist.gov/cgi-bin/cuu/Value?plkmc2gev
+constexpr Value m_P_GeV = 1.220890e-19; // GeV
 
 // Planck time
-constexpr Value t_p = 5.391247e-44; // s
+// https://physics.nist.gov/cgi-bin/cuu/Value?plkt
+constexpr Value t_P = 5.391247e-44; // s
 
 // Planck charge
-constexpr Value q_p = 1.87554595641e-18; // C
+constexpr Value q_P = 1.87554595641e-18; // C
 
 // Planck temperature
-constexpr Value T_p = 1.416784e32; // K
+// https://physics.nist.gov/cgi-bin/cuu/Value?plktmp
+constexpr Value T_P = 1.416784e32; // K
 
 // Planck energy
-constexpr Value E_p = 1.9561e9; // J
+constexpr Value E_P = 1.9561e9; // J
 
 // -------------------------------------------------------------
 // ASTRONOMICAL CONSTANTS
@@ -234,21 +240,22 @@ constexpr Value ly = 9.4607304725808e15; // m
 constexpr Value pc = 3.08567758149137e16; // m
 
 // Solar mass
-constexpr Value M_sun = 1.98847e30; // kg
+constexpr Value m_sun = 1.98847e30; // kg
 
 // Earth mass
-constexpr Value M_earth = 5.9722e24; // kg
+constexpr Value m_earth = 5.9722e24; // kg
 
 // Jupiter mass
-constexpr Value M_jupiter = 1.89813e27; // kg
+constexpr Value m_jupiter = 1.89813e27; // kg
 
 // Sun radius
-constexpr Value R_sun = 6.96342e8; // m
+constexpr Value r_sun = 6.96342e8; // m
 
 // Earth radius
-constexpr Value R_earth = 6.3781e6; // m
+constexpr Value r_earth = 6.3781e6; // m
 
 // Gravitational constant
+// https://physics.nist.gov/cgi-bin/cuu/Value?bg
 constexpr Value G = 6.67430e-11; // m^3 kg^-1 s^-2
 
 // Standard gravity
@@ -262,20 +269,20 @@ constexpr Value g0 = 9.80665; // m/s^2
 constexpr Value c = 299792458.0; // m/s
 
 // Magnetic constant, permeab­ility of free space, vacuum permeability
-constexpr Value mu0 = 1.25663706127e-6; // N/A^2
+constexpr Value mu0 = 1.25663706126960e-6; // N/A^2
 
-// Eelectric constant, permit­ivitty of free space, vacuum permitivitty
-constexpr Value epsilon0 = 8.8541878188e-12; // F/m
+// Electric constant, permittivity of free space, vacuum permeability
+constexpr Value epsilon0 = 8.85418781881409e-12; // F/m
 
 // Characteristic impedance of vacuum
-// https://en.wikipedia.org/wiki/Impedance_of_free_space
-constexpr Value Z0 = 376.7303134125959; // Ohm
+// https://physics.nist.gov/cgi-bin/cuu/Value?z0
+constexpr Value Z0 = 376.730313412; // Ohm
 
 // Planck constant (for energy-frequency relation)
-constexpr Value h = 6.62607015e-34;
+constexpr Value h = 6.62607015e-34; // J*Hz^-1
 
 // Reduced Planck constant
-constexpr Value hbar = atomic_unit_action_Js;
+constexpr Value hbar = reduced_planck_constant;
 
 // Elementary charge (exact) - Atomic unit of charge
 constexpr Value e = atomic_unit_charge; // C
@@ -299,7 +306,7 @@ constexpr Value sigma = 5.670374419e-8; // W/m^2 K^4
 constexpr Value R_inf = 10973731.568160; // m^-1
 
 // Fine-structure constant ?
-constexpr Value alpha = 0.00729735256815700; // 7.2973525693e-3
+constexpr Value alpha = 7.2973525643e-3;
 
 // Conductance quantum G0 = 2e?/h
 constexpr Value G0 = 7.748091729e-5; // S
@@ -345,9 +352,9 @@ constexpr Value malpha_u = 4.001506179129;          // u
 constexpr Value malpha_MeV = alpha_mass_energy_MeV; // MeV
 
 // Helion (3He nucleus) mass
-constexpr Value mh = helion_mass;       // kg
-constexpr Value mh_u = 3.014932246932;  // u
-constexpr Value mh_MeV = 2808.39161112; // MeV
+constexpr Value mh = helion_mass;                // kg
+constexpr Value mh_u = 3.014932246932;           // u
+constexpr Value mh_MeV = helion_mass_energy_MeV; // MeV
 
 // Atomic mass constant
 constexpr Value mu = atomic_mass_unit; // kg
