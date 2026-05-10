@@ -106,6 +106,7 @@ inline void Parser::advance() noexcept { _lex.next(_current); }
   while (--count != static_cast<ParamCount>(-1)) {
     result = Identifiers::pow(values[count], result);
   };
+
   return result;
 }
 

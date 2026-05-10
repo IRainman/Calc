@@ -15,17 +15,17 @@
 
 // add headers that you want to pre-compile here
 
-//#include <algorithm> // fast_float ?
-#include <array> // Calc ang Win32 GUI
-#include <limits>// Calc
-#include <new> // ?
-#include <numbers>// Calc
-#include <optional> // Win32 RegRead helper.
-#include <ranges>// Calc
-#include <span>// Calc
-#include <stdfloat>// Calc
-#include <string_view>// Calc
-#include <unordered_map>// Calc
+// #include <algorithm> // fast_float ?
+#include <array>         // Calc ang Win32 GUI
+#include <limits>        // Calc
+#include <new>           // Formatter
+#include <numbers>       // Calc
+#include <optional>      // Win32 RegRead helper.
+#include <ranges>        // Calc
+#include <span>          // Calc
+#include <stdfloat>      // Calc
+#include <string_view>   // Calc
+#include <unordered_map> // Calc
 // #include <numeric> // ?
 // #include <flat_map> // TODO: needs to check this.
 
@@ -78,7 +78,6 @@
 #warning                                                                       \
     "128-bit float type isn't supported by fast_float. The library convert any user input values to 64-bit double."
 #endif
-
 
 /* Tests time is: 53278ms. */
 
