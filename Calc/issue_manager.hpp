@@ -11,17 +11,17 @@
  */
 class Issue {
 public:
-  Issue(std::string_view &&_text, const EquationSize _pos) noexcept
-      : text(_text), pos(_pos) {};
+  Issue(const EquationSize _pos, const char *_text) noexcept
+      : pos(_pos), text(_text) {};
   Issue(const Issue &) = delete;
   Issue(Issue &&) = default;
 
 private:
-  // Issue describing of the message.
-  const std::string_view text;
-
   // Position within the context at which the issue has occurred.
-  const EquationSize pos; //-V122
+  const EquationSize pos;
+
+  // Issue describing of the message.
+  const char *text;
 
   friend class Formatter;
 };
@@ -36,8 +36,7 @@ public:
   /**
    * Report a new error.
    */
-  static void report_error(const EquationSize pos,
-                           std::string_view &&text) noexcept;
+  static void report_error(const EquationSize pos, const char *text) noexcept;
 
   /**
    * Indicate whether any messages have been reported so far.
