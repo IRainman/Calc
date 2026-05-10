@@ -100,7 +100,7 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>({
 	{ "t_p", 5.391247e-44 }, // Planck time (s)
 	{ "mu0", 1.25663706127e-6 }, // magnetic constant (exactly 4 pi * 10^-7)
 	{ "epsilon0", 8.8541878188e-12 }, // electric constant (Ohm) (F*m^-1)
-	{ "Z0", 376.730313461 }, // characteristic impedance of vacuum (Ohm)
+	{ "Z0", 376.7303134125959 }, // characteristic impedance of vacuum (Ohm)
 	{ "e_charge", 1.602176634e-19 }, // Elementary charge (C)
 	{ "me", 9.1093837139e-31 }, // Electron mass (kg)
 	{ "mp", 1.67262192595e-27 }, // Proton mass (kg)

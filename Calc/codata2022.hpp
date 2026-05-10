@@ -267,6 +267,10 @@ constexpr Value mu0 = 1.25663706127e-6; // N/A^2
 // Eelectric constant, permit­ivitty of free space, vacuum permitivitty
 constexpr Value epsilon0 = 8.8541878188e-12; // F/m
 
+// Characteristic impedance of vacuum
+// https://en.wikipedia.org/wiki/Impedance_of_free_space
+constexpr Value Z0 = 376.7303134125959; // Ohm
+
 // Planck constant (for energy-frequency relation)
 constexpr Value h = 6.62607015e-34;
 
@@ -309,10 +313,10 @@ constexpr Value KJ = 483597.8484e9; // Hz/V
 // Magnetic flux quantum ?0 = h/(2e)
 constexpr Value phi0 = 2.067833848e-15;
 
-// — Standard atmosphere
+// Standard atmosphere
 constexpr Value atm = 101325.0; // Pa
 
-// — Unified atomic mass unit (u)
+// Unified atomic mass unit (u)
 constexpr Value u = atomic_mass_unit; // kg
 
 // Electron mass
@@ -379,7 +383,7 @@ constexpr Value mun = neutron_magnetic_moment; // J T^-1
 constexpr Value mud = deuteron_magnetic_moment; // J T^-1
 
 // Alpha particle magnetic moment
-constexpr Value mualpha = alpha_magnetic_moment;
+constexpr Value mualpha = alpha_magnetic_moment; // J T^-1
 
 // Reduced Compton wavelength of electron
 constexpr Value lambda_bar_e = reduced_compton_wavelength; // m

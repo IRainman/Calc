@@ -517,6 +517,7 @@ static const map ids = {
     {"c", constant<c>()},
     {"mu0", constant<mu0>()},
     {"epsilon0", constant<epsilon0>()},
+    {"Z0", constant<Z0>()},
     {"h", constant<h>()},
     {"hbar", constant<hbar>()},
     // clang-format off
@@ -571,9 +572,6 @@ static const map ids = {
     {"sigmae", constant<sigmae>()},
 
     // TODO additional constants:
-
-    // characteristic impedance of vacuum (Ohm)
-    {"Z0", constant<376.730313461>()},
 
     //---------------------------------------------------------------------------
     // https://en.cppreference.com/w/cpp/numeric/math :
