@@ -9,19 +9,24 @@ struct Token {
   enum class Type : ParamCount {
     // https://en.cppreference.com/w/cpp/language/ascii
     END = 0x00,
+
     ADD = '+',
     SUB = '-',
+
     MUL = '*',
     DIV = '/',
+
     POW = '^',
-#ifdef CALC_USE_OPERATOR_REM
-    REM = '%',
-#endif
+
     LPAREN = '(',
     RPAREN = ')',
+
     COMA = ',',
+
     NUM = '0',
+
     FUNCT = 'A',
+
     ERROR = 0x7F,
   };
 
