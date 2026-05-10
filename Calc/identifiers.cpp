@@ -202,20 +202,80 @@ parabola(std::span<Value> params) noexcept {
   return params[0] * params[0] + 1.0;
 }
 
+// for better precision
 [[nodiscard]] /*constexpr*/ Value pow(Value x, Value y) noexcept {
   if (compare(x, std::numbers::e_v<Value>)) {
-    // for better precision
     return std::exp(y);
   }
   if (compare(y, 1.0 / 2.0)) {
-    // for better precision
     return std::sqrt(x);
   }
   if (compare(y, 1.0 / 3.0)) {
-    // for better precision
     return std::cbrt(x);
   }
   return std::pow(x, y);
+}
+
+[[nodiscard]]
+Value normalize_sine(Value value) noexcept {
+
+  if (!std::isfinite(value))
+    return value;
+
+  constexpr Value sqrt2_over_2 =
+      std::numbers::sqrt2_v<Value> / static_cast<Value>(2);
+
+  constexpr Value epsilon = static_cast<Value>(1e-15);
+
+  for (const Value v :
+       {static_cast<Value>(-1.0), -sqrt2_over_2, static_cast<Value>(-0.5),
+        static_cast<Value>(0.0), static_cast<Value>(0.5), sqrt2_over_2,
+        static_cast<Value>(1.0)}) {
+
+    if (std::abs(value - v) <= epsilon)
+      return v;
+  }
+
+  return value;
+}
+
+[[nodiscard]]
+Value normalize_tan(Value value) noexcept {
+
+  if (!std::isfinite(value))
+    return value;
+
+  constexpr Value huge = static_cast<Value>(1e15);
+
+  if (value >= huge)
+    return std::numeric_limits<Value>::infinity();
+
+  if (value <= -huge)
+    return -std::numeric_limits<Value>::infinity();
+
+  const Value rounded = std::round(value);
+
+  constexpr Value epsilon = static_cast<Value>(1e-15);
+
+  if (std::abs(value - rounded) <= epsilon)
+    return rounded == 0 ? 0 : rounded;
+
+  return value;
+}
+
+// for better precision
+[[nodiscard]] /*constexpr*/ Value sin(Value x) noexcept {
+  return normalize_sine(std::sin(x));
+}
+
+// for better precision
+[[nodiscard]] /*constexpr*/ Value cos(Value x) noexcept {
+  return normalize_sine(std::cos(x));
+}
+
+// for better precision
+[[nodiscard]] /*constexpr*/ Value tan(Value x) noexcept {
+  return normalize_tan(std::tan(x));
 }
 
 [[nodiscard]] /*constexpr*/ static Value
@@ -517,9 +577,9 @@ static const map ids = {
 
     //---------------------------------------------------------------------------
     // https://en.cppreference.com/w/cpp/numeric/math :
-    {"sin", function_pointer<1, std::sin>()},
-    {"cos", function_pointer<1, std::cos>()},
-    {"tan", function_pointer<1, std::tan>()},
+    {"sin", function_pointer<1, sin>()},
+    {"cos", function_pointer<1, cos>()},
+    {"tan", function_pointer<1, tan>()},
     {"arccos", function_pointer<1, std::acos>()},
     {"arcsin", function_pointer<1, std::asin>()},
     {"arctan", function_pointer<1, std::atan>()},

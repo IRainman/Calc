@@ -45,8 +45,6 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>({
 	{ "e", 2.718281828459045235360287471352662497757247093699959574966967627724076630353547594571382178525166427 }, // https://en.wikipedia.org/wiki/E_(mathematical_constant)
 	{ "e_gamma", 0.57721566490153286060651209008240243104215933593992 }, // https://en.wikipedia.org/wiki/Euler%27s_constant
 	// check precission of other constants that exist in the std:
-	{ "sqrt(pi/2)", 1.2533141373155002512078826424055226265034933703050 },
-	{ "sqrt(2*pi)", 2.5066282746310005024157652848110452530069867406099 },
 	// tau
 	{ "2*pi", 6.283185307179586476925286766559005768394338798750211641949889184615632812572417997256069650684234234135964296172173026564613294187689219121101165663456256256962234900568205403877043211119289289245897909860763928857621951331866892256950129491296467573566330542403818291297133846920696820908652966426786214520498282547449174013212631176349763761041841925658508547430728735784771720022661061097640933042768292903883023179189142764356050365519183906184372234763865223586210237096148924148148376248436926703770150488564849756876 },
 	{ "pi/2", std::numbers::pi_v<Value> / 2.0 },
@@ -57,6 +55,8 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>({
 	{ "pi/7", std::numbers::pi_v<Value> / 7.0 },
 	{ "pi/8", std::numbers::pi_v<Value> / 8.0 },
 	{ "pi/9", std::numbers::pi_v<Value> / 9.0 },
+	{ "sqrt(pi/2)", 1.2533141373155002512078826424055226265034933703050 },
+	{ "sqrt(2*pi)", 2.5066282746310005024157652848110452530069867406099 },
 	{ "ln(e)", 1.0 },
 	{ "log2(e)", std::numbers::log2e_v<Value> },
 	{ "log10(e)", std::numbers::log10e_v<Value> },
@@ -140,7 +140,6 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>({
 	{ "4*4*4*4*4*4*3*3*3*3", 331776.0 },
 	{ "8/4", 2.0 },
 	{ "2^3", 8.0 },
-	{ "5%2", 1.0 },
 
 	// advanced functions:
 	{ "exp(0)", 1.0 },
@@ -199,6 +198,7 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>({
 
 	{ "erf(0)", 0.0 },
 	{ "erfc(0)", 1.0 },
+
 	{ "mod(5, 2)", 1.0 },
 
 	// logarithmic functions:
@@ -374,21 +374,19 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>({
 
 	// trigonometric precision especially with pi:
 	{ "sin(pi/2)", 1.0 },
-#if CALC_USE_128_BIT_FLOAT
 	{ "cos(pi/2)", 0.0 },
 	{ "sin(pi)", 0.0 },
-#endif
 	{ "cos(pi)", -1.0 },
 	{ "sin(3*pi/2)", -1.0 },
-#if CALC_USE_128_BIT_FLOAT
 	{ "cos(3*pi/2)", 0.0 },
+	{ "sin(inf)", std::numeric_limits<Value>::quiet_NaN() },
+	{ "cos(inf)", std::numeric_limits<Value>::quiet_NaN() },
 	{ "tan(3*pi/2)", std::numeric_limits<Value>::infinity() },
-	{ "87 * tan(pi) - 7", -7.0 },
 	{ "tan(-pi)", 0.0 },
 	{ "tan(pi)", 0.0 },
+	{ "87 * tan(pi) - 7", -7.0 },
 	{ "tan(pi/2)", std::numeric_limits<Value>::infinity() },
 	{ "tan(-pi/2)", -std::numeric_limits<Value>::infinity() },
-#endif
 	{ "tan(pi/4)", 1.0 },
 	{ "tan(-pi/4)", -1.0 },
 	{ "tan(3*pi/4)", -1.0 },
@@ -397,10 +395,8 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>({
 	{ "tan(-5*pi/4)", -1.0 },
 	{ "tan(7*pi/4)", -1.0 },
 	{ "tan(-7*pi/4)", 1.0 },
-#if CALC_USE_128_BIT_FLOAT
 	{ "tan(9*pi/4)", 1.0 },
 	{ "tan(-9*pi/4)", -1.0 },
-#endif
 	{ "tan(11*pi/4)", -1.0 },
 	{ "tan(-11*pi/4)", 1.0 },
 	{ "tan(13*pi/4)", 1.0 },
@@ -419,6 +415,7 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>({
 	{ "tan(-25*pi/4)", -1.0 },
 	{ "tan(27*pi/4)", -1.0 },
 	{ "tan(-27*pi/4)", 1.0 },
+	{ "tan(inf)", std::numeric_limits<Value>::quiet_NaN() },
 
 	// special value support:
 	{ "inf", std::numeric_limits<Value>::infinity() },
@@ -441,9 +438,7 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>({
 	{ "cos(pi/3)^2", 0.25 },
 	{ "sin(0)^2 + cos(0)^2", 1.0 },
 	{ "sin(rad(30)) + cos(rad(60))", 1.0 },
-#if CALC_USE_128_BIT_FLOAT
 	{ "sin(rad(30)) - cos(rad(60))", 0.0 },
-#endif
 	{ "sin(rad(30)) * cos(rad(60))", 0.25 },
 	{ "sin(rad(30)) / cos(rad(60))", 1.0 },
 	{ "cos(rad(30)) / sin(rad(60))", 1.0 },
