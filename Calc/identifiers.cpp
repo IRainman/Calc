@@ -83,7 +83,7 @@ template <const Value value> [[nodiscard]] consteval Fn constant() noexcept {
 [[nodiscard]] constexpr Value radians_to_turn(const Value x) noexcept {
   return x / (2.0 * std::numbers::pi_v<Value>);
 }
-
+#ifdef CALC_TEST_BINARY_FUNCTIONS
 [[nodiscard]] static /*constexpr*/ Value OR(const Value n,
                                             const Value m) noexcept {
   return static_cast<Value>(static_cast<std::uint64_t>(std::lrint(n)) |
@@ -117,7 +117,7 @@ template <const Value value> [[nodiscard]] consteval Fn constant() noexcept {
 [[nodiscard]] static /*constexpr*/ Value SAR(const Value n) noexcept {
   return static_cast<Value>(static_cast<std::int64_t>(std::lrint(n)) >> 1);
 }
-
+#endif
 [[nodiscard]] static /*constexpr*/ Value factorial(const Value n) noexcept {
   auto num = std::lrint(n);
   Value result = 1.0;
@@ -177,15 +177,14 @@ template <const Value value> [[nodiscard]] consteval Fn constant() noexcept {
   return std::numeric_limits<Value>::quiet_NaN();
 }
 #if 0
-	[[nodiscard]] static constexpr Value accumulate(std::span<Value> params) noexcept
-	{
-		return std::accumulate(params.begin(), params.end(), 0.0);
-	}
+[[nodiscard]] static constexpr Value
+accumulate(std::span<Value> params) noexcept {
+  return std::accumulate(params.begin(), params.end(), 0.0);
+}
 
-	[[nodiscard]] static constexpr Value reduce(std::span<Value> params) noexcept
-	{
-		return std::reduce(params.begin(), params.end());
-	}
+[[nodiscard]] static constexpr Value reduce(std::span<Value> params) noexcept {
+  return std::reduce(params.begin(), params.end());
+}
 #endif
 [[nodiscard]] static constexpr Value hypot(std::span<Value> params) noexcept {
   switch (params.size()) {
@@ -193,8 +192,9 @@ template <const Value value> [[nodiscard]] consteval Fn constant() noexcept {
     return std::hypot(params[0], params[1]);
   case 3:
     return std::hypot(params[0], params[1], params[2]);
+  default:
+    std::unreachable();
   };
-  std::unreachable();
 }
 
 [[nodiscard]] static constexpr Value
@@ -609,6 +609,7 @@ static const map ids = {
 	{ "midpoint", function_pointer <2, std::midpoint>() },
 	{ "lerp", function_pointer<3, std::std::lerp>() },
 #endif
+#ifdef CALC_TEST_BINARY_FUNCTIONS
     {"not", function_pointer<1, NOT>()},
     {"and", function_pointer<2, AND>()},
     {"or", function_pointer<2, OR>()},
@@ -624,6 +625,7 @@ static const map ids = {
 	{ "countr_zero", function_pointer<1, std::countr_zero>() },
 	{ "countr_one", function_pointer<1, std::countr_one>() },
 	{ "popcount", function_pointer<1, std::popcount>() },
+#endif
 #endif
     //---------------------------------------------------------------------------
     // C++17 https://en.cppreference.com/w/cpp/numeric/special_math

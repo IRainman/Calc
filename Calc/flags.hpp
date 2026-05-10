@@ -14,13 +14,14 @@ using EquationSize = size_t;
 
 #if __STDCPP_FLOAT128_T__ == 1
 using Value = std::float128_t;
-#define CALC_USE_128_BIT_FLOAT 1 // WIP
+#define CALC_USE_128_BIT_FLOAT 1
+#warning "WIP: Calc is using 64-bit double implementation in many places."
 #else
-// #warning "128-bit float type isn't supported. Calc is using 64-bit double
-// implementation."
-
-// using Value = std::float64_t;
+#if __STDCPP_FLOAT64_T__ == 1
+using Value = std::float64_t;
+#else
 using Value = double;
+#endif
 #define CALC_USE_128_BIT_FLOAT 0
 #endif
 
@@ -32,7 +33,15 @@ using ParamCount = char;
 #define CALC_TESTS_DEV_ENABLED // if commented test is measurement performance
 #endif
 #ifdef CALC_TESTS_DEV_ENABLED
-// #define CALC_TEST_FASTFLOAT
+// using for test changes in my fork of the library:
+#define CALC_TEST_FASTFLOAT
+
+#define CALC_TEST_BINARY_FUNCTIONS
+
+// Currently zmij only for test, this is a component of the future fmt and now
+// it's not support output precission with it critical for the Calc.
+// #define CALC_USE_ZMIJ // Tests time is: 64978ms.
+// Without: Tests time is: 78336ms.
 #endif
 
 // #define CALC_USE_ERROR_TOKEN // WIP
@@ -44,10 +53,6 @@ using ParamCount = char;
 Tests:
  time is: 24744ms.
 */
-// Currently zmij only for test, this is a component of the future fmt and now
-// it's not support output precission with it critical for the Calc.
-// #define CALC_USE_ZMIJ // Tests time is: 64978ms.
-// Without: Tests time is: 78336ms.
 //---------------------------------------------------------------------------
 // std::map<std::string_view, const Fn> // Tests: time is: 37931ms.
 // std::unordered_map<std::string_view, const Fn> // Tests: time is: 31515ms.

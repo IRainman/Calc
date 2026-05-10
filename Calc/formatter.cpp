@@ -61,7 +61,6 @@ static_assert(
 #endif
 
 char *Formatter::format(Value value, Result &ret) noexcept {
-
 #ifdef CALC_USE_ZMIJ
   auto end = zmij::detail::write(value, ret.data());
 #else
