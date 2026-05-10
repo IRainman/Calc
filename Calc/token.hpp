@@ -14,7 +14,9 @@ struct Token {
     MUL = '*',
     DIV = '/',
     POW = '^',
+#ifdef CALC_USE_OPERATOR_REM
     REM = '%',
+#endif
     LPAREN = '(',
     RPAREN = ')',
     COMA = ',',

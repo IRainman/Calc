@@ -68,10 +68,12 @@ inline void Parser::advance() noexcept { _lex.next(_current); }
       advance();
       result /= parse_expr_2();
       break;
+#if CALC_USE_OPERATOR_REM
     case Token::Type::REM:
       advance();
       result = std::fmod(result, parse_expr_2());
       break;
+#endif
     default:
       return result;
     }

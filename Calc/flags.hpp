@@ -38,6 +38,9 @@ using ParamCount = char;
 
 #define CALC_TEST_BINARY_FUNCTIONS
 
+// #define CALC_USE_OPERATOR_REM // deprecated
+// &emsp;%&nbsp;taking the remainder of division operator<br>
+
 // Currently zmij only for test, this is a component of the future fmt and now
 // it's not support output precission with it critical for the Calc.
 // #define CALC_USE_ZMIJ // Tests time is: 64978ms.
