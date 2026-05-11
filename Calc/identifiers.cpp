@@ -219,22 +219,20 @@ parabola(std::span<Value> params) noexcept {
 [[nodiscard]]
 Value normalize_sine(Value value) noexcept {
 
-  if (!std::isfinite(value))
-    return value;
+  // remove -nan
+  if (std::isnan(value))
+    return std::numeric_limits<Value>::quiet_NaN();
 
+  // upgrade to significant nearest values
   constexpr Value sqrt2_over_2 =
       std::numbers::sqrt2_v<Value> / static_cast<Value>(2);
-
-  constexpr Value epsilon = static_cast<Value>(1e-15);
-
+  constexpr Value epsilon = static_cast<Value>(small_value_precision);
   for (const Value v :
        {static_cast<Value>(-1.0), -sqrt2_over_2, static_cast<Value>(-0.5),
         static_cast<Value>(0.0), static_cast<Value>(0.5), sqrt2_over_2,
-        static_cast<Value>(1.0)}) {
-
+        static_cast<Value>(1.0)})
     if (std::abs(value - v) <= epsilon)
       return v;
-  }
 
   return value;
 }
@@ -242,23 +240,22 @@ Value normalize_sine(Value value) noexcept {
 [[nodiscard]]
 Value normalize_tan(Value value) noexcept {
 
-  if (!std::isfinite(value))
-    return value;
+  // remove -nan
+  if (std::isnan(value))
+    return std::numeric_limits<Value>::quiet_NaN();
 
-  constexpr Value huge = static_cast<Value>(1e15);
-
+  // upgrade to infinity
+  constexpr Value huge = static_cast<Value>(huge_value_precision);
   if (value >= huge)
     return std::numeric_limits<Value>::infinity();
-
   if (value <= -huge)
     return -std::numeric_limits<Value>::infinity();
 
+  // upgrade to nearest integer
   const Value rounded = std::round(value);
-
-  constexpr Value epsilon = static_cast<Value>(1e-15);
-
+  constexpr Value epsilon = static_cast<Value>(small_value_precision);
   if (std::abs(value - rounded) <= epsilon)
-    return rounded == 0 ? 0 : rounded;
+    return rounded == 0 /*remove -0*/? 0 : rounded; //-V550
 
   return value;
 }

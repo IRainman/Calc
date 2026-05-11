@@ -23,7 +23,10 @@ using Value = std::float64_t;
 using Value = double;
 #endif
 #define CALC_USE_128_BIT_FLOAT 0
+constexpr auto huge_value_precision = 1e15;
+constexpr auto small_value_precision = 1e-15;
 #endif
+constexpr auto output_precision = std::numeric_limits<Value>::digits10;
 
 using ParamCount = char;
 //---------------------------------------------------------------------------

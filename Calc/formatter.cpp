@@ -65,8 +65,8 @@ char *Formatter::format(Value value, Result &ret) noexcept {
   auto end = zmij::detail::write(value, ret.data());
 #else
   // https://www.exploringbinary.com/decimal-precision-of-binary-floating-point-numbers/
-  auto end = fmt::format_to(ret.data(), FMT_COMPILE("{:.{}g}"), value,
-                            std::numeric_limits<Value>::digits10);
+  const auto end = fmt::format_to(ret.data(), FMT_COMPILE("{:.{}g}"), value,
+                                  output_precision);
 #endif
   return end;
 }
