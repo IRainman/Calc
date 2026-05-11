@@ -94,19 +94,19 @@ struct RegWrite {
   RegWrite() = delete;
 
   RegWrite(const HKEY root, const char *subkey) noexcept {
-    RegCreateKeyExA(root, subkey, 0, nullptr, REG_OPTION_NON_VOLATILE,
+    RegCreateKeyExA(root, subkey, FALSE, nullptr, REG_OPTION_NON_VOLATILE,
                     KEY_WRITE, nullptr, &key, nullptr);
   }
 
   ~RegWrite() { RegCloseKey(key); }
 
   void write(const char *name, const DWORD value) const {
-    RegSetValueExA(key, name, 0, REG_DWORD,
+    RegSetValueExA(key, name, FALSE, REG_DWORD,
                    reinterpret_cast<const BYTE *>(&value), sizeof(value));
   }
 
   void write(const char *name, const BYTE *data, const DWORD size) const {
-    RegSetValueExA(key, name, 0, REG_BINARY, data, size);
+    RegSetValueExA(key, name, FALSE, REG_BINARY, data, size);
   }
 
 private:
@@ -117,7 +117,7 @@ struct RegRead {
   RegRead() = delete;
 
   RegRead(const HKEY root, const char *subkey) noexcept {
-    RegOpenKeyExA(root, subkey, 0, KEY_READ, &key);
+    RegOpenKeyExA(root, subkey, FALSE, KEY_READ, &key);
   }
 
   ~RegRead() { RegCloseKey(key); }
@@ -160,7 +160,7 @@ static void add_about_menu_to_system_menu(const HWND window) {
   static_assert(IDM_ABOUTBOX < 0xF000);
 
   const auto system_menu = GetSystemMenu(window, FALSE);
-  AppendMenuA(system_menu, MF_SEPARATOR, 0, nullptr);
+  AppendMenuA(system_menu, MF_SEPARATOR, FALSE, nullptr);
   AppendMenuA(system_menu, MF_STRING, IDM_ABOUTBOX, "&About...");
 }
 
@@ -239,7 +239,7 @@ static void center_window_on_monitor(const HWND window,
     MONITORINFO mi [[indeterminate]];
     mi.cbSize = sizeof(mi);
     if (!GetMonitorInfoA(monitor, &mi)) {
-      SystemParametersInfoW(SPI_GETWORKAREA, 0, &mi.rcWork, 0);
+      SystemParametersInfoW(SPI_GETWORKAREA, FALSE, &mi.rcWork, FALSE);
     }
     const auto x = mi.rcWork.left +
                    ((mi.rcWork.right - mi.rcWork.left) - wr.get_width()) / 2;
@@ -256,8 +256,8 @@ static void center_window_on_monitor(const HWND window,
 
 class Layout {
 public:
-  enum class HMode : BYTE { Left, Right, Stretch };
-  enum class VMode : BYTE { Top, Bottom, Stretch };
+  enum class HMode : BYTE { Stretch, Left, Right };
+  enum class VMode : BYTE { Stretch, Top, Bottom };
 
   struct Anchor {
     HMode horizontal [[indeterminate]];
@@ -347,7 +347,7 @@ public:
     height = new_height;
 
     HDWP hdwp = BeginDeferWindowPos(static_cast<int>(constraints.size()));
-    for (auto &c : constraints) {
+    for (const auto &c : constraints) {
       Rect rect [[indeterminate]];
 
       switch (c.anchor.horizontal) {

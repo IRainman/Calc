@@ -53,7 +53,9 @@
 #if (_WIN32_WINNT >= 0x0502)
 #define CALC_SUPPORT_SET_LIMIT_TEXT // EM_LIMITTEXT message
 #if (_WIN32_WINNT >= 0x0600)
-#define CALC_SUPPORT_DPI_CHANGES // SetProcessDPIAware
+#define CALC_SUPPORT_DPI_CHANGES  // SetProcessDPIAware
+#define CALC_SUPPORT_AUTO_RESTART // RegisterApplicationRestart,
+                                  // UnregisterApplicationRestart
 #if (_WIN32_WINNT >= 0x0601)
 #ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
 #define CALC_SUPPORT_DPI_CHANGES_SIGNAL // WM_DPICHANGED signal

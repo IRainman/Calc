@@ -77,17 +77,22 @@ public:
     }
   }
 
+  /**
+   * Close Calc GUI and save user data from it.
+   */
   void close(const HWND dlg) const {
     save_window_data(dlg);
-    EndDialog(dlg, 0);
+    EndDialog(dlg, FALSE);
   }
 
+  /**
+   * Initialize Calc GUI and load user data into it.
+   */
   void init(const HWND dlg) {
     add_about_menu_to_system_menu(dlg);
     set_window_icons(dlg);
     load_window_data(dlg);
 #ifdef CALC_SUPPORT_SET_LIMIT_TEXT
-    // set text limit to input edit control
     SendMessageA(layout.get_constraints_handle(0), EM_LIMITTEXT,
                  static_cast<WPARAM>(CalcConfiguration::input_max_symbols), 0);
 #endif
@@ -103,8 +108,16 @@ public:
     SendMessageA(layout.get_constraints_handle(0), EM_SCROLLCARET, 0, 0);
   }
 
-  inline void resize(WORD w, WORD h) { layout.resize(w, h); }
+  /**
+   * Resize Calc window.
+   */
+  inline void resize(const WORD new_width, const WORD new_height) {
+    layout.resize(new_width, new_height);
+  }
 
+  /**
+   * Return to the system minimal sizes for Calc window.
+   */
   inline void get_minmaxinfo(const LPMINMAXINFO lpMMI) const {
     lpMMI->ptMinTrackSize.x = layout.get_min_x();
     lpMMI->ptMinTrackSize.y = layout.get_min_y();
@@ -128,7 +141,6 @@ public:
 
 private:
   void load_window_data(const HWND hWnd) {
-    // Read stored data:
     const RegRead reg(HKEY_CURRENT_USER, CalcConfiguration::reg_key);
 #ifndef CALC_TESTS_ENABLED
     input[reg.read("input", reinterpret_cast<LPBYTE>(input.data()),
@@ -136,8 +148,9 @@ private:
 #endif
 
 #ifdef CALC_SUPPORT_DPI_CHANGES
-    const auto sSavedDpi = reg.read("savedDpi");
+    //
     dpi = get_window_dpi(hWnd);
+    const auto sSavedDpi = reg.read("savedDpi");
     const auto to_physical = [&](const std::optional<DWORD> &val) -> LONG {
       if (sSavedDpi) {
         // If savedDpi exists we assume stored value is logical (96-based),
@@ -163,7 +176,6 @@ private:
                           dpi
 #endif
     );
-
     layout.init_anchor(
         hWnd, 0, IDC_EDIT_INPUT,
         Layout::Anchor{Layout::HMode::Stretch, Layout::VMode::Stretch});
@@ -190,20 +202,19 @@ private:
     wp.flags = static_cast<UINT>(flags ? *flags : 0);
     wp.showCmd = static_cast<UINT>(show ? *show : SW_SHOWNORMAL);
     if (left && top && right && bottom) {
-      // If saved values exists: use it.
+      // saved position
       wp.rcNormalPosition.left = to_physical(left);
       wp.rcNormalPosition.top = to_physical(top);
       wp.rcNormalPosition.right = to_physical(right);
       wp.rcNormalPosition.bottom = to_physical(bottom);
     } else {
-      // If not: set window to the default.
+      // default position
       const auto shift = to_physical(CalcConfiguration::default_shift_px);
       wp.rcNormalPosition.left = shift;
       wp.rcNormalPosition.top = shift;
       wp.rcNormalPosition.right = layout.get_min_width() + shift;
       wp.rcNormalPosition.bottom = layout.get_min_height() + shift;
     }
-
     SetWindowPlacement(hWnd, &wp);
 
 #ifdef CALC_SUPPORT_MONITOR_API
@@ -259,7 +270,7 @@ private:
   Layout layout [[indeterminate]];
 
 #ifdef CALC_SUPPORT_DPI_CHANGES
-  DWORD dpi;
+  DWORD dpi [[indeterminate]];
 #endif
 };
 
@@ -273,7 +284,7 @@ static INT_PTR CALLBACK AboutDlgProc(const HWND dlg, const UINT msg,
   switch (msg) {
   case WM_COMMAND:
     if (LOWORD(wParam) == IDCANCEL) {
-      EndDialog(dlg, 0);
+      EndDialog(dlg, FALSE);
       return TRUE;
     }
     return FALSE;
@@ -312,7 +323,7 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND dlg, const UINT msg,
   case WM_SYSCOMMAND: {
     if ((wParam & 0xFFF0) == IDM_ABOUTBOX) {
       DialogBoxParamA(GetModuleHandleA(nullptr), MAKEINTRESOURCEA(IDD_ABOUTBOX),
-                      dlg, AboutDlgProc, 0);
+                      dlg, AboutDlgProc, FALSE);
       return TRUE;
     }
     return FALSE;
@@ -344,6 +355,14 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND dlg, const UINT msg,
     calc_window.close(dlg);
     return TRUE;
   }
+#ifdef CALC_SUPPORT_AUTO_RESTART
+  case WM_ENDSESSION: {
+    if (wParam) {
+      return TRUE;
+    }
+    return FALSE;
+  }
+#endif
   default: {
     return FALSE;
   }
@@ -355,9 +374,12 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND dlg, const UINT msg,
  */
 int WINAPI WinMain(const HINSTANCE hInstance, const HINSTANCE /*hPrevInstance*/,
                    const LPSTR /*pCmdLine*/, const int /*nCmdShow*/) {
+#ifdef CALC_SUPPORT_AUTO_RESTART
+  RegisterApplicationRestart(nullptr, FALSE);
+#endif
 
   // Disable IME completely because Calc use only ANSI input in GUI
-  ImmDisableIME(0);
+  ImmDisableIME(FALSE);
 
 #ifdef CALC_SUPPORT_DPI_CHANGES
   // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setprocessdpiawarenesscontext
