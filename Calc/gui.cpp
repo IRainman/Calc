@@ -175,7 +175,7 @@ private:
     layout.init_window(hWnd);
     layout.init_min_sizes(hWnd, to_physical(CalcConfiguration::min_width),
                           to_physical(CalcConfiguration::min_height)
-#ifdef CALC_SUPPORT_PER_WINDOW_DPI
+#ifdef CALC_SUPPORT_PER_WINDOW_DPI_ADJUSTER
                               ,
                           sSavedDpi ? *sSavedDpi : dpi
 #endif

@@ -313,7 +313,7 @@ public:
 
   void init_min_sizes(const HWND window, const LONG requested_min_width,
                       const LONG requested_min_height
-#ifdef CALC_SUPPORT_PER_WINDOW_DPI
+#ifdef CALC_SUPPORT_PER_WINDOW_DPI_ADJUSTER
                       ,
                       UINT dpi
 #endif
@@ -330,7 +330,7 @@ public:
 
     // AdjustWindowRectEx will expand the rectangle so that the resulting outer
     // window will have the requested client size.
-#ifdef CALC_SUPPORT_PER_WINDOW_DPI
+#ifdef CALC_SUPPORT_PER_WINDOW_DPI_ADJUSTER
     AdjustWindowRectExForDpi(&requiredClient, style, FALSE, exStyle, dpi);
 #else
     AdjustWindowRectEx(&requiredClient, style, FALSE, exStyle);

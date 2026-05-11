@@ -55,15 +55,13 @@
 #if (_WIN32_WINNT >= 0x0600)
 #define CALC_SUPPORT_DPI_CHANGES  // SetProcessDPIAware
 #define CALC_SUPPORT_AUTO_RESTART // RegisterApplicationRestart,
-                                  // UnregisterApplicationRestart
 #if (_WIN32_WINNT >= 0x0601)
 #ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
 #define CALC_SUPPORT_DPI_CHANGES_SIGNAL // WM_DPICHANGED signal
 #endif
 #if (_WIN32_WINNT >= 0x0605)
-#define CALC_SUPPORT_PER_WINDOW_DPI // GetDpiForWindow,
-                                    // AdjustWindowRectExForDpi,
-                                    // WM_GETDPISCALEDSIZE
+#define CALC_SUPPORT_PER_WINDOW_DPI          // GetDpiForWindow
+#define CALC_SUPPORT_PER_WINDOW_DPI_ADJUSTER // AdjustWindowRectExForDpi
 #endif
 #endif
 #endif
