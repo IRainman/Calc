@@ -140,6 +140,25 @@ public:
 #endif
 
 private:
+  LONG to_physical(LONG value) const {
+#ifdef CALC_SUPPORT_DPI_CHANGES
+    return std::lroundf(static_cast<float>(value) * static_cast<float>(dpi) /
+                        static_cast<float>(USER_DEFAULT_SCREEN_DPI));
+#else
+    return value;
+#endif
+  }
+
+  LONG to_logical(LONG value) const {
+#ifdef CALC_SUPPORT_DPI_CHANGES
+    return std::lroundf(static_cast<float>(value) *
+                        static_cast<float>(USER_DEFAULT_SCREEN_DPI) /
+                        static_cast<float>(dpi));
+#else
+    return value;
+#endif
+  };
+
   void load_window_data(const HWND hWnd) {
     const RegRead reg(HKEY_CURRENT_USER, CalcConfiguration::reg_key);
 #ifndef CALC_TESTS_ENABLED
@@ -151,29 +170,14 @@ private:
     //
     dpi = get_window_dpi(hWnd);
     const auto sSavedDpi = reg.read("savedDpi");
-    const auto to_physical = [&](const std::optional<DWORD> &val) -> LONG {
-      if (sSavedDpi) {
-        // If savedDpi exists we assume stored value is logical (96-based),
-        // convert to current DPI.
-        return std::lroundf(static_cast<float>(*val) * static_cast<float>(dpi) /
-                            static_cast<float>(USER_DEFAULT_SCREEN_DPI));
-      } else {
-        // If savedDpi absent: legacy raw pixels are left unchanged.
-        return *val;
-      }
-    };
-#else
-    const auto to_physical = [&](const std::optional<DWORD> &val) -> LONG {
-      return *val;
-    };
 #endif
     //
     layout.init_window(hWnd);
-    layout.init_min_sizes(hWnd, CalcConfiguration::min_width,
-                          CalcConfiguration::min_height
+    layout.init_min_sizes(hWnd, to_physical(CalcConfiguration::min_width),
+                          to_physical(CalcConfiguration::min_height)
 #ifdef CALC_SUPPORT_PER_WINDOW_DPI
-                          ,
-                          dpi
+                              ,
+                          sSavedDpi ? *sSavedDpi : dpi
 #endif
     );
     layout.init_anchor(hWnd, 0, IDC_EDIT_INPUT,
@@ -198,13 +202,18 @@ private:
     wp.flags = static_cast<UINT>(flags ? *flags : 0);
     wp.showCmd = static_cast<UINT>(show ? *show : SW_SHOWNORMAL);
     if (left && top && right && bottom) {
-      // saved position
-      wp.rcNormalPosition.left = to_physical(left);
-      wp.rcNormalPosition.top = to_physical(top);
-      wp.rcNormalPosition.right = to_physical(right);
-      wp.rcNormalPosition.bottom = to_physical(bottom);
+      if (sSavedDpi) {
+        wp.rcNormalPosition.left = to_physical(*left);
+        wp.rcNormalPosition.top = to_physical(*top);
+        wp.rcNormalPosition.right = to_physical(*right);
+        wp.rcNormalPosition.bottom = to_physical(*bottom);
+      } else {
+        wp.rcNormalPosition.left = *left;
+        wp.rcNormalPosition.top = *top;
+        wp.rcNormalPosition.right = *right;
+        wp.rcNormalPosition.bottom = *bottom;
+      }
     } else {
-      // default position
       const auto shift = to_physical(CalcConfiguration::default_shift_px);
       wp.rcNormalPosition.left = shift;
       wp.rcNormalPosition.top = shift;
@@ -240,16 +249,6 @@ private:
 #endif
 #ifdef CALC_SUPPORT_DPI_CHANGES
     reg.write("savedDpi", dpi);
-    const auto to_logical = [&](LONG phys) -> DWORD {
-      return static_cast<DWORD>(
-          std::lroundf(static_cast<float>(phys) *
-                       static_cast<float>(USER_DEFAULT_SCREEN_DPI) /
-                       static_cast<float>(dpi)));
-    };
-#else
-    const auto to_logical = [&](LONG phys) -> DWORD {
-      return static_cast<DWORD>(phys);
-    };
 #endif
 
     WINDOWPLACEMENT wp [[indeterminate]];
@@ -370,21 +369,36 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND dlg, const UINT msg,
  */
 int WINAPI WinMain(const HINSTANCE hInstance, const HINSTANCE /*hPrevInstance*/,
                    const LPSTR /*pCmdLine*/, const int /*nCmdShow*/) {
+#ifdef CALC_SUPPORT_DPI_CHANGES
+#ifdef CALC_SUPPORT_PER_WINDOW_DPI
+  // https://learn.microsoft.com/en-us/windows/win32/api/shellscalingapi/ne-shellscalingapi-process_dpi_awareness
+  SetProcessDpiAwarenessContext(
+#ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
+      // This app checks for the DPI when it is created and adjusts the scale
+      // factor whenever the DPI changes. These applications are not
+      // automatically scaled by the system.
+      DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2
+#else
+      // This app does not scale for DPI changes. It will query for the DPI once
+      // and use that value for the lifetime of the app. If the DPI changes, the
+      // app will not adjust to the new DPI value.
+      DPI_AWARENESS_CONTEXT_SYSTEM_AWARE
+#endif
+  );
+#else
+  // This app does not scale for DPI changes. It will query for the DPI once and
+  // use that value for the lifetime of the app. If the DPI changes, the app
+  // will not adjust to the new DPI value.
+  SetProcessDPIAware();
+#endif
+#endif
+
 #ifdef CALC_SUPPORT_AUTO_RESTART
   RegisterApplicationRestart(nullptr, FALSE);
 #endif
 
   // Disable IME completely because Calc use only ANSI input in GUI
   ImmDisableIME(FALSE);
-
-#ifdef CALC_SUPPORT_DPI_CHANGES
-  // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setprocessdpiawarenesscontext
-#ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
-  // SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
-#else
-  // SetProcessDPIAware();
-#endif
-#endif
 
   DialogBoxParamA(hInstance, MAKEINTRESOURCEA(IDD_CALC_DIALOG), nullptr,
                   CalcDialogProc, 0);

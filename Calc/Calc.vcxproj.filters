@@ -88,21 +88,19 @@
     <None Include="res\Calc.rc2">
       <Filter>Resources</Filter>
     </None>
+    <None Include="res\Calc.ico">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="res\Calc_big.ico">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="res\Calc_small.ico">
+      <Filter>Resources</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Calc.rc">
       <Filter>Resources</Filter>
     </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="res\Calc.ico">
-      <Filter>Resources</Filter>
-    </Image>
-    <Image Include="res\Calc_small.ico">
-      <Filter>Resources</Filter>
-    </Image>
-    <Image Include="res\Calc_big.ico">
-      <Filter>Resources</Filter>
-    </Image>
   </ItemGroup>
 </Project>

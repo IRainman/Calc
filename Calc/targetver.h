@@ -8,8 +8,8 @@
 
 #include <WinSDKVer.h>
 
-// To set minimal version of OS supported by Calc: please uncomment one line
-// below:
+// To set minimal version of OS supported by Calc:
+// please uncomment one line below:
 // #define CALC_SUPPORT_WINDOWS_7
 #ifndef CALC_SUPPORT_WINDOWS_7
 // #define CALC_SUPPORT_WINDOWS_VISTA
@@ -20,8 +20,8 @@
 #endif
 #endif
 #endif
-// If all lines above are commented, the minimal supported version is
-// Windows 10.
+// If all lines above are commented:
+// the minimal supported version is Windows 10.
 
 #if defined(CALC_SUPPORT_WINDOWS_2000) || defined(CALC_SUPPORT_WINDOWS_XP) ||  \
     defined(CALC_SUPPORT_WINDOWS_VISTA) || defined(CALC_SUPPORT_WINDOWS_7)

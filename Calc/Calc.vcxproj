@@ -170,9 +170,7 @@
     </Link>
     <ProjectReference />
     <Manifest />
-    <Manifest>
-      <EnableDpiAwareness>true</EnableDpiAwareness>
-    </Manifest>
+    <Manifest />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Midl>
@@ -225,9 +223,7 @@
     </Link>
     <ProjectReference />
     <Manifest />
-    <Manifest>
-      <EnableDpiAwareness>true</EnableDpiAwareness>
-    </Manifest>
+    <Manifest />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Midl>
@@ -295,9 +291,7 @@
     </Link>
     <ProjectReference />
     <Manifest />
-    <Manifest>
-      <EnableDpiAwareness>true</EnableDpiAwareness>
-    </Manifest>
+    <Manifest />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Midl>
@@ -366,9 +360,7 @@
     </Link>
     <ProjectReference />
     <Manifest />
-    <Manifest>
-      <EnableDpiAwareness>true</EnableDpiAwareness>
-    </Manifest>
+    <Manifest />
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="gui.cpp" />
