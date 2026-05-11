@@ -176,8 +176,7 @@ static void add_about_menu_to_system_menu(const HWND window) {
 /**
  * Utility: set window icons (small and big)
  */
-static void set_window_icons(const HWND window) {
-  const auto instance = GetModuleHandleA(nullptr);
+static void set_window_icons(const HWND window, const HINSTANCE instance) {
   SendMessageA(window, WM_SETICON, ICON_SMALL,
                reinterpret_cast<LPARAM>(
                    LoadIconA(instance, MAKEINTRESOURCEA(IDR_MAINFRAME))));
@@ -311,32 +310,9 @@ public:
     height = client.bottom;
   }
 
-  void init_min_sizes(const HWND window, const LONG requested_min_width,
-                      const LONG requested_min_height
-#ifdef CALC_SUPPORT_PER_WINDOW_DPI_ADJUSTER
-                      ,
-                      UINT dpi
-#endif
-  ) {
-    // Convert minimum client area size to window (outer) size so the user can't
-    // resize window smaller than the intended client area. WM_GETMINMAXINFO
-    // expects window dimensions.
-    Rect requiredClient(0, 0, requested_min_width, requested_min_height);
-
-    // Retrieve window styles to adjust for non-client area.
-    const auto style = static_cast<DWORD>(GetWindowLongPtrA(window, GWL_STYLE));
-    const auto exStyle =
-        static_cast<DWORD>(GetWindowLongPtrA(window, GWL_EXSTYLE));
-
-    // AdjustWindowRectEx will expand the rectangle so that the resulting outer
-    // window will have the requested client size.
-#ifdef CALC_SUPPORT_PER_WINDOW_DPI_ADJUSTER
-    AdjustWindowRectExForDpi(&requiredClient, style, FALSE, exStyle, dpi);
-#else
-    AdjustWindowRectEx(&requiredClient, style, FALSE, exStyle);
-#endif
-    min_width = requiredClient.get_width();
-    min_height = requiredClient.get_heigth();
+  void init_min_sizes(const LONG _min_width, const LONG _min_height) {
+    min_width = _min_width;
+    min_height = _min_height;
   }
 
   void init_anchor(const HWND parent, const size_t index, const int id,

@@ -88,9 +88,9 @@ public:
   /**
    * Initialize Calc GUI and load user data into it.
    */
-  void init(const HWND dlg) {
+  void init(const HWND dlg, const HINSTANCE instance) {
     add_about_menu_to_system_menu(dlg);
-    set_window_icons(dlg);
+    set_window_icons(dlg, instance);
     load_window_data(dlg);
 #ifdef CALC_SUPPORT_SET_LIMIT_TEXT
     SendMessageA(layout.get_constraints_handle(0), EM_LIMITTEXT,
@@ -124,11 +124,14 @@ public:
   }
 #ifdef CALC_SUPPORT_DPI_CHANGES_SIGNAL
   void set_dpi(const HWND window, const WORD new_dpi, Rect_ptr new_rect) {
-#ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
     // Reinit min sizes
-    layout.init_min_sizes(window, CalcConfiguration::min_width,
-                          CalcConfiguration::min_height, new_dpi);
+    init_min_sizes(window, CalcConfiguration::min_width,
+                   CalcConfiguration::min_height
+#ifdef CALC_SUPPORT_PER_WINDOW_DPI_ADJUSTER
+                   ,
+                   new_dpi
 #endif
+    );
     // Rescale main window to suggestion and set the window position
     SetWindowPos(window, nullptr, new_rect->get_x(), new_rect->get_y(),
                  new_rect->get_width(), new_rect->get_heigth(),
@@ -159,6 +162,34 @@ private:
 #endif
   };
 
+  void init_min_sizes(const HWND window, const LONG requested_min_width,
+                      const LONG requested_min_height
+#ifdef CALC_SUPPORT_PER_WINDOW_DPI_ADJUSTER
+                      ,
+                      UINT new_dpi
+#endif
+  ) {
+    // Convert minimum client area size to window (outer) size so the user can't
+    // resize window smaller than the intended client area. WM_GETMINMAXINFO
+    // expects window dimensions.
+    Rect requiredClient(0, 0, requested_min_width, requested_min_height);
+
+    // Retrieve window styles to adjust for non-client area.
+    const auto style = static_cast<DWORD>(GetWindowLongPtrA(window, GWL_STYLE));
+    const auto exStyle =
+        static_cast<DWORD>(GetWindowLongPtrA(window, GWL_EXSTYLE));
+
+    // AdjustWindowRectEx will expand the rectangle so that the resulting outer
+    // window will have the requested client size.
+#ifdef CALC_SUPPORT_PER_WINDOW_DPI_ADJUSTER
+    AdjustWindowRectExForDpi(&requiredClient, style, FALSE, exStyle, new_dpi);
+#else
+    AdjustWindowRectEx(&requiredClient, style, FALSE, exStyle);
+#endif
+    layout.init_min_sizes(requiredClient.get_width(),
+                          requiredClient.get_heigth());
+  }
+
   void load_window_data(const HWND hWnd) {
     const RegRead reg(HKEY_CURRENT_USER, CalcConfiguration::reg_key);
 #ifndef CALC_TESTS_ENABLED
@@ -173,11 +204,11 @@ private:
 #endif
     //
     layout.init_window(hWnd);
-    layout.init_min_sizes(hWnd, to_physical(CalcConfiguration::min_width),
-                          to_physical(CalcConfiguration::min_height)
+    init_min_sizes(hWnd, to_physical(CalcConfiguration::min_width),
+                   to_physical(CalcConfiguration::min_height)
 #ifdef CALC_SUPPORT_PER_WINDOW_DPI_ADJUSTER
-                              ,
-                          sSavedDpi ? *sSavedDpi : dpi
+                       ,
+                   sSavedDpi ? *sSavedDpi : dpi
 #endif
     );
     layout.init_anchor(hWnd, 0, IDC_EDIT_INPUT,
@@ -301,6 +332,9 @@ static INT_PTR CALLBACK AboutDlgProc(const HWND dlg, const UINT msg,
   }
 }
 
+#ifdef CALC_SUPPORT_DPI_SCALED_SIZE
+bool dpi_change_in_progress = false;
+#endif
 /**
  * Calc dialog callback processing (resource-based).
  */
@@ -328,22 +362,34 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND dlg, const UINT msg,
     return TRUE;
   }
   case WM_SIZE: {
+#ifdef CALC_SUPPORT_DPI_SCALED_SIZE
+    if (dpi_change_in_progress) {
+      return FALSE;
+    }
+#endif
     calc_window.resize(LOWORD(lParam), HIWORD(lParam));
     return TRUE;
   }
-#ifdef CALC_SUPPORT_PER_WINDOW_DPI
-  // case WM_GETDPISCALEDSIZE: {
-  // }
+#ifdef CALC_SUPPORT_DPI_SCALED_SIZE
+  case WM_GETDPISCALEDSIZE: {
+    // https://learn.microsoft.com/en-us/windows/win32/hidpi/wm-getdpiscaledsize
+    // auto rect = reinterpret_cast<const Rect_ptr>(lParam);
+    dpi_change_in_progress = true;
+    return FALSE;
+  }
 #endif
 #ifdef CALC_SUPPORT_DPI_CHANGES_SIGNAL
   case WM_DPICHANGED: {
     calc_window.set_dpi(dlg, HIWORD(wParam),
                         reinterpret_cast<const Rect_ptr>(lParam));
+#ifdef CALC_SUPPORT_DPI_SCALED_SIZE
+    //////////////////////////////////////////// dpi_change_in_progress = false;
+#endif
     return TRUE;
   }
 #endif
   case WM_INITDIALOG: {
-    calc_window.init(dlg);
+    calc_window.init(dlg, reinterpret_cast<HINSTANCE>(lParam));
     return TRUE;
   }
   case WM_CLOSE: {
@@ -367,28 +413,23 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND dlg, const UINT msg,
 /**
  * Calc entrypoint in Win32 GUI
  */
-int WINAPI WinMain(const HINSTANCE hInstance, const HINSTANCE /*hPrevInstance*/,
-                   const LPSTR /*pCmdLine*/, const int /*nCmdShow*/) {
+int WINAPI WinMain(const HINSTANCE instance, const HINSTANCE /*prev_instance*/,
+                   const LPSTR /*cmd_line*/, const int /*cmd_show*/) {
 #ifdef CALC_SUPPORT_DPI_CHANGES
-#ifdef CALC_SUPPORT_PER_WINDOW_DPI
-  // https://learn.microsoft.com/en-us/windows/win32/api/shellscalingapi/ne-shellscalingapi-process_dpi_awareness
-  SetProcessDpiAwarenessContext(
-#ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
-      // This app checks for the DPI when it is created and adjusts the scale
-      // factor whenever the DPI changes. These applications are not
-      // automatically scaled by the system.
-      DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2
+#ifdef CALC_SUPPORT_PER_MONITOR_DPI_AWARENESS
+  // https://learn.microsoft.com/en-us/windows/win32/hidpi/dpi-awareness-context
+  //  Per monitor DPI aware. This window checks for the DPI when it is created
+  //  and adjusts the scale factor whenever the DPI changes. These processes are
+  //  not automatically scaled by the system.
+  SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 #else
-      // This app does not scale for DPI changes. It will query for the DPI once
-      // and use that value for the lifetime of the app. If the DPI changes, the
-      // app will not adjust to the new DPI value.
-      DPI_AWARENESS_CONTEXT_SYSTEM_AWARE
-#endif
-  );
-#else
-  // This app does not scale for DPI changes. It will query for the DPI once and
-  // use that value for the lifetime of the app. If the DPI changes, the app
-  // will not adjust to the new DPI value.
+  // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setprocessdpiaware
+  // System DPI aware. This window does not scale for DPI changes. It will query
+  // for the DPI once and use that value for the lifetime of the process. If the
+  // DPI changes, the process will not adjust to the new DPI value. It will be
+  // automatically scaled up or down by the system when the DPI changes from the
+  // system value.
+  // SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
   SetProcessDPIAware();
 #endif
 #endif
@@ -400,8 +441,8 @@ int WINAPI WinMain(const HINSTANCE hInstance, const HINSTANCE /*hPrevInstance*/,
   // Disable IME completely because Calc use only ANSI input in GUI
   ImmDisableIME(FALSE);
 
-  DialogBoxParamA(hInstance, MAKEINTRESOURCEA(IDD_CALC_DIALOG), nullptr,
-                  CalcDialogProc, 0);
+  DialogBoxParamA(instance, MAKEINTRESOURCEA(IDD_CALC_DIALOG), nullptr,
+                  CalcDialogProc, reinterpret_cast<LPARAM>(instance));
 
   return EXIT_SUCCESS;
 }
