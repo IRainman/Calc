@@ -67,18 +67,21 @@
 #include <imm.h>
 #include <shellapi.h>
 
-#include "resource.h" // main symbols
+#include "resource.h" // GUI symbols
 
+/**
+ * Calc GUI configuration: matches RC and system internals for correct work.
+ */
 struct CalcConfiguration {
   static constexpr const char *reg_key = "Software\\HedgehogInTheCPP\\Calc";
-  constexpr static LONG min_width = 291;  // matches RC
-  constexpr static LONG min_height = 328; // matches RC
-  constexpr static size_t elements = 4;   // matches RC
+  static constexpr LONG min_width = 291;  // matches RC
+  static constexpr LONG min_height = 328; // matches RC
+  static constexpr size_t elements = 4;   // matches RC
 
-  constexpr static UINT default_shift_px = 100;
+  static constexpr UINT default_shift_px = 100;
 
   // https://learn.microsoft.com/windows/win32/controls/em-limittext
-  constexpr static size_t input_max_data_size =
+  static constexpr size_t input_max_data_size =
 #ifdef CALC_SUPPORT_SET_LIMIT_TEXT
       // Win32 ANSI multiline EDIT max is 64 KiB for classic Edit control:
       64 * 1024;
@@ -87,9 +90,12 @@ struct CalcConfiguration {
       32 * 1024;
 #endif
   // because the number above including C zero terminator maximum symbols are:
-  constexpr static size_t input_max_symbols = input_max_data_size - 1;
+  static constexpr size_t input_max_symbols = input_max_data_size - 1;
 };
 
+/**
+ * Utility: helper to write data to system database.
+ */
 struct RegWrite {
   RegWrite() = delete;
 
@@ -113,6 +119,9 @@ private:
   HKEY key;
 };
 
+/**
+ * Utility: helper for read data from system database.
+ */
 struct RegRead {
   RegRead() = delete;
 
@@ -151,9 +160,9 @@ private:
   HKEY key;
 };
 
-// ------------------------------------------------------------------
-// Utility: add "About..." menu item to system menu.
-// ------------------------------------------------------------------
+/**
+ * Utility: add "About..." menu item to system menu for window.
+ */
 static void add_about_menu_to_system_menu(const HWND window) {
   // IDM_ABOUTBOX must be in the system command range.
   static_assert((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
@@ -164,20 +173,23 @@ static void add_about_menu_to_system_menu(const HWND window) {
   AppendMenuA(system_menu, MF_STRING, IDM_ABOUTBOX, "&About...");
 }
 
-// ------------------------------------------------------------------
-// Utility: set window icon (small & big) from IDR_MAINFRAME
-// ------------------------------------------------------------------
+/**
+ * Utility: set window icons (small and big)
+ */
 static void set_window_icons(const HWND window) {
-  const auto icon =
-      LoadIconA(GetModuleHandleA(nullptr), MAKEINTRESOURCEA(IDR_MAINFRAME));
-  SendMessageA(window, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(icon));
-  SendMessageA(window, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(icon));
+  const auto instance = GetModuleHandleA(nullptr);
+  SendMessageA(window, WM_SETICON, ICON_SMALL,
+               reinterpret_cast<LPARAM>(
+                   LoadIconA(instance, MAKEINTRESOURCEA(IDR_MAINFRAME))));
+  SendMessageA(window, WM_SETICON, ICON_BIG,
+               reinterpret_cast<LPARAM>(
+                   LoadIconA(instance, MAKEINTRESOURCEA(IDR_MAINFRAME_BIG))));
 }
 
 #ifdef CALC_SUPPORT_DPI_CHANGES
-// ------------------------------------------------------------------
-// Utility:
-// ------------------------------------------------------------------
+/**
+ * Utility: return dpi for window
+ */
 static UINT get_window_dpi(const HWND window) {
 #ifdef CALC_SUPPORT_PER_WINDOW_DPI
   // Use per-window DPI if available.
@@ -228,9 +240,9 @@ struct Rect : tagRECT {
 using Rect_ptr = Rect *;
 
 #ifdef CALC_SUPPORT_MONITOR_API
-// ------------------------------------------------------------------
-// Utility: center window on monitor
-// ------------------------------------------------------------------
+/**
+ * Utility: center window on monitor
+ */
 static void center_window_on_monitor(const HWND window,
                                      const HMONITOR monitor) {
   Rect wr [[indeterminate]];
@@ -254,26 +266,29 @@ static void center_window_on_monitor(const HWND window,
 }
 #endif
 
-class Layout {
+enum class HorizontalMode : BYTE { Stretch, Left, Right };
+enum class VerticalMode : BYTE { Stretch, Top, Bottom };
+
+struct Anchor {
+  HorizontalMode horizontal [[indeterminate]];
+  VerticalMode vertical [[indeterminate]];
+};
+
+/**
+ * Utility: helper to work with window layout
+ */
+template <typename size_t elements> class Layout {
 public:
-  enum class HMode : BYTE { Stretch, Left, Right };
-  enum class VMode : BYTE { Stretch, Top, Bottom };
-
-  struct Anchor {
-    HMode horizontal [[indeterminate]];
-    VMode vertical [[indeterminate]];
-  };
-
   struct Constraint {
     constexpr void init(const Layout *layout, const HWND _handle,
                         const Rect &client, const Anchor _anchor) noexcept {
       handle = _handle;
 
       relative_margins.left = client.left;
-      relative_margins.right = layout->width - client.right;
+      relative_margins.right = layout->get_width() - client.right;
 
       relative_margins.top = client.top;
-      relative_margins.bottom = layout->height - client.bottom;
+      relative_margins.bottom = layout->get_height() - client.bottom;
 
       width = client.get_width();
       height = client.get_heigth();
@@ -351,17 +366,17 @@ public:
       Rect rect [[indeterminate]];
 
       switch (c.anchor.horizontal) {
-      case HMode::Left:
+      case HorizontalMode::Left:
         rect.right = c.relative_margins.left + c.width;
         rect.left = c.relative_margins.left;
         break;
 
-      case HMode::Right:
+      case HorizontalMode::Right:
         rect.right = width - c.relative_margins.right;
         rect.left = rect.right - c.width;
         break;
 
-      case HMode::Stretch:
+      case HorizontalMode::Stretch:
         rect.right = width - c.relative_margins.right;
         rect.left = c.relative_margins.left;
         break;
@@ -371,17 +386,17 @@ public:
       }
 
       switch (c.anchor.vertical) {
-      case VMode::Top:
+      case VerticalMode::Top:
         rect.bottom = c.relative_margins.top + c.height;
         rect.top = c.relative_margins.top;
         break;
 
-      case VMode::Bottom:
+      case VerticalMode::Bottom:
         rect.bottom = height - c.relative_margins.bottom;
         rect.top = rect.bottom - c.height;
         break;
 
-      case VMode::Stretch:
+      case VerticalMode::Stretch:
         rect.bottom = height - c.relative_margins.bottom;
         rect.top = c.relative_margins.top;
         break;
@@ -397,6 +412,10 @@ public:
     EndDeferWindowPos(hdwp);
   }
 
+  constexpr auto get_width() const { return width; }
+
+  constexpr auto get_height() const { return height; }
+
   constexpr auto get_min_width() const { return min_width; }
 
   constexpr auto get_min_x() const { return min_width; }
@@ -410,8 +429,7 @@ public:
   }
 
 private:
-  std::array<Constraint, CalcConfiguration::elements> constraints
-      [[indeterminate]];
+  std::array<Constraint, elements> constraints [[indeterminate]];
 
   LONG width [[indeterminate]];
   LONG height [[indeterminate]];

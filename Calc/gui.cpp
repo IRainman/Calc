@@ -176,18 +176,14 @@ private:
                           dpi
 #endif
     );
-    layout.init_anchor(
-        hWnd, 0, IDC_EDIT_INPUT,
-        Layout::Anchor{Layout::HMode::Stretch, Layout::VMode::Stretch});
-    layout.init_anchor(
-        hWnd, 1, IDC_EDIT_RESULT,
-        Layout::Anchor{Layout::HMode::Right, Layout::VMode::Bottom});
-    layout.init_anchor(
-        hWnd, 2, IDC_EDIT_MESSAGE,
-        Layout::Anchor{Layout::HMode::Stretch, Layout::VMode::Bottom});
-    layout.init_anchor(
-        hWnd, 3, IDC_BUTTON_CALC,
-        Layout::Anchor{Layout::HMode::Right, Layout::VMode::Bottom});
+    layout.init_anchor(hWnd, 0, IDC_EDIT_INPUT,
+                       Anchor{HorizontalMode::Stretch, VerticalMode::Stretch});
+    layout.init_anchor(hWnd, 1, IDC_EDIT_RESULT,
+                       Anchor{HorizontalMode::Right, VerticalMode::Bottom});
+    layout.init_anchor(hWnd, 2, IDC_EDIT_MESSAGE,
+                       Anchor{HorizontalMode::Stretch, VerticalMode::Bottom});
+    layout.init_anchor(hWnd, 3, IDC_BUTTON_CALC,
+                       Anchor{HorizontalMode::Right, VerticalMode::Bottom});
     static_assert(4 == CalcConfiguration::elements);
 
     //
@@ -267,7 +263,7 @@ private:
     reg.write("bottom", to_logical(wp.rcNormalPosition.bottom));
   }
 
-  Layout layout [[indeterminate]];
+  Layout<CalcConfiguration::elements> layout [[indeterminate]];
 
 #ifdef CALC_SUPPORT_DPI_CHANGES
   DWORD dpi [[indeterminate]];
