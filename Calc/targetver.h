@@ -42,12 +42,6 @@
 
 #include <SDKDDKVer.h>
 
-// not enabled. Very hard to implement.
-// #define CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
-
-#if (_WIN32_WINNT >= 0x0500)
-// This code is don't needed anymore.
-// #define CALC_SUPPORT_MONITOR_API // Multimonitor API.
 #if (_WIN32_WINNT >= 0x0501)
 #define CALC_SUPPORT_LINK_WINDOW // LinkWindow
 #if (_WIN32_WINNT >= 0x0502)
@@ -55,19 +49,12 @@
 #if (_WIN32_WINNT >= 0x0600)
 #define CALC_SUPPORT_DPI_CHANGES  // SetProcessDPIAware
 #define CALC_SUPPORT_AUTO_RESTART // RegisterApplicationRestart,
-#if (_WIN32_WINNT >= 0x0601)
-#ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
-#define CALC_SUPPORT_DPI_CHANGES_SIGNAL // WM_DPICHANGED signal
-#endif
 #if (_WIN32_WINNT >= 0x0605)
-#define CALC_SUPPORT_PER_WINDOW_DPI // GetDpiForWindow
-#ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
-#define CALC_SUPPORT_PER_WINDOW_DPI_ADJUSTER   // AdjustWindowRectExForDpi
-#define CALC_SUPPORT_PER_MONITOR_DPI_AWARENESS // SetProcessDpiAwarenessContext
-#define CALC_SUPPORT_DPI_SCALED_SIZE           // WM_GETDPISCALEDSIZE
-#endif
-#endif
-#endif
+#define CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART // WM_DPICHANGED signal,
+                                                 // GetDpiForWindow,
+                                                 // AdjustWindowRectExForDpi,
+                                                 // SetProcessDpiAwarenessContext,
+                                                 // WM_GETDPISCALEDSIZE signal
 #endif
 #endif
 #endif

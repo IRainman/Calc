@@ -30,6 +30,16 @@
     "In Windows before Windows Server 2003 the max input is limited to 32767 symbols."
 #endif
 
+#if (_WIN32_WINNT < _WIN32_WINNT_WIN6)
+#warning                                                                       \
+    "Restart manager isn't supported before Windows Vista or Windows Server 2008."
+#endif
+
+#if (_WIN32_WINNT < _WIN32_WINNT_WIN10)
+#warning                                                                       \
+    "In Windows before Windows 10 or Windows Server 2016 the HiDPI isn't supported."
+#endif
+
 #define NOGDICAPMASKS -CC_ *, LC_ *, PC_ *, CP_ *, TC_ *, RC_
 #define NOVIRTUALKEYCODES -VK_ *
 #define NOWINSTYLES -WS_ *, CS_ *, ES_ *, LBS_ *, SBS_ *, CBS_ *
@@ -74,8 +84,8 @@
  */
 struct CalcConfiguration {
   static constexpr const char *reg_key = "Software\\HedgehogInTheCPP\\Calc";
-  static constexpr LONG min_width = 291;  // matches RC
-  static constexpr LONG min_height = 328; // matches RC
+  static constexpr LONG min_width = 281;  // matches RC
+  static constexpr LONG min_height = 308; // matches RC
   static constexpr size_t elements = 4;   // matches RC
 
   static constexpr UINT default_shift_px = 100;
@@ -190,7 +200,7 @@ static void set_window_icons(const HWND window, const HINSTANCE instance) {
  * Utility: return dpi for window
  */
 static UINT get_window_dpi(const HWND window) {
-#ifdef CALC_SUPPORT_PER_WINDOW_DPI
+#ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
   // Use per-window DPI if available.
   return GetDpiForWindow(window);
 #else
@@ -238,33 +248,6 @@ struct Rect : tagRECT {
 
 using Rect_ptr = Rect *;
 
-#ifdef CALC_SUPPORT_MONITOR_API
-/**
- * Utility: center window on monitor
- */
-static void center_window_on_monitor(const HWND window,
-                                     const HMONITOR monitor) {
-  Rect wr [[indeterminate]];
-  if (GetWindowRect(window, &wr)) {
-
-    MONITORINFO mi [[indeterminate]];
-    mi.cbSize = sizeof(mi);
-    if (!GetMonitorInfoA(monitor, &mi)) {
-      SystemParametersInfoW(SPI_GETWORKAREA, FALSE, &mi.rcWork, FALSE);
-    }
-    const auto x = mi.rcWork.left +
-                   ((mi.rcWork.right - mi.rcWork.left) - wr.get_width()) / 2;
-    const auto y = mi.rcWork.top +
-                   ((mi.rcWork.bottom - mi.rcWork.top) - wr.get_heigth()) / 2;
-    SetWindowPos(window, nullptr, x, y, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
-  } else {
-    SetWindowPos(window, nullptr, CalcConfiguration::default_shift_px,
-                 CalcConfiguration::default_shift_px, 0, 0,
-                 SWP_NOZORDER | SWP_NOSIZE);
-  }
-}
-#endif
-
 enum class HorizontalMode : BYTE { Stretch, Left, Right };
 enum class VerticalMode : BYTE { Stretch, Top, Bottom };
 
@@ -308,6 +291,12 @@ public:
 
     width = client.right;
     height = client.bottom;
+  }
+
+  // needs?
+  void init_sizes(const LONG _width, const LONG _height) {
+    width = _width;
+    height = _height;
   }
 
   void init_min_sizes(const LONG _min_width, const LONG _min_height) {

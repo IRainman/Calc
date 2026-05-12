@@ -88,10 +88,25 @@ public:
   /**
    * Initialize Calc GUI and load user data into it.
    */
-  void init(const HWND dlg, const HINSTANCE instance) {
-    add_about_menu_to_system_menu(dlg);
-    set_window_icons(dlg, instance);
-    load_window_data(dlg);
+  void init(const HWND window, const HINSTANCE instance) {
+    add_about_menu_to_system_menu(window);
+    set_window_icons(window, instance);
+#ifdef CALC_SUPPORT_DPI_CHANGES
+    dpi = get_window_dpi(window);
+#ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
+    init_min_sizes(window, to_physical(CalcConfiguration::min_width, dpi),
+                   to_physical(CalcConfiguration::min_height, dpi), dpi);
+#else
+    init_min_sizes(window, to_physical(CalcConfiguration::min_width, dpi),
+                   to_physical(CalcConfiguration::min_height, dpi));
+#endif
+#else
+    init_min_sizes(window, CalcConfiguration::min_width,
+                   CalcConfiguration::min_height);
+#endif
+    layout_init(window);
+    load_window_data(window);
+
 #ifdef CALC_SUPPORT_SET_LIMIT_TEXT
     SendMessageA(layout.get_constraints_handle(0), EM_LIMITTEXT,
                  static_cast<WPARAM>(CalcConfiguration::input_max_symbols), 0);
@@ -122,53 +137,59 @@ public:
     lpMMI->ptMinTrackSize.x = layout.get_min_x();
     lpMMI->ptMinTrackSize.y = layout.get_min_y();
   }
-#ifdef CALC_SUPPORT_DPI_CHANGES_SIGNAL
+#ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
   void set_dpi(const HWND window, const WORD new_dpi, Rect_ptr new_rect) {
-    // Reinit min sizes
-    init_min_sizes(window, CalcConfiguration::min_width,
-                   CalcConfiguration::min_height
-#ifdef CALC_SUPPORT_PER_WINDOW_DPI_ADJUSTER
-                   ,
-                   new_dpi
-#endif
-    );
+    // Store new DPI
+    dpi = new_dpi;
+
+    // Init min sizes
+    init_min_sizes(window, to_physical(CalcConfiguration::min_width, dpi),
+                   to_physical(CalcConfiguration::min_height, dpi), dpi);
+
     // Rescale main window to suggestion and set the window position
     SetWindowPos(window, nullptr, new_rect->get_x(), new_rect->get_y(),
                  new_rect->get_width(), new_rect->get_heigth(),
                  SWP_NOZORDER | SWP_NOACTIVATE);
-
-    // Store new DPI
-    dpi = new_dpi;
   }
 #endif
+  /**
+   * Initialize layout helper for resizing.
+   */
+  void layout_init(const HWND window) {
+    layout.init_window(window);
+    layout.init_anchor(window, 0, IDC_EDIT_INPUT,
+                       Anchor{HorizontalMode::Stretch, VerticalMode::Stretch});
+    layout.init_anchor(window, 1, IDC_EDIT_RESULT,
+                       Anchor{HorizontalMode::Right, VerticalMode::Bottom});
+    layout.init_anchor(window, 2, IDC_EDIT_MESSAGE,
+                       Anchor{HorizontalMode::Stretch, VerticalMode::Bottom});
+    layout.init_anchor(window, 3, IDC_BUTTON_CALC,
+                       Anchor{HorizontalMode::Right, VerticalMode::Bottom});
+    static_assert(4 == CalcConfiguration::elements);
+  }
 
 private:
-  LONG to_physical(LONG value) const {
 #ifdef CALC_SUPPORT_DPI_CHANGES
+  static LONG to_physical(LONG value, LONG dpi) {
     return std::lroundf(static_cast<float>(value) * static_cast<float>(dpi) /
                         static_cast<float>(USER_DEFAULT_SCREEN_DPI));
-#else
-    return value;
-#endif
   }
 
-  LONG to_logical(LONG value) const {
-#ifdef CALC_SUPPORT_DPI_CHANGES
+  static LONG to_logical(LONG value, LONG dpi) {
+
     return std::lroundf(static_cast<float>(value) *
                         static_cast<float>(USER_DEFAULT_SCREEN_DPI) /
                         static_cast<float>(dpi));
-#else
-    return value;
-#endif
   };
-
-  void init_min_sizes(const HWND window, const LONG requested_min_width,
-                      const LONG requested_min_height
-#ifdef CALC_SUPPORT_PER_WINDOW_DPI_ADJUSTER
-                      ,
-                      UINT new_dpi
 #endif
-  ) {
+
+#ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
+  void init_min_sizes(const HWND window, const LONG requested_min_width,
+                      const LONG requested_min_height, UINT new_dpi) {
+#else
+  void init_min_sizes(const HWND window, const LONG requested_min_width,
+                      const LONG requested_min_height) {
+#endif
     // Convert minimum client area size to window (outer) size so the user can't
     // resize window smaller than the intended client area. WM_GETMINMAXINFO
     // expects window dimensions.
@@ -181,7 +202,7 @@ private:
 
     // AdjustWindowRectEx will expand the rectangle so that the resulting outer
     // window will have the requested client size.
-#ifdef CALC_SUPPORT_PER_WINDOW_DPI_ADJUSTER
+#ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
     AdjustWindowRectExForDpi(&requiredClient, style, FALSE, exStyle, new_dpi);
 #else
     AdjustWindowRectEx(&requiredClient, style, FALSE, exStyle);
@@ -190,84 +211,59 @@ private:
                           requiredClient.get_heigth());
   }
 
-  void load_window_data(const HWND hWnd) {
+  void load_window_data(const HWND window) {
     const RegRead reg(HKEY_CURRENT_USER, CalcConfiguration::reg_key);
 #ifndef CALC_TESTS_ENABLED
     input[reg.read("input", reinterpret_cast<LPBYTE>(input.data()),
                    static_cast<DWORD>(input.size()))] = '\0';
 #endif
 
-#ifdef CALC_SUPPORT_DPI_CHANGES
-    //
-    dpi = get_window_dpi(hWnd);
-    const auto sSavedDpi = reg.read("savedDpi");
-#endif
-    //
-    layout.init_window(hWnd);
-    init_min_sizes(hWnd, to_physical(CalcConfiguration::min_width),
-                   to_physical(CalcConfiguration::min_height)
-#ifdef CALC_SUPPORT_PER_WINDOW_DPI_ADJUSTER
-                       ,
-                   sSavedDpi ? *sSavedDpi : dpi
-#endif
-    );
-    layout.init_anchor(hWnd, 0, IDC_EDIT_INPUT,
-                       Anchor{HorizontalMode::Stretch, VerticalMode::Stretch});
-    layout.init_anchor(hWnd, 1, IDC_EDIT_RESULT,
-                       Anchor{HorizontalMode::Right, VerticalMode::Bottom});
-    layout.init_anchor(hWnd, 2, IDC_EDIT_MESSAGE,
-                       Anchor{HorizontalMode::Stretch, VerticalMode::Bottom});
-    layout.init_anchor(hWnd, 3, IDC_BUTTON_CALC,
-                       Anchor{HorizontalMode::Right, VerticalMode::Bottom});
-    static_assert(4 == CalcConfiguration::elements);
-
-    //
     const auto flags = reg.read("flags");
     const auto show = reg.read("showCmd");
+
     const auto left = reg.read("left");
     const auto top = reg.read("top");
     const auto right = reg.read("right");
     const auto bottom = reg.read("bottom");
+#ifdef CALC_SUPPORT_DPI_CHANGES
+    const auto sSavedDpi = reg.read("savedDpi");
+#endif
     WINDOWPLACEMENT wp [[indeterminate]];
     wp.length = sizeof(wp);
     wp.flags = static_cast<UINT>(flags ? *flags : 0);
     wp.showCmd = static_cast<UINT>(show ? *show : SW_SHOWNORMAL);
+
     if (left && top && right && bottom) {
+      // -> use saved position
+#ifdef CALC_SUPPORT_DPI_CHANGES
       if (sSavedDpi) {
-        wp.rcNormalPosition.left = to_physical(*left);
-        wp.rcNormalPosition.top = to_physical(*top);
-        wp.rcNormalPosition.right = to_physical(*right);
-        wp.rcNormalPosition.bottom = to_physical(*bottom);
-      } else {
-        wp.rcNormalPosition.left = *left;
-        wp.rcNormalPosition.top = *top;
-        wp.rcNormalPosition.right = *right;
-        wp.rcNormalPosition.bottom = *bottom;
+        // -> use with saved dpi
+        const auto saved_dpi = *sSavedDpi;
+        wp.rcNormalPosition.left = to_physical(*left, saved_dpi);
+        wp.rcNormalPosition.top = to_physical(*top, saved_dpi);
+        wp.rcNormalPosition.right = to_physical(*right, saved_dpi);
+        wp.rcNormalPosition.bottom = to_physical(*bottom, saved_dpi);
       }
+#else
+      // -> use as is
+      wp.rcNormalPosition.left = *left;
+      wp.rcNormalPosition.top = *top;
+      wp.rcNormalPosition.right = *right;
+      wp.rcNormalPosition.bottom = *bottom;
+#endif
     } else {
-      const auto shift = to_physical(CalcConfiguration::default_shift_px);
+      // -> use default position
+#ifdef CALC_SUPPORT_DPI_CHANGES
+      const auto shift = to_physical(CalcConfiguration::default_shift_px, dpi);
+#else
+      const auto &shift = CalcConfiguration::default_shift_px;
+#endif
       wp.rcNormalPosition.left = shift;
       wp.rcNormalPosition.top = shift;
       wp.rcNormalPosition.right = layout.get_min_width() + shift;
       wp.rcNormalPosition.bottom = layout.get_min_height() + shift;
     }
-    SetWindowPlacement(hWnd, &wp);
-
-#ifdef CALC_SUPPORT_MONITOR_API
-    const auto mon =
-        MonitorFromRect(&wp.rcNormalPosition, MONITOR_DEFAULTTONEAREST);
-    MONITORINFO mi [[indeterminate]];
-    mi.cbSize = sizeof(mi);
-    GetMonitorInfoA(mon, &mi);
-    const RECT &work = mi.rcWork;
-    if (wp.rcNormalPosition.right <= work.left ||
-        wp.rcNormalPosition.left >= work.right ||
-        wp.rcNormalPosition.bottom <= work.top ||
-        wp.rcNormalPosition.top >= work.bottom) {
-      center_window_on_monitor(hWnd, mon);
-      return;
-    }
-#endif
+    SetWindowPlacement(window, &wp);
   }
 
   void save_window_data(const HWND hWnd) const {
@@ -278,19 +274,24 @@ private:
                   GetWindowTextA(layout.get_constraints_handle(0), input.data(),
                                  static_cast<int>(input.size()))));
 #endif
-#ifdef CALC_SUPPORT_DPI_CHANGES
-    reg.write("savedDpi", dpi);
-#endif
 
     WINDOWPLACEMENT wp [[indeterminate]];
     wp.length = sizeof(wp);
     GetWindowPlacement(hWnd, &wp);
     reg.write("flags", wp.flags);
     reg.write("showCmd", wp.showCmd);
-    reg.write("left", to_logical(wp.rcNormalPosition.left));
-    reg.write("top", to_logical(wp.rcNormalPosition.top));
-    reg.write("right", to_logical(wp.rcNormalPosition.right));
-    reg.write("bottom", to_logical(wp.rcNormalPosition.bottom));
+#ifdef CALC_SUPPORT_DPI_CHANGES
+    reg.write("left", to_logical(wp.rcNormalPosition.left, dpi));
+    reg.write("top", to_logical(wp.rcNormalPosition.top, dpi));
+    reg.write("right", to_logical(wp.rcNormalPosition.right, dpi));
+    reg.write("bottom", to_logical(wp.rcNormalPosition.bottom, dpi));
+    reg.write("savedDpi", dpi);
+#else
+    reg.write("left", wp.rcNormalPosition.left);
+    reg.write("top", wp.rcNormalPosition.top);
+    reg.write("right", wp.rcNormalPosition.right);
+    reg.write("bottom", wp.rcNormalPosition.bottom);
+#endif
   }
 
   Layout<CalcConfiguration::elements> layout [[indeterminate]];
@@ -300,7 +301,7 @@ private:
 #endif
 };
 
-static CalcWindow calc_window;
+static CalcWindow calc;
 
 /**
  * About dialog callback processing (resource-based).
@@ -332,19 +333,19 @@ static INT_PTR CALLBACK AboutDlgProc(const HWND dlg, const UINT msg,
   }
 }
 
-#ifdef CALC_SUPPORT_DPI_SCALED_SIZE
-bool dpi_change_in_progress = false;
-#endif
 /**
  * Calc dialog callback processing (resource-based).
  */
-static INT_PTR CALLBACK CalcDialogProc(const HWND dlg, const UINT msg,
+static INT_PTR CALLBACK CalcDialogProc(const HWND window, const UINT msg,
                                        const WPARAM wParam,
                                        const LPARAM lParam) {
+#ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
+  static bool dpi_change_in_progress = false;
+#endif
   switch (msg) {
   case WM_COMMAND: {
     if (LOWORD(wParam) == IDC_BUTTON_CALC && HIWORD(wParam) == BN_CLICKED) {
-      calc_window.perform_calculation();
+      calc.perform_calculation();
       return TRUE;
     }
     return FALSE;
@@ -352,48 +353,46 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND dlg, const UINT msg,
   case WM_SYSCOMMAND: {
     if ((wParam & 0xFFF0) == IDM_ABOUTBOX) {
       DialogBoxParamA(GetModuleHandleA(nullptr), MAKEINTRESOURCEA(IDD_ABOUTBOX),
-                      dlg, AboutDlgProc, FALSE);
+                      window, AboutDlgProc, FALSE);
       return TRUE;
     }
     return FALSE;
   }
   case WM_GETMINMAXINFO: {
-    calc_window.get_minmaxinfo(reinterpret_cast<LPMINMAXINFO>(lParam));
+    calc.get_minmaxinfo(reinterpret_cast<LPMINMAXINFO>(lParam));
     return TRUE;
   }
   case WM_SIZE: {
-#ifdef CALC_SUPPORT_DPI_SCALED_SIZE
+#ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
     if (dpi_change_in_progress) {
+      calc.layout_init(window);
       return FALSE;
     }
 #endif
-    calc_window.resize(LOWORD(lParam), HIWORD(lParam));
+    calc.resize(LOWORD(lParam), HIWORD(lParam));
     return TRUE;
   }
-#ifdef CALC_SUPPORT_DPI_SCALED_SIZE
+#ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
   case WM_GETDPISCALEDSIZE: {
     // https://learn.microsoft.com/en-us/windows/win32/hidpi/wm-getdpiscaledsize
-    // auto rect = reinterpret_cast<const Rect_ptr>(lParam);
     dpi_change_in_progress = true;
     return FALSE;
   }
 #endif
-#ifdef CALC_SUPPORT_DPI_CHANGES_SIGNAL
+#ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
   case WM_DPICHANGED: {
-    calc_window.set_dpi(dlg, HIWORD(wParam),
-                        reinterpret_cast<const Rect_ptr>(lParam));
-#ifdef CALC_SUPPORT_DPI_SCALED_SIZE
-    //////////////////////////////////////////// dpi_change_in_progress = false;
-#endif
+    calc.set_dpi(window, HIWORD(wParam),
+                 reinterpret_cast<const Rect_ptr>(lParam));
+    dpi_change_in_progress = false;
     return TRUE;
   }
 #endif
   case WM_INITDIALOG: {
-    calc_window.init(dlg, reinterpret_cast<HINSTANCE>(lParam));
+    calc.init(window, reinterpret_cast<HINSTANCE>(lParam));
     return TRUE;
   }
   case WM_CLOSE: {
-    calc_window.close(dlg);
+    calc.close(window);
     return TRUE;
   }
 #ifdef CALC_SUPPORT_AUTO_RESTART
@@ -416,7 +415,7 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND dlg, const UINT msg,
 int WINAPI WinMain(const HINSTANCE instance, const HINSTANCE /*prev_instance*/,
                    const LPSTR /*cmd_line*/, const int /*cmd_show*/) {
 #ifdef CALC_SUPPORT_DPI_CHANGES
-#ifdef CALC_SUPPORT_PER_MONITOR_DPI_AWARENESS
+#ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
   // https://learn.microsoft.com/en-us/windows/win32/hidpi/dpi-awareness-context
   //  Per monitor DPI aware. This window checks for the DPI when it is created
   //  and adjusts the scale factor whenever the DPI changes. These processes are
