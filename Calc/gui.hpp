@@ -293,12 +293,6 @@ public:
     height = client.bottom;
   }
 
-  // needs?
-  void init_sizes(const LONG _width, const LONG _height) {
-    width = _width;
-    height = _height;
-  }
-
   void init_min_sizes(const LONG _min_width, const LONG _min_height) {
     min_width = _min_width;
     min_height = _min_height;
