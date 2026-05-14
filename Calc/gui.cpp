@@ -65,9 +65,7 @@ public:
       IssueManager::clear();
 
       *summary_text_end = '\0'; // because of LPCSTR in the SetWindowTextA
-      SetWindowTextA(layout.get_constraints_handle(2), summary.data());
-
-      SetWindowTextA(layout.get_constraints_handle(1), nullptr);
+      SetWindowTextA(layout.get_constraints_handle(1), summary.data());
     }
 #endif
     else {
@@ -76,18 +74,18 @@ public:
 
       *result_text_end = '\0'; // because of LPCSTR in the SetWindowTextA
       SetWindowTextA(layout.get_constraints_handle(1), result.data());
-
-      SetWindowTextA(layout.get_constraints_handle(2), nullptr);
     }
   }
 
   /**
-   * Close Calc GUI and save user data from it.
+   * Save user data from GUI.
    */
-  void close(const HWND dlg) const {
-    save_window_data(dlg);
-    EndDialog(dlg, FALSE);
-  }
+  void save_user_data(const HWND window) const { save_window_data(window); }
+
+  /**
+   * Close Calc GUI.
+   */
+  void close(const HWND window) const { EndDialog(window, FALSE); }
 
   /**
    * Initialize Calc GUI and load user data into it.
@@ -165,11 +163,9 @@ public:
                        Anchor{HorizontalMode::Stretch, VerticalMode::Stretch});
     layout.init_anchor(window, 1, IDC_EDIT_RESULT,
                        Anchor{HorizontalMode::Right, VerticalMode::Bottom});
-    layout.init_anchor(window, 2, IDC_EDIT_MESSAGE,
-                       Anchor{HorizontalMode::Stretch, VerticalMode::Bottom});
-    layout.init_anchor(window, 3, IDC_BUTTON_CALC,
+    layout.init_anchor(window, 2, IDC_BUTTON_CALC,
                        Anchor{HorizontalMode::Right, VerticalMode::Bottom});
-    static_assert(4 == CalcConfiguration::elements);
+    static_assert(3 == CalcConfiguration::elements);
   }
 
 private:
@@ -347,6 +343,7 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND window, const UINT msg,
 #ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
   static bool dpi_change_in_progress = false;
 #endif
+  static bool user_data_saved = false;
   switch (msg) {
   case WM_COMMAND: {
     if (LOWORD(wParam) == IDC_BUTTON_CALC && HIWORD(wParam) == BN_CLICKED) {
@@ -396,18 +393,26 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND window, const UINT msg,
     calc.init(window, reinterpret_cast<HINSTANCE>(lParam));
     return TRUE;
   }
-  case WM_CLOSE: {
-    calc.close(window);
-    return TRUE;
-  }
 #ifdef CALC_SUPPORT_AUTO_RESTART
   case WM_ENDSESSION: {
     if (wParam) {
-      return TRUE;
+      calc.save_user_data(window);
+      user_data_saved = true;
     }
-    return FALSE;
+    return TRUE;
   }
 #endif
+  case WM_CLOSE: {
+    if (!user_data_saved) {
+      calc.save_user_data(window);
+    }
+    calc.close(window);
+    return TRUE;
+  }
+  case WM_DESTROY: {
+    PostQuitMessage(EXIT_SUCCESS);
+    return FALSE;
+  }
   default: {
     return FALSE;
   }
@@ -454,10 +459,9 @@ int WINAPI WinMain(const HINSTANCE instance, const HINSTANCE /*prev_instance*/,
   // Disable IME completely because Calc use only ANSI input in GUI
   ImmDisableIME(FALSE);
 
-  DialogBoxParamA(instance, MAKEINTRESOURCEA(IDD_CALC_DIALOG), nullptr,
-                  CalcDialogProc, reinterpret_cast<LPARAM>(instance));
-
-  return EXIT_SUCCESS;
+  return static_cast<int>(
+      DialogBoxParamA(instance, MAKEINTRESOURCEA(IDD_CALC_DIALOG), nullptr,
+                      CalcDialogProc, reinterpret_cast<LPARAM>(instance)));
 }
 
 #if defined _M_IX86

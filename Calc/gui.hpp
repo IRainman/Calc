@@ -84,9 +84,9 @@
  */
 struct CalcConfiguration {
   static constexpr const char *reg_key = "Software\\HedgehogInTheCPP\\Calc";
-  static constexpr LONG min_width = 281;  // matches RC
-  static constexpr LONG min_height = 308; // matches RC
-  static constexpr size_t elements = 4;   // matches RC
+  static constexpr LONG min_width = 291;  // matches RC
+  static constexpr LONG min_height = 170; // matches RC
+  static constexpr size_t elements = 3;   // matches RC
 
   static constexpr UINT default_shift_px = 100;
 
