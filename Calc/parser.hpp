@@ -40,7 +40,11 @@ public:
   /**
    * Parse and evaluate an expression. Return nan in case of an error.
    */
+#ifdef CALC_USE_ERROR_TOKEN
+  [[nodiscard]] Token parse() noexcept;
+#else
   [[nodiscard]] Value parse() noexcept;
+#endif
 
 private:
   /**

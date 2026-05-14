@@ -41,7 +41,7 @@ struct Token {
 
 #ifdef CALC_USE_ERROR_TOKEN
     // If token is an error, there is a small helper that handle it.
-    [[no_unique_address]] struct {
+    struct {
       const char *error_text [[indeterminate]];
       EquationSize error_position [[indeterminate]];
     };

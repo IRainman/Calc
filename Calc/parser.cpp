@@ -11,22 +11,27 @@ namespace {
 const auto &ids = Identifiers::get();
 };
 
+#ifdef CALC_USE_ERROR_TOKEN
+[[nodiscard]] Token Parser::parse() noexcept {
+#else
 [[nodiscard]] Value Parser::parse() noexcept {
+#endif
   const auto result = parse_expr_4();
   if (_current.type == Token::Type::END) [[likely]] {
+#ifdef CALC_USE_ERROR_TOKEN
+    return _current;
+#else
     return result;
+#endif
   }
   if (_current.type == Token::Type::ERROR) [[unlikely]] {
 #ifdef CALC_USE_ERROR_TOKEN
-    return error_position;
     return _current;
-    ? needs to form nan with adress of an error.
 #endif
   } else [[unlikely]] {
 #ifdef CALC_USE_ERROR_TOKEN
-    return error_position + extraneous input;
+    _current.error_text = "extraneous input";
     return _current;
-    ? needs to form nan with adress of an error.
 #else
     IssueManager::report_error(_lex.get_position(), "extraneous input");
 #endif
@@ -91,11 +96,9 @@ inline void Parser::advance() noexcept { _lex.next(_current); }
 
   if (count == static_cast<ParamCount>(values.size())) [[unlikely]] {
 #ifdef CALC_USE_ERROR_TOKEN
-    constexpr static auto err_str = "too many ^ in expression";
-    _current.error_text = err_str;
+    _current.error_text = "too many ^ in expression";
     _current.error_position = _lex.get_position();
     return _current;
-    ? needs to form nan with adress of an error.
 #else
     IssueManager::report_error(_lex.get_position(), "too many ^ in expression");
     return _current.number;
