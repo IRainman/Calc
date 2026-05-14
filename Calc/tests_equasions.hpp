@@ -15,6 +15,9 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>({
 	// GUI test:
 	// produces max length of the output string
 	{ "-92666518056446206563E-300", -9.2666518056446206563e-281 },
+	{ "-92666518056446206563E-327", -9.2666518056446206563e-308 },
+	{ "-92666518056446206563E-328", -9.2666518056446206563e-309 },
+	{ "-92666518056446206563E-343", -9.2666518056446206563E-324 },
 
 	// syntax errors should produce error:
 	{ "2 + )", std::numeric_limits<Value>::quiet_NaN() },

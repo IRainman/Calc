@@ -255,7 +255,7 @@ Value normalize_tan(Value value) noexcept {
   const Value rounded = std::round(value);
   constexpr Value epsilon = static_cast<Value>(small_value_precision);
   if (std::abs(value - rounded) <= epsilon)
-    return rounded == 0 /*remove -0*/? 0 : rounded; //-V550
+    return rounded == 0 /*remove -0*/ ? 0 : rounded; //-V550
 
   return value;
 }

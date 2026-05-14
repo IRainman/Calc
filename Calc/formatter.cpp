@@ -61,12 +61,22 @@ static_assert(
 #endif
 
 char *Formatter::format(Value value, Result &ret) noexcept {
+  char *end;
 #ifdef CALC_USE_ZMIJ
-  auto end = zmij::detail::write(value, ret.data());
+  end = zmij::detail::write(value, ret.data());
 #else
   // https://www.exploringbinary.com/decimal-precision-of-binary-floating-point-numbers/
-  const auto end = fmt::format_to(ret.data(), FMT_COMPILE("{:.{}g}"), value,
-                                  output_precision);
+#ifdef CALC_DONT_USE_SUBNORMALS
+  end = fmt::format_to(ret.data(), FMT_COMPILE("{:.{}g}"), value,
+                       output_precision);
+#else
+  if (isnormal(value)) {
+    end = fmt::format_to(ret.data(), FMT_COMPILE("{:.{}g}"), value,
+                         output_precision);
+  } else {
+    end = fmt::format_to(ret.data(), FMT_COMPILE("{}"), value);
+  }
+#endif
 #endif
   return end;
 }

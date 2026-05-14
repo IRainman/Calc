@@ -104,13 +104,14 @@ std::string calc_tests() {
       const auto is_nan = std::isnan(t.second) && std::isnan(value);
       const auto is_equal = t.second == value;
       const auto is_less_than_epsilon = Identifiers::compare(t.second, value);
+      const auto is_normal = isnormal(value);
       const auto is_edentical_output =
           formated_value ==
           std::string_view(buffer_test.data(),
                            Formatter::format(t.second, buffer_test));
 
       const auto passed = is_error || is_nan ||
-                          is_equal || /* is_less_than_epsilon ||*/
+                          /* is_equal || is_less_than_epsilon ||*/
                           is_edentical_output;
 
       if (!passed) {
@@ -130,6 +131,7 @@ std::string calc_tests() {
           "is nan = {}\r\n"
           "is equal = {}\r\n"
           "is less than epsilon = {}\r\n"
+          "is normal = {}\r\n"
           "is edentical output = {}\r\n"
 
           "return = {}\r\n"
@@ -137,11 +139,12 @@ std::string calc_tests() {
 
           "output = {}\r\n"
           "{}\r\n"),
-                                                     passed ? "OK" : "FAILED", t.first,
+                                           passed ? "OK" : "FAILED", t.first,
           is_error,
           is_nan,
           is_equal,
           is_less_than_epsilon,
+          is_normal,
           is_edentical_output,
 
           value,

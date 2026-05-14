@@ -30,6 +30,9 @@ constexpr auto output_precision = std::numeric_limits<Value>::digits10;
 
 using ParamCount = char;
 //---------------------------------------------------------------------------
+// Disabling usage of subnormals reduce precision
+// #define CALC_DONT_USE_SUBNORMALS
+//---------------------------------------------------------------------------
 #ifdef _DEBUG
 #define CALC_TESTS_ENABLED
 #ifndef NDEBUG

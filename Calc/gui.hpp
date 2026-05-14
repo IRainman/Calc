@@ -399,7 +399,7 @@ private:
 
 #else
 
-#include <Calc.h>
+#include <CalcFrame.h>
 #include <wx/wx.h>
 
 #endif
