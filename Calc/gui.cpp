@@ -343,7 +343,6 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND window, const UINT msg,
 #ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
   static bool dpi_change_in_progress = false;
 #endif
-  static bool user_data_saved = false;
   switch (msg) {
   case WM_COMMAND: {
     if (LOWORD(wParam) == IDC_BUTTON_CALC && HIWORD(wParam) == BN_CLICKED) {
@@ -397,15 +396,12 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND window, const UINT msg,
   case WM_ENDSESSION: {
     if (wParam) {
       calc.save_user_data(window);
-      user_data_saved = true;
     }
     return TRUE;
   }
 #endif
   case WM_CLOSE: {
-    if (!user_data_saved) {
-      calc.save_user_data(window);
-    }
+    calc.save_user_data(window);
     calc.close(window);
     return TRUE;
   }
