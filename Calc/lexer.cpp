@@ -79,7 +79,7 @@ Lexer::read_ident(Token &token) const noexcept {
 
   if (const auto i = ids.find(_view.substr(0, n)); i != ids.end()) [[likely]]
   {
-    const auto [check, constant] = i->second;
+    const auto &[check, constant] = i->second;
     if (check.is_constant()) {
       token.number = constant({});
       token.type = Token::Type::NUM;
