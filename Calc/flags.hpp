@@ -1,7 +1,9 @@
-#pragma once
 /*
  * Copyright 2009-present Elle Solomina, a.rainman on gmail point com
  */
+
+#ifndef FLAGS_HPP
+#define FLAGS_HPP
 
 //---------------------------------------------------------------------------
 /*
@@ -65,3 +67,5 @@ Tests:
 // flat_map<std::string_view, const Fn>  // TODO: std not available, boost no
 // properly compiled.
 //---------------------------------------------------------------------------
+
+#endif
