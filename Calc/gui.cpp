@@ -59,7 +59,7 @@ public:
 #else
     const auto has_errors = IssueManager::has_errors();
 
-    if (has_errors) {
+    if (has_errors) [[unlikely]] {
       Formatter::Summary summary [[indeterminate]];
       const auto summary_text_end = Formatter::create_summary(summary);
       IssueManager::clear();
@@ -68,7 +68,7 @@ public:
       SetWindowTextA(layout.get_constraints_handle(1), summary.data());
     }
 #endif
-    else {
+    else [[likely]] {
       Formatter::Result result [[indeterminate]];
       const auto result_text_end = Formatter::format(value, result);
 
