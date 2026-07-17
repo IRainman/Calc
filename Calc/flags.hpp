@@ -44,7 +44,11 @@ using ParamCount = char;
 // using for test changes in my fork of the library:
 #define CALC_TEST_FASTFLOAT
 
+// TODO
 #define CALC_TEST_BINARY_FUNCTIONS
+
+// TODO
+// #define CALC_TEST_EQUATION_SOLVER
 
 // Currently zmij only for test, this is a component of the future fmt and now
 // it's not support output precission with it critical for the Calc.

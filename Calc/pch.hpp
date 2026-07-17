@@ -31,6 +31,10 @@
 
 #include "flags.hpp"
 
+#ifdef CALC_TEST_EQUATION_SOLVER
+#include <complex>
+#endif
+
 #ifdef CALC_USE_ZMIJ
 #include "../../zmij_orig/zmij.cc" // TODO: waiting for PR is approved https://github.com/vitaut/zmij/pull/135
 #if CALC_USE_128_BIT_FLOAT
