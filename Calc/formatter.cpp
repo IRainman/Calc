@@ -63,7 +63,12 @@ static_assert(
 char *Formatter::format(Value value, Result &ret) noexcept {
   char *end;
 #ifdef CALC_USE_ZMIJ
-  end = zmij::detail::write(value, ret.data());
+  if (isnormal(value)) {
+    end = zmij::detail::write_general(value, output_precision, ret.data());
+  } else {
+    end = zmij::detail::write(value, ret.data());
+  }
+  
 #else
   // https://www.exploringbinary.com/decimal-precision-of-binary-floating-point-numbers/
 #ifdef CALC_DONT_USE_SUBNORMALS

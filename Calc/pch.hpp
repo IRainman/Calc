@@ -13,6 +13,18 @@
 #ifndef PCH_HPP
 #define PCH_HPP
 
+#ifdef _M_AMD64
+#define __SSE2__ 1
+#define __SSE3__ 1
+#define __SSSE3__ 1
+#define __SSE4_1__ 1
+// TODO enable this too and add improvements to fast_float and fmt/Zmij?
+//#define __SSE4_2__ 1
+#else
+#define _M_IX86_FP 2
+#define __SSE2__ 1
+#define __SSE3__ 1
+#endif
 // add headers that you want to pre-compile here
 
 // #include <algorithm> // fast_float ?
@@ -35,8 +47,9 @@
 #include <complex>
 #endif
 
-#ifdef CALC_USE_ZMIJ
-#include "../../zmij_orig/zmij.cc" // TODO: waiting for PR is approved https://github.com/vitaut/zmij/pull/135
+#define CALC_USE_ZMIJ // Without Tests time is: 118164ms.
+#ifdef CALC_USE_ZMIJ // Tests time is: 81207ms.
+#include "../../zmij_orig/zmij.cc"
 #if CALC_USE_128_BIT_FLOAT
 #warning                                                                       \
     "128-bit float type isn't supported by zmij. The library convert any output values to 64-bit double."

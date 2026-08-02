@@ -394,7 +394,6 @@
     <ClInclude Include="gui.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\Calc.ico" />
     <None Include="res\Calc_big.ico" />
     <None Include="res\Calc_small.ico" />
     <None Include="res\Calc.rc2" />
