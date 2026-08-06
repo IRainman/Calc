@@ -165,7 +165,6 @@
       <CETCompat>false</CETCompat>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
       <EnableUAC>false</EnableUAC>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
       <AdditionalOptions>/DEBUG %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <ProjectReference />
@@ -218,7 +217,6 @@
       <CETCompat>false</CETCompat>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
       <EnableUAC>false</EnableUAC>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
       <AdditionalOptions>/DEBUG %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <ProjectReference />
@@ -287,7 +285,6 @@
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
       <EnableUAC>false</EnableUAC>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
     </Link>
     <ProjectReference />
     <Manifest />
@@ -356,7 +353,6 @@
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
       <EnableUAC>false</EnableUAC>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
     </Link>
     <ProjectReference />
     <Manifest />
