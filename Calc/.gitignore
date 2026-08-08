@@ -1,0 +1,8 @@
+/*.aps
+/*.orig
+/*.user
+/Debug
+/Release
+/x64
+CalcFrame.cpp
+CalcFrame.h

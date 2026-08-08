@@ -1,0 +1,10 @@
+/*.db
+/*.ib_preset
+/*.opensdf
+/*.sdf
+/.svn
+/.vs
+/Debug
+/Release
+/out
+/x64
