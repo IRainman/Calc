@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Calc</class>
+ <widget class="QMainWindow" name="Calc">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>351</width>
+    <height>161</height>
+   </rect>
+  </property>
+  <property name="font">
+   <font>
+    <stylestrategy>PreferDefault</stylestrategy>
+   </font>
+  </property>
+  <property name="windowTitle">
+   <string>Calc</string>
+  </property>
+  <property name="animated">
+   <bool>false</bool>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QPushButton" name="EnterButton">
+    <property name="geometry">
+     <rect>
+      <x>49</x>
+      <y>130</y>
+      <width>61</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Enter</string>
+    </property>
+    <property name="autoDefault">
+     <bool>false</bool>
+    </property>
+    <property name="default">
+     <bool>true</bool>
+    </property>
+    <property name="flat">
+     <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QTextEdit" name="InputEdit">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>10</y>
+      <width>331</width>
+      <height>111</height>
+     </rect>
+    </property>
+    <property name="cursor" stdset="0">
+     <cursorShape>IBeamCursor</cursorShape>
+    </property>
+    <property name="locale">
+     <locale language="C" country="AnyCountry"/>
+    </property>
+    <property name="inputMethodHints">
+     <set>Qt::ImhLatinOnly|Qt::ImhMultiLine|Qt::ImhNoAutoUppercase|Qt::ImhPreferLatin</set>
+    </property>
+    <property name="horizontalScrollBarPolicy">
+     <enum>Qt::ScrollBarAlwaysOff</enum>
+    </property>
+    <property name="acceptRichText">
+     <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="Result">
+    <property name="geometry">
+     <rect>
+      <x>120</x>
+      <y>130</y>
+      <width>221</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="locale">
+     <locale language="C" country="AnyCountry"/>
+    </property>
+    <property name="inputMethodHints">
+     <set>Qt::ImhFormattedNumbersOnly</set>
+    </property>
+    <property name="maxLength">
+     <number>64</number>
+    </property>
+    <property name="frame">
+     <bool>true</bool>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+    <property name="readOnly">
+     <bool>true</bool>
+    </property>
+   </widget>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
