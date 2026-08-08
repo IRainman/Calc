@@ -1,8 +1,20 @@
 /*.aps
 /*.orig
 /*.user
+/Calculator_res
 /Debug
 /Release
 /x64
-CalcFrame.cpp
-CalcFrame.h
+/Release x64
+/Template
+/Linear.cpp
+/Message.cpp
+/Function.cpp
+/Constant.cpp
+/Calculator.cpp
+/Calculator.h
+/Constant.h
+/Function.h
+/Linear.h
+/Message.h
+/MyTypes.h
