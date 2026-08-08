@@ -2,13 +2,9 @@
 /*.ib_preset
 /*.opensdf
 /*.sdf
-/*.suo
+/.svn
 /.vs
 /Debug
 /Release
-/Release x64
-/Template
-/ipch
 /out
-/vcpkg_installed
 /x64
