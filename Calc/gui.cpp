@@ -308,7 +308,12 @@ static CalcWindow calc;
  * About dialog callback processing (resource-based).
  */
 static INT_PTR CALLBACK AboutDlgProc(const HWND dlg, const UINT msg,
-                                     const WPARAM wParam, const LPARAM lParam) {
+                                     const WPARAM wParam,
+                                     const LPARAM
+#ifdef CALC_SUPPORT_LINK_WINDOW
+                                         lParam
+#endif
+) {
   switch (msg) {
   case WM_COMMAND:
     if (LOWORD(wParam) == IDCANCEL) {

@@ -5,9 +5,10 @@
 #ifndef GUI_HPP
 #define GUI_HPP
 
-#define _CRT_SECURE_NO_WARNINGS
-
 #ifdef _WIN32
+
+#define WINDOWS_ENABLE_CPLUSPLUS
+#define _CRT_SECURE_NO_WARNINGS
 
 // Exclude rarely-used stuff from Windows headers
 #define VC_EXTRALEAN
@@ -84,8 +85,8 @@
  */
 struct CalcConfiguration {
   static constexpr const char *reg_key = "Software\\HedgehogInTheCPP\\Calc";
-  static constexpr LONG min_width = 291;  // matches RC
-  static constexpr LONG min_height = 170; // matches RC
+  static constexpr LONG min_width = 232;  // matches RC
+  static constexpr LONG min_height = 158; // matches RC
   static constexpr size_t elements = 3;   // matches RC
 
   static constexpr UINT default_shift_px = 100;
