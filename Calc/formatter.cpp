@@ -54,35 +54,14 @@ std::pair<int64_t, int64_t> decimalToFraction(Value number) {
 }
 #endif
 
-#ifdef CALC_USE_ZMIJ
-static_assert(
-    sizeof(Formatter::Result) >=
-    zmij::double_buffer_size); // https://github.com/vitaut/zmij/issues/134
-#endif
-
 char *Formatter::format(Value value, Result &ret) noexcept {
   char *end;
-#ifdef CALC_USE_ZMIJ
+  // https://www.exploringbinary.com/decimal-precision-of-binary-floating-point-numbers/
   if (isnormal(value)) {
     end = zmij::detail::write_general(value, output_precision, ret.data());
   } else {
     end = zmij::detail::write(value, ret.data());
   }
-  
-#else
-  // https://www.exploringbinary.com/decimal-precision-of-binary-floating-point-numbers/
-#ifdef CALC_DONT_USE_SUBNORMALS
-  end = fmt::format_to(ret.data(), FMT_COMPILE("{:.{}g}"), value,
-                       output_precision);
-#else
-  if (isnormal(value)) {
-    end = fmt::format_to(ret.data(), FMT_COMPILE("{:.{}g}"), value,
-                         output_precision);
-  } else {
-    end = fmt::format_to(ret.data(), FMT_COMPILE("{}"), value);
-  }
-#endif
-#endif
   return end;
 }
 

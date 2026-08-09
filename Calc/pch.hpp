@@ -14,22 +14,22 @@
 #define PCH_HPP
 
 // additional library arch helpers because MSVC is an unusual compiler:
+static_assert(
+    __cplusplus >=
+    202400L /* don't needs to check _MSVC_LANG it's should be set by user */);
 
-static_assert(__cplusplus >= 202302L || _MSVC_LANG >= 202302L);
+#define __SSE2__ 1
+#define __SSE3__ 1
 
 #if defined(_M_IX86) || defined(__i386__)
 #define _M_IX86_FP 2
-#define __SSE2__ 1
-#define __SSE3__ 1
 #endif
 
 #if defined(_M_X64) || defined(__x86_64__) || defined(__amd64__)
-#define __SSE2__ 1
-#define __SSE3__ 1
 #define __SSSE3__ 1
 #define __SSE4_1__ 1
-// TODO enable this too and add improvements to fast_float and fmt/Zmij?
-// #define __SSE4_2__ 1
+//  TODO enable this too and add improvements to fast_float and fmt/Zmij?
+//  #define __SSE4_2__ 1
 #endif
 
 // add headers that you want to pre-compile here:
@@ -58,13 +58,11 @@ static_assert(__cplusplus >= 202302L || _MSVC_LANG >= 202302L);
 
 // Zmij compile options:
 
-#define CALC_USE_ZMIJ // Without Tests time is: 118164ms.
-#ifdef CALC_USE_ZMIJ  // Tests time is: 81207ms.
+// Tests time is : 81207ms. Without Tests time is : 118164ms.
 #include "../../zmij/zmij.cc"
 #if CALC_USE_128_BIT_FLOAT
 #warning                                                                       \
     "128-bit float type isn't supported by zmij. The library convert any output values to 64-bit double."
-#endif
 #endif
 
 #if !defined(CALC_USE_ERROR_TOKEN) || defined(CALC_TEST_FASTFLOAT) ||          \
@@ -74,11 +72,11 @@ static_assert(__cplusplus >= 202302L || _MSVC_LANG >= 202302L);
 
 // because we have cleaner output:
 #define FMT_OPTIMIZE_SIZE 2 // Tests time is: 49612ms.
-
+#define FMT_USE_RTTI 0
 #define FMT_HEADER_ONLY 1
 #define FMT_USE_FLOAT 0
 #define FMT_USE_LONG_DOUBLE 0
-#if defined(CALC_USE_ZMIJ) && !defined(CALC_TESTS_DEV_ENABLED)
+#ifndef CALC_TESTS_DEV_ENABLED
 #define FMT_USE_DOUBLE 0
 #define FMT_USE_FLOAT128 0
 #else
@@ -93,7 +91,7 @@ static_assert(__cplusplus >= 202302L || _MSVC_LANG >= 202302L);
 
 // reduce cache pressure:
 #define FMT_BUILTIN_TYPES 0 // Tests time is: 49980ms.
-#define FMT_USE_EXCEPTIONS 0
+// #define FMT_USE_EXCEPTIONS 0
 #define FMT_CPP_LIB_FILESYSTEM 0
 #define FMT_UNICODE 0
 #define FMT_USE_FULL_CACHE_DRAGONBOX 0 // Tests time is: 50111ms.

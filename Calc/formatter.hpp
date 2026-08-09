@@ -9,7 +9,7 @@ public:
   /**
    * Stack type for result formatting
    */
-  using Result = std::array<char, std::hardware_destructive_interference_size>;
+  using Result = std::array<char, zmij::double_buffer_size>;
   /**
    * Format value. Return the end of the formated text.
    */

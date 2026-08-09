@@ -14,7 +14,7 @@
 // hardware type.
 using EquationSize = size_t;
 
-#if __STDCPP_FLOAT128_T__ == 1
+#if _DEBUG && __STDCPP_FLOAT128_T__ == 1
 using Value = std::float128_t;
 #define CALC_USE_128_BIT_FLOAT 1
 #warning "WIP: Calc is using 64-bit double implementation in many places."
