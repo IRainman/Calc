@@ -4,7 +4,7 @@ The project is currently in the moving stage from an old local SVN repo to GitHu
 
 After the first step, my plan is to add a Qt GUI for Linux and do additional steps to make the application cross-platform.
 
-This is only my small pet project for improving quality and performance in widely used libraries.
+This is only my small pet project, that I additionally use for improving quality and performance in widely used libraries.
 
 ## SAST Tools
 
