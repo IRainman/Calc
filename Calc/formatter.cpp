@@ -54,7 +54,7 @@ std::pair<int64_t, int64_t> decimalToFraction(Value number) {
 }
 #endif
 
-char *Formatter::format(Value value, Result &ret) noexcept {
+char *Formatter::format(Value value, Result &ret) noexcept { //-V2009
   char *end;
   // https://www.exploringbinary.com/decimal-precision-of-binary-floating-point-numbers/
   if (isnormal(value)) {

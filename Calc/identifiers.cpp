@@ -349,32 +349,32 @@ distance(std::span<Value> params) noexcept {
 
 #ifdef CALC_TEST_EQUATION_SOLVER
 
-[[nodiscard]] /*constexpr*/ static Value solve_quadratic(Value a, Value b,
-                                                         Value c) noexcept {
-  Value discriminant;
+[[nodiscard]] /*constexpr*/ static auto
+
+solve_quadratic(Value a, Value b, Value c) noexcept {
   // Complex roots for cases where discriminant is negative
-  std::complex<Value> root1, root2;
+  std::array<std::complex<Value>, 2> roots;
 
   // Calculate discriminant
-  discriminant = b * b - 4 * a * c;
+  const Value discriminant = pow(b, 2) - 4 * a * c;
 
   // Check the nature of roots
-  if (discriminant > 0) {
-    // Two distinct real roots
-    root1 = (-b + sqrt(discriminant)) / (2 * a);
-    root2 = (-b - sqrt(discriminant)) / (2 * a);
-  } else if (discriminant == 0) {
+  if (compare(discriminant, 0)) {
     // One real root (repeated)
-    root1 = (-b) / (2 * a);
+    roots[0] = (-b) / (2 * a);
+  } else if (discriminant > 0) {
+    // Two distinct real roots
+    roots[0] = (-b + sqrt(discriminant)) / (2 * a);
+    roots[1] = (-b - sqrt(discriminant)) / (2 * a);
   } else {
-    // Complex roots
-    Value realPart = -b / (2 * a);
-    Value imaginaryPart = sqrt(-discriminant) / (2 * a);
+    // One complex root
+    roots[0] = std::complex<Value>(-b / (2 * a), sqrt(-discriminant) / (2 * a));
   }
+  return roots;
 }
 
-[[nodiscard]] /*constexpr*/ static Value solve_cubic(Value a, Value b, Value c,
-                                                     Value d) noexcept {
+[[nodiscard]] /*constexpr*/ static auto solve_cubic(Value a, Value b, Value c,
+                                                    Value d) noexcept {
   // Normalize coefficients
   b /= a;
   c /= a;
@@ -382,42 +382,43 @@ distance(std::span<Value> params) noexcept {
   a = 1.0;
 
   // Calculate discriminant and intermediate terms
-  Value Q = (b * b - 3 * c) / 9.0;
-  Value R = (2 * b * b * b - 9 * b * c + 27 * d) / 54.0;
-  Value discriminant = R * R - Q * Q * Q;
+  const Value Q = (pow(b, 2) - 3 * c) / 9.0;
+  const Value R = (2 * pow(b, 3) - 9 * b * c + 27 * d) / 54.0;
+  const Value discriminant = pow(R, 2) - pow(Q, 3);
 
   // Complex roots for cases where discriminant is negative
-  std::complex<Value> root1, root2, root3;
+  std::array<std::complex<Value>, 3> roots;
 
-  if (discriminant > 0) {
-    // One real root and two complex conjugate roots
-    Value theta = acos(R / sqrt(Q * Q * Q));
-    root1 = -2 * sqrt(Q) * cos(theta / 3.0) - b / 3.0;
-    root2 = -2 * sqrt(Q) * cos((theta + 2 * std::numbers::pi_v<Value>) / 3.0) -
-            b / 3.0;
-    root3 = -2 * sqrt(Q) * cos((theta - 2 * std::numbers::pi_v<Value>) / 3.0) -
-            b / 3.0;
-  } else if (discriminant == 0) {
+  const Value sqrtQ = sqrt(Q);
+  if (compare(discriminant, 0)) {
     // All roots are real, and at least two are equal
-    Value sqrtQ = sqrt(Q);
-    root1 = -2 * sqrtQ - b / 3.0;
-    root2 = sqrtQ - b / 3.0;
-    root3 = root2;
+    roots[0] = -2 * sqrtQ - b / 3.0;
+    roots[1] = sqrtQ - b / 3.0;
+    roots[2] = roots[1];
+  } else if (discriminant > 0) {
+    // One real root and two complex conjugate roots
+    const Value theta = acos(R / sqrt(pow(Q, 3)));
+    roots[0] = -2 * sqrtQ * cos(theta / 3.0) - b / 3.0;
+    roots[1] = -2 * sqrtQ * cos((theta + 2 * std::numbers::pi_v<Value>) / 3.0) -
+               b / 3.0;
+    roots[2] = -2 * sqrtQ * cos((theta - 2 * std::numbers::pi_v<Value>) / 3.0) -
+               b / 3.0;
   } else {
     // All roots are real and distinct
-    Value theta = acosh(fabs(R) / sqrt(Q * Q * Q));
+    const Value theta = acosh(fabs(R) / sqrt(pow(Q, 3)));
     if (R > 0) {
-      root1 = -2 * sqrt(Q) * cosh(theta / 3.0) - b / 3.0;
+      roots[0] = -2 * sqrtQ * cosh(theta / 3.0) - b / 3.0;
     } else {
-      root1 = 2 * sqrt(Q) * cosh(theta / 3.0) - b / 3.0;
+      roots[0] = 2 * sqrtQ * cosh(theta / 3.0) - b / 3.0;
     }
-    root2 = std::complex<Value>(-sqrt(Q) * cosh(theta / 3.0) - b / 3.0,
-                                sqrt(3) * sqrt(Q) * sinh(theta / 3.0));
-    root3 = conj(root2);
+    roots[1] = std::complex<Value>(-sqrtQ * cosh(theta / 3.0) - b / 3.0,
+                                   sqrt(3) * sqrtQ * sinh(theta / 3.0));
+    roots[2] = conj(roots[1]);
   }
+  return roots;
 }
 
-[[nodiscard]] /*constexpr*/ static Value
+[[nodiscard]] /*constexpr*/ static auto
 solve(std::span<Value> params) noexcept {
   switch (params.size()) {
   case 3:

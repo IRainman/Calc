@@ -32,9 +32,6 @@ constexpr auto output_precision = std::numeric_limits<Value>::digits10;
 
 using ParamCount = char;
 //---------------------------------------------------------------------------
-// Disabling usage of subnormals reduce precision
-// #define CALC_DONT_USE_SUBNORMALS
-//---------------------------------------------------------------------------
 #ifdef _DEBUG
 #define CALC_TESTS_ENABLED
 #ifndef NDEBUG
@@ -45,10 +42,10 @@ using ParamCount = char;
 #define CALC_TEST_FASTFLOAT
 
 // TODO
-#define CALC_TEST_BINARY_FUNCTIONS
+// #define CALC_TEST_BINARY_FUNCTIONS // WIP
 
 // TODO
-// #define CALC_TEST_EQUATION_SOLVER
+// #define CALC_TEST_EQUATION_SOLVER // WIP
 #endif
 
 // #define CALC_USE_ERROR_TOKEN // WIP
