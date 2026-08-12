@@ -51,20 +51,23 @@ constexpr std::string binary_and_hex_parsing() {
 #endif
 
 #ifdef CALC_TEST_FASTFLOAT
+
+#define CASE_RETURN_NAME(x)                                                    \
+  case x:                                                                      \
+    return #x
+
 constexpr std::string_view round_name(int const d) {
   switch (d) {
-  case FE_UPWARD:
-    return "FE_UPWARD";
-  case FE_DOWNWARD:
-    return "FE_DOWNWARD";
-  case FE_TOWARDZERO:
-    return "FE_TOWARDZERO";
-  case FE_TONEAREST:
-    return "FE_TONEAREST";
+    CASE_RETURN_NAME(FE_UPWARD);
+    CASE_RETURN_NAME(FE_DOWNWARD);
+    CASE_RETURN_NAME(FE_TOWARDZERO);
+    CASE_RETURN_NAME(FE_TONEAREST);
   default:
     std::unreachable();
   }
 }
+
+#undef CASE_RETURN_NAME
 #endif
 
 /*
@@ -76,7 +79,7 @@ static_assert(std::is_standard_layout_v<CalcWindowState>);
 std::string calc_tests() {
   std::string output;
 #ifdef CALC_TESTS_DEV_ENABLED
-  output.resize(128 * 1024);
+  output.resize(85 * 1024);
   auto output_end = output.data();
   unsigned int failed = 0;
 #endif
