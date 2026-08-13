@@ -15,10 +15,6 @@
 #include "tests.hpp"
 #endif
 
-#ifdef CALC_DONT_USE_SUBNORMALS
-#include <immintrin.h> // TODO: Move to the core!
-#endif
-
 // ================= GUI ===============
 
 #include "gui.hpp"
@@ -425,16 +421,6 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND window, const UINT msg,
  */
 int WINAPI WinMain(const HINSTANCE instance, const HINSTANCE /*prev_instance*/,
                    const LPSTR /*cmd_line*/, const int /*cmd_show*/) {
-#ifdef CALC_DONT_USE_SUBNORMALS
-  // TODO: move this code to the core.
-  /* Applications that generate floating point underflow in vector registers can
-   * benefit from setting the flush-to-zero mode rather than generating
-   * subnormal numbers in case of underflow:*/
-  /* It is strongly recommended to set the flush-to-zero mode unless you have
-   * special reasons to use subnormal numbers. You may, in addition, set the
-   * denormals-are-zero mode if vector regsiters are available:*/
-  _mm_setcsr(_mm_getcsr() | _MM_FLUSH_ZERO_ON | _MM_DENORMALS_ZERO_ON);
-#endif
 #ifdef CALC_SUPPORT_DPI_CHANGES
 #ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
   // https://learn.microsoft.com/en-us/windows/win32/hidpi/dpi-awareness-context
@@ -485,37 +471,6 @@ int WINAPI WinMain(const HINSTANCE instance, const HINSTANCE /*prev_instance*/,
 
 #else
 
-class MyApp : public wxApp {
-public:
-  bool OnInit() override;
-};
-
-// This defines the equivalent of main() for the current platform.
-wxIMPLEMENT_APP(MyApp);
-
-bool MyApp::OnInit() {
-#ifdef CALC_DONT_USE_SUBNORMALS
-  // TODO: move this code to the core.
-  /* Applications that generate floating point underflow in vector registers can
-   * benefit from setting the flush-to-zero mode rather than generating
-   * subnormal numbers in case of underflow:*/
-  /* It is strongly recommended to set the flush-to-zero mode unless you have
-   * special reasons to use subnormal numbers. You may, in addition, set the
-   * denormals-are-zero mode if vector regsiters are available:*/
-  _mm_setcsr(_mm_getcsr() | _MM_FLUSH_ZERO_ON | _MM_DENORMALS_ZERO_ON);
-#endif
-  CalcFrame *frame = new CalcFrame(nullptr);
-  frame->Show();
-  return true;
-}
-
-void CalcFrame::CalcFrameOnClose(class wxCloseEvent &e) {
-  // FIXME: Not working properly.
-  Close(true);
-}
-
-void CalcFrame::m_textCtrlInputOnTextEnter(class wxCommandEvent &e) {}
-
-void CalcFrame::m_buttonEnterOnButtonClick(class wxCommandEvent &e) {}
+// TODO Qt
 
 #endif

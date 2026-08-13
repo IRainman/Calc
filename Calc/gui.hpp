@@ -400,8 +400,7 @@ private:
 
 #else
 
-#include <CalcFrame.h>
-#include <wx/wx.h>
+// TODO Qt
 
 #endif
 #endif

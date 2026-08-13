@@ -18,23 +18,28 @@ static_assert(
     __cplusplus >=
     202400L /* don't needs to check _MSVC_LANG it's should be set by user */);
 
-#define __SSE2__ 1
-#define __SSE3__ 1
-
-#if defined(_M_IX86) || defined(__i386__)
+#if defined(_M_IX86) || defined(__i386__) || defined(__i686__)
 #define _M_IX86_FP 2
 #endif
 
+// My fast-float fork and Zmij and fmt used those instructions:
+
+// explicitely enable SSE2 for 32 and 64 bit builds:
+#define __SSE2__ 1
+// explicitely enable SSE3 for 32 and 64 bit builds:
+#define __SSE3__ 1
+
 #if defined(_M_X64) || defined(__x86_64__) || defined(__amd64__)
+// explicitely enable SSSE3 for 64 bit builds:
 #define __SSSE3__ 1
+// explicitely enable SSE4.1 for 64 bit builds:
 #define __SSE4_1__ 1
-//  TODO enable this too and add improvements to fast_float and fmt/Zmij?
-//  #define __SSE4_2__ 1
+// explicitely enable SSE4.2 for 64 bit builds:
+#define __SSE4_2__ 1
 #endif
 
 // add headers that you want to pre-compile here:
 
-// #include <algorithm> // fast_float ?
 #include <array>         // Calc ang Win32 GUI
 #include <limits>        // Calc
 #include <new>           // Formatter
@@ -45,8 +50,6 @@ static_assert(
 #include <stdfloat>      // Calc
 #include <string_view>   // Calc
 #include <unordered_map> // Calc
-// #include <numeric> // ?
-// #include <flat_map> // TODO: needs to check this.
 
 // Calc compile options:
 
@@ -109,20 +112,12 @@ static_assert(
     "128-bit float type isn't supported by fast_float. The library convert any user input values to 64-bit double."
 #endif
 
-/* Tests time is: 53278ms. */
-
 // https://github.com/fastfloat/fast_float/pull/307
-#define CALC_USING_MY_FASTFLOAT
-
-#ifdef CALC_USING_MY_FASTFLOAT
-/* Tests time is: 48459ms. */
+// Tests time is: 48459ms. wu options Tests time is: 53278ms. Original Tests time is: 56140ms.
 #define FASTFLOAT_ONLY_POSITIVE_C_NUMBER_WO_INF_NAN
 #define FASTFLOAT_ONLY_ROUNDS_TO_NEAREST_SUPPORTED
 #define FASTFLOAT_ISNOT_CHECKED_BOUNDS
+#define FASTFLOAT_SSE_PATCH_REWORK
 #include "../../fast_float/include/fast_float/fast_float.h"
-#else
-/* Tests time is: 56140ms. */
-// #include "../../fast_float_orig/include/fast_float/fast_float.h"
-#endif
 
 #endif
