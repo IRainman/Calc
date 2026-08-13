@@ -167,7 +167,7 @@
       <CETCompat>false</CETCompat>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
       <EnableUAC>false</EnableUAC>
-      <AdditionalOptions>/DEBUG %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/DEBUG /DELAYLOAD:ntdll.dll %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <ProjectReference />
     <Manifest />
@@ -221,7 +221,7 @@
       <CETCompat>false</CETCompat>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
       <EnableUAC>false</EnableUAC>
-      <AdditionalOptions>/DEBUG %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/DEBUG /DELAYLOAD:ntdll.dll %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <ProjectReference />
     <Manifest />
@@ -291,6 +291,7 @@
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
       <EnableUAC>false</EnableUAC>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <AdditionalOptions>/DELAYLOAD:ntdll.dll %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <ProjectReference />
     <Manifest />
@@ -361,6 +362,7 @@
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
       <EnableUAC>false</EnableUAC>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <AdditionalOptions>/DELAYLOAD:ntdll.dll %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <ProjectReference />
     <Manifest />
