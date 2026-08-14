@@ -79,7 +79,7 @@ static_assert(std::is_standard_layout_v<CalcWindowState>);
 std::string calc_tests() {
   std::string output;
 #ifdef CALC_TESTS_DEV_ENABLED
-  output.resize(85 * 1024);
+  output.resize(128 * 1024);
   auto output_end = output.data();
   unsigned int failed = 0;
 #endif
