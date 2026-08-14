@@ -73,6 +73,9 @@ static_assert(
 
 // fmt compile options:
 
+#pragma warning(disable : 4702)
+#pragma warning(disable : 26495)
+
 // because we have cleaner output:
 #define FMT_OPTIMIZE_SIZE 2 // Tests time is: 49612ms.
 #define FMT_USE_RTTI 0
