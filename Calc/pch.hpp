@@ -113,7 +113,8 @@ static_assert(
 #endif
 
 // https://github.com/fastfloat/fast_float/pull/307
-// Tests time is: 48459ms. wu options Tests time is: 53278ms. Original Tests time is: 56140ms.
+// Tests time is: 48459ms. wu options Tests time is: 53278ms. Original Tests
+// time is: 56140ms.
 #define FASTFLOAT_ONLY_POSITIVE_C_NUMBER_WO_INF_NAN
 #define FASTFLOAT_ONLY_ROUNDS_TO_NEAREST_SUPPORTED
 #define FASTFLOAT_ISNOT_CHECKED_BOUNDS
