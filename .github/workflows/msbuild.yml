@@ -1,8 +1,3 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
 name: MSBuild
 
 on:
@@ -12,13 +7,9 @@ on:
     branches: [ "master" ]
 
 env:
-  # Path to the solution file relative to the root of the project.
   SOLUTION_FILE_PATH: ./Calc.sln
-
-  # Configuration type to build.
-  # You can convert this to a build matrix if you need coverage of multiple configuration types.
-  # https://docs.github.com/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
   BUILD_CONFIGURATION: Release
+  CMAKE_BUILD_DIR: ${{github.workspace}}/cmake_build
 
 permissions:
   contents: read
@@ -30,11 +21,22 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Install CMake
+      uses: cmake-actions/cmake-and-ninja@v1
+      with:
+        cmake-version: '3.22.x'
+        ninja-version: 'latest'
+
+    - name: Run CMake to download dependencies
+      working-directory: ${{github.workspace}}
+      run: |
+        mkdir -p "${{env.CMAKE_BUILD_DIR}}"
+        cd "${{env.CMAKE_BUILD_DIR}}"
+        cmake -DCMAKE_BUILD_TYPE=${{env.BUILD_CONFIGURATION}} ..
+
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
 
     - name: Build
       working-directory: ${{env.GITHUB_WORKSPACE}}
-      # Add additional options to the MSBuild command line here (like platform or verbosity level).
-      # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
       run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} ${{env.SOLUTION_FILE_PATH}}
