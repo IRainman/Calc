@@ -58,9 +58,9 @@ char *Formatter::format(Value value, Result &ret) noexcept { //-V2009
   char *end;
   // https://www.exploringbinary.com/decimal-precision-of-binary-floating-point-numbers/
   if (isnormal(value)) {
-    end = zmij::detail::write_general(value, output_precision, ret.data());
+    end = zmij::detail::write_general(ret.data(), value, output_precision);
   } else {
-    end = zmij::detail::write(value, ret.data());
+    end = zmij::detail::write(ret.data(), value);
   }
   return end;
 }

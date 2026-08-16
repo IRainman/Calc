@@ -18,7 +18,13 @@ public:
   /**
    * Stack type for summary of issues formatting
    */
-  using Summary = std::array<char, std::hardware_destructive_interference_size>;
+  using Summary = std::array<char,
+#ifdef CALC_TESTS_DEV_ENABLED
+	  1024
+#else
+      std::hardware_destructive_interference_size
+#endif
+  >;
   /**
    * Create report from IssueManager. Return the end of formated text.
    */
