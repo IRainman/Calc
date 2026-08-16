@@ -97,7 +97,6 @@ static_assert(
 
 // reduce cache pressure:
 #define FMT_BUILTIN_TYPES 0 // Tests time is: 49980ms.
-// #define FMT_USE_EXCEPTIONS 0
 #define FMT_CPP_LIB_FILESYSTEM 0
 #define FMT_UNICODE 0
 #define FMT_USE_FULL_CACHE_DRAGONBOX 0 // Tests time is: 50111ms.
