@@ -34,7 +34,7 @@ jobs:
         run: |
           mkdir -p "${{ env.CMAKE_BUILD_DIR }}"
           cd "${{ env.CMAKE_BUILD_DIR }}"
-          cmake -DCMAKE_BUILD_TYPE=${{ env.BUILD_CONFIGURATION }} ..
+          cmake -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_CONFIGURATION }} ..
         shell: bash
 
       - name: Add MSBuild to PATH
