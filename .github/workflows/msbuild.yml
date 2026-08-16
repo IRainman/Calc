@@ -9,7 +9,7 @@ on:
 env:
   SOLUTION_FILE_PATH: ./Calc.sln
   BUILD_CONFIGURATION: Release
-  CMAKE_BUILD_DIR: ${{github.workspace}}/cmake_build
+  CMAKE_BUILD_DIR: ${{ github.workspace }}/cmake_build
 
 permissions:
   contents: read
@@ -19,26 +19,27 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Install CMake
-    uses: jwlawson/actions-setup-cmake@v1
-    with:
-        cmake-version: '3.22.x'
+      - name: Install CMake
+        uses: jwlawson/actions-setup-cmake@v1
+        with:
+          cmake-version: '3.22.x'
 
-    - name: Install Ninja
+      - name: Install Ninja
         uses: seanmiddleditch/gha-setup-ninja@master
 
-    - name: Run CMake to download dependencies
-      working-directory: ${{github.workspace}}
-      run: |
-        mkdir -p "${{env.CMAKE_BUILD_DIR}}"
-        cd "${{env.CMAKE_BUILD_DIR}}"
-        cmake -DCMAKE_BUILD_TYPE=${{env.BUILD_CONFIGURATION}} ..
+      - name: Run CMake to download dependencies
+        working-directory: ${{ github.workspace }}
+        run: |
+          mkdir -p "${{ env.CMAKE_BUILD_DIR }}"
+          cd "${{ env.CMAKE_BUILD_DIR }}"
+          cmake -DCMAKE_BUILD_TYPE=${{ env.BUILD_CONFIGURATION }} ..
+        shell: bash
 
-    - name: Add MSBuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.2
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v1.0.2
 
-    - name: Build
-      working-directory: ${{env.GITHUB_WORKSPACE}}
-      run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} ${{env.SOLUTION_FILE_PATH}}
+      - name: Build
+        working-directory: ${{ github.workspace }}
+        run: msbuild /m /p:Configuration=${{ env.BUILD_CONFIGURATION }} ${{ env.SOLUTION_FILE_PATH }}
