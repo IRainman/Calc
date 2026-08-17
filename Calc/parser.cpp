@@ -177,7 +177,7 @@ inline void Parser::advance() noexcept { _lex.next(_current); }
   if (_current.type == Token::Type::LPAREN) [[likely]] {
     advance();
 
-    const auto& [check, function] = i->second;
+    const auto &[check, function] = i->second;
 
     std::array<Value, std::numeric_limits<ParamCount>::max()> parameters
         [[indeterminate]];

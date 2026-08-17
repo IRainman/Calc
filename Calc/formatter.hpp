@@ -20,11 +20,11 @@ public:
    */
   using Summary = std::array<char,
 #ifdef CALC_TESTS_DEV_ENABLED
-	  1024
+                             1024
 #else
-      std::hardware_destructive_interference_size
+                             std::hardware_destructive_interference_size
 #endif
-  >;
+                             >;
   /**
    * Create report from IssueManager. Return the end of formated text.
    */

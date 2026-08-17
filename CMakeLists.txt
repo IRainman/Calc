@@ -7,19 +7,19 @@ include(cmake/CPM.cmake)
 CPMAddPackage(
   NAME fmt
   GIT_TAG main
-  GITHUB_REPOSITORY IRainman/fmt
+  GITHUB_REPOSITORY irainman/fmt
 )
 
 CPMAddPackage(
   NAME zmij
   GIT_TAG main
-  GITHUB_REPOSITORY IRainman/zmij
+  GITHUB_REPOSITORY irainman/zmij
 )
 
 CPMAddPackage(
   NAME fast_float
   GIT_TAG main
-  GITHUB_REPOSITORY IRainman/fast_float
+  GITHUB_REPOSITORY irainman/fast_float
 )
 
 set(CALC_SOURCES
@@ -37,7 +37,7 @@ set(CALC_SOURCES
 add_executable(Calc WIN32 ${CALC_SOURCES})
 target_include_directories(Calc PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/Calc")
 
-target_compile_features(Calc PRIVATE cxx_std_26)
+target_compile_features(Calc PRIVATE cxx_std_23)
 set_target_properties(Calc PROPERTIES
   CXX_STANDARD_REQUIRED ON
   CXX_EXTENSIONS OFF

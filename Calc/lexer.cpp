@@ -103,7 +103,7 @@ void Lexer::next(Token &token) noexcept {
     // https://en.cppreference.com/w/cpp/language/ascii
     const auto &cur = _view.front();
     if (cur == '%' || cur == '(' || cur == ')' || cur == '*' || cur == '+' ||
-        cur == ',' || cur == '-' || cur == '/' || cur == '^'){
+        cur == ',' || cur == '-' || cur == '/' || cur == '^') {
       advance(read_operator(token));
       return;
     }

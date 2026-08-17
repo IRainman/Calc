@@ -14,9 +14,8 @@
 #define PCH_HPP
 
 // additional library arch helpers because MSVC is an unusual compiler:
-static_assert(
-    __cplusplus >=
-    202400L /* don't needs to check _MSVC_LANG it's should be set by user */);
+static_assert(__cplusplus >= 202400L
+              /* don't needs to check _MSVC_LANG it's should be set by user */);
 
 #if defined(_M_IX86) || defined(__i386__) || defined(__i686__)
 #define _M_IX86_FP 2
@@ -120,7 +119,7 @@ static_assert(
 #define FASTFLOAT_ONLY_POSITIVE_C_NUMBER_WO_INF_NAN
 #define FASTFLOAT_ONLY_ROUNDS_TO_NEAREST_SUPPORTED
 #define FASTFLOAT_ISNOT_CHECKED_BOUNDS
-#define FASTFLOAT_SSE_PATCH_REWORK
+#define FASTFLOAT_ASSUME(expr) [[assume(expr)]]
 #include "../../fast_float/include/fast_float/fast_float.h"
 
 #endif
