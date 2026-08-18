@@ -22,7 +22,7 @@ using Value = std::float128_t;
 #if __STDCPP_FLOAT64_T__ == 1
 using Value = std::float64_t;
 #else
-using Value = double;
+using Value = double_t;
 #endif
 #define CALC_USE_128_BIT_FLOAT 0
 constexpr auto huge_value_precision = 1e15;
