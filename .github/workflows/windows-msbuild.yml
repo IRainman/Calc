@@ -4,13 +4,15 @@ on:
   push:
     branches:
       - master
+
   pull_request:
+
   workflow_dispatch:
 
-# Cancel older runs of the same branch/PR, but never cancel
-# individual matrix jobs against each other.
+# Cancel an older run for the same branch/PR when a newer commit arrives.
+# Matrix jobs within one run are NOT serialized or canceled against each other.
 concurrency:
-  group: windows-msbuild-${{ github.ref }}
+  group: windows-build-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -23,74 +25,247 @@ jobs:
 
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - platform: Win32
-            output_dir: win32
 
-          - platform: x64
-            output_dir: x64
+      matrix:
+        platform:
+          - Win32
+          - x64
 
     steps:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v3
-        with:
-          msbuild-architecture: x64
-
-      - name: Build ${{ matrix.platform }}
+      - name: Locate Visual Studio
+        id: vs
         shell: pwsh
         run: |
-          msbuild `
-            "${{ github.workspace }}\Calc.sln" `
-            /t:Rebuild `
-            /m `
-            /p:Configuration=Release `
-            /p:Platform=${{ matrix.platform }} `
-            /bl:"${{ github.workspace }}\build-${{ matrix.platform }}.binlog"
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
 
-      - name: Verify output
-        shell: pwsh
-        run: |
-          $output = "${{ github.workspace }}\out\${{ matrix.output_dir }}"
-
-          if (-not (Test-Path $output)) {
-            throw "Build output directory does not exist: $output"
+          if (-not (Test-Path $vswhere)) {
+            throw "vswhere.exe was not found: $vswhere"
           }
 
-          Write-Host "Build output:"
-          Get-ChildItem -Path $output -Recurse -File |
-            Select-Object FullName, Length
+          $installationPath = & $vswhere `
+            -latest `
+            -products * `
+            -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 `
+            -property installationPath
 
-          $exe = Get-ChildItem `
+          if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($installationPath)) {
+            throw "Visual Studio installation with C++ tools was not found."
+          }
+
+          $installationPath = $installationPath.Trim()
+
+          $devenv = Join-Path `
+            $installationPath `
+            "Common7\IDE\devenv.com"
+
+          $vsdevcmd = Join-Path `
+            $installationPath `
+            "Common7\Tools\VsDevCmd.bat"
+
+          $vsmcbuildcmd = Join-Path `
+            $installationPath `
+            "Common7\Tools\VsMSBuildCmd.bat"
+
+          if (-not (Test-Path $devenv)) {
+            throw "devenv.com was not found: $devenv"
+          }
+
+          if (-not (Test-Path $vsdevcmd)) {
+            throw "VsDevCmd.bat was not found: $vsdevcmd"
+          }
+
+          if (-not (Test-Path $vsmcbuildcmd)) {
+            throw "VsMSBuildCmd.bat was not found: $vsmcbuildcmd"
+          }
+
+          Write-Host "Visual Studio installation:"
+          Write-Host "  $installationPath"
+
+          Write-Host ""
+          Write-Host "devenv:"
+          Write-Host "  $devenv"
+
+          Write-Host ""
+          Write-Host "VsDevCmd:"
+          Write-Host "  $vsdevcmd"
+
+          Write-Host ""
+          Write-Host "VsMSBuildCmd:"
+          Write-Host "  $vsmcbuildcmd"
+
+          "installationPath=$installationPath" >> $env:GITHUB_OUTPUT
+          "devenv=$devenv" >> $env:GITHUB_OUTPUT
+          "vsdevcmd=$vsdevcmd" >> $env:GITHUB_OUTPUT
+          "vsmcbuildcmd=$vsmcbuildcmd" >> $env:GITHUB_OUTPUT
+
+      - name: Verify Visual Studio toolchain
+        shell: cmd
+        env:
+          VS_INSTALL: ${{ steps.vs.outputs.installationPath }}
+        run: |
+          call "%VS_INSTALL%\Common7\Tools\VsDevCmd.bat" -arch=x64 -host_arch=x64
+
+          echo.
+          echo === MSBuild ===
+          where msbuild
+          msbuild -version
+
+          echo.
+          echo === C++ compiler ===
+          where cl
+          cl
+
+          echo.
+          echo === Linker ===
+          where link
+          link
+
+          echo.
+          echo === devenv ===
+          where devenv
+          devenv.com /?
+
+      - name: Verify v145 toolset
+        shell: pwsh
+        env:
+          VS_INSTALL: ${{ steps.vs.outputs.installationPath }}
+        run: |
+          $toolset = Join-Path `
+            $env:VS_INSTALL `
+            "MSBuild\Microsoft\VC\v180\Platforms\Win32\PlatformToolsets\v145"
+
+          if (-not (Test-Path $toolset)) {
+            throw "v145 Win32 toolset was not found: $toolset"
+          }
+
+          $toolset = Join-Path `
+            $env:VS_INSTALL `
+            "MSBuild\Microsoft\VC\v180\Platforms\x64\PlatformToolsets\v145"
+
+          if (-not (Test-Path $toolset)) {
+            throw "v145 x64 toolset was not found: $toolset"
+          }
+
+          Write-Host "v145 toolset is installed for both Win32 and x64."
+
+      - name: Rebuild ${{ matrix.platform }}
+        shell: cmd
+        env:
+          VS_INSTALL: ${{ steps.vs.outputs.installationPath }}
+          PLATFORM: ${{ matrix.platform }}
+        run: |
+          call "%VS_INSTALL%\Common7\Tools\VsMSBuildCmd.bat"
+
+          echo.
+          echo ========================================
+          echo Building Calc.sln
+          echo Configuration: Release
+          echo Platform: %PLATFORM%
+          echo ========================================
+          echo.
+
+          if not exist "Calc.sln" (
+            echo ERROR: Calc.sln was not found.
+            exit /b 1
+          )
+
+          if /I "%PLATFORM%"=="Win32" (
+            devenv.com Calc.sln /Rebuild "Release|Win32" /Out "%GITHUB_WORKSPACE%\devenv-Win32.log"
+          ) else if /I "%PLATFORM%"=="x64" (
+            devenv.com Calc.sln /Rebuild "Release|x64" /Out "%GITHUB_WORKSPACE%\devenv-x64.log"
+          ) else (
+            echo ERROR: Unsupported platform: %PLATFORM%
+            exit /b 1
+          )
+
+          if errorlevel 1 (
+            echo.
+            echo ========================================
+            echo Visual Studio build FAILED
+            echo ========================================
+            exit /b 1
+          )
+
+          echo.
+          echo ========================================
+          echo Visual Studio build SUCCEEDED
+          echo ========================================
+
+      - name: Verify executable
+        shell: pwsh
+        env:
+          PLATFORM: ${{ matrix.platform }}
+        run: |
+          if ($env:PLATFORM -eq "Win32") {
+            $output = Join-Path $env:GITHUB_WORKSPACE "out\win32"
+          }
+          elseif ($env:PLATFORM -eq "x64") {
+            $output = Join-Path $env:GITHUB_WORKSPACE "out\x64"
+          }
+          else {
+            throw "Unsupported platform: $env:PLATFORM"
+          }
+
+          Write-Host "Expected output directory:"
+          Write-Host "  $output"
+
+          if (-not (Test-Path $output)) {
+            throw "Output directory does not exist: $output"
+          }
+
+          $files = Get-ChildItem `
             -Path $output `
-            -Filter *.exe `
+            -Recurse `
             -File
 
-          if (-not $exe) {
+          if (-not $files) {
+            throw "Output directory is empty: $output"
+          }
+
+          Write-Host ""
+          Write-Host "Produced files:"
+          $files |
+            Select-Object FullName, Length |
+            Format-Table -AutoSize
+
+          $exe = @(
+            Get-ChildItem `
+              -Path $output `
+              -Filter "*.exe" `
+              -Recurse `
+              -File
+          )
+
+          if ($exe.Count -eq 0) {
             throw "No executable was produced in $output"
           }
 
           Write-Host ""
-          Write-Host "Executable:"
-          $exe | Select-Object FullName, Length
+          Write-Host "Executable(s):"
+
+          foreach ($file in $exe) {
+            Write-Host "  $($file.FullName)"
+          }
 
       - name: Upload build
         uses: actions/upload-artifact@v6
         with:
-          name: Calc-Windows-${{ matrix.output_dir }}
+          name: Calc-Windows-${{ matrix.platform }}
           path: |
-            out\${{ matrix.output_dir }}\**
+            out\${{ matrix.platform == 'Win32' && 'win32' || 'x64' }}\**
           if-no-files-found: error
           retention-days: 14
 
-      - name: Upload MSBuild binary log
-        if: failure()
+      - name: Upload Visual Studio build log
+        if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: Calc-MSBuild-log-${{ matrix.output_dir }}
-          path: build-${{ matrix.platform }}.binlog
-          if-no-files-found: ignore
-          retention-days: 7
+          name: Calc-VisualStudio-log-${{ matrix.platform }}
+          path: |
+            devenv-${{ matrix.platform }}.log
+          if-no-files-found: warn
+          retention-days: 14
+
