@@ -1,4 +1,4 @@
-name: CMake - Clang Multi-Platform
+name: CMake Clang Multi-Platform
 
 on:
   push:
@@ -6,11 +6,13 @@ on:
       - master
 
   pull_request:
+    branches:
+      - master
 
   workflow_dispatch:
 
-# Cancel older runs for the same branch/PR.
-# Matrix configurations within one run remain independent.
+# Cancel an older run for the same branch/PR.
+# Matrix jobs in the same workflow run remain independent.
 concurrency:
   group: cmake-clang-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -19,7 +21,9 @@ permissions:
   contents: read
 
 jobs:
+
   build:
+
     name: ${{ matrix.name }}
 
     strategy:
@@ -28,111 +32,169 @@ jobs:
       matrix:
         include:
 
-          # ==========================================================
-          # Linux x86-64
-          # ==========================================================
+          # ================================================================
+          # Linux x86-64-v2
+          # ================================================================
 
           - name: Linux Clang x86-64-v2
             os: ubuntu-24.04
             platform: linux
-            arch: x64
-            build_dir: build-linux-x64
-            architecture: x86-64-v2
+            architecture: x64
+            build_dir: build/linux-x64
 
-          # ==========================================================
-          # Linux 32-bit
-          # ==========================================================
+          # ================================================================
+          # Linux 32-bit Prescott / SSE3
+          # ================================================================
 
           - name: Linux Clang x86 SSE3
             os: ubuntu-24.04
             platform: linux
-            arch: x86
-            build_dir: build-linux-x86
-            architecture: x86-sse3
+            architecture: x86
+            build_dir: build/linux-x86
 
-          # ==========================================================
-          # Windows x86-64
-          #
-          # clang-cl + lld-link
-          #
-          # The Visual Studio environment is used only to provide
-          # Windows SDK headers/libraries. The C++ compiler is Clang.
-          # ==========================================================
+          # ================================================================
+          # Windows x86-64-v2
+          # ================================================================
 
           - name: Windows Clang x86-64-v2
             os: windows-2025-vs2026
             platform: windows
-            arch: x64
-            build_dir: build-windows-x64
-            architecture: x86-64-v2
+            architecture: x64
+            build_dir: build/windows-x64
 
-          # ==========================================================
-          # Windows 32-bit
-          #
-          # clang-cl + lld-link + -m32
-          # ==========================================================
+          # ================================================================
+          # Windows 32-bit Prescott / SSE3
+          # ================================================================
 
           - name: Windows Clang x86 SSE3
             os: windows-2025-vs2026
             platform: windows
-            arch: x86
-            build_dir: build-windows-x86
-            architecture: x86-sse3
+            architecture: x86
+            build_dir: build/windows-x86
 
     runs-on: ${{ matrix.os }}
 
     steps:
 
-      # ==========================================================
-      # Checkout
-      # ==========================================================
+      # ======================================================================
+      # Calc
+      # ======================================================================
 
-      - name: Checkout
+      - name: Checkout Calc
         uses: actions/checkout@v6
 
-      # ==========================================================
-      # Linux LLVM packages
-      # ==========================================================
+      # ======================================================================
+      # Dependencies
+      #
+      # The Calc checkout is:
+      #
+      #   <parent>/Calc
+      #
+      # and pch.hpp requires:
+      #
+      #   <parent>/zmij
+      #   <parent>/fmt
+      #   <parent>/fast_float
+      # ======================================================================
 
-      - name: Enable Linux i386 architecture
-        if: matrix.platform == 'linux' && matrix.arch == 'x86'
+      - name: Checkout dependencies
+        shell: bash
+        working-directory: ${{ github.workspace }}
+        run: |
+          set -euo pipefail
+
+          PARENT="$(dirname "$GITHUB_WORKSPACE")"
+
+          echo "Calc workspace:"
+          echo "  $GITHUB_WORKSPACE"
+
+          echo "Dependency root:"
+          echo "  $PARENT"
+
+          rm -rf \
+            "$PARENT/fast_float" \
+            "$PARENT/fmt" \
+            "$PARENT/zmij"
+
+          git clone \
+            --depth 1 \
+            --branch main \
+            https://github.com/IRainman/fast_float.git \
+            "$PARENT/fast_float"
+
+          git clone \
+            --depth 1 \
+            --branch main \
+            https://github.com/IRainman/fmt.git \
+            "$PARENT/fmt"
+
+          git clone \
+            --depth 1 \
+            --branch main \
+            https://github.com/IRainman/zmij.git \
+            "$PARENT/zmij"
+
+          echo
+          echo "Dependency layout:"
+          echo "  $PARENT/fast_float"
+          echo "  $PARENT/fmt"
+          echo "  $PARENT/zmij"
+
+      - name: Verify dependency layout
         shell: bash
         run: |
-          sudo dpkg --add-architecture i386
-          sudo apt-get update
+          set -euo pipefail
+
+          PARENT="$(dirname "$GITHUB_WORKSPACE")"
+
+          test -f \
+            "$PARENT/fast_float/include/fast_float/fast_float.h"
+
+          test -f \
+            "$PARENT/fmt/include/fmt/compile.h"
+
+          test -f \
+            "$PARENT/zmij/zmij.cc"
+
+          echo "Dependency layout is correct."
+
+      # ======================================================================
+      # Linux toolchain
+      # ======================================================================
 
       - name: Install Linux Clang toolchain
         if: matrix.platform == 'linux'
         shell: bash
         run: |
+          set -euo pipefail
+
+          sudo dpkg --add-architecture i386
+
           sudo apt-get update
 
           sudo apt-get install -y \
             clang \
             lld \
-            ninja-build \
-            cmake \
             libc++-dev \
-            libc++abi-dev
-
-      - name: Install Linux 32-bit C++ runtime
-        if: matrix.platform == 'linux' && matrix.arch == 'x86'
-        shell: bash
-        run: |
-          sudo apt-get install -y \
-            libc6-dev:i386 \
+            libc++abi-dev \
+            libc6-dev-i386 \
             linux-libc-dev:i386 \
+            ninja-build
+
+          sudo apt-get install -y \
             libc++-dev:i386 \
             libc++abi-dev:i386
 
-      # ==========================================================
-      # Verify Linux LLVM toolchain
-      # ==========================================================
+      # ======================================================================
+      # Linux toolchain verification
+      # ======================================================================
 
-      - name: Verify Linux toolchain
+      - name: Verify Linux Clang
         if: matrix.platform == 'linux'
         shell: bash
         run: |
+          set -euo pipefail
+
           echo "=== clang ==="
           clang --version
 
@@ -152,24 +214,24 @@ jobs:
           echo "=== ninja ==="
           ninja --version
 
-      # ==========================================================
-      # Windows: locate Visual Studio environment
+      # ======================================================================
+      # Windows SDK
       #
-      # This is NOT used to compile with MSVC.
+      # We need the Windows SDK and system libraries for clang++/lld-link.
       #
-      # clang-cl needs the Windows SDK / system libraries for the
-      # Windows target. We use VsDevCmd only to expose those paths.
-      # ==========================================================
+      # We do NOT invoke cl.exe.
+      # ======================================================================
 
-      - name: Locate Visual Studio
+      - name: Locate Windows SDK environment
         if: matrix.platform == 'windows'
-        id: vs
+        id: windows_sdk
         shell: pwsh
         run: |
-          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $vswhere =
+            "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
 
           if (-not (Test-Path $vswhere)) {
-            throw "vswhere.exe was not found: $vswhere"
+            throw "vswhere.exe not found: $vswhere"
           }
 
           $installationPath = & $vswhere `
@@ -178,9 +240,8 @@ jobs:
             -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 `
             -property installationPath
 
-          if ($LASTEXITCODE -ne 0 -or `
-              [string]::IsNullOrWhiteSpace($installationPath)) {
-            throw "Visual Studio with Windows C++ SDK support was not found."
+          if ($LASTEXITCODE -ne 0) {
+            throw "Unable to locate Visual Studio installation."
           }
 
           $installationPath = $installationPath.Trim()
@@ -190,82 +251,31 @@ jobs:
             "Common7\Tools\VsDevCmd.bat"
 
           if (-not (Test-Path $vsdevcmd)) {
-            throw "VsDevCmd.bat was not found: $vsdevcmd"
+            throw "VsDevCmd.bat not found: $vsdevcmd"
           }
 
-          "VS_INSTALL=$installationPath" >> $env:GITHUB_ENV
-          "VSDEVCMD=$vsdevcmd" >> $env:GITHUB_ENV
+          "VSDEVCMD=$vsdevcmd" >> $env:GITHUB_OUTPUT
 
           Write-Host "Visual Studio environment:"
           Write-Host "  $installationPath"
 
-      # ==========================================================
-      # Windows: initialize the correct target architecture
-      #
-      # We do NOT invoke cl.exe.
-      #
-      # x64:
-      #   VsDevCmd -arch=x64
-      #
-      # x86:
-      #   VsDevCmd -arch=x86
-      #
-      # This supplies the correct SDK/library search paths to
-      # clang-cl/lld-link.
-      # ==========================================================
+      # ======================================================================
+      # Windows LLVM verification
+      # ======================================================================
 
-      - name: Initialize Windows SDK environment
-        if: matrix.platform == 'windows'
-        shell: pwsh
-        env:
-          ARCH: ${{ matrix.arch }}
-        run: |
-          if ($env:ARCH -eq "x64") {
-            $targetArch = "x64"
-          }
-          elseif ($env:ARCH -eq "x86") {
-            $targetArch = "x86"
-          }
-          else {
-            throw "Unsupported architecture: $env:ARCH"
-          }
-
-          $output = cmd /c `
-            "`"$env:VSDEVCMD`" -arch=$targetArch -host_arch=x64 && set"
-
-          foreach ($line in $output) {
-            if ($line -match '^([^=]+)=(.*)$') {
-              $name = $matches[1]
-              $value = $matches[2]
-
-              "$name=$value" >> $env:GITHUB_ENV
-            }
-          }
-
-          Write-Host "Windows SDK environment initialized for $targetArch."
-
-      # ==========================================================
-      # Locate LLVM on Windows
-      # ==========================================================
-
-      - name: Locate LLVM
+      - name: Verify Windows Clang
         if: matrix.platform == 'windows'
         shell: pwsh
         run: |
-          $clangCl = Get-Command clang-cl.exe -ErrorAction SilentlyContinue
-          $clang = Get-Command clang.exe -ErrorAction SilentlyContinue
-          $lldLink = Get-Command lld-link.exe -ErrorAction SilentlyContinue
+          $clang = Get-Command clang++.exe -ErrorAction SilentlyContinue
+          $lld = Get-Command lld-link.exe -ErrorAction SilentlyContinue
           $llvmRc = Get-Command llvm-rc.exe -ErrorAction SilentlyContinue
 
-          if (-not $clangCl) {
-            throw "clang-cl.exe was not found."
-          }
-
           if (-not $clang) {
-            throw "clang.exe was not found."
+            throw "clang++.exe was not found."
           }
 
-          if (-not $lldLink) {
+          if (-not $lld) {
             throw "lld-link.exe was not found."
           }
 
@@ -273,28 +283,8 @@ jobs:
             throw "llvm-rc.exe was not found."
           }
 
-          Write-Host "clang-cl:"
-          Write-Host "  $($clangCl.Source)"
-
-          Write-Host "clang:"
-          Write-Host "  $($clang.Source)"
-
-          Write-Host "lld-link:"
-          Write-Host "  $($lldLink.Source)"
-
-          Write-Host "llvm-rc:"
-          Write-Host "  $($llvmRc.Source)"
-
-          $llvmBin = Split-Path -Parent $clangCl.Source
-
-          "LLVM_BIN=$llvmBin" >> $env:GITHUB_ENV
-
-      - name: Verify Windows LLVM toolchain
-        if: matrix.platform == 'windows'
-        shell: pwsh
-        run: |
-          Write-Host "=== clang-cl ==="
-          clang-cl.exe --version
+          Write-Host "=== clang++ ==="
+          clang++.exe --version
 
           Write-Host ""
           Write-Host "=== lld-link ==="
@@ -312,25 +302,27 @@ jobs:
           Write-Host "=== ninja ==="
           ninja --version
 
-      # ==========================================================
-      # Architecture-specific CMake flags
-      # ==========================================================
+      # ======================================================================
+      # Linux configure
+      # ======================================================================
 
-      - name: Configure Linux CMake
+      - name: Configure Linux
         if: matrix.platform == 'linux'
         shell: bash
         env:
-          ARCH: ${{ matrix.arch }}
+          ARCHITECTURE: ${{ matrix.architecture }}
           BUILD_DIR: ${{ matrix.build_dir }}
         run: |
-          if [ "$ARCH" = "x64" ]; then
-            export CFLAGS="-march=x86-64-v2"
-            export CXXFLAGS="-march=x86-64-v2"
-          elif [ "$ARCH" = "x86" ]; then
-            export CFLAGS="-m32"
-            export CXXFLAGS="-m32"
+          set -euo pipefail
+
+          if [ "$ARCHITECTURE" = "x64" ]; then
+            TARGET_FLAGS="-march=x86-64-v2"
+            STD_LIB="-stdlib=libc++"
+          elif [ "$ARCHITECTURE" = "x86" ]; then
+            TARGET_FLAGS="-march=prescott -m32"
+            STD_LIB="-stdlib=libc++"
           else
-            echo "Unsupported architecture: $ARCH"
+            echo "Unsupported architecture: $ARCHITECTURE"
             exit 1
           fi
 
@@ -341,126 +333,205 @@ jobs:
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_C_COMPILER=clang \
             -DCMAKE_CXX_COMPILER=clang++ \
-            -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
-            -DCMAKE_C_FLAGS="$CFLAGS" \
-            -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld" \
-            -DCMAKE_CXX_FLAGS_RELEASE="-O3 -flto -stdlib=libc++" \
-            -DCMAKE_CXX_FLAGS_DEBUG="-O0 -g -Wall -Wextra -stdlib=libc++"
+            -DCMAKE_CXX_FLAGS="$TARGET_FLAGS $STD_LIB" \
+            -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld $STD_LIB" \
+            -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=lld $STD_LIB"
 
-      # ==========================================================
-      # Windows CMake
-      # ==========================================================
+      # ======================================================================
+      # Windows configure
+      #
+      # clang++ is used instead of clang-cl.
+      #
+      # This keeps the CMake configuration GNU-style and allows:
+      #
+      #   -march=...
+      #   -flto
+      #   -fuse-ld=lld-link
+      #
+      # while targeting the Windows/MSVC ABI.
+      # ======================================================================
 
-      - name: Configure Windows CMake
+      - name: Configure Windows
         if: matrix.platform == 'windows'
-        shell: pwsh
+        shell: cmd
         env:
-          ARCH: ${{ matrix.arch }}
+          ARCHITECTURE: ${{ matrix.architecture }}
           BUILD_DIR: ${{ matrix.build_dir }}
+          VSDEVCMD: ${{ steps.windows_sdk.outputs.VSDEVCMD }}
         run: |
-          $common = @(
-            "-S", ".",
-            "-B", $env:BUILD_DIR,
-            "-G", "Ninja",
-            "-DCMAKE_C_COMPILER=clang-cl.exe",
-            "-DCMAKE_CXX_COMPILER=clang-cl.exe",
-            "-DCMAKE_LINKER=lld-link.exe",
-            "-DCMAKE_RC_COMPILER=llvm-rc.exe",
-            "-DCMAKE_BUILD_TYPE=Release",
-            "-DCMAKE_CXX_STANDARD=23",
-            "-DCMAKE_CXX_STANDARD_REQUIRED=ON",
-            "-DCMAKE_CXX_EXTENSIONS=OFF",
-            "-DCMAKE_CXX_FLAGS_RELEASE=-O3 -flto",
-            "-DCMAKE_CXX_FLAGS_DEBUG=-O0 -g -Wall -Wextra",
-            "-DCMAKE_EXE_LINKER_FLAGS=-fuse-ld=lld"
+          call "%VSDEVCMD%" -arch=%ARCHITECTURE% -host_arch=x64
+
+          echo.
+          echo ========================================
+          echo Windows Clang environment
+          echo ========================================
+          echo.
+
+          where clang++.exe
+          where lld-link.exe
+          where llvm-rc.exe
+          where ninja.exe
+          where cmake.exe
+
+          echo.
+          echo ========================================
+          echo Clang
+          echo ========================================
+          clang++.exe --version
+
+          echo.
+          echo ========================================
+          echo CMake
+          echo ========================================
+          cmake --version
+
+          echo.
+          echo ========================================
+          echo Ninja
+          echo ========================================
+          ninja --version
+
+          echo.
+          echo ========================================
+          echo CMake configure
+          echo ========================================
+
+          if /I "%ARCHITECTURE%"=="x64" (
+            set "TARGET=x86_64-pc-windows-msvc"
+            set "ARCH_FLAGS=-march=x86-64-v2"
+          ) else if /I "%ARCHITECTURE%"=="x86" (
+            set "TARGET=i686-pc-windows-msvc"
+            set "ARCH_FLAGS=-march=prescott"
+          ) else (
+            echo ERROR: Unsupported architecture: %ARCHITECTURE%
+            exit /b 1
           )
 
-          if ($env:ARCH -eq "x64") {
-            $common += "-DCMAKE_C_FLAGS=-march=x86-64-v2"
-            $common += "-DCMAKE_CXX_FLAGS=-march=x86-64-v2"
-          }
-          elseif ($env:ARCH -eq "x86") {
-            #
-            # Ninja + clang-cl needs the target architecture supplied
-            # before compiler detection. This is why the workflow uses
-            # CMAKE_C_FLAGS/CMAKE_CXX_FLAGS here.
-            #
-            $common += "-DCMAKE_C_FLAGS=-m32"
-            $common += "-DCMAKE_CXX_FLAGS=-m32"
-          }
-          else {
-            throw "Unsupported architecture: $env:ARCH"
-          }
+          clang++.exe ^
+            --target=%TARGET% ^
+            %ARCH_FLAGS% ^
+            -fuse-ld=lld-link ^
+            -v ^
+            -x c++ ^
+            -E ^
+            NUL ^
+            > nul
 
-          cmake @common
+          if errorlevel 1 (
+            echo ERROR: Clang target configuration failed.
+            exit /b 1
+          )
 
-      # ==========================================================
-      # Verify CMake selected Clang
-      # ==========================================================
+          cmake ^
+            -S . ^
+            -B "%BUILD_DIR%" ^
+            -G Ninja ^
+            -DCMAKE_BUILD_TYPE=Release ^
+            -DCMAKE_C_COMPILER=clang.exe ^
+            -DCMAKE_CXX_COMPILER=clang++.exe ^
+            -DCMAKE_C_COMPILER_TARGET=%TARGET% ^
+            -DCMAKE_CXX_COMPILER_TARGET=%TARGET% ^
+            -DCMAKE_LINKER=lld-link.exe ^
+            -DCMAKE_RC_COMPILER=llvm-rc.exe ^
+            -DCMAKE_C_FLAGS="%ARCH_FLAGS%" ^
+            -DCMAKE_CXX_FLAGS="%ARCH_FLAGS%" ^
+            -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld-link" ^
+            -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=lld-link"
+
+          if errorlevel 1 (
+            echo ERROR: CMake configuration failed.
+            exit /b 1
+          )
+
+      # ======================================================================
+      # Verify compiler selected by CMake
+      # ======================================================================
 
       - name: Verify CMake compiler
         shell: bash
         env:
           BUILD_DIR: ${{ matrix.build_dir }}
         run: |
-          echo "=== Compiler information ==="
+          set -euo pipefail
 
-          grep -E \
-            '^(CMAKE_(C|CXX)_COMPILER:|CMAKE_(C|CXX)_COMPILER_ID:|CMAKE_(C|CXX)_COMPILER_VERSION:|CMAKE_LINKER:)' \
+          echo "=== Compiler ID ==="
+
+          grep \
+            'CMAKE_CXX_COMPILER_ID:' \
             "$BUILD_DIR/CMakeCache.txt" || true
 
           echo
-          echo "=== Compiler ID check ==="
+          echo "=== Compiler ==="
 
-          if ! grep -q 'CMAKE_CXX_COMPILER_ID:.*Clang' \
+          grep \
+            'CMAKE_CXX_COMPILER:' \
+            "$BUILD_DIR/CMakeCache.txt" || true
+
+          echo
+          echo "=== Compiler target ==="
+
+          grep \
+            'CMAKE_CXX_COMPILER_TARGET:' \
+            "$BUILD_DIR/CMakeCache.txt" || true
+
+          if ! grep -q \
+              'CMAKE_CXX_COMPILER_ID:.*Clang' \
               "$BUILD_DIR/CMakeCache.txt"; then
-            echo "ERROR: CMake is not using Clang."
+
+            echo "ERROR: CMake did not select Clang."
             exit 1
           fi
 
+          echo
           echo "Clang compiler confirmed."
 
-      # ==========================================================
+      # ======================================================================
       # Build
-      # ==========================================================
+      # ======================================================================
 
       - name: Build
         shell: bash
         env:
           BUILD_DIR: ${{ matrix.build_dir }}
         run: |
+          set -euo pipefail
+
           cmake \
             --build "$BUILD_DIR" \
-            --config Release \
             --parallel
 
-      # ==========================================================
-      # Verify executable
-      # ==========================================================
+      # ======================================================================
+      # Verify Linux output
+      # ======================================================================
 
       - name: Verify Linux executable
         if: matrix.platform == 'linux'
         shell: bash
         env:
           BUILD_DIR: ${{ matrix.build_dir }}
-          ARCH: ${{ matrix.arch }}
         run: |
-          executable="$BUILD_DIR/Release/Calc"
+          set -euo pipefail
 
-          if [ ! -f "$executable" ]; then
+          EXECUTABLE="$BUILD_DIR/Release/Calc"
+
+          if [ ! -f "$EXECUTABLE" ]; then
+
             echo "ERROR: Calc executable was not produced:"
-            echo "  $executable"
+            echo "  $EXECUTABLE"
+
+            echo
+            echo "Build tree:"
             find "$BUILD_DIR" -maxdepth 4 -type f -print
+
             exit 1
           fi
 
-          echo "Executable:"
-          file "$executable"
+          echo "Calc:"
+          file "$EXECUTABLE"
 
-          echo
-          echo "ELF architecture:"
-          readelf -h "$executable" |
-            grep -E 'Class:|Machine:'
+      # ======================================================================
+      # Verify Windows output
+      # ======================================================================
 
       - name: Verify Windows executable
         if: matrix.platform == 'windows'
@@ -468,13 +539,16 @@ jobs:
         env:
           BUILD_DIR: ${{ matrix.build_dir }}
         run: |
-          $exe = Get-ChildItem `
-            -Path $env:BUILD_DIR `
-            -Filter "Calc.exe" `
-            -Recurse `
-            -File
+          $executables = @(
+            Get-ChildItem `
+              -Path $env:BUILD_DIR `
+              -Filter "Calc.exe" `
+              -Recurse `
+              -File
+          )
 
-          if (-not $exe) {
+          if ($executables.Count -eq 0) {
+
             Write-Host "Build tree:"
             Get-ChildItem `
               -Path $env:BUILD_DIR `
@@ -484,21 +558,23 @@ jobs:
             throw "Calc.exe was not produced."
           }
 
-          Write-Host "Executable:"
-          foreach ($file in $exe) {
+          Write-Host "Calc executable(s):"
+
+          foreach ($file in $executables) {
+            Write-Host ""
             Write-Host "  $($file.FullName)"
             Write-Host "  Size: $($file.Length)"
           }
 
-      # ==========================================================
-      # Upload executable
-      # ==========================================================
+      # ======================================================================
+      # Artifacts
+      # ======================================================================
 
       - name: Upload Linux executable
         if: matrix.platform == 'linux'
         uses: actions/upload-artifact@v6
         with:
-          name: Calc-Linux-Clang-${{ matrix.arch }}
+          name: Calc-CMake-Clang-Linux-${{ matrix.architecture }}
           path: |
             ${{ matrix.build_dir }}/Release/Calc
           if-no-files-found: error
@@ -508,21 +584,21 @@ jobs:
         if: matrix.platform == 'windows'
         uses: actions/upload-artifact@v6
         with:
-          name: Calc-Windows-Clang-${{ matrix.arch }}
+          name: Calc-CMake-Clang-Windows-${{ matrix.architecture }}
           path: |
             ${{ matrix.build_dir }}/**/Calc.exe
           if-no-files-found: error
           retention-days: 14
 
-      # ==========================================================
-      # Upload diagnostics on failure
-      # ==========================================================
+      # ======================================================================
+      # Diagnostics
+      # ======================================================================
 
       - name: Upload CMake diagnostics
         if: failure()
         uses: actions/upload-artifact@v6
         with:
-          name: Calc-CMake-Diagnostics-${{ matrix.platform }}-${{ matrix.arch }}
+          name: Calc-CMake-Diagnostics-${{ matrix.platform }}-${{ matrix.architecture }}
           path: |
             ${{ matrix.build_dir }}/CMakeCache.txt
             ${{ matrix.build_dir }}/CMakeFiles/CMakeError.log

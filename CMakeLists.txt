@@ -6,13 +6,17 @@ project(Calc
 )
 
 # ============================================================================
-# Calc CMake build is Clang-only.
+# Compiler
 #
-# Supported:
-#   Linux   : clang++ + lld
-#   Windows : clang-cl + lld-link
+# The CMake build is intentionally Clang-only.
 #
-# MSVC and GCC are intentionally rejected.
+# Linux:
+#   clang++ + lld
+#
+# Windows:
+#   clang++ targeting Windows/MSVC ABI + lld-link
+#
+# The Visual Studio/MSVC workflow is separate and uses Calc.sln.
 # ============================================================================
 
 if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
@@ -22,42 +26,77 @@ if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   )
 endif()
 
-message(STATUS "Calc compiler: ${CMAKE_CXX_COMPILER_ID}")
-message(STATUS "Calc compiler version: ${CMAKE_CXX_COMPILER_VERSION}")
-message(STATUS "Calc compiler: ${CMAKE_CXX_COMPILER}")
+message(STATUS "Calc compiler:")
+message(STATUS "  ID      : ${CMAKE_CXX_COMPILER_ID}")
+message(STATUS "  version : ${CMAKE_CXX_COMPILER_VERSION}")
+message(STATUS "  CXX     : ${CMAKE_CXX_COMPILER}")
+message(STATUS "  target  : ${CMAKE_CXX_COMPILER_TARGET}")
 
 # ============================================================================
-# Dependencies
+# Header-only/source dependencies
 #
-# These are Calc's forks and are consumed as header/source-only dependencies.
-# They are not linked as separate libraries.
+# Calc/pch.hpp intentionally uses these relative paths:
+#
+#   ../../zmij/zmij.cc
+#   ../../fmt/include/fmt/compile.h
+#   ../../fast_float/include/fast_float/fast_float.h
+#
+# Therefore the repositories must be siblings of the Calc checkout.
+#
+#   <parent>/
+#       Calc/
+#       fast_float/
+#       fmt/
+#       zmij/
+#
+# The CI workflow performs these checkouts explicitly.
 # ============================================================================
 
-include(cmake/CPM.cmake)
+set(CALC_DEPENDENCY_ROOT
+    "${CMAKE_CURRENT_SOURCE_DIR}/..")
 
-CPMAddPackage(
-  NAME fmt
-  GIT_TAG main
-  GITHUB_REPOSITORY irainman/fmt
+set(CALC_ZMIJ_ROOT
+    "${CALC_DEPENDENCY_ROOT}/zmij")
+
+set(CALC_FMT_ROOT
+    "${CALC_DEPENDENCY_ROOT}/fmt")
+
+set(CALC_FAST_FLOAT_ROOT
+    "${CALC_DEPENDENCY_ROOT}/fast_float")
+
+set(CALC_REQUIRED_DEPENDENCY_FILES
+    "${CALC_ZMIJ_ROOT}/zmij.cc"
+    "${CALC_FMT_ROOT}/include/fmt/compile.h"
+    "${CALC_FAST_FLOAT_ROOT}/include/fast_float/fast_float.h"
 )
 
-CPMAddPackage(
-  NAME zmij
-  GIT_TAG main
-  GITHUB_REPOSITORY irainman/zmij
-)
+foreach(CALC_DEPENDENCY_FILE IN LISTS CALC_REQUIRED_DEPENDENCY_FILES)
 
-CPMAddPackage(
-  NAME fast_float
-  GIT_TAG main
-  GITHUB_REPOSITORY irainman/fast_float
-)
+  if(NOT EXISTS "${CALC_DEPENDENCY_FILE}")
+    message(FATAL_ERROR
+      "Calc dependency is missing:\n"
+      "  ${CALC_DEPENDENCY_FILE}\n\n"
+      "Expected sibling dependency layout:\n"
+      "  ${CALC_DEPENDENCY_ROOT}/Calc\n"
+      "  ${CALC_DEPENDENCY_ROOT}/fast_float\n"
+      "  ${CALC_DEPENDENCY_ROOT}/fmt\n"
+      "  ${CALC_DEPENDENCY_ROOT}/zmij"
+    )
+  endif()
+
+endforeach()
+
+message(STATUS "Calc dependencies:")
+message(STATUS "  zmij       : ${CALC_ZMIJ_ROOT}")
+message(STATUS "  fmt        : ${CALC_FMT_ROOT}")
+message(STATUS "  fast_float : ${CALC_FAST_FLOAT_ROOT}")
 
 # ============================================================================
 # Sources
 # ============================================================================
 
 set(CALC_SOURCES
+
   Calc/gui.cpp
   Calc/formatter.cpp
   Calc/identifiers.cpp
@@ -66,30 +105,54 @@ set(CALC_SOURCES
   Calc/parser.cpp
   Calc/pch.cpp
   Calc/tests.cpp
-  Calc/Calc.rc
+
 )
+
+# Windows resource file exists only for the Windows target.
+if(WIN32)
+
+  list(APPEND CALC_SOURCES
+    Calc/Calc.rc
+  )
+
+endif()
 
 # ============================================================================
 # Target
 # ============================================================================
 
-add_executable(Calc WIN32
-  ${CALC_SOURCES}
-)
+if(WIN32)
+
+  add_executable(Calc WIN32
+    ${CALC_SOURCES}
+  )
+
+else()
+
+  add_executable(Calc
+    ${CALC_SOURCES}
+  )
+
+endif()
+
+# ============================================================================
+# Includes
+# ============================================================================
 
 target_include_directories(Calc PRIVATE
+
   "${CMAKE_CURRENT_SOURCE_DIR}/Calc"
-)
 
-# CPM dependency source trees.
-target_include_directories(Calc PRIVATE
-  "${CMAKE_BINARY_DIR}/_deps/zmij-src"
-  "${CMAKE_BINARY_DIR}/_deps/fast-float-src"
-  "${CMAKE_BINARY_DIR}/_deps/fmt-src"
+  "${CALC_ZMIJ_ROOT}"
+
+  "${CALC_FMT_ROOT}/include"
+
+  "${CALC_FAST_FLOAT_ROOT}/include"
+
 )
 
 # ============================================================================
-# C++ standard
+# Language
 # ============================================================================
 
 target_compile_features(Calc PRIVATE
@@ -97,9 +160,13 @@ target_compile_features(Calc PRIVATE
 )
 
 set_target_properties(Calc PROPERTIES
+
   CXX_STANDARD 23
   CXX_STANDARD_REQUIRED ON
   CXX_EXTENSIONS OFF
+
+  OUTPUT_NAME
+    "Calc"
 
   ARCHIVE_OUTPUT_DIRECTORY
     "${CMAKE_BINARY_DIR}/lib"
@@ -110,20 +177,23 @@ set_target_properties(Calc PROPERTIES
   RUNTIME_OUTPUT_DIRECTORY
     "${CMAKE_BINARY_DIR}/$<CONFIG>"
 
-  OUTPUT_NAME
-    "Calc"
 )
 
-# PCH contains Calc's direct header-only/source dependencies:
+# ============================================================================
+# Precompiled header
+#
+# pch.hpp directly includes:
 #
 #   ../../zmij/zmij.cc
 #   ../../fmt/include/fmt/compile.h
 #   ../../fast_float/include/fast_float/fast_float.h
 #
-# In the CMake build these paths are supplied by the CPM dependency
-# include/source tree.
+# The sibling dependency layout above therefore must exist before this target
+# is compiled.
+# ============================================================================
+
 target_precompile_headers(Calc PRIVATE
-  "Calc/pch.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Calc/pch.hpp"
 )
 
 # ============================================================================
@@ -131,15 +201,19 @@ target_precompile_headers(Calc PRIVATE
 # ============================================================================
 
 if(WIN32)
+
   target_compile_definitions(Calc PRIVATE
     WIN32
     _WINDOWS
   )
+
 endif()
 
 target_compile_definitions(Calc PRIVATE
+
   $<$<CONFIG:Debug>:_DEBUG>
   $<$<CONFIG:Release>:NDEBUG>
+
 )
 
 # ============================================================================
@@ -149,33 +223,21 @@ target_compile_definitions(Calc PRIVATE
 #
 #   x86-64-v2
 #
-#   This includes:
-#     SSE
-#     SSE2
-#     SSE3
-#     SSSE3
-#     SSE4.1
-#     SSE4.2
-#     POPCNT
-#     SAHF
-#     CRC32
-#     CMPXCHG16B
-#
-#   It does NOT require AVX.
+# Includes the SSE4.2 generation and other x86-64-v2 requirements.
+# No AVX is required.
 #
 # 32-bit:
 #
-#   Prescott / Pentium 4 SSE3
+#   Prescott
 #
-#     MMX
-#     SSE
-#     SSE2
-#     SSE3
+# LLVM's "prescott" target corresponds to:
 #
-#   No SSSE3, SSE4.1, SSE4.2, AVX, AVX2, FMA, etc.
+#   MMX
+#   SSE
+#   SSE2
+#   SSE3
 #
-# LLVM's "prescott" target is the normal -march target corresponding to
-# FeaturesPrescott.
+# and does not enable SSSE3/SSE4.x/AVX.
 # ============================================================================
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
@@ -222,70 +284,39 @@ target_compile_options(Calc PRIVATE
   $<$<CONFIG:Release>:-O3>
   $<$<CONFIG:Release>:-flto>
   $<$<CONFIG:Release>:-Wall>
+
 )
 
 # ============================================================================
-# LLVM LTO
+# Link-time optimization
 # ============================================================================
 
-include(CheckIPOSupported)
+target_link_options(Calc PRIVATE
 
-check_ipo_supported(
-  RESULT CALC_IPO_SUPPORTED
-  OUTPUT CALC_IPO_ERROR
+  $<$<CONFIG:Release>:-flto>
+
 )
-
-if(CALC_IPO_SUPPORTED)
-
-  message(STATUS
-    "Calc: LLVM LTO/IPO supported"
-  )
-
-  set_property(
-    TARGET Calc
-    PROPERTY
-      INTERPROCEDURAL_OPTIMIZATION
-      $<$<CONFIG:Release>:TRUE>
-  )
-
-else()
-
-  message(WARNING
-    "Calc: LLVM LTO/IPO is not supported: ${CALC_IPO_ERROR}"
-  )
-
-endif()
 
 # ============================================================================
 # Windows
 #
-# clang-cl is still the compiler; this configuration must not fall back to
-# MSVC's cl.exe.
+# clang++ targets the Windows MSVC ABI:
 #
-# CMake will use the Windows SDK supplied by the environment and llvm-rc
-# / lld-link provided by the Clang workflow.
+#   x86_64-pc-windows-msvc
+#   i686-pc-windows-msvc
+#
+# The compiler is still Clang.
+# The linker is LLVM lld-link.
 # ============================================================================
 
 if(WIN32)
 
-  if(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+  if(NOT CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
 
-    message(STATUS
-      "Calc Windows compiler frontend: clang-cl"
-    )
-
-    # clang-cl accepts Clang-specific options through /clang:.
-    #
-    # Keep architecture and optimization options produced above available
-    # to the Clang frontend.
-    target_compile_options(Calc PRIVATE
-      /clang:-Wno-microsoft
-    )
-
-  else()
-
-    message(STATUS
-      "Calc Windows compiler frontend: clang"
+    message(FATAL_ERROR
+      "Calc Windows CMake build expects clang++ GNU-style frontend. "
+      "Detected frontend: "
+      "${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}"
     )
 
   endif()
@@ -299,56 +330,4 @@ endif()
 install(
   TARGETS Calc
   RUNTIME DESTINATION bin
-)cmake_minimum_required(VERSION 3.30)
-
-
-include(cmake/CPM.cmake)
-
-CPMAddPackage(
-  NAME fmt
-  GIT_TAG main
-  GITHUB_REPOSITORY irainman/fmt
 )
-
-CPMAddPackage(
-  NAME zmij
-  GIT_TAG main
-  GITHUB_REPOSITORY irainman/zmij
-)
-
-CPMAddPackage(
-  NAME fast_float
-  GIT_TAG main
-  GITHUB_REPOSITORY irainman/fast_float
-)
-
-set(CALC_SOURCES
-  Calc/gui.cpp
-  Calc/formatter.cpp
-  Calc/identifiers.cpp
-  Calc/issue_manager.cpp
-  Calc/lexer.cpp
-  Calc/parser.cpp
-  Calc/pch.cpp
-  Calc/tests.cpp
-    Calc/Calc.rc
-  )
-endif()
-
-target_compile_definitions(Calc PRIVATE
-  $<$<CONFIG:Debug>:_DEBUG>
-  $<$<CONFIG:Release>:NDEBUG>
-)
-
-  )
-  target_compile_options(Calc PRIVATE
-  )
-  target_link_options(Calc PRIVATE
-  )
-  target_compile_options(Calc PRIVATE
-  )
-
-endif()
-
-)
-
