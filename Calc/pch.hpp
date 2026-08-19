@@ -13,10 +13,11 @@
 #ifndef PCH_HPP
 #define PCH_HPP
 
-static_assert(__cplusplus >= 202302L, "Calc uses all available C++ features and not support anything exept the latest-edge standard" /* don't needs to check _MSVC_LANG it's should be set by the compiler options by user */);
+// Don't needs to check _MSVC_LANG it's should beset by the compiler options
+static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 
 // Additional librarys arch helpers because MSVC is an unusual compiler:
-#if defined(_M_IX86) || defined(__i386__) || defined(__i486__) || defined(__i686__)
+#if defined(_M_IX86)
 #define _M_IX86_FP 2
 #endif
 

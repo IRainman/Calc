@@ -16,26 +16,29 @@ permissions:
 
 jobs:
   build:
-    name: CachyOS Clang x86-64-v2
+    name: ${{ matrix.name }}
 
-    # GitHub-hosted runner.
     runs-on: ubuntu-24.04
 
-    # Actual Linux userspace for the build.
     container:
       image: cachyos/cachyos:latest
 
-    steps:
-      # ======================================================================
-      # Checkout Calc
-      # ======================================================================
+    strategy:
+      fail-fast: false
 
+      matrix:
+        include:
+          - name: CachyOS Clang x86-64-v2
+            compiler: clang
+            build_dir: build/clang-x64
+
+          - name: CachyOS GCC x86-64-v2
+            compiler: gcc
+            build_dir: build/gcc-x64
+
+    steps:
       - name: Checkout Calc
         uses: actions/checkout@v6
-
-      # ======================================================================
-      # Install build tools
-      # ======================================================================
 
       - name: Install build tools
         shell: bash
@@ -48,58 +51,46 @@ jobs:
             ninja \
             clang \
             llvm \
-            lld
+            lld \
+            gcc
 
-      # ======================================================================
-      # Show environment
-      # ======================================================================
-
-      - name: Show toolchain
+      - name: Show OS
         shell: bash
         run: |
           set -eux
 
-          echo "========================================"
-          echo "OS"
-          echo "========================================"
-
           cat /etc/os-release
+          uname -a
 
-          echo
-          echo "========================================"
-          echo "Clang"
-          echo "========================================"
+      - name: Show Clang
+        if: matrix.compiler == 'clang'
+        shell: bash
+        run: |
+          set -eux
 
           clang --version
           clang++ --version
+          ld.lld --version
 
-          echo
-          echo "========================================"
-          echo "CMake"
-          echo "========================================"
+      - name: Show GCC
+        if: matrix.compiler == 'gcc'
+        shell: bash
+        run: |
+          set -eux
+
+          gcc --version
+          g++ --version
+
+      - name: Show CMake
+        shell: bash
+        run: |
+          set -eux
 
           cmake --version
-
-          echo
-          echo "========================================"
-          echo "Ninja"
-          echo "========================================"
-
           ninja --version
 
       # ======================================================================
-      # Checkout Calc dependencies
-      #
-      # Calc/pch.hpp and CMakeLists.txt expect:
-      #
-      #   <parent>/Calc
-      #   <parent>/fast_float
-      #   <parent>/fmt
-      #   <parent>/zmij
-      #
-      # The GitHub workspace is:
-      #
-      #   <parent>/Calc
+      # Sibling dependencies
       # ======================================================================
 
       - name: Checkout dependencies
@@ -108,12 +99,6 @@ jobs:
           set -eux
 
           parent="$(dirname "$GITHUB_WORKSPACE")"
-
-          echo "Calc:"
-          echo "  $GITHUB_WORKSPACE"
-
-          echo "Dependency root:"
-          echo "  $parent"
 
           rm -rf \
             "$parent/fast_float" \
@@ -138,10 +123,6 @@ jobs:
             https://github.com/IRainman/zmij.git \
             "$parent/zmij"
 
-      # ======================================================================
-      # Verify dependency layout BEFORE CMake
-      # ======================================================================
-
       - name: Verify dependencies
         shell: bash
         run: |
@@ -149,61 +130,44 @@ jobs:
 
           parent="$(dirname "$GITHUB_WORKSPACE")"
 
-          echo "========================================"
-          echo "fast_float"
-          echo "========================================"
-
           test -f \
             "$parent/fast_float/include/fast_float/fast_float.h"
-
-          echo "OK"
-
-          echo
-          echo "========================================"
-          echo "fmt"
-          echo "========================================"
 
           test -f \
             "$parent/fmt/include/fmt/compile.h"
 
-          echo "OK"
-
-          echo
-          echo "========================================"
-          echo "zmij"
-          echo "========================================"
-
           test -f \
             "$parent/zmij/zmij.cc"
 
-          echo "OK"
-
       # ======================================================================
       # Configure
-      #
-      # One target only for this diagnostic step:
-      #
-      #   Clang
-      #   Linux
-      #   x86-64-v2
-      #   Release
-      #
-      # CMakeLists.txt supplies the architecture-specific optimization too,
-      # but supplying it here makes the compiler configuration explicit.
       # ======================================================================
 
       - name: Configure
         shell: bash
+        env:
+          BUILD_DIR: ${{ matrix.build_dir }}
+          COMPILER: ${{ matrix.compiler }}
         run: |
           set -eux
 
+          if [ "$COMPILER" = "clang" ]; then
+            c_compiler=clang
+            cxx_compiler=clang++
+            linker_flags="-fuse-ld=lld"
+          else
+            c_compiler=gcc
+            cxx_compiler=g++
+            linker_flags=""
+          fi
+
           cmake \
             -S . \
-            -B build \
+            -B "$BUILD_DIR" \
             -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_C_COMPILER=clang \
-            -DCMAKE_CXX_COMPILER=clang++ \
+            -DCMAKE_C_COMPILER="$c_compiler" \
+            -DCMAKE_CXX_COMPILER="$cxx_compiler" \
             -DCMAKE_C_STANDARD=23 \
             -DCMAKE_C_STANDARD_REQUIRED=ON \
             -DCMAKE_C_EXTENSIONS=OFF \
@@ -212,7 +176,36 @@ jobs:
             -DCMAKE_CXX_EXTENSIONS=OFF \
             -DCMAKE_C_FLAGS="-march=x86-64-v2" \
             -DCMAKE_CXX_FLAGS="-march=x86-64-v2" \
-            -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld"
+            -DCMAKE_EXE_LINKER_FLAGS="$linker_flags"
+
+      # ======================================================================
+      # Verify CMake configuration
+      # ======================================================================
+
+      - name: Verify configuration
+        shell: bash
+        env:
+          BUILD_DIR: ${{ matrix.build_dir }}
+          COMPILER: ${{ matrix.compiler }}
+        run: |
+          set -eux
+
+          cache="$BUILD_DIR/CMakeCache.txt"
+
+          test -f "$cache"
+
+          grep 'CMAKE_C_COMPILER_ID:' "$cache"
+          grep 'CMAKE_CXX_COMPILER_ID:' "$cache"
+          grep 'CMAKE_CXX_COMPILER:' "$cache"
+          grep 'CMAKE_SIZEOF_VOID_P:' "$cache"
+
+          if [ "$COMPILER" = "clang" ]; then
+            grep -q 'CMAKE_CXX_COMPILER_ID:.*Clang' "$cache"
+          else
+            grep -q 'CMAKE_CXX_COMPILER_ID:.*GNU' "$cache"
+          fi
+
+          grep -q 'CMAKE_SIZEOF_VOID_P:INTERNAL=8' "$cache"
 
       # ======================================================================
       # Build
@@ -220,48 +213,54 @@ jobs:
 
       - name: Build
         shell: bash
+        env:
+          BUILD_DIR: ${{ matrix.build_dir }}
         run: |
           set -eux
 
           cmake \
-            --build build \
+            --build "$BUILD_DIR" \
             --parallel
 
       # ======================================================================
       # Verify
       # ======================================================================
 
-      - name: Verify
+      - name: Verify executable
         shell: bash
+        env:
+          BUILD_DIR: ${{ matrix.build_dir }}
         run: |
           set -eux
 
-          echo "========================================"
-          echo "Build tree"
-          echo "========================================"
+          test -f "$BUILD_DIR/Release/Calc"
 
-          find build \
-            -maxdepth 4 \
-            -type f \
-            -print
-
-          echo
-          echo "========================================"
-          echo "Executable"
-          echo "========================================"
-
-          test -f build/Release/Calc
-
-          file build/Release/Calc
+          file "$BUILD_DIR/Release/Calc"
 
       # ======================================================================
-      # Upload artifact
+      # Artifact
       # ======================================================================
 
-      - name: Upload artifact
+      - name: Upload executable
         uses: actions/upload-artifact@v6
         with:
-          name: Calc-CMake-Clang-x86-64-v2
-          path: build/Release/Calc
+          name: Calc-CMake-${{ matrix.compiler }}-x86-64-v2
+          path: ${{ matrix.build_dir }}/Release/Calc
           if-no-files-found: error
+          retention-days: 14
+
+      # ======================================================================
+      # Diagnostics
+      # ======================================================================
+
+      - name: Upload CMake diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: Calc-CMake-Diagnostics-${{ matrix.compiler }}
+          path: |
+            ${{ matrix.build_dir }}/CMakeCache.txt
+            ${{ matrix.build_dir }}/CMakeFiles/CMakeError.log
+            ${{ matrix.build_dir }}/CMakeFiles/CMakeOutput.log
+          if-no-files-found: ignore
           retention-days: 14

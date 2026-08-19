@@ -21,9 +21,6 @@ endif()
 #
 #   Clang
 #   GNU / GCC
-#
-# MSVC and other compilers are intentionally unsupported by this CMake build.
-# The Windows build is handled separately by the Visual Studio solution.
 # ============================================================================
 
 if(NOT CMAKE_C_COMPILER_ID MATCHES "^(Clang|GNU)$")
@@ -82,7 +79,7 @@ message(STATUS "")
 #   ../../fmt/include/fmt/compile.h
 #   ../../zmij/zmij.cc
 #
-# Therefore the repositories must be siblings of Calc:
+# Therefore:
 #
 #   <parent>/
 #       Calc/
@@ -114,7 +111,6 @@ set(CALC_REQUIRED_DEPENDENCY_FILES
 )
 
 foreach(CALC_DEPENDENCY_FILE IN LISTS CALC_REQUIRED_DEPENDENCY_FILES)
-
   if(NOT EXISTS "${CALC_DEPENDENCY_FILE}")
     message(FATAL_ERROR
       "Required Calc dependency file is missing:\n"
@@ -126,7 +122,6 @@ foreach(CALC_DEPENDENCY_FILE IN LISTS CALC_REQUIRED_DEPENDENCY_FILES)
       "  ${CALC_DEPENDENCY_ROOT}/zmij"
     )
   endif()
-
 endforeach()
 
 message(STATUS "Dependencies:")
@@ -158,10 +153,6 @@ add_executable(Calc
   ${CALC_SOURCES}
 )
 
-# ============================================================================
-# Include paths
-# ============================================================================
-
 target_include_directories(Calc PRIVATE
   "${CMAKE_CURRENT_SOURCE_DIR}/Calc"
   "${CALC_FAST_FLOAT_ROOT}/include"
@@ -178,43 +169,20 @@ target_compile_features(Calc PRIVATE
   cxx_std_23
 )
 
-set_property(
-  TARGET Calc
-  PROPERTY C_STANDARD 23
-)
+set_property(TARGET Calc PROPERTY C_STANDARD 23)
+set_property(TARGET Calc PROPERTY C_STANDARD_REQUIRED ON)
+set_property(TARGET Calc PROPERTY C_EXTENSIONS OFF)
 
-set_property(
-  TARGET Calc
-  PROPERTY C_STANDARD_REQUIRED ON
-)
-
-set_property(
-  TARGET Calc
-  PROPERTY C_EXTENSIONS OFF
-)
-
-set_property(
-  TARGET Calc
-  PROPERTY CXX_STANDARD 23
-)
-
-set_property(
-  TARGET Calc
-  PROPERTY CXX_STANDARD_REQUIRED ON
-)
-
-set_property(
-  TARGET Calc
-  PROPERTY CXX_EXTENSIONS OFF
-)
+set_property(TARGET Calc PROPERTY CXX_STANDARD 23)
+set_property(TARGET Calc PROPERTY CXX_STANDARD_REQUIRED ON)
+set_property(TARGET Calc PROPERTY CXX_EXTENSIONS OFF)
 
 # ============================================================================
 # Output
 # ============================================================================
 
 set_target_properties(Calc PROPERTIES
-  OUTPUT_NAME
-    "Calc"
+  OUTPUT_NAME "Calc"
 
   ARCHIVE_OUTPUT_DIRECTORY
     "${CMAKE_BINARY_DIR}/lib"
@@ -244,48 +212,32 @@ target_compile_definitions(Calc PRIVATE
 )
 
 # ============================================================================
-# Warnings and optimization
+# Optimization / warnings
 # ============================================================================
 
 target_compile_options(Calc PRIVATE
-
-  # Debug
   $<$<CONFIG:Debug>:-O0>
   $<$<CONFIG:Debug>:-g>
   $<$<CONFIG:Debug>:-Wall>
   $<$<CONFIG:Debug>:-Wextra>
 
-  # Release
   $<$<CONFIG:Release>:-O3>
   $<$<CONFIG:Release>:-flto>
   $<$<CONFIG:Release>:-Wall>
+)
+
+target_link_options(Calc PRIVATE
+  $<$<CONFIG:Release>:-flto>
 )
 
 # ============================================================================
 # Architecture
 #
 # 64-bit:
-#
 #   x86-64-v2
 #
-# Includes the SSE4.2 generation and the other x86-64-v2 requirements.
-# No AVX is required.
-#
 # 32-bit:
-#
-#   Prescott
-#
-# LLVM/GCC Prescott target provides:
-#
-#   MMX
-#   SSE
-#   SSE2
-#   SSE3
-#
-# No SSSE3/SSE4.x/AVX.
-#
-# The workflow supplies -m32 before CMake compiler detection for the 32-bit
-# build, therefore CMAKE_SIZEOF_VOID_P == 4.
+#   Prescott / SSE3
 # ============================================================================
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
@@ -317,15 +269,7 @@ else()
 endif()
 
 # ============================================================================
-# Link-time optimization
-# ============================================================================
-
-target_link_options(Calc PRIVATE
-  $<$<CONFIG:Release>:-flto>
-)
-
-# ============================================================================
-# IPO/LTO capability check
+# IPO / LTO
 # ============================================================================
 
 include(CheckIPOSupported)
@@ -337,9 +281,7 @@ check_ipo_supported(
 
 if(CALC_IPO_SUPPORTED)
 
-  message(STATUS
-    "IPO/LTO: supported"
-  )
+  message(STATUS "IPO/LTO: supported")
 
   set_property(
     TARGET Calc
@@ -349,7 +291,7 @@ if(CALC_IPO_SUPPORTED)
 
 else()
 
-  message(WARNING
+  message(FATAL_ERROR
     "IPO/LTO is not supported: ${CALC_IPO_ERROR}"
   )
 
