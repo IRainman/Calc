@@ -21,8 +21,6 @@ endif()
 #
 #   Clang
 #   GNU / GCC
-#
-# The Windows build is handled separately by the Visual Studio solution.
 # ============================================================================
 
 if(NOT CMAKE_C_COMPILER_ID MATCHES "^(Clang|GNU)$")
@@ -59,27 +57,34 @@ message(STATUS "")
 message(STATUS "========================================")
 message(STATUS "Calc configuration")
 message(STATUS "========================================")
+
 message(STATUS "System:")
 message(STATUS "  ${CMAKE_SYSTEM_NAME}")
+
 message(STATUS "")
 message(STATUS "C compiler:")
 message(STATUS "  ${CMAKE_C_COMPILER_ID}")
 message(STATUS "  ${CMAKE_C_COMPILER_VERSION}")
 message(STATUS "  ${CMAKE_C_COMPILER}")
+
 message(STATUS "")
 message(STATUS "C++ compiler:")
 message(STATUS "  ${CMAKE_CXX_COMPILER_ID}")
 message(STATUS "  ${CMAKE_CXX_COMPILER_VERSION}")
 message(STATUS "  ${CMAKE_CXX_COMPILER}")
+
 message(STATUS "")
 message(STATUS "C standard:")
 message(STATUS "  C23")
+
 message(STATUS "")
 message(STATUS "C++ standard:")
 message(STATUS "  C++23")
+
 message(STATUS "")
 message(STATUS "Pointer size:")
 message(STATUS "  ${CMAKE_SIZEOF_VOID_P}")
+
 message(STATUS "")
 
 # ============================================================================
@@ -142,6 +147,7 @@ message(STATUS "Dependencies:")
 message(STATUS "  fast_float : ${CALC_FAST_FLOAT_ROOT}")
 message(STATUS "  fmt        : ${CALC_FMT_ROOT}")
 message(STATUS "  zmij       : ${CALC_ZMIJ_ROOT}")
+
 message(STATUS "")
 
 # ============================================================================
@@ -187,13 +193,29 @@ target_compile_features(Calc PRIVATE
   cxx_std_23
 )
 
-set_property(TARGET Calc PROPERTY C_STANDARD 23)
-set_property(TARGET Calc PROPERTY C_STANDARD_REQUIRED ON)
-set_property(TARGET Calc PROPERTY C_EXTENSIONS OFF)
+set_property(TARGET Calc
+  PROPERTY C_STANDARD 23
+)
 
-set_property(TARGET Calc PROPERTY CXX_STANDARD 23)
-set_property(TARGET Calc PROPERTY CXX_STANDARD_REQUIRED ON)
-set_property(TARGET Calc PROPERTY CXX_EXTENSIONS OFF)
+set_property(TARGET Calc
+  PROPERTY C_STANDARD_REQUIRED ON
+)
+
+set_property(TARGET Calc
+  PROPERTY C_EXTENSIONS OFF
+)
+
+set_property(TARGET Calc
+  PROPERTY CXX_STANDARD 23
+)
+
+set_property(TARGET Calc
+  PROPERTY CXX_STANDARD_REQUIRED ON
+)
+
+set_property(TARGET Calc
+  PROPERTY CXX_EXTENSIONS OFF
+)
 
 # ============================================================================
 # Output
@@ -252,12 +274,14 @@ target_compile_options(Calc PRIVATE
 # Architecture
 #
 # 64-bit:
+#
 #   x86-64-v2
 #
 # 32-bit:
+#
 #   Prescott / SSE3
 #
-# The workflow currently tests only the 64-bit configuration.
+# The current workflow tests x86-64 only.
 # ============================================================================
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
@@ -289,11 +313,12 @@ else()
 endif()
 
 # ============================================================================
-# LTO
+# Link-time optimization
 #
-# Keep LTO as a normal Release compiler/linker option.
-# Do not fail configuration just because a separate IPO probe disagrees with
-# the selected Clang/GCC toolchain.
+# Do not use CheckIPOSupported() here.
+#
+# The selected compiler/linker are responsible for handling -flto.
+# CMake should not reject configuration because an auxiliary IPO probe fails.
 # ============================================================================
 
 target_link_options(Calc PRIVATE

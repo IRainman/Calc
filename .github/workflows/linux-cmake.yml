@@ -46,7 +46,7 @@ jobs:
         uses: actions/checkout@v6
 
       # ======================================================================
-      # Install tools
+      # Install toolchains
       # ======================================================================
 
       - name: Install build tools
@@ -64,7 +64,7 @@ jobs:
             gcc
 
       # ======================================================================
-      # Verify CachyOS
+      # Verify environment
       # ======================================================================
 
       - name: Verify environment
@@ -100,7 +100,7 @@ jobs:
           ninja --version
 
       # ======================================================================
-      # Verify compiler
+      # Verify Clang
       # ======================================================================
 
       - name: Verify Clang
@@ -113,6 +113,10 @@ jobs:
           clang++ --version
           ld.lld --version
 
+      # ======================================================================
+      # Verify GCC
+      # ======================================================================
+
       - name: Verify GCC
         if: matrix.compiler == 'gcc'
         shell: bash
@@ -123,7 +127,7 @@ jobs:
           g++ --version
 
       # ======================================================================
-      # Checkout header-only/source dependencies
+      # Dependencies
       # ======================================================================
 
       - name: Checkout dependencies
@@ -157,7 +161,7 @@ jobs:
             "$parent/zmij"
 
       # ======================================================================
-      # Verify dependency layout
+      # Verify dependencies
       # ======================================================================
 
       - name: Verify dependencies
@@ -216,10 +220,10 @@ jobs:
             -DCMAKE_EXE_LINKER_FLAGS="$linker_flags"
 
       # ======================================================================
-      # Verify configuration
+      # Verify configure actually completed
       # ======================================================================
 
-      - name: Verify CMake configuration
+      - name: Verify configuration
         shell: bash
         env:
           BUILD_DIR: ${{ matrix.build_dir }}
@@ -231,51 +235,29 @@ jobs:
 
           test -f "$cache"
 
-          echo "========================================"
-          echo "Compiler"
-          echo "========================================"
-
+          echo "C compiler:"
           grep 'CMAKE_C_COMPILER_ID:' "$cache"
+          grep 'CMAKE_C_COMPILER:' "$cache"
+
+          echo
+          echo "C++ compiler:"
           grep 'CMAKE_CXX_COMPILER_ID:' "$cache"
           grep 'CMAKE_CXX_COMPILER:' "$cache"
 
           echo
-          echo "========================================"
-          echo "C standard"
-          echo "========================================"
-
-          grep 'CMAKE_C_STANDARD:' "$cache" || true
-
-          echo
-          echo "========================================"
-          echo "C++ standard"
-          echo "========================================"
-
-          grep 'CMAKE_CXX_STANDARD:' "$cache" || true
-
-          echo
-          echo "========================================"
-          echo "Pointer size"
-          echo "========================================"
-
+          echo "Pointer size:"
           grep 'CMAKE_SIZEOF_VOID_P:' "$cache"
 
           if [ "$COMPILER" = "clang" ]; then
-            grep -q \
-              'CMAKE_CXX_COMPILER_ID:.*Clang' \
-              "$cache"
+            grep -q 'CMAKE_CXX_COMPILER_ID:.*Clang' "$cache"
           else
-            grep -q \
-              'CMAKE_CXX_COMPILER_ID:.*GNU' \
-              "$cache"
+            grep -q 'CMAKE_CXX_COMPILER_ID:.*GNU' "$cache"
           fi
 
-          grep -q \
-            'CMAKE_SIZEOF_VOID_P:INTERNAL=8' \
-            "$cache"
+          grep -q 'CMAKE_SIZEOF_VOID_P:INTERNAL=8' "$cache"
 
       # ======================================================================
-      # Build
+      # REAL BUILD
       # ======================================================================
 
       - name: Build
@@ -287,10 +269,11 @@ jobs:
 
           cmake \
             --build "$BUILD_DIR" \
-            --parallel
+            --parallel \
+            --verbose
 
       # ======================================================================
-      # Verify executable
+      # Verify result
       # ======================================================================
 
       - name: Verify executable
@@ -303,6 +286,10 @@ jobs:
           executable="$BUILD_DIR/Release/Calc"
 
           test -f "$executable"
+
+          echo "========================================"
+          echo "Calc executable"
+          echo "========================================"
 
           file "$executable"
 
@@ -319,7 +306,7 @@ jobs:
           retention-days: 14
 
       # ======================================================================
-      # Upload diagnostics
+      # Diagnostics
       # ======================================================================
 
       - name: Upload CMake diagnostics
