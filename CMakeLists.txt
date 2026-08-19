@@ -6,7 +6,7 @@ project(Calc
 )
 
 # ============================================================================
-# Linux-only
+# Linux only
 # ============================================================================
 
 if(NOT CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -21,18 +21,20 @@ endif()
 #
 #   Clang
 #   GNU / GCC
+#
+# The Windows build is handled separately by the Visual Studio solution.
 # ============================================================================
 
 if(NOT CMAKE_C_COMPILER_ID MATCHES "^(Clang|GNU)$")
   message(FATAL_ERROR
-    "Calc CMake build supports Clang and GCC only for C. "
+    "Calc CMake build supports Clang and GCC for C. "
     "Detected compiler: ${CMAKE_C_COMPILER_ID}"
   )
 endif()
 
 if(NOT CMAKE_CXX_COMPILER_ID MATCHES "^(Clang|GNU)$")
   message(FATAL_ERROR
-    "Calc CMake build supports Clang and GCC only for C++. "
+    "Calc CMake build supports Clang and GCC for C++. "
     "Detected compiler: ${CMAKE_CXX_COMPILER_ID}"
   )
 endif()
@@ -48,6 +50,10 @@ set(CMAKE_C_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
+# ============================================================================
+# Configuration information
+# ============================================================================
 
 message(STATUS "")
 message(STATUS "========================================")
@@ -65,6 +71,12 @@ message(STATUS "C++ compiler:")
 message(STATUS "  ${CMAKE_CXX_COMPILER_ID}")
 message(STATUS "  ${CMAKE_CXX_COMPILER_VERSION}")
 message(STATUS "  ${CMAKE_CXX_COMPILER}")
+message(STATUS "")
+message(STATUS "C standard:")
+message(STATUS "  C23")
+message(STATUS "")
+message(STATUS "C++ standard:")
+message(STATUS "  C++23")
 message(STATUS "")
 message(STATUS "Pointer size:")
 message(STATUS "  ${CMAKE_SIZEOF_VOID_P}")
@@ -111,6 +123,7 @@ set(CALC_REQUIRED_DEPENDENCY_FILES
 )
 
 foreach(CALC_DEPENDENCY_FILE IN LISTS CALC_REQUIRED_DEPENDENCY_FILES)
+
   if(NOT EXISTS "${CALC_DEPENDENCY_FILE}")
     message(FATAL_ERROR
       "Required Calc dependency file is missing:\n"
@@ -122,6 +135,7 @@ foreach(CALC_DEPENDENCY_FILE IN LISTS CALC_REQUIRED_DEPENDENCY_FILES)
       "  ${CALC_DEPENDENCY_ROOT}/zmij"
     )
   endif()
+
 endforeach()
 
 message(STATUS "Dependencies:")
@@ -153,6 +167,10 @@ add_executable(Calc
   ${CALC_SOURCES}
 )
 
+# ============================================================================
+# Include directories
+# ============================================================================
+
 target_include_directories(Calc PRIVATE
   "${CMAKE_CURRENT_SOURCE_DIR}/Calc"
   "${CALC_FAST_FLOAT_ROOT}/include"
@@ -182,7 +200,8 @@ set_property(TARGET Calc PROPERTY CXX_EXTENSIONS OFF)
 # ============================================================================
 
 set_target_properties(Calc PROPERTIES
-  OUTPUT_NAME "Calc"
+  OUTPUT_NAME
+    "Calc"
 
   ARCHIVE_OUTPUT_DIRECTORY
     "${CMAKE_BINARY_DIR}/lib"
@@ -212,22 +231,21 @@ target_compile_definitions(Calc PRIVATE
 )
 
 # ============================================================================
-# Optimization / warnings
+# Warnings / optimization
 # ============================================================================
 
 target_compile_options(Calc PRIVATE
+
+  # Debug
   $<$<CONFIG:Debug>:-O0>
   $<$<CONFIG:Debug>:-g>
   $<$<CONFIG:Debug>:-Wall>
   $<$<CONFIG:Debug>:-Wextra>
 
+  # Release
   $<$<CONFIG:Release>:-O3>
   $<$<CONFIG:Release>:-flto>
   $<$<CONFIG:Release>:-Wall>
-)
-
-target_link_options(Calc PRIVATE
-  $<$<CONFIG:Release>:-flto>
 )
 
 # ============================================================================
@@ -238,6 +256,8 @@ target_link_options(Calc PRIVATE
 #
 # 32-bit:
 #   Prescott / SSE3
+#
+# The workflow currently tests only the 64-bit configuration.
 # ============================================================================
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
@@ -269,33 +289,16 @@ else()
 endif()
 
 # ============================================================================
-# IPO / LTO
+# LTO
+#
+# Keep LTO as a normal Release compiler/linker option.
+# Do not fail configuration just because a separate IPO probe disagrees with
+# the selected Clang/GCC toolchain.
 # ============================================================================
 
-include(CheckIPOSupported)
-
-check_ipo_supported(
-  RESULT CALC_IPO_SUPPORTED
-  OUTPUT CALC_IPO_ERROR
+target_link_options(Calc PRIVATE
+  $<$<CONFIG:Release>:-flto>
 )
-
-if(CALC_IPO_SUPPORTED)
-
-  message(STATUS "IPO/LTO: supported")
-
-  set_property(
-    TARGET Calc
-    PROPERTY INTERPROCEDURAL_OPTIMIZATION
-    $<$<CONFIG:Release>:TRUE>
-  )
-
-else()
-
-  message(FATAL_ERROR
-    "IPO/LTO is not supported: ${CALC_IPO_ERROR}"
-  )
-
-endif()
 
 # ============================================================================
 # Installation

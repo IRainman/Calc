@@ -37,8 +37,17 @@ jobs:
             build_dir: build/gcc-x64
 
     steps:
+
+      # ======================================================================
+      # Checkout
+      # ======================================================================
+
       - name: Checkout Calc
         uses: actions/checkout@v6
+
+      # ======================================================================
+      # Install tools
+      # ======================================================================
 
       - name: Install build tools
         shell: bash
@@ -54,15 +63,47 @@ jobs:
             lld \
             gcc
 
-      - name: Show OS
+      # ======================================================================
+      # Verify CachyOS
+      # ======================================================================
+
+      - name: Verify environment
         shell: bash
         run: |
           set -eux
 
-          cat /etc/os-release
-          uname -a
+          echo "========================================"
+          echo "Operating system"
+          echo "========================================"
 
-      - name: Show Clang
+          cat /etc/os-release
+
+          echo
+          echo "========================================"
+          echo "Architecture"
+          echo "========================================"
+
+          uname -m
+
+          echo
+          echo "========================================"
+          echo "CMake"
+          echo "========================================"
+
+          cmake --version
+
+          echo
+          echo "========================================"
+          echo "Ninja"
+          echo "========================================"
+
+          ninja --version
+
+      # ======================================================================
+      # Verify compiler
+      # ======================================================================
+
+      - name: Verify Clang
         if: matrix.compiler == 'clang'
         shell: bash
         run: |
@@ -72,7 +113,7 @@ jobs:
           clang++ --version
           ld.lld --version
 
-      - name: Show GCC
+      - name: Verify GCC
         if: matrix.compiler == 'gcc'
         shell: bash
         run: |
@@ -81,16 +122,8 @@ jobs:
           gcc --version
           g++ --version
 
-      - name: Show CMake
-        shell: bash
-        run: |
-          set -eux
-
-          cmake --version
-          ninja --version
-
       # ======================================================================
-      # Sibling dependencies
+      # Checkout header-only/source dependencies
       # ======================================================================
 
       - name: Checkout dependencies
@@ -122,6 +155,10 @@ jobs:
             --branch main \
             https://github.com/IRainman/zmij.git \
             "$parent/zmij"
+
+      # ======================================================================
+      # Verify dependency layout
+      # ======================================================================
 
       - name: Verify dependencies
         shell: bash
@@ -179,10 +216,10 @@ jobs:
             -DCMAKE_EXE_LINKER_FLAGS="$linker_flags"
 
       # ======================================================================
-      # Verify CMake configuration
+      # Verify configuration
       # ======================================================================
 
-      - name: Verify configuration
+      - name: Verify CMake configuration
         shell: bash
         env:
           BUILD_DIR: ${{ matrix.build_dir }}
@@ -194,18 +231,48 @@ jobs:
 
           test -f "$cache"
 
+          echo "========================================"
+          echo "Compiler"
+          echo "========================================"
+
           grep 'CMAKE_C_COMPILER_ID:' "$cache"
           grep 'CMAKE_CXX_COMPILER_ID:' "$cache"
           grep 'CMAKE_CXX_COMPILER:' "$cache"
+
+          echo
+          echo "========================================"
+          echo "C standard"
+          echo "========================================"
+
+          grep 'CMAKE_C_STANDARD:' "$cache" || true
+
+          echo
+          echo "========================================"
+          echo "C++ standard"
+          echo "========================================"
+
+          grep 'CMAKE_CXX_STANDARD:' "$cache" || true
+
+          echo
+          echo "========================================"
+          echo "Pointer size"
+          echo "========================================"
+
           grep 'CMAKE_SIZEOF_VOID_P:' "$cache"
 
           if [ "$COMPILER" = "clang" ]; then
-            grep -q 'CMAKE_CXX_COMPILER_ID:.*Clang' "$cache"
+            grep -q \
+              'CMAKE_CXX_COMPILER_ID:.*Clang' \
+              "$cache"
           else
-            grep -q 'CMAKE_CXX_COMPILER_ID:.*GNU' "$cache"
+            grep -q \
+              'CMAKE_CXX_COMPILER_ID:.*GNU' \
+              "$cache"
           fi
 
-          grep -q 'CMAKE_SIZEOF_VOID_P:INTERNAL=8' "$cache"
+          grep -q \
+            'CMAKE_SIZEOF_VOID_P:INTERNAL=8' \
+            "$cache"
 
       # ======================================================================
       # Build
@@ -223,7 +290,7 @@ jobs:
             --parallel
 
       # ======================================================================
-      # Verify
+      # Verify executable
       # ======================================================================
 
       - name: Verify executable
@@ -233,12 +300,14 @@ jobs:
         run: |
           set -eux
 
-          test -f "$BUILD_DIR/Release/Calc"
+          executable="$BUILD_DIR/Release/Calc"
 
-          file "$BUILD_DIR/Release/Calc"
+          test -f "$executable"
+
+          file "$executable"
 
       # ======================================================================
-      # Artifact
+      # Upload executable
       # ======================================================================
 
       - name: Upload executable
@@ -250,11 +319,11 @@ jobs:
           retention-days: 14
 
       # ======================================================================
-      # Diagnostics
+      # Upload diagnostics
       # ======================================================================
 
       - name: Upload CMake diagnostics
-        if: failure()
+        if: ${{ failure() }}
         uses: actions/upload-artifact@v6
         with:
           name: Calc-CMake-Diagnostics-${{ matrix.compiler }}
