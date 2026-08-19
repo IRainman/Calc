@@ -7,12 +7,14 @@ on:
   pull_request:
   workflow_dispatch:
 
-permissions:
-  contents: read
-
+# Cancel older runs of the same branch/PR, but never cancel
+# individual matrix jobs against each other.
 concurrency:
   group: windows-msbuild-${{ github.ref }}
   cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   build:
@@ -38,19 +40,6 @@ jobs:
         with:
           msbuild-architecture: x64
 
-      - name: Show toolchain
-        shell: pwsh
-        run: |
-          Write-Host "MSBuild:"
-          msbuild -version
-
-          Write-Host ""
-          Write-Host "Visual Studio installations:"
-          & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" `
-            -products * `
-            -requires Microsoft.Component.MSBuild `
-            -format table
-
       - name: Build ${{ matrix.platform }}
         shell: pwsh
         run: |
@@ -67,11 +56,18 @@ jobs:
         run: |
           $output = "${{ github.workspace }}\out\${{ matrix.output_dir }}"
 
+          if (-not (Test-Path $output)) {
+            throw "Build output directory does not exist: $output"
+          }
+
           Write-Host "Build output:"
           Get-ChildItem -Path $output -Recurse -File |
             Select-Object FullName, Length
 
-          $exe = Get-ChildItem -Path $output -Filter *.exe -File
+          $exe = Get-ChildItem `
+            -Path $output `
+            -Filter *.exe `
+            -File
 
           if (-not $exe) {
             throw "No executable was produced in $output"
