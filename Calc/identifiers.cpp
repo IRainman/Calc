@@ -207,12 +207,6 @@ parabola(std::span<Value> params) noexcept {
   if (compare(x, std::numbers::e_v<Value>)) {
     return std::exp(y);
   }
-  if (compare(y, 1.0 / 2.0)) {
-    return std::sqrt(x);
-  }
-  if (compare(y, 1.0 / 3.0)) {
-    return std::cbrt(x);
-  }
   return std::pow(x, y);
 }
 
