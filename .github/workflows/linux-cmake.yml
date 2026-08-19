@@ -17,14 +17,25 @@ permissions:
 jobs:
   build:
     name: CachyOS Clang x86-64-v2
+
+    # GitHub-hosted runner.
     runs-on: ubuntu-24.04
 
+    # Actual Linux userspace for the build.
     container:
       image: cachyos/cachyos:latest
 
     steps:
-      - name: Checkout
+      # ======================================================================
+      # Checkout Calc
+      # ======================================================================
+
+      - name: Checkout Calc
         uses: actions/checkout@v6
+
+      # ======================================================================
+      # Install build tools
+      # ======================================================================
 
       - name: Install build tools
         shell: bash
@@ -39,18 +50,147 @@ jobs:
             llvm \
             lld
 
+      # ======================================================================
+      # Show environment
+      # ======================================================================
+
       - name: Show toolchain
         shell: bash
         run: |
           set -eux
 
+          echo "========================================"
+          echo "OS"
+          echo "========================================"
+
           cat /etc/os-release
+
           echo
+          echo "========================================"
+          echo "Clang"
+          echo "========================================"
+
+          clang --version
           clang++ --version
+
           echo
+          echo "========================================"
+          echo "CMake"
+          echo "========================================"
+
           cmake --version
+
           echo
+          echo "========================================"
+          echo "Ninja"
+          echo "========================================"
+
           ninja --version
+
+      # ======================================================================
+      # Checkout Calc dependencies
+      #
+      # Calc/pch.hpp and CMakeLists.txt expect:
+      #
+      #   <parent>/Calc
+      #   <parent>/fast_float
+      #   <parent>/fmt
+      #   <parent>/zmij
+      #
+      # The GitHub workspace is:
+      #
+      #   <parent>/Calc
+      # ======================================================================
+
+      - name: Checkout dependencies
+        shell: bash
+        run: |
+          set -eux
+
+          parent="$(dirname "$GITHUB_WORKSPACE")"
+
+          echo "Calc:"
+          echo "  $GITHUB_WORKSPACE"
+
+          echo "Dependency root:"
+          echo "  $parent"
+
+          rm -rf \
+            "$parent/fast_float" \
+            "$parent/fmt" \
+            "$parent/zmij"
+
+          git clone \
+            --depth 1 \
+            --branch main \
+            https://github.com/IRainman/fast_float.git \
+            "$parent/fast_float"
+
+          git clone \
+            --depth 1 \
+            --branch main \
+            https://github.com/IRainman/fmt.git \
+            "$parent/fmt"
+
+          git clone \
+            --depth 1 \
+            --branch main \
+            https://github.com/IRainman/zmij.git \
+            "$parent/zmij"
+
+      # ======================================================================
+      # Verify dependency layout BEFORE CMake
+      # ======================================================================
+
+      - name: Verify dependencies
+        shell: bash
+        run: |
+          set -eux
+
+          parent="$(dirname "$GITHUB_WORKSPACE")"
+
+          echo "========================================"
+          echo "fast_float"
+          echo "========================================"
+
+          test -f \
+            "$parent/fast_float/include/fast_float/fast_float.h"
+
+          echo "OK"
+
+          echo
+          echo "========================================"
+          echo "fmt"
+          echo "========================================"
+
+          test -f \
+            "$parent/fmt/include/fmt/compile.h"
+
+          echo "OK"
+
+          echo
+          echo "========================================"
+          echo "zmij"
+          echo "========================================"
+
+          test -f \
+            "$parent/zmij/zmij.cc"
+
+          echo "OK"
+
+      # ======================================================================
+      # Configure
+      #
+      # One target only for this diagnostic step:
+      #
+      #   Clang
+      #   Linux
+      #   x86-64-v2
+      #   Release
+      #
+      # CMakeLists.txt supplies the architecture-specific optimization too,
+      # but supplying it here makes the compiler configuration explicit.
+      # ======================================================================
 
       - name: Configure
         shell: bash
@@ -64,11 +204,19 @@ jobs:
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_C_COMPILER=clang \
             -DCMAKE_CXX_COMPILER=clang++ \
+            -DCMAKE_C_STANDARD=23 \
+            -DCMAKE_C_STANDARD_REQUIRED=ON \
+            -DCMAKE_C_EXTENSIONS=OFF \
             -DCMAKE_CXX_STANDARD=23 \
             -DCMAKE_CXX_STANDARD_REQUIRED=ON \
             -DCMAKE_CXX_EXTENSIONS=OFF \
+            -DCMAKE_C_FLAGS="-march=x86-64-v2" \
             -DCMAKE_CXX_FLAGS="-march=x86-64-v2" \
             -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld"
+
+      # ======================================================================
+      # Build
+      # ======================================================================
 
       - name: Build
         shell: bash
@@ -79,16 +227,41 @@ jobs:
             --build build \
             --parallel
 
+      # ======================================================================
+      # Verify
+      # ======================================================================
+
       - name: Verify
         shell: bash
         run: |
           set -eux
 
+          echo "========================================"
+          echo "Build tree"
+          echo "========================================"
+
           find build \
-            -type f \
             -maxdepth 4 \
+            -type f \
             -print
+
+          echo
+          echo "========================================"
+          echo "Executable"
+          echo "========================================"
 
           test -f build/Release/Calc
 
           file build/Release/Calc
+
+      # ======================================================================
+      # Upload artifact
+      # ======================================================================
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: Calc-CMake-Clang-x86-64-v2
+          path: build/Release/Calc
+          if-no-files-found: error
+          retention-days: 14
