@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 # Cancel an older run for the same branch/PR when a newer commit arrives.
-# Matrix jobs within one run are NOT serialized or canceled against each other.
+# Win32 and x64 jobs within the same run remain independent.
 concurrency:
   group: windows-build-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -25,15 +25,150 @@ jobs:
 
     strategy:
       fail-fast: false
-
       matrix:
         platform:
           - Win32
           - x64
 
     steps:
-      - name: Checkout
+      # ============================================================
+      # Calc itself
+      # ============================================================
+
+      - name: Checkout Calc
         uses: actions/checkout@v6
+
+      # ============================================================
+      # Header-only/source dependencies
+      #
+      # IMPORTANT:
+      #
+      # GITHUB_WORKSPACE = D:\a\Calc
+      #
+      # Calc/pch.hpp contains:
+      #
+      #   ../../fast_float/include/fast_float/fast_float.h
+      #   ../../fmt/include/fmt/compile.h
+      #   ../../zmij/zmij.cc
+      #
+      # Therefore the required layout is:
+      #
+      #   D:\a\Calc
+      #   D:\a\fast_float
+      #   D:\a\fmt
+      #   D:\a\zmij
+      #
+      # The dependencies are intentionally NOT built as libraries.
+      # They are consumed directly as headers/source by Calc.
+      # ============================================================
+
+      - name: Checkout dependencies
+        shell: pwsh
+        run: |
+          $parent = Split-Path -Parent $env:GITHUB_WORKSPACE
+
+          $dependencies = @(
+            @{
+              Name = "fast_float"
+              Repository = "https://github.com/IRainman/fast_float.git"
+              Branch = "main"
+            },
+            @{
+              Name = "fmt"
+              Repository = "https://github.com/IRainman/fmt.git"
+              Branch = "main"
+            },
+            @{
+              Name = "zmij"
+              Repository = "https://github.com/IRainman/zmij.git"
+              Branch = "main"
+            }
+          )
+
+          foreach ($dependency in $dependencies) {
+            $destination = Join-Path $parent $dependency.Name
+
+            Write-Host ""
+            Write-Host "========================================"
+            Write-Host "Checkout: $($dependency.Name)"
+            Write-Host "Destination: $destination"
+            Write-Host "========================================"
+
+            if (Test-Path $destination) {
+              Remove-Item `
+                -Path $destination `
+                -Recurse `
+                -Force
+            }
+
+            git clone `
+              --depth 1 `
+              --branch $dependency.Branch `
+              $dependency.Repository `
+              $destination
+
+            if ($LASTEXITCODE -ne 0) {
+              throw "Failed to clone $($dependency.Name)"
+            }
+
+            if (-not (Test-Path $destination)) {
+              throw "Dependency directory was not created: $destination"
+            }
+          }
+
+      - name: Verify dependency layout
+        shell: pwsh
+        run: |
+          $parent = Split-Path -Parent $env:GITHUB_WORKSPACE
+
+          $requiredFiles = @(
+            @{
+              Name = "fast_float"
+              Path = Join-Path `
+                $parent `
+                "fast_float\include\fast_float\fast_float.h"
+            },
+            @{
+              Name = "fmt"
+              Path = Join-Path `
+                $parent `
+                "fmt\include\fmt\compile.h"
+            },
+            @{
+              Name = "zmij"
+              Path = Join-Path `
+                $parent `
+                "zmij\zmij.cc"
+            }
+          )
+
+          Write-Host ""
+          Write-Host "========================================"
+          Write-Host "Dependency layout"
+          Write-Host "========================================"
+
+          foreach ($file in $requiredFiles) {
+            Write-Host ""
+            Write-Host "$($file.Name):"
+            Write-Host "  $($file.Path)"
+
+            if (-not (Test-Path $file.Path)) {
+              throw "Required dependency file was not found: $($file.Path)"
+            }
+
+            Write-Host "  OK"
+          }
+
+          Write-Host ""
+          Write-Host "Actual workspace layout:"
+          Write-Host "  $env:GITHUB_WORKSPACE"
+          Write-Host "  $parent\fast_float"
+          Write-Host "  $parent\fmt"
+          Write-Host "  $parent\zmij"
+
+      # ============================================================
+      # Visual Studio
+      # ============================================================
 
       - name: Locate Visual Studio
         id: vs
@@ -51,7 +186,8 @@ jobs:
             -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 `
             -property installationPath
 
-          if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($installationPath)) {
+          if ($LASTEXITCODE -ne 0 -or `
+              [string]::IsNullOrWhiteSpace($installationPath)) {
             throw "Visual Studio installation with C++ tools was not found."
           }
 
@@ -69,29 +205,26 @@ jobs:
             $installationPath `
             "Common7\Tools\VsMSBuildCmd.bat"
 
-          if (-not (Test-Path $devenv)) {
-            throw "devenv.com was not found: $devenv"
-          }
+          $requiredTools = @(
+            $devenv
+            $vsdevcmd
+            $vsmcbuildcmd
+          )
 
-          if (-not (Test-Path $vsdevcmd)) {
-            throw "VsDevCmd.bat was not found: $vsdevcmd"
-          }
-
-          if (-not (Test-Path $vsmcbuildcmd)) {
-            throw "VsMSBuildCmd.bat was not found: $vsmcbuildcmd"
+          foreach ($tool in $requiredTools) {
+            if (-not (Test-Path $tool)) {
+              throw "Required Visual Studio tool was not found: $tool"
+            }
           }
 
           Write-Host "Visual Studio installation:"
           Write-Host "  $installationPath"
-
           Write-Host ""
           Write-Host "devenv:"
           Write-Host "  $devenv"
-
           Write-Host ""
           Write-Host "VsDevCmd:"
           Write-Host "  $vsdevcmd"
-
           Write-Host ""
           Write-Host "VsMSBuildCmd:"
           Write-Host "  $vsmcbuildcmd"
@@ -109,49 +242,76 @@ jobs:
           call "%VS_INSTALL%\Common7\Tools\VsDevCmd.bat" -arch=x64 -host_arch=x64
 
           echo.
-          echo === MSBuild ===
+          echo ========================================
+          echo MSBuild
+          echo ========================================
           where msbuild
           msbuild -version
 
           echo.
-          echo === C++ compiler ===
+          echo ========================================
+          echo C++ compiler
+          echo ========================================
           where cl
           cl
 
           echo.
-          echo === Linker ===
+          echo ========================================
+          echo Linker
+          echo ========================================
           where link
           link
 
           echo.
-          echo === devenv ===
+          echo ========================================
+          echo Visual Studio
+          echo ========================================
           where devenv
-          devenv.com /?
 
       - name: Verify v145 toolset
         shell: pwsh
         env:
           VS_INSTALL: ${{ steps.vs.outputs.installationPath }}
         run: |
-          $toolset = Join-Path `
+          $win32Toolset = Join-Path `
             $env:VS_INSTALL `
             "MSBuild\Microsoft\VC\v180\Platforms\Win32\PlatformToolsets\v145"
 
-          if (-not (Test-Path $toolset)) {
-            throw "v145 Win32 toolset was not found: $toolset"
-          }
-
-          $toolset = Join-Path `
+          $x64Toolset = Join-Path `
             $env:VS_INSTALL `
             "MSBuild\Microsoft\VC\v180\Platforms\x64\PlatformToolsets\v145"
 
-          if (-not (Test-Path $toolset)) {
-            throw "v145 x64 toolset was not found: $toolset"
+          Write-Host "Win32 v145:"
+          Write-Host "  $win32Toolset"
+
+          if (-not (Test-Path $win32Toolset)) {
+            throw "v145 Win32 toolset was not found: $win32Toolset"
           }
 
-          Write-Host "v145 toolset is installed for both Win32 and x64."
+          Write-Host "  OK"
 
-      - name: Rebuild ${{ matrix.platform }}
+          Write-Host ""
+          Write-Host "x64 v145:"
+          Write-Host "  $x64Toolset"
+
+          if (-not (Test-Path $x64Toolset)) {
+            throw "v145 x64 toolset was not found: $x64Toolset"
+          }
+
+          Write-Host "  OK"
+
+      # ============================================================
+      # Build
+      #
+      # This intentionally reproduces the repository's existing
+      # rebuildall.bat approach:
+      #
+      #   VsMSBuildCmd.bat
+      #   devenv Calc.sln /Rebuild ...
+      #
+      # ============================================================
+
+      - name: Rebuild Calc ${{ matrix.platform }}
         shell: cmd
         env:
           VS_INSTALL: ${{ steps.vs.outputs.installationPath }}
@@ -161,7 +321,7 @@ jobs:
 
           echo.
           echo ========================================
-          echo Building Calc.sln
+          echo Calc Windows build
           echo Configuration: Release
           echo Platform: %PLATFORM%
           echo ========================================
@@ -194,19 +354,31 @@ jobs:
           echo Visual Studio build SUCCEEDED
           echo ========================================
 
+      # ============================================================
+      # Verify generated executable
+      # ============================================================
+
       - name: Verify executable
         shell: pwsh
         env:
           PLATFORM: ${{ matrix.platform }}
         run: |
-          if ($env:PLATFORM -eq "Win32") {
-            $output = Join-Path $env:GITHUB_WORKSPACE "out\win32"
-          }
-          elseif ($env:PLATFORM -eq "x64") {
-            $output = Join-Path $env:GITHUB_WORKSPACE "out\x64"
-          }
-          else {
-            throw "Unsupported platform: $env:PLATFORM"
+          switch ($env:PLATFORM) {
+            "Win32" {
+              $output = Join-Path `
+                $env:GITHUB_WORKSPACE `
+                "out\win32"
+            }
+
+            "x64" {
+              $output = Join-Path `
+                $env:GITHUB_WORKSPACE `
+                "out\x64"
+            }
+
+            default {
+              throw "Unsupported platform: $env:PLATFORM"
+            }
           }
 
           Write-Host "Expected output directory:"
@@ -216,12 +388,14 @@ jobs:
             throw "Output directory does not exist: $output"
           }
 
-          $files = Get-ChildItem `
-            -Path $output `
-            -Recurse `
-            -File
+          $files = @(
+            Get-ChildItem `
+              -Path $output `
+              -Recurse `
+              -File
+          )
 
-          if (-not $files) {
+          if ($files.Count -eq 0) {
             throw "Output directory is empty: $output"
           }
 
@@ -231,7 +405,7 @@ jobs:
             Select-Object FullName, Length |
             Format-Table -AutoSize
 
-          $exe = @(
+          $executables = @(
             Get-ChildItem `
               -Path $output `
               -Filter "*.exe" `
@@ -239,23 +413,28 @@ jobs:
               -File
           )
 
-          if ($exe.Count -eq 0) {
+          if ($executables.Count -eq 0) {
             throw "No executable was produced in $output"
           }
 
           Write-Host ""
           Write-Host "Executable(s):"
 
-          foreach ($file in $exe) {
-            Write-Host "  $($file.FullName)"
+          foreach ($executable in $executables) {
+            Write-Host "  $($executable.FullName)"
           }
+
+      # ============================================================
+      # Artifacts
+      # ============================================================
 
       - name: Upload build
         uses: actions/upload-artifact@v6
         with:
           name: Calc-Windows-${{ matrix.platform }}
           path: |
-            out\${{ matrix.platform == 'Win32' && 'win32' || 'x64' }}\**
+            out\win32\**
+            out\x64\**
           if-no-files-found: error
           retention-days: 14
 
@@ -268,4 +447,3 @@ jobs:
             devenv-${{ matrix.platform }}.log
           if-no-files-found: warn
           retention-days: 14
-
