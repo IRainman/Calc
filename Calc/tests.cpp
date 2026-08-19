@@ -107,7 +107,7 @@ std::string calc_tests() {
       const auto is_nan = std::isnan(t.second) && std::isnan(value);
       const auto is_equal = t.second == value;
       const auto is_less_than_epsilon = Identifiers::compare(t.second, value);
-      const auto is_normal = isnormal(value);
+      const auto is_normal = std::isnormal(value);
       const auto is_identical_output =
           formated_value ==
           std::string_view(buffer_test.data(),
