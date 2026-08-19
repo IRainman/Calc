@@ -57,7 +57,6 @@ message(STATUS "")
 message(STATUS "========================================")
 message(STATUS "Calc configuration")
 message(STATUS "========================================")
-
 message(STATUS "System:")
 message(STATUS "  ${CMAKE_SYSTEM_NAME}")
 
@@ -128,7 +127,6 @@ set(CALC_REQUIRED_DEPENDENCY_FILES
 )
 
 foreach(CALC_DEPENDENCY_FILE IN LISTS CALC_REQUIRED_DEPENDENCY_FILES)
-
   if(NOT EXISTS "${CALC_DEPENDENCY_FILE}")
     message(FATAL_ERROR
       "Required Calc dependency file is missing:\n"
@@ -140,14 +138,12 @@ foreach(CALC_DEPENDENCY_FILE IN LISTS CALC_REQUIRED_DEPENDENCY_FILES)
       "  ${CALC_DEPENDENCY_ROOT}/zmij"
     )
   endif()
-
 endforeach()
 
 message(STATUS "Dependencies:")
 message(STATUS "  fast_float : ${CALC_FAST_FLOAT_ROOT}")
 message(STATUS "  fmt        : ${CALC_FMT_ROOT}")
 message(STATUS "  zmij       : ${CALC_ZMIJ_ROOT}")
-
 message(STATUS "")
 
 # ============================================================================
@@ -173,10 +169,6 @@ add_executable(Calc
   ${CALC_SOURCES}
 )
 
-# ============================================================================
-# Include directories
-# ============================================================================
-
 target_include_directories(Calc PRIVATE
   "${CMAKE_CURRENT_SOURCE_DIR}/Calc"
   "${CALC_FAST_FLOAT_ROOT}/include"
@@ -193,27 +185,33 @@ target_compile_features(Calc PRIVATE
   cxx_std_23
 )
 
-set_property(TARGET Calc
+set_property(
+  TARGET Calc
   PROPERTY C_STANDARD 23
 )
 
-set_property(TARGET Calc
+set_property(
+  TARGET Calc
   PROPERTY C_STANDARD_REQUIRED ON
 )
 
-set_property(TARGET Calc
+set_property(
+  TARGET Calc
   PROPERTY C_EXTENSIONS OFF
 )
 
-set_property(TARGET Calc
+set_property(
+  TARGET Calc
   PROPERTY CXX_STANDARD 23
 )
 
-set_property(TARGET Calc
+set_property(
+  TARGET Calc
   PROPERTY CXX_STANDARD_REQUIRED ON
 )
 
-set_property(TARGET Calc
+set_property(
+  TARGET Calc
   PROPERTY CXX_EXTENSIONS OFF
 )
 
@@ -253,7 +251,7 @@ target_compile_definitions(Calc PRIVATE
 )
 
 # ============================================================================
-# Warnings / optimization
+# Optimization / warnings
 # ============================================================================
 
 target_compile_options(Calc PRIVATE
@@ -274,14 +272,10 @@ target_compile_options(Calc PRIVATE
 # Architecture
 #
 # 64-bit:
-#
 #   x86-64-v2
 #
 # 32-bit:
-#
 #   Prescott / SSE3
-#
-# The current workflow tests x86-64 only.
 # ============================================================================
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
@@ -313,12 +307,10 @@ else()
 endif()
 
 # ============================================================================
-# Link-time optimization
+# LTO
 #
-# Do not use CheckIPOSupported() here.
-#
-# The selected compiler/linker are responsible for handling -flto.
-# CMake should not reject configuration because an auxiliary IPO probe fails.
+# Do not run CheckIPOSupported().
+# Release builds simply use -flto.
 # ============================================================================
 
 target_link_options(Calc PRIVATE
