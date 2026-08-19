@@ -1,4 +1,10 @@
-# TODO
+# Calc
+
+The home of Calc is here:
+
+http://studio2000.xyz/txt/calc.shtml
+
+## TODO
 
 The project is currently in the moving stage from an old local SVN repo to GitHub. Please wait! Correct native Windows builds will be available soon.
 
