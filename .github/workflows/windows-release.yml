@@ -228,6 +228,25 @@ jobs:
             }
           )
 
+          #
+          # Verify all repositories exist and are valid git repositories.
+          #
+          foreach ($repository in $repositories) {
+            $name = $repository.Name
+            $path = $repository.Path
+
+            if (-not (Test-Path $path)) {
+              throw "Repository directory not found: $path"
+            }
+
+            $gitDir = Join-Path $path ".git"
+            if (-not (Test-Path $gitDir)) {
+              throw "Not a git repository: $path (missing .git directory)"
+            }
+
+            Write-Host "Verified git repository: $name at $path"
+          }
+
           $versions = New-Object System.Collections.Generic.List[string]
 
           $versions.Add("Calc source package")
@@ -240,10 +259,10 @@ jobs:
             $path = $repository.Path
             $prefix = $repository.Prefix
 
-            $sha = (git -C $path rev-parse HEAD).Trim()
+            $sha = (git -C $path rev-parse HEAD 2>$null).Trim()
 
             if ([string]::IsNullOrWhiteSpace($sha)) {
-              throw "Unable to determine Git revision for $name."
+              throw "Unable to determine Git revision for $name at $path."
             }
 
             $remote = (git -C $path remote get-url origin 2>$null).Trim()
@@ -272,7 +291,11 @@ jobs:
               HEAD
 
             if ($LASTEXITCODE -ne 0) {
-              throw "git archive failed for $name."
+              throw "git archive failed for $name at $path (exit code: $LASTEXITCODE)."
+            }
+
+            if (-not (Test-Path $archive)) {
+              throw "Archive file was not created for $name at $archive."
             }
 
             Expand-Archive `
