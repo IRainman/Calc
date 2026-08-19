@@ -1,0 +1,100 @@
+name: Windows MSBuild
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-msbuild-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Release ${{ matrix.platform }}
+    runs-on: windows-2025-vs2026
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: Win32
+            output_dir: win32
+
+          - platform: x64
+            output_dir: x64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v3
+        with:
+          msbuild-architecture: x64
+
+      - name: Show toolchain
+        shell: pwsh
+        run: |
+          Write-Host "MSBuild:"
+          msbuild -version
+
+          Write-Host ""
+          Write-Host "Visual Studio installations:"
+          & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" `
+            -products * `
+            -requires Microsoft.Component.MSBuild `
+            -format table
+
+      - name: Build ${{ matrix.platform }}
+        shell: pwsh
+        run: |
+          msbuild `
+            "${{ github.workspace }}\Calc.sln" `
+            /t:Rebuild `
+            /m `
+            /p:Configuration=Release `
+            /p:Platform=${{ matrix.platform }} `
+            /bl:"${{ github.workspace }}\build-${{ matrix.platform }}.binlog"
+
+      - name: Verify output
+        shell: pwsh
+        run: |
+          $output = "${{ github.workspace }}\out\${{ matrix.output_dir }}"
+
+          Write-Host "Build output:"
+          Get-ChildItem -Path $output -Recurse -File |
+            Select-Object FullName, Length
+
+          $exe = Get-ChildItem -Path $output -Filter *.exe -File
+
+          if (-not $exe) {
+            throw "No executable was produced in $output"
+          }
+
+          Write-Host ""
+          Write-Host "Executable:"
+          $exe | Select-Object FullName, Length
+
+      - name: Upload build
+        uses: actions/upload-artifact@v6
+        with:
+          name: Calc-Windows-${{ matrix.output_dir }}
+          path: |
+            out\${{ matrix.output_dir }}\**
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload MSBuild binary log
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: Calc-MSBuild-log-${{ matrix.output_dir }}
+          path: build-${{ matrix.platform }}.binlog
+          if-no-files-found: ignore
+          retention-days: 7
