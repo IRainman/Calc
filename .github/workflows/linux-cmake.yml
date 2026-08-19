@@ -14,556 +14,81 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   build:
-    name: ${{ matrix.compiler_name }} ${{ matrix.architecture_name }}
-
-    # GitHub-hosted runner.
-    #
-    # The actual build environment is provided by the CachyOS container below.
+    name: CachyOS Clang x86-64-v2
     runs-on: ubuntu-24.04
 
-    # GitHub-hosted Linux runners support container jobs.
-    # The build therefore executes in CachyOS rather than Ubuntu userspace.
     container:
       image: cachyos/cachyos:latest
 
-    defaults:
-      run:
-        shell: bash
-
-    strategy:
-      fail-fast: false
-
-      matrix:
-        include:
-
-          # ==================================================================
-          # Clang / x86-64-v2
-          # ==================================================================
-
-          - compiler: clang
-            compiler_name: Clang
-            architecture: x64
-            architecture_name: x86-64-v2
-            build_dir: build/clang-x64
-
-          # ==================================================================
-          # Clang / 32-bit Prescott / SSE3
-          # ==================================================================
-
-          - compiler: clang
-            compiler_name: Clang
-            architecture: x86
-            architecture_name: x86-Prescott-SSE3
-            build_dir: build/clang-x86
-
-          # ==================================================================
-          # GCC / x86-64-v2
-          # ==================================================================
-
-          - compiler: gcc
-            compiler_name: GCC
-            architecture: x64
-            architecture_name: x86-64-v2
-            build_dir: build/gcc-x64
-
-          # ==================================================================
-          # GCC / 32-bit Prescott / SSE3
-          # ==================================================================
-
-          - compiler: gcc
-            compiler_name: GCC
-            architecture: x86
-            architecture_name: x86-Prescott-SSE3
-            build_dir: build/gcc-x86
-
     steps:
-
-      # ======================================================================
-      # Checkout Calc
-      # ======================================================================
-
-      - name: Checkout Calc
+      - name: Checkout
         uses: actions/checkout@v6
 
-      # ======================================================================
-      # Verify CachyOS container
-      # ======================================================================
-
-      - name: Verify CachyOS
-        run: |
-          set -eux
-
-          echo "========================================"
-          echo "Operating system"
-          echo "========================================"
-
-          cat /etc/os-release
-
-          if ! grep -qi "cachyos" /etc/os-release; then
-            echo "ERROR: Build container is not CachyOS."
-            exit 1
-          fi
-
-          echo
-          echo "========================================"
-          echo "Container architecture"
-          echo "========================================"
-
-          uname -m
-
-      # ======================================================================
-      # Update package database / install common tools
-      #
-      # Container jobs execute as root, so sudo is not needed.
-      # ======================================================================
-
       - name: Install build tools
+        shell: bash
         run: |
           set -eux
 
           pacman -Syu --noconfirm --needed \
-            clang \
-            llvm \
-            lld \
-            gcc \
+            git \
             cmake \
             ninja \
-            git
+            clang \
+            llvm \
+            lld
 
-      # ======================================================================
-      # Enable multilib for 32-bit builds
-      # ======================================================================
-
-      - name: Enable multilib
-        if: ${{ matrix.architecture == 'x86' }}
+      - name: Show toolchain
+        shell: bash
         run: |
           set -eux
 
-          if ! grep -q '^\[multilib\]' /etc/pacman.conf; then
-            printf '\n[multilib]\nInclude = /etc/pacman.d/mirrorlist\n' \
-              >> /etc/pacman.conf
-          fi
-
-          pacman -Sy --noconfirm
-
-          pacman -S --noconfirm --needed \
-            lib32-glibc \
-            lib32-gcc-libs
-
-      # ======================================================================
-      # Verify Clang
-      # ======================================================================
-
-      - name: Verify Clang
-        if: ${{ matrix.compiler == 'clang' }}
-        run: |
-          set -eux
-
-          echo "========================================"
-          echo "Clang"
-          echo "========================================"
-
-          clang --version
+          cat /etc/os-release
+          echo
           clang++ --version
-
           echo
-          echo "========================================"
-          echo "LLVM"
-          echo "========================================"
-
-          llvm-config --version
-
-          echo
-          echo "========================================"
-          echo "LLD"
-          echo "========================================"
-
-          ld.lld --version
-
-      # ======================================================================
-      # Verify GCC
-      # ======================================================================
-
-      - name: Verify GCC
-        if: ${{ matrix.compiler == 'gcc' }}
-        run: |
-          set -eux
-
-          echo "========================================"
-          echo "GCC"
-          echo "========================================"
-
-          gcc --version
-          g++ --version
-
-      # ======================================================================
-      # Verify CMake / Ninja
-      # ======================================================================
-
-      - name: Verify CMake and Ninja
-        run: |
-          set -eux
-
-          echo "========================================"
-          echo "CMake"
-          echo "========================================"
-
           cmake --version
-
           echo
-          echo "========================================"
-          echo "Ninja"
-          echo "========================================"
-
           ninja --version
-
-      # ======================================================================
-      # Verify 32-bit toolchain before CMake
-      # ======================================================================
-
-      - name: Verify 32-bit compiler
-        if: ${{ matrix.architecture == 'x86' }}
-        run: |
-          set -eux
-
-          if [ "${{ matrix.compiler }}" = "clang" ]; then
-            clang++ \
-              -m32 \
-              -march=prescott \
-              -x c++ \
-              -c \
-              /dev/null \
-              -o /tmp/calc-x86-test.o
-          else
-            g++ \
-              -m32 \
-              -march=prescott \
-              -x c++ \
-              -c \
-              /dev/null \
-              -o /tmp/calc-x86-test.o
-          fi
-
-          file /tmp/calc-x86-test.o
-
-          rm -f /tmp/calc-x86-test.o
-
-      # ======================================================================
-      # Checkout sibling dependencies
-      #
-      # Required by Calc/pch.hpp:
-      #
-      #   ../../fast_float/include/fast_float/fast_float.h
-      #   ../../fmt/include/fmt/compile.h
-      #   ../../zmij/zmij.cc
-      #
-      # Layout:
-      #
-      #   <parent>/Calc
-      #   <parent>/fast_float
-      #   <parent>/fmt
-      #   <parent>/zmij
-      # ======================================================================
-
-      - name: Checkout dependencies
-        run: |
-          set -eux
-
-          parent="$(dirname "$GITHUB_WORKSPACE")"
-
-          echo "Calc:"
-          echo "  $GITHUB_WORKSPACE"
-
-          echo
-          echo "Dependencies:"
-          echo "  $parent/fast_float"
-          echo "  $parent/fmt"
-          echo "  $parent/zmij"
-
-          rm -rf \
-            "$parent/fast_float" \
-            "$parent/fmt" \
-            "$parent/zmij"
-
-          git clone \
-            --depth 1 \
-            --branch main \
-            https://github.com/IRainman/fast_float.git \
-            "$parent/fast_float"
-
-          git clone \
-            --depth 1 \
-            --branch main \
-            https://github.com/IRainman/fmt.git \
-            "$parent/fmt"
-
-          git clone \
-            --depth 1 \
-            --branch main \
-            https://github.com/IRainman/zmij.git \
-            "$parent/zmij"
-
-      # ======================================================================
-      # Verify dependencies
-      # ======================================================================
-
-      - name: Verify dependency layout
-        run: |
-          set -eux
-
-          parent="$(dirname "$GITHUB_WORKSPACE")"
-
-          test -f \
-            "$parent/fast_float/include/fast_float/fast_float.h"
-
-          test -f \
-            "$parent/fmt/include/fmt/compile.h"
-
-          test -f \
-            "$parent/zmij/zmij.cc"
-
-          echo
-          echo "Dependency layout verified."
-
-      # ======================================================================
-      # Configure
-      #
-      # The CMakeLists.txt owns the architecture-specific -march option.
-      #
-      # For x86 we only need -m32 here because CMake must detect the compiler
-      # as a 32-bit compiler before CMAKE_SIZEOF_VOID_P is established.
-      # ======================================================================
 
       - name: Configure
         shell: bash
-        env:
-          BUILD_DIR: ${{ matrix.build_dir }}
-          COMPILER: ${{ matrix.compiler }}
-          ARCHITECTURE: ${{ matrix.architecture }}
         run: |
           set -eux
-
-          if [ "$COMPILER" = "clang" ]; then
-            C_COMPILER=clang
-            CXX_COMPILER=clang++
-            LINKER_FLAGS="-fuse-ld=lld"
-          else
-            C_COMPILER=gcc
-            CXX_COMPILER=g++
-            LINKER_FLAGS=""
-          fi
-
-          if [ "$ARCHITECTURE" = "x86" ]; then
-            ARCH_FLAGS="-m32"
-            LINKER_FLAGS="$LINKER_FLAGS -m32"
-          else
-            ARCH_FLAGS=""
-          fi
 
           cmake \
             -S . \
-            -B "$BUILD_DIR" \
+            -B build \
             -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_C_COMPILER="$C_COMPILER" \
-            -DCMAKE_CXX_COMPILER="$CXX_COMPILER" \
-            -DCMAKE_C_STANDARD=23 \
-            -DCMAKE_C_STANDARD_REQUIRED=ON \
-            -DCMAKE_C_EXTENSIONS=OFF \
+            -DCMAKE_C_COMPILER=clang \
+            -DCMAKE_CXX_COMPILER=clang++ \
             -DCMAKE_CXX_STANDARD=23 \
             -DCMAKE_CXX_STANDARD_REQUIRED=ON \
             -DCMAKE_CXX_EXTENSIONS=OFF \
-            -DCMAKE_C_FLAGS="$ARCH_FLAGS" \
-            -DCMAKE_CXX_FLAGS="$ARCH_FLAGS" \
-            -DCMAKE_EXE_LINKER_FLAGS="$LINKER_FLAGS"
-
-      # ======================================================================
-      # Verify CMake configuration
-      # ======================================================================
-
-      - name: Verify CMake configuration
-        shell: bash
-        env:
-          BUILD_DIR: ${{ matrix.build_dir }}
-          COMPILER: ${{ matrix.compiler }}
-          ARCHITECTURE: ${{ matrix.architecture }}
-        run: |
-          set -eux
-
-          cache="$BUILD_DIR/CMakeCache.txt"
-
-          test -f "$cache"
-
-          echo "========================================"
-          echo "C compiler"
-          echo "========================================"
-
-          grep \
-            'CMAKE_C_COMPILER_ID:' \
-            "$cache"
-
-          grep \
-            'CMAKE_C_COMPILER:' \
-            "$cache"
-
-          echo
-          echo "========================================"
-          echo "C++ compiler"
-          echo "========================================"
-
-          grep \
-            'CMAKE_CXX_COMPILER_ID:' \
-            "$cache"
-
-          grep \
-            'CMAKE_CXX_COMPILER:' \
-            "$cache"
-
-          echo
-          echo "========================================"
-          echo "C standard"
-          echo "========================================"
-
-          grep \
-            'CMAKE_C_STANDARD:' \
-            "$cache" || true
-
-          echo
-          echo "========================================"
-          echo "C++ standard"
-          echo "========================================"
-
-          grep \
-            'CMAKE_CXX_STANDARD:' \
-            "$cache" || true
-
-          echo
-          echo "========================================"
-          echo "Pointer size"
-          echo "========================================"
-
-          grep \
-            'CMAKE_SIZEOF_VOID_P:' \
-            "$cache"
-
-          if [ "$COMPILER" = "clang" ]; then
-
-            grep -q \
-              'CMAKE_CXX_COMPILER_ID:.*Clang' \
-              "$cache"
-
-          else
-
-            grep -q \
-              'CMAKE_CXX_COMPILER_ID:.*GNU' \
-              "$cache"
-
-          fi
-
-          if [ "$ARCHITECTURE" = "x64" ]; then
-
-            grep -q \
-              'CMAKE_SIZEOF_VOID_P:INTERNAL=8' \
-              "$cache"
-
-          else
-
-            grep -q \
-              'CMAKE_SIZEOF_VOID_P:INTERNAL=4' \
-              "$cache"
-
-          fi
-
-      # ======================================================================
-      # Build
-      # ======================================================================
+            -DCMAKE_CXX_FLAGS="-march=x86-64-v2" \
+            -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld"
 
       - name: Build
         shell: bash
-        env:
-          BUILD_DIR: ${{ matrix.build_dir }}
         run: |
           set -eux
 
           cmake \
-            --build "$BUILD_DIR" \
+            --build build \
             --parallel
 
-      # ======================================================================
-      # Verify executable
-      # ======================================================================
-
-      - name: Verify executable
+      - name: Verify
         shell: bash
-        env:
-          BUILD_DIR: ${{ matrix.build_dir }}
-          ARCHITECTURE: ${{ matrix.architecture }}
         run: |
           set -eux
 
-          executable="$BUILD_DIR/Release/Calc"
+          find build \
+            -type f \
+            -maxdepth 4 \
+            -print
 
-          if [ ! -f "$executable" ]; then
+          test -f build/Release/Calc
 
-            echo "ERROR: Calc executable was not produced."
-
-            echo
-            echo "Build tree:"
-
-            find "$BUILD_DIR" \
-              -maxdepth 4 \
-              -type f \
-              -print
-
-            exit 1
-          fi
-
-          echo "========================================"
-          echo "Calc executable"
-          echo "========================================"
-
-          file "$executable"
-
-          echo
-          echo "Architecture check:"
-
-          if [ "$ARCHITECTURE" = "x64" ]; then
-            file "$executable" | grep -E 'ELF 64-bit'
-          else
-            file "$executable" | grep -E 'ELF 32-bit'
-          fi
-
-      # ======================================================================
-      # Upload artifact
-      # ======================================================================
-
-      - name: Upload executable
-        uses: actions/upload-artifact@v6
-        with:
-          name: Calc-CMake-${{ matrix.compiler }}-Linux-${{ matrix.architecture }}
-          path: |
-            ${{ matrix.build_dir }}/Release/Calc
-          if-no-files-found: error
-          retention-days: 14
-
-      # ======================================================================
-      # Upload diagnostics
-      # ======================================================================
-
-      - name: Upload CMake diagnostics
-        if: ${{ failure() }}
-        uses: actions/upload-artifact@v6
-        with:
-          name: Calc-CMake-Diagnostics-${{ matrix.compiler }}-${{ matrix.architecture }}
-          path: |
-            ${{ matrix.build_dir }}/CMakeCache.txt
-            ${{ matrix.build_dir }}/CMakeFiles/CMakeError.log
-            ${{ matrix.build_dir }}/CMakeFiles/CMakeOutput.log
-          if-no-files-found: ignore
-          retention-days: 14
+          file build/Release/Calc
