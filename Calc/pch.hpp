@@ -13,15 +13,14 @@
 #ifndef PCH_HPP
 #define PCH_HPP
 
-// additional library arch helpers because MSVC is an unusual compiler:
-static_assert(__cplusplus >= 202400L
-              /* don't needs to check _MSVC_LANG it's should be set by user */);
+static_assert(__cplusplus >= 202302L, "Calc uses all available C++ features and not support anything exept the latest-edge standard" /* don't needs to check _MSVC_LANG it's should be set by the compiler options by user */);
 
-#if defined(_M_IX86) || defined(__i386__) || defined(__i686__)
+// Additional librarys arch helpers because MSVC is an unusual compiler:
+#if defined(_M_IX86) || defined(__i386__) || defined(__i486__) || defined(__i686__)
 #define _M_IX86_FP 2
 #endif
 
-// My fast-float fork and Zmij and fmt used those instructions:
+// My fast-float fork and Zmij uses those instructions:
 
 // explicitely enable SSE2 for 32 and 64 bit builds:
 #define __SSE2__ 1
