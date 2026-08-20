@@ -43,7 +43,7 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 #include <limits>        // Calc
 #include <new>           // Formatter
 #include <numbers>       // Calc
-#include <optional>      // Win32 RegRead helper.
+#include <optional>      // Win32 GUI RegRead helper.
 #include <ranges>        // Calc
 #include <span>          // Calc
 #include <stdfloat>      // Calc
@@ -60,7 +60,7 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 
 // Zmij compile options:
 
-// Tests time is : 81207ms. Without Tests time is : 118164ms.
+//  Tests time is : 81207ms. Without Tests time is : 118164ms.
 #include "../../zmij/zmij.cc"
 #if CALC_USE_128_BIT_FLOAT
 #warning                                                                       \
