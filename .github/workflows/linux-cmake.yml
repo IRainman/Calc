@@ -18,7 +18,7 @@ jobs:
   build:
     name: ${{ matrix.name }}
 
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu_latest
 
     container:
       image: cachyos/cachyos:latest
