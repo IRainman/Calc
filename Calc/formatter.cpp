@@ -54,7 +54,7 @@ std::pair<int64_t, int64_t> decimalToFraction(Value number) {
 }
 #endif
 
-char *Formatter::format(Value value, Result &ret) noexcept { //-V2009
+char *Formatter::format(Value value, Result &ret) noexcept {
   char *end;
   // https://www.exploringbinary.com/decimal-precision-of-binary-floating-point-numbers/
   if (std::isnormal(value)) {
@@ -66,7 +66,7 @@ char *Formatter::format(Value value, Result &ret) noexcept { //-V2009
 }
 
 #ifndef CALC_USE_ERROR_TOKEN
-char *Formatter::create_summary(Summary &ret) noexcept { //-V2009
+char *Formatter::create_summary(Summary &ret) noexcept {
   auto end = ret.data();
   for (const auto &error : IssueManager::_errors) {
     end = fmt::format_to(end, FMT_COMPILE("{}: {}\r\n"), error.pos, error.text);

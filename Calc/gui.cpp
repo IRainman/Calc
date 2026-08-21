@@ -446,9 +446,10 @@ int WINAPI WinMain(const HINSTANCE instance, const HINSTANCE /*prev_instance*/,
   // Disable IME completely because Calc use only ANSI input in GUI
   ImmDisableIME(FALSE);
 
-  return static_cast<int>(
-      DialogBoxParamA(instance, MAKEINTRESOURCEA(IDD_CALC_DIALOG), nullptr,
-                      CalcDialogProc, reinterpret_cast<LPARAM>(instance)));
+  DialogBoxParamA(instance, MAKEINTRESOURCEA(IDD_CALC_DIALOG), nullptr,
+                  CalcDialogProc, reinterpret_cast<LPARAM>(instance));
+
+  return EXIT_SUCCESS;
 }
 
 #if defined _M_IX86

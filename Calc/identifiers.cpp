@@ -121,7 +121,7 @@ template <const Value value> [[nodiscard]] consteval Fn constant() noexcept {
 [[nodiscard]] static /*constexpr*/ Value factorial(const Value n) noexcept {
   auto num = std::lrint(n);
   Value result = 1.0;
-  if (0.0 <= num && num == n) //-V550
+  if (0.0 <= num && num == n) 
   {
     while (num > 0.0) {
       if (!std::isfinite(result)) {
@@ -140,7 +140,7 @@ template <const Value value> [[nodiscard]] consteval Fn constant() noexcept {
   auto num = std::lrint(n);
   auto den = std::lrint(r);
   Value result = 1.0;
-  if (0.0 <= num && 0.0 <= den && den <= num && num == n && den == r) //-V550
+  if (0.0 <= num && 0.0 <= den && den <= num && num == n && den == r) 
   {
     while (den > 0.0) {
       if (!std::isfinite(result)) {
@@ -161,7 +161,7 @@ template <const Value value> [[nodiscard]] consteval Fn constant() noexcept {
   auto den = std::lrint(r);
   Value res1 = 1.0;
   Value res2 = 1.0;
-  if (0 <= num && 0 <= den && den <= num && num == n && den == r) //-V550
+  if (0 <= num && 0 <= den && den <= num && num == n && den == r) 
   {
     while (den > 0) {
       if (!std::isfinite(res1)) {
@@ -249,7 +249,7 @@ Value normalize_tan(Value value) noexcept {
   const Value rounded = std::round(value);
   constexpr Value epsilon = static_cast<Value>(small_value_precision);
   if (std::abs(value - rounded) <= epsilon)
-    return rounded == 0 /*remove -0*/ ? 0 : rounded; //-V550
+    return rounded == 0 /*remove -0*/ ? 0 : rounded; 
 
   return value;
 }
@@ -271,52 +271,52 @@ Value normalize_tan(Value value) noexcept {
 
 [[nodiscard]] /*constexpr*/ static Value
 assoc_legendre(std::span<Value> params) noexcept {
-  return std::assoc_legendre(static_cast<unsigned int>(params[0]), //-V2004
-                             static_cast<unsigned int>(params[1]), //-V2004
+  return std::assoc_legendre(static_cast<unsigned int>(params[0]), 
+                             static_cast<unsigned int>(params[1]), 
                              params[2]);
 }
 
 [[nodiscard]] /*constexpr*/ static Value
 assoc_laguerre(std::span<Value> params) noexcept {
-  return std::assoc_laguerre(static_cast<unsigned int>(params[0]), //-V2004
-                             static_cast<unsigned int>(params[1]), //-V2004
+  return std::assoc_laguerre(static_cast<unsigned int>(params[0]),
+                             static_cast<unsigned int>(params[1]), 
                              params[2]);
 }
 
 [[nodiscard]] /*constexpr*/ static Value
 hermite(std::span<Value> params) noexcept {
-  return std::hermite(static_cast<unsigned int>(params[0]), //-V2004
+  return std::hermite(static_cast<unsigned int>(params[0]), 
                       params[1]);
 }
 
 [[nodiscard]] /*constexpr*/ static Value
 legendre(std::span<Value> params) noexcept {
-  return std::legendre(static_cast<unsigned int>(params[0]), //-V2004
+  return std::legendre(static_cast<unsigned int>(params[0]), 
                        params[1]);
 }
 
 [[nodiscard]] /*constexpr*/ static Value
 laguerre(std::span<Value> params) noexcept {
-  return std::laguerre(static_cast<unsigned int>(params[0]), //-V2004
+  return std::laguerre(static_cast<unsigned int>(params[0]), 
                        params[1]);
 }
 
 [[nodiscard]] /*constexpr*/ static Value
 sph_bessel(std::span<Value> params) noexcept {
-  return std::sph_bessel(static_cast<unsigned int>(params[0]), //-V2004
+  return std::sph_bessel(static_cast<unsigned int>(params[0]),
                          params[1]);
 }
 
 [[nodiscard]] /*constexpr*/ static Value
 sph_legendre(std::span<Value> params) noexcept {
-  return std::sph_legendre(static_cast<unsigned int>(params[0]), //-V2004
-                           static_cast<unsigned int>(params[1]), //-V2004
+  return std::sph_legendre(static_cast<unsigned int>(params[0]),
+                           static_cast<unsigned int>(params[1]),
                            params[2]);
 }
 
 [[nodiscard]] /*constexpr*/ static Value
 sph_neumann(std::span<Value> params) noexcept {
-  return std::sph_neumann(static_cast<unsigned int>(params[0]), //-V2004
+  return std::sph_neumann(static_cast<unsigned int>(params[0]), 
                           params[1]);
 }
 

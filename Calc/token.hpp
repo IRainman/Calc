@@ -36,8 +36,7 @@ struct Token {
     [[no_unique_address]] Value number [[indeterminate]];
 
     // If token is a function, there is a pointer to it.
-    [[no_unique_address]] Identifiers::map::const_pointer function
-        [[indeterminate]]; //-V117
+    [[no_unique_address]] Identifiers::map::const_pointer function[[indeterminate]];
 
 #ifdef CALC_USE_ERROR_TOKEN
     // If token is an error, there is a small helper that handle it.

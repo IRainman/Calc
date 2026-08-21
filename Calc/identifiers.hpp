@@ -33,7 +33,7 @@ struct Fn {
     [[no_unique_address]] const ParamCount max;
   } check;
 
-  Value (*const fn)(std::span<Value>); //-V122
+  Value (*const fn)(std::span<Value>);
 };
 
 /**

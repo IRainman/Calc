@@ -58,6 +58,6 @@ private:
   [[nodiscard]] EquationSize read_unparsable(Token &token) const noexcept;
 
   std::string_view _view;
-  const std::string_view::const_pointer _begin; //-V122
+  const std::string_view::const_pointer _begin;
   friend class Parser;
 };
