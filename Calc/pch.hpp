@@ -116,7 +116,6 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 #define FASTFLOAT_ONLY_POSITIVE_C_NUMBER_WO_INF_NAN
 #define FASTFLOAT_ONLY_ROUNDS_TO_NEAREST_SUPPORTED
 #define FASTFLOAT_ISNOT_CHECKED_BOUNDS
-#define FASTFLOAT_ASSUME(expr) [[assume(expr)]]
 #include "../../fast_float/include/fast_float/fast_float.h"
 
 #endif

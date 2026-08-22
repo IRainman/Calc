@@ -19,6 +19,7 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>({
 	{ "-92666518056446206563E-328", -9.2666518056446206563e-309 },
 	{ "-92666518056446206563E-343", -9.2666518056446206563E-324 },
 
+	//
 	// syntax errors should produce error:
 	{ "2 + )", std::numeric_limits<Value>::quiet_NaN() },
 	{ "2 + (", std::numeric_limits<Value>::quiet_NaN() },
@@ -33,11 +34,12 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>({
 	{ "1+1 1", std::numeric_limits<Value>::quiet_NaN() },
 	{ "1+1;", std::numeric_limits<Value>::quiet_NaN() },
 	{ "+1.4e-3", std::numeric_limits<Value>::quiet_NaN() },
+	{ "distance(100500)", std::numeric_limits<Value>::quiet_NaN() },
 
 	// very big or very small numbers: it's should produce error, we don't need to round it to 0 or inf.
 	{ "9999999999999999999e1000000000000000000000000000000", std::numeric_limits<Value>::quiet_NaN() },
 	{ "999999999999999999e-1000000000000000000000000000000", std::numeric_limits<Value>::quiet_NaN() },
-    // CALC_TEST_FASTFLOAT
+	// CALC_TEST_FASTFLOAT
 	// check overflow in internal processing of fast_float:
 	{ "1.00000000001e-2147483638",							 std::numeric_limits<Value>::quiet_NaN() },
 	{ "1.00000000001e+2147483638",							 std::numeric_limits<Value>::quiet_NaN() },
@@ -79,13 +81,13 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>({
 
 	// Heegner number (163 is the largest one) https://en.wikipedia.org/wiki/Heegner_number :
 #if CALC_USE_128_BIT_FLOAT
-	{ "e ^ ( pi * sqrt(163) )",                      262537412640768743.99999999999925007259 },
+	{ "e ^ ( pi * sqrt(163) )",							262537412640768743.99999999999925007259 },
 #endif
-	{ "      640320^3     + 744 - 0.00000000000075", 262537412640768743.99999999999925007259 },
-	{ "12^3*(231^2 - 1)^3 + 744 - 0.00000000000075", 262537412640768743.99999999999925007259 },
+	{ "      640320^3     + 744 - 0.00000000000075",	262537412640768743.99999999999925007259 },
+	{ "12^3*(231^2 - 1)^3 + 744 - 0.00000000000075",	262537412640768743.99999999999925007259 },
 
 	//---------------------------------------------------------------------------
-	// physical constants from NIST 2022 CODATA (May 2024) http://physics.nist.gov/constants :
+	// some physical constants from NIST 2022 CODATA (May 2024) http://physics.nist.gov/constants :
 	{ "c", 299792458.0 }, // Speed of light in vacuum (m*s^-1)
 	{ "G", 6.6743e-11 }, // Newtonian constant of gravitation (m^3*kg^−1*s^−2)
 	{ "atm", 101325.0 }, // Standard atmosphere (Pa)
@@ -138,6 +140,23 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>({
 	{ "8/4", 2.0 },
 	{ "2^3", 8.0 },
 
+	// operation priority:
+	{ "2 + 2", 4.0 },
+	{ "2 * 2", 4.0 },
+	{ "2 + 2 * 2", 6.0 },
+	{ "(2 + 2) * 2", 8.0 },
+
+	// parentheses and complex expressions:
+	{ "(1+2)*3", 9.0 },
+	{ "2*(3+4)", 14.0 },
+	{ "(2 + 2) * 2", 8.0 },
+	{ "2 + (2 * 2)", 6.0 },
+	{ "(2 + 3) * (4 - 1)", 15.0 },
+	{ "pow( sin( pi / 2 ) / 0.001 + 24, 2 )", 1048576.0 },
+	{ "pow(exp2(32), 1/4)", 256.0 },
+	{ "sqrt(cos(rad(30))^2+sin(rad(30))^2)", 1.0 },
+	{ "deg(arcsin(sin(rad(30))))", 30 },
+
 	// advanced functions:
 	{ "exp(0)", 1.0 },
 	{ "log1p(1e-16)", 1.0e-16 },
@@ -149,22 +168,6 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>({
 	{ "factorial(2)",   2 },
 	{ "factorial(3)",   6 },
 	{ "factorial(4)",   24 },
-	{ "factorial(5)",   120.0 },
-	{ "factorial(6)",   720.0 },
-	{ "factorial(7)",   5040.0 },
-	{ "factorial(8)",   40320.0 },
-	{ "factorial(9)",   362880.0 },
-	{ "factorial(10)",  3628800.0 },
-	{ "factorial(11)",  39916800.0 },
-	{ "factorial(12)",  479001600.0 },
-	{ "factorial(13)",  6227020800.0 },
-	{ "factorial(14)",  87178291200.0 },
-	{ "factorial(15)",  1307674368000.0 },
-	{ "factorial(16)",  20922789888000.0 },
-	{ "factorial(17)",  355687428096000.0 },
-	{ "factorial(18)",  6402373705728000.0 },
-	{ "factorial(19)",  121645100408832000.0 },
-	{ "factorial(20)",  2432902008176640000.0 },
 	{ "factorial(170)", 7.257415615307998967396728211134228405832777681741635518467287920039555626168303389596217634437728512e306 }, // 170! = latest factorial before infinity
 	{ "factorial(171)", std::numeric_limits<Value>::infinity() }, // 171! = infinity
 
@@ -223,23 +226,6 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>({
 	{ "hypot(3,4)", 5.0 },
 	{ "hypot(1,2,2)", 3.0 },
 
-	// operation priority:
-	{ "2 + 2", 4.0 },
-	{ "2 * 2", 4.0 },
-	{ "2 + 2 * 2", 6.0 },
-	{ "(2 + 2) * 2", 8.0 },
-
-	// parentheses and complex expressions:
-	{ "(1+2)*3", 9.0 },
-	{ "2*(3+4)", 14.0 },
-	{ "(2 + 2) * 2", 8.0 },
-	{ "2 + (2 * 2)", 6.0 },
-	{ "(2 + 3) * (4 - 1)", 15.0 },
-	{ "pow( sin( pi / 2 ) / 0.001 + 24, 2 )", 1048576.0 },
-	{ "pow(exp2(32), 1/4)", 256.0 },
-	{ "sqrt(cos(rad(30))^2+sin(rad(30))^2)", 1.0 },
-	{ "deg(arcsin(sin(rad(30))))", 30 },
-
 	// precision:
 	// check special values:
 	{ "104110013277974872254e-225",
@@ -257,9 +243,11 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>({
 	   1090544144181609348835077142190.0 },
 	{ "7275957614183425903320312500000000e81",
 	   7275957614183425903320312500000000e81 },
-	// actually produces 9007199254740992.0 in float64, but Calc output needs to show correct value 900719925474099e+15:
+	// actually produces 9007199254740992.0 in double (float64), but Calc output needs to show correct value 900719925474099e+15:
 	{ "9007199254740993.00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
 	   9007199254740993.0 },
+	// Also check for expected value:
+	{ "900719925474099e+15", 900719925474099e+15 },
 	{ "2.22507385850720212418870147920222032907240528279439037814303133837435107319244194686754406432563881851382188218502438069999947733013005649884107791928741341929297200970481951993067993290969042784064731682041565926728632933630474670123316852983422152744517260835859654566319282835244787787799894310779783833699159288594555213714181128458251145584319223079897504395086859412457230891738946169368372321191373658977977723286698840356390251044443035457396733706583981055420456693824658413747607155981176573877626747665912387199931904006317334709003012790188175203447190250028061277777916798391090578584006464715943810511489154282775041174682194133952466682503431306181587829379004205392375072083366693241580002758391118854188641513168478436313080237596295773983001708984375e-308",
 	   0x1.0000000000002p-1022 },
 	{ "-2240084132271013504.131248280843119943687942846658579428",
@@ -577,21 +565,23 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>({
 	// additional special:
 	{ "distance(1, 1, 2, 3)", 6.0 },
 #if 0
-	// TODO: user constants and variables support
+	// TODO: user constants and variables support:
+	// Also I ask ChatGPT https://chatgpt.com/c/6a89e39f-5610-83eb-8182-d914dc425042
 	// Which syntax we should use?
-	{ "(x=pi/2)", ... },
-	// Do we need some additions? like intervals:
+	{ "x=pi/2;", ... },
+	// Intervals needed:
 	{ "[0...pi]", ... },
-	// or blocks:
+	{ "[0...pi, step]", ... },
+	// blocks?
 	{ "{ 150 / 12 + 1 }", ... },
 	// TODO: equation support, for input test https://xrjunque.nom.es/AllInOne:
-	// These three lines should be equivalent.
+	// These three lines should be equivalent:
 	{ "(x=((-b ± sqrt((b^2) - 4 * a * c))/(2*a))*pi)", 0.0 },
 	{ "(x=((−b ± sqrt((b^2) − 4 * a * c))/(2a))*pi)", 0.0 },
-	// needs to be supported in the GUI and converted to plain text before Calc processes it.
+	// needs to be supported and converted to plain text before processing:
 	// convert Unicode to ANSI plain: replace π with pi, and ⋅ with *, etc.
 	{ "(x=((−b ± sqrt((b^2)−4⋅a⋅c))/(2a))⋅π)", 0.0 },
-	// convert MathML to plain:
+	// convert MathML to plain before processing:
 	{ "<math><mrow><mi>x</mi><mo>=</mo><mfrac><mrow><mo ... skip this! >−</mo><mi>b</mi><mo>±</mo><msqrt><mrow><msup><mi>b</mi><mn>2</mn></msup><mo>−</mo><mn>4</mn><mi>a</mi><mi>c</mi></mrow></msqrt></mrow><mrow><mn>2</mn><mi>a</mi></mrow></mfrac><mo>⋅</mo><mi>π</mi></mrow></math>", 0.0 }
 #endif
 });

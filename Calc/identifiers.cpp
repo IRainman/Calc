@@ -121,8 +121,7 @@ template <const Value value> [[nodiscard]] consteval Fn constant() noexcept {
 [[nodiscard]] static /*constexpr*/ Value factorial(const Value n) noexcept {
   auto num = std::lrint(n);
   Value result = 1.0;
-  if (0.0 <= num && num == n) 
-  {
+  if (0.0 <= num && num == n) {
     while (num > 0.0) {
       if (!std::isfinite(result)) {
         break;
@@ -140,8 +139,7 @@ template <const Value value> [[nodiscard]] consteval Fn constant() noexcept {
   auto num = std::lrint(n);
   auto den = std::lrint(r);
   Value result = 1.0;
-  if (0.0 <= num && 0.0 <= den && den <= num && num == n && den == r) 
-  {
+  if (0.0 <= num && 0.0 <= den && den <= num && num == n && den == r) {
     while (den > 0.0) {
       if (!std::isfinite(result)) {
         break;
@@ -161,8 +159,7 @@ template <const Value value> [[nodiscard]] consteval Fn constant() noexcept {
   auto den = std::lrint(r);
   Value res1 = 1.0;
   Value res2 = 1.0;
-  if (0 <= num && 0 <= den && den <= num && num == n && den == r) 
-  {
+  if (0 <= num && 0 <= den && den <= num && num == n && den == r) {
     while (den > 0) {
       if (!std::isfinite(res1)) {
         break;
@@ -212,45 +209,49 @@ parabola(std::span<Value> params) noexcept {
 
 [[nodiscard]]
 Value normalize_sine(Value value) noexcept {
-
-  // remove -nan
-  if (std::isnan(value))
+  if (std::isnan(value)) {
+    // remove -nan
     return std::numeric_limits<Value>::quiet_NaN();
-
-  // upgrade to significant nearest values
-  constexpr Value sqrt2_over_2 =
-      std::numbers::sqrt2_v<Value> / static_cast<Value>(2);
-  constexpr Value epsilon = static_cast<Value>(small_value_precision);
-  for (const Value v :
-       {static_cast<Value>(-1.0), -sqrt2_over_2, static_cast<Value>(-0.5),
-        static_cast<Value>(0.0), static_cast<Value>(0.5), sqrt2_over_2,
-        static_cast<Value>(1.0)})
-    if (std::abs(value - v) <= epsilon)
-      return v;
-
+  }
+  if (std::isnormal(value)) {
+    // upgrade to significant nearest values
+    constexpr Value sqrt2_over_2 =
+        std::numbers::sqrt2_v<Value> / static_cast<Value>(2);
+    constexpr Value epsilon = static_cast<Value>(small_value_precision);
+    for (const Value v :
+         {static_cast<Value>(-1.0), -sqrt2_over_2, static_cast<Value>(-0.5),
+          static_cast<Value>(0.0), static_cast<Value>(0.5), sqrt2_over_2,
+          static_cast<Value>(1.0)}) {
+      if (std::abs(value - v) <= epsilon) {
+        return v;
+      }
+    }
+  }
+  // inf and other normal values are returned as is
   return value;
 }
 
 [[nodiscard]]
 Value normalize_tan(Value value) noexcept {
-
-  // remove -nan
-  if (std::isnan(value))
+  if (std::isnan(value)) {
+    // remove -nan
     return std::numeric_limits<Value>::quiet_NaN();
-
+  }
   // upgrade to infinity
   constexpr Value huge = static_cast<Value>(huge_value_precision);
-  if (value >= huge)
+  if (value >= huge) {
     return std::numeric_limits<Value>::infinity();
-  if (value <= -huge)
+  }
+  if (value <= -huge) {
     return -std::numeric_limits<Value>::infinity();
-
+  }
   // upgrade to nearest integer
   const Value rounded = std::round(value);
   constexpr Value epsilon = static_cast<Value>(small_value_precision);
-  if (std::abs(value - rounded) <= epsilon)
-    return rounded == 0 /*remove -0*/ ? 0 : rounded; 
-
+  if (std::abs(value - rounded) <= epsilon) {
+    return rounded == 0 /*remove -0*/ ? 0 : rounded;
+  }
+  // return as is
   return value;
 }
 
@@ -271,53 +272,45 @@ Value normalize_tan(Value value) noexcept {
 
 [[nodiscard]] /*constexpr*/ static Value
 assoc_legendre(std::span<Value> params) noexcept {
-  return std::assoc_legendre(static_cast<unsigned int>(params[0]), 
-                             static_cast<unsigned int>(params[1]), 
-                             params[2]);
+  return std::assoc_legendre(static_cast<unsigned int>(params[0]),
+                             static_cast<unsigned int>(params[1]), params[2]);
 }
 
 [[nodiscard]] /*constexpr*/ static Value
 assoc_laguerre(std::span<Value> params) noexcept {
   return std::assoc_laguerre(static_cast<unsigned int>(params[0]),
-                             static_cast<unsigned int>(params[1]), 
-                             params[2]);
+                             static_cast<unsigned int>(params[1]), params[2]);
 }
 
 [[nodiscard]] /*constexpr*/ static Value
 hermite(std::span<Value> params) noexcept {
-  return std::hermite(static_cast<unsigned int>(params[0]), 
-                      params[1]);
+  return std::hermite(static_cast<unsigned int>(params[0]), params[1]);
 }
 
 [[nodiscard]] /*constexpr*/ static Value
 legendre(std::span<Value> params) noexcept {
-  return std::legendre(static_cast<unsigned int>(params[0]), 
-                       params[1]);
+  return std::legendre(static_cast<unsigned int>(params[0]), params[1]);
 }
 
 [[nodiscard]] /*constexpr*/ static Value
 laguerre(std::span<Value> params) noexcept {
-  return std::laguerre(static_cast<unsigned int>(params[0]), 
-                       params[1]);
+  return std::laguerre(static_cast<unsigned int>(params[0]), params[1]);
 }
 
 [[nodiscard]] /*constexpr*/ static Value
 sph_bessel(std::span<Value> params) noexcept {
-  return std::sph_bessel(static_cast<unsigned int>(params[0]),
-                         params[1]);
+  return std::sph_bessel(static_cast<unsigned int>(params[0]), params[1]);
 }
 
 [[nodiscard]] /*constexpr*/ static Value
 sph_legendre(std::span<Value> params) noexcept {
   return std::sph_legendre(static_cast<unsigned int>(params[0]),
-                           static_cast<unsigned int>(params[1]),
-                           params[2]);
+                           static_cast<unsigned int>(params[1]), params[2]);
 }
 
 [[nodiscard]] /*constexpr*/ static Value
 sph_neumann(std::span<Value> params) noexcept {
-  return std::sph_neumann(static_cast<unsigned int>(params[0]), 
-                          params[1]);
+  return std::sph_neumann(static_cast<unsigned int>(params[0]), params[1]);
 }
 
 [[nodiscard]] /*constexpr*/ static Value
@@ -343,9 +336,7 @@ distance(std::span<Value> params) noexcept {
 
 #ifdef CALC_TEST_EQUATION_SOLVER
 
-[[nodiscard]] /*constexpr*/ static auto
-
-solve_quadratic(Value a, Value b, Value c) noexcept {
+[[nodiscard]] /*constexpr*/ static auto solve_quadratic(Value a, Value b, Value c) noexcept {
   // Complex roots for cases where discriminant is negative
   std::array<std::complex<Value>, 2> roots;
 
@@ -367,8 +358,7 @@ solve_quadratic(Value a, Value b, Value c) noexcept {
   return roots;
 }
 
-[[nodiscard]] /*constexpr*/ static auto solve_cubic(Value a, Value b, Value c,
-                                                    Value d) noexcept {
+[[nodiscard]] /*constexpr*/ static auto solve_cubic(Value a, Value b, Value c, Value d) noexcept {
   // Normalize coefficients
   b /= a;
   c /= a;
