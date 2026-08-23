@@ -13,7 +13,7 @@
 #ifndef PCH_HPP
 #define PCH_HPP
 
-// Don't needs to check _MSVC_LANG it's should beset by the compiler options
+// Don't needs to check _MSVC_LANG it's should be set by the compiler options
 static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 
 // Additional librarys arch helpers because MSVC is an unusual compiler:
@@ -52,6 +52,9 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 
 // Calc compile options:
 
+__pragma(warning(disable : 5030));
+__pragma(warning(disable : 5222));
+
 #include "flags.hpp"
 
 #ifdef CALC_TEST_EQUATION_SOLVER
@@ -61,7 +64,18 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 // Zmij compile options:
 
 //  Tests time is : 81207ms. Without Tests time is : 118164ms.
+__pragma(warning(push));
+__pragma(warning(disable : 4390));
+__pragma(warning(disable : 4244));
+__pragma(warning(disable : 4459));
+__pragma(warning(disable : 4456));
+__pragma(warning(disable : 4324));
+__pragma(warning(disable : 4554));
+__pragma(warning(disable : 4804));
+__pragma(warning(disable : 4100));
+__pragma(warning(disable : 4189));
 #include "../../zmij/zmij.cc"
+__pragma(warning(pop));
 #if CALC_USE_128_BIT_FLOAT
 #warning                                                                       \
     "128-bit float type isn't supported by zmij. The library convert any output values to 64-bit double."
@@ -72,9 +86,6 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 
 // fmt compile options:
 
-// because we have cleaner output:
-#define FMT_OPTIMIZE_SIZE 2 // Tests time is: 49612ms.
-#define FMT_USE_RTTI 0
 #define FMT_HEADER_ONLY 1
 #define FMT_USE_FLOAT 0
 #define FMT_USE_LONG_DOUBLE 0
@@ -91,9 +102,12 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 #endif
 #endif
 
-// reduce cache pressure:
-#define FMT_BUILTIN_TYPES 0 // Tests time is: 49980ms.
-#define FMT_CPP_LIB_FILESYSTEM 0
+// because we have cleaner output:
+#define FMT_OPTIMIZE_SIZE 2 // Tests time is: 49612ms.
+#define FMT_OS 0
+#define FMT_USE_RTTI 0
+//  reduce cache pressure:
+#define FMT_CPP_LIB_FILESYSTEM 0 // Tests time is: 49980ms.
 #define FMT_UNICODE 0
 #define FMT_USE_FULL_CACHE_DRAGONBOX 0 // Tests time is: 50111ms.
 #define FMT_USE_LOCALE 0

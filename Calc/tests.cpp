@@ -87,7 +87,7 @@ std::string calc_tests() {
   const auto start = std::chrono::steady_clock::now();
 
 #ifndef CALC_TESTS_DEV_ENABLED
-  for (unsigned int i = 1'000'000; i-- != 0;)
+  for (unsigned int i = 1'000'000; --i != 0;)
 #endif
   {
     for (const auto &t : tests) {
@@ -202,7 +202,6 @@ std::string calc_tests() {
 #ifdef CALC_TEST_BINARY_FUNCTIONS
   output += "\r\n\r\n" + binary_and_hex_parsing();
 #endif
-  output.shrink_to_fit();
   return output;
 }
 

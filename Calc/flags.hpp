@@ -38,6 +38,7 @@ using ParamCount = char;
 #define CALC_TESTS_DEV_ENABLED // if commented test is measurement performance
 #endif
 #ifdef CALC_TESTS_DEV_ENABLED
+
 // using for test changes in my fork of the library:
 #define CALC_TEST_FASTFLOAT
 
@@ -52,7 +53,6 @@ using ParamCount = char;
 #endif
 //---------------------------------------------------------------------------
 // Usage of fmt is improve performance.
-// TODO: check it and use fmt::memory_buffer for reduce new/delete from string
 /*
 Tests:
  time is: 24744ms.

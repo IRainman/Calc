@@ -336,7 +336,8 @@ distance(std::span<Value> params) noexcept {
 
 #ifdef CALC_TEST_EQUATION_SOLVER
 
-[[nodiscard]] /*constexpr*/ static auto solve_quadratic(Value a, Value b, Value c) noexcept {
+[[nodiscard]] /*constexpr*/ static auto solve_quadratic(Value a, Value b,
+                                                        Value c) noexcept {
   // Complex roots for cases where discriminant is negative
   std::array<std::complex<Value>, 2> roots;
 
@@ -358,7 +359,8 @@ distance(std::span<Value> params) noexcept {
   return roots;
 }
 
-[[nodiscard]] /*constexpr*/ static auto solve_cubic(Value a, Value b, Value c, Value d) noexcept {
+[[nodiscard]] /*constexpr*/ static auto solve_cubic(Value a, Value b, Value c,
+                                                    Value d) noexcept {
   // Normalize coefficients
   b /= a;
   c /= a;

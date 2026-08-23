@@ -7,7 +7,7 @@
 #define IDS_ABOUTBOX                    101
 #define IDD_CALC_DIALOG                 102
 #define ID_CANCEL                       103
-#define IDR_MAINFRAME                   128
+#define IDR_MAINFRAME_SMALL             128
 #define IDR_MAINFRAME_BIG               129
 #define IDC_EDIT_INPUT                  1000
 #define IDC_EDIT_RESULT                 1001

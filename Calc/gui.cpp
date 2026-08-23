@@ -21,12 +21,6 @@
 
 #ifdef _WIN32
 
-/**
- * Buffer for the GUI used for equasion processing
- */
-static std::array<char, CalcConfiguration::input_max_data_size> input
-    [[indeterminate]];
-
 class CalcWindow {
 public:
   CalcWindow() noexcept = default;
@@ -38,12 +32,7 @@ public:
    * Perform calculation from the GUI
    */
   void perform_calculation() {
-    const std::string_view equation(
-        input.data(), static_cast<size_t>(GetWindowTextA(
-                          layout.get_constraints_handle(0), input.data(),
-                          static_cast<int>(input.size()))));
-
-    Lexer l(equation);
+    Lexer l({input.data(), get_user_input()});
     Parser p(l);
     const auto value = p.parse();
 
@@ -52,7 +41,7 @@ public:
     if (has_errors) {
       yyy;
     }
-#else
+#endif
     const auto has_errors = IssueManager::has_errors();
 
     if (has_errors) [[unlikely]] {
@@ -60,23 +49,17 @@ public:
       const auto summary_text_end = Formatter::create_summary(summary);
       IssueManager::clear();
 
-      *summary_text_end = '\0'; // because of LPCSTR in the SetWindowTextA
-      SetWindowTextA(layout.get_constraints_handle(1), summary.data());
-    }
-#endif
-    else [[likely]] {
+      set_result(summary.data(), summary_text_end);
+    } else [[likely]] {
       Formatter::Result result [[indeterminate]];
-      const auto result_text_end = Formatter::format(value, result);
-
-      *result_text_end = '\0'; // because of LPCSTR in the SetWindowTextA
-      SetWindowTextA(layout.get_constraints_handle(1), result.data());
+      set_result(result.data(), Formatter::format(value, result));
     }
   }
 
   /**
    * Save user data from GUI.
    */
-  void save_user_data(const HWND window) const { save_window_data(window); }
+  void save_user_data(const HWND window) { save_window_data(window); }
 
   /**
    * Close Calc GUI.
@@ -87,8 +70,11 @@ public:
    * Initialize Calc GUI and load user data into it.
    */
   void init(const HWND window, const HINSTANCE instance) {
+
     add_about_menu_to_system_menu(window);
+
     set_window_icons(window, instance);
+
 #ifdef CALC_SUPPORT_DPI_CHANGES
     dpi = get_window_dpi(window);
 #ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
@@ -102,23 +88,25 @@ public:
     init_min_sizes(window, CalcConfiguration::min_width,
                    CalcConfiguration::min_height);
 #endif
+
     layout_init(window);
+
     load_window_data(window);
 
+    const auto input_handle = layout.get_constraints_handle(0);
 #ifdef CALC_SUPPORT_SET_LIMIT_TEXT
-    SendMessageA(layout.get_constraints_handle(0), EM_LIMITTEXT,
-                 static_cast<WPARAM>(CalcConfiguration::input_max_symbols), 0);
+    set_window_text_limit(input_handle, input.max_size());
 #endif
-    SetWindowTextA(layout.get_constraints_handle(0),
+
 #ifdef CALC_TESTS_ENABLED
-                   calc_tests().data()
+    auto input_init = calc_tests();
 #else
-                   input.data()
+    auto &input_init = input;
 #endif
-    );
-    SendMessageA(layout.get_constraints_handle(0), EM_SETSEL,
-                 static_cast<WPARAM>(0), static_cast<LPARAM>(-1));
-    SendMessageA(layout.get_constraints_handle(0), EM_SCROLLCARET, 0, 0);
+    set_window_text(input_handle, input_init.data(),
+                    input_init.data() + input_init.size());
+
+    goto_end_of_window_text(input_handle);
   }
 
   /**
@@ -165,19 +153,22 @@ public:
   }
 
 private:
-#ifdef CALC_SUPPORT_DPI_CHANGES
-  static LONG to_physical(LONG value, LONG dpi) {
-    return std::lroundf(static_cast<float>(value) * static_cast<float>(dpi) /
-                        static_cast<float>(USER_DEFAULT_SCREEN_DPI));
+  /**
+   * Read the user input from GUI to input buffer and return its size.
+   */
+  inline const InputSize &get_user_input() {
+    input.set_size(get_window_text(layout.get_constraints_handle(0),
+                                   input.data(), input.max_size()));
+    return input.size();
   }
 
-  static LONG to_logical(LONG value, LONG dpi) {
-
-    return std::lroundf(static_cast<float>(value) *
-                        static_cast<float>(USER_DEFAULT_SCREEN_DPI) /
-                        static_cast<float>(dpi));
-  };
-#endif
+  /**
+   * Set the result text in the GUI.
+   */
+  inline void set_result(const char *result_text, char *result_text_end) const {
+    set_window_text(layout.get_constraints_handle(1), result_text,
+                    result_text_end);
+  }
 
 #ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
   void init_min_sizes(const HWND window, const LONG requested_min_width,
@@ -211,8 +202,8 @@ private:
 
     const RegRead reg(HKEY_CURRENT_USER, CalcConfiguration::reg_key);
 #ifndef CALC_TESTS_ENABLED
-    input[reg.read("input", reinterpret_cast<LPBYTE>(input.data()),
-                   static_cast<DWORD>(input.size()))] = '\0';
+    input.set_size(reg.read("input", reinterpret_cast<LPBYTE>(input.data()),
+                            input.max_size()));
 #endif
 
     const auto flags = reg.read("flags");
@@ -263,13 +254,11 @@ private:
     SetWindowPlacement(window, &wp);
   }
 
-  void save_window_data(const HWND hWnd) const {
+  void save_window_data(const HWND hWnd) {
     const RegWrite reg(HKEY_CURRENT_USER, CalcConfiguration::reg_key);
 #ifndef CALC_TESTS_ENABLED
-    reg.write("input", reinterpret_cast<BYTE *>(input.data()),
-              static_cast<DWORD>(
-                  GetWindowTextA(layout.get_constraints_handle(0), input.data(),
-                                 static_cast<int>(input.size()))));
+    reg.write("input", reinterpret_cast<const BYTE *>(input.data()),
+              get_user_input());
 #endif
 
     WINDOWPLACEMENT wp [[indeterminate]];
@@ -296,6 +285,8 @@ private:
 #ifdef CALC_SUPPORT_DPI_CHANGES
   DWORD dpi [[indeterminate]];
 #endif
+  // Shold be always as last member, because has a big size.
+  CalcEquation input [[indeterminate]];
 };
 
 static CalcWindow calc;
@@ -380,8 +371,6 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND window, const UINT msg,
     dpi_change_in_progress = true;
     return FALSE;
   }
-#endif
-#ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
   case WM_DPICHANGED: {
     calc.set_dpi(window, HIWORD(wParam),
                  reinterpret_cast<const Rect_ptr>(lParam));

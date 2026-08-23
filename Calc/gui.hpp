@@ -33,12 +33,12 @@
 
 #if (_WIN32_WINNT < _WIN32_WINNT_WIN6)
 #warning                                                                       \
-    "Restart manager isn't supported before Windows Vista or Windows Server 2008."
+    "Restart manager and different DPI scaling isn't supported before Windows Vista or Windows Server 2008."
 #endif
 
 #if (_WIN32_WINNT < _WIN32_WINNT_WIN10)
 #warning                                                                       \
-    "In Windows before Windows 10 or Windows Server 2016 the HiDPI isn't supported."
+    "In Windows before Windows 10 or Windows Server 2016 the HiDPI isn't supported and Dialog based applications not resized automatically when DPI changed."
 #endif
 
 #define NOGDICAPMASKS -CC_ *, LC_ *, PC_ *, CP_ *, TC_ *, RC_
@@ -81,18 +81,23 @@
 #include "resource.h" // GUI symbols
 
 /**
+ * Calc GUI types
+ */
+typedef uint_fast16_t InputSize;
+
+/**
  * Calc GUI configuration: matches RC and system internals for correct work.
  */
 struct CalcConfiguration {
   static constexpr const char *reg_key = "Software\\HedgehogInTheCPP\\Calc";
-  static constexpr LONG min_width = 232;  // matches RC
-  static constexpr LONG min_height = 158; // matches RC
-  static constexpr size_t elements = 3;   // matches RC
+  static constexpr uint8_t min_width = 232;  // matches RC
+  static constexpr uint8_t min_height = 158; // matches RC
+  static constexpr uint8_t elements = 3;     // matches RC
 
-  static constexpr UINT default_shift_px = 100;
+  static constexpr uint8_t default_shift_px = 100;
 
   // https://learn.microsoft.com/windows/win32/controls/em-limittext
-  static constexpr size_t input_max_data_size =
+  static constexpr InputSize input_max_data_size =
 #ifdef CALC_SUPPORT_SET_LIMIT_TEXT
       // Win32 ANSI multiline EDIT max is 64 KiB for classic Edit control:
       64 * 1024;
@@ -101,7 +106,28 @@ struct CalcConfiguration {
       32 * 1024;
 #endif
   // because the number above including C zero terminator maximum symbols are:
-  static constexpr size_t input_max_symbols = input_max_data_size - 1;
+  static constexpr InputSize input_max_symbols = input_max_data_size - 1;
+};
+
+/**
+ * Calc GUI helper structure to handle user input.
+ */
+struct CalcEquation {
+
+  const auto &size() const { return _size; }
+
+  void set_size(InputSize s) { _size = s; }
+
+  auto max_size() const { return _max_size; }
+
+  auto data() const { return _data; }
+
+  auto data() { return _data; }
+
+private:
+  static constexpr InputSize _max_size = CalcConfiguration::input_max_symbols;
+  InputSize _size [[indeterminate]];
+  char _data[CalcConfiguration::input_max_data_size];
 };
 
 /**
@@ -190,10 +216,45 @@ static void add_about_menu_to_system_menu(const HWND window) {
 static void set_window_icons(const HWND window, const HINSTANCE instance) {
   SendMessageA(window, WM_SETICON, ICON_SMALL,
                reinterpret_cast<LPARAM>(
-                   LoadIconA(instance, MAKEINTRESOURCEA(IDR_MAINFRAME))));
+                   LoadIconA(instance, MAKEINTRESOURCEA(IDR_MAINFRAME_SMALL))));
   SendMessageA(window, WM_SETICON, ICON_BIG,
                reinterpret_cast<LPARAM>(
                    LoadIconA(instance, MAKEINTRESOURCEA(IDR_MAINFRAME_BIG))));
+}
+
+/**
+ * Utility: set text to window from begin to end (end is not included).
+ */
+static void set_window_text(const HWND hWnd, LPCSTR text,
+                            LPSTR const text_end) {
+  *text_end = '\0'; // because of C string
+  SetWindowTextA(hWnd, text);
+}
+
+/**
+ * Utility: get text from window and return its size.
+ */
+static [[nodiscard]] InputSize get_window_text(const HWND hWnd, CHAR *text,
+                                               const InputSize max_size) {
+  return static_cast<InputSize>(GetWindowTextA(hWnd, text, max_size));
+}
+
+#ifdef CALC_SUPPORT_SET_LIMIT_TEXT
+/**
+ * Utility: set window text limit
+ */
+static void set_window_text_limit(const HWND hWnd, WPARAM max_symbols) {
+  SendMessageA(hWnd, EM_LIMITTEXT, max_symbols, 0);
+}
+#endif
+
+/**
+ * Utility: goto end of text in window and scroll caret to it
+ */
+static void goto_end_of_window_text(const HWND hWnd) {
+  SendMessageA(hWnd, EM_SETSEL, static_cast<WPARAM>(0),
+               static_cast<LPARAM>(-1));
+  SendMessageA(hWnd, EM_SCROLLCARET, 0, 0);
 }
 
 #ifdef CALC_SUPPORT_DPI_CHANGES
@@ -201,19 +262,39 @@ static void set_window_icons(const HWND window, const HINSTANCE instance) {
  * Utility: return dpi for window
  */
 static UINT get_window_dpi(const HWND window) {
-#ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
-  // Use per-window DPI if available.
+#ifdef CALC_SUPPORT_DPI_FOR_WINDOW
+  // Use per-window DPI
   return GetDpiForWindow(window);
 #else
-  // Get device caps from nearest monitor / device context.
+  // Get device caps from device context.
   const auto dc = GetDC(window);
   const auto dpiY = GetDeviceCaps(dc, LOGPIXELSY);
   ReleaseDC(window, dc);
   return dpiY;
 #endif
 }
+
+/**
+ * Utility: coordinate convertor from logical to physical for window
+ */
+static LONG to_physical(LONG value, LONG dpi) {
+  return std::lroundf(static_cast<float>(value) * static_cast<float>(dpi) /
+                      static_cast<float>(USER_DEFAULT_SCREEN_DPI));
+}
+
+/**
+ * Utility: coordinate convertor from physical to logical for window
+ */
+static LONG to_logical(LONG value, LONG dpi) {
+  return std::lroundf(static_cast<float>(value) *
+                      static_cast<float>(USER_DEFAULT_SCREEN_DPI) /
+                      static_cast<float>(dpi));
+};
 #endif
 
+/**
+ * Utility: helper to work with points in window layout
+ */
 struct Point : tagPOINT {
   Point() = default;
 
@@ -227,6 +308,9 @@ struct Point : tagPOINT {
   constexpr auto get_y() const noexcept { return y; }
 };
 
+/**
+ * Utility: helper to work with rectangles in window layout
+ */
 struct Rect : tagRECT {
   Rect() = default;
 
@@ -294,12 +378,12 @@ public:
     height = client.bottom;
   }
 
-  void init_min_sizes(const LONG _min_width, const LONG _min_height) {
+  constexpr void init_min_sizes(const LONG _min_width, const LONG _min_height) {
     min_width = _min_width;
     min_height = _min_height;
   }
 
-  void init_anchor(const HWND parent, const size_t index, const int id,
+  void init_anchor(const HWND parent, const uint8_t index, const int id,
                    const Anchor anchor) {
     const auto handle = GetDlgItem(parent, id);
 
@@ -384,7 +468,7 @@ public:
 
   constexpr auto get_min_y() const { return min_height; }
 
-  constexpr auto get_constraints_handle(const size_t index) const {
+  constexpr auto get_constraints_handle(const uint8_t index) const {
     return constraints[index].handle;
   }
 
