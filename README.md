@@ -1,8 +1,5 @@
 # Calc
-
-[![Windows](https://github.com/irainman/calc/actions/workflows/windows-msbuild.yml/badge.svg)](https://github.com/irainman/calc/actions/workflows/windows-msbuild.yml)
 [![CodeFactor](https://www.codefactor.io/repository/github/irainman/Calc/badge)](https://www.codefactor.io/repository/github/irainman/Calc)
-[![codecov](https://codecov.io/github/IRainman/Calc/graph/badge.svg?token=U90W4FEIDO)](https://codecov.io/github/IRainman/Calc)
 
 The home of Calc is here:
 
