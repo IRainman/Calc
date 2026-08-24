@@ -11,7 +11,6 @@
  * Test cases
  */
 constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>({
-
 	// GUI test:
 	// produces max length of the output string
 	{ "-92666518056446206563E-300", -9.2666518056446206563e-281 },

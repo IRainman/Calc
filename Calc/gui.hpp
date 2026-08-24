@@ -108,7 +108,6 @@ struct CalcConfiguration {
  * Calc GUI helper structure to handle user input.
  */
 struct CalcEquation {
-
   const auto size() const { return _size; }
 
   void set_size(UINT s) { _size = s; }

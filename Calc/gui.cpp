@@ -199,7 +199,6 @@ private:
   }
 
   void load_window_data(const HWND window) {
-
     const RegRead reg(HKEY_CURRENT_USER, CalcConfiguration::reg_key);
 #ifndef CALC_TESTS_ENABLED
     input.set_size(reg.read("input", reinterpret_cast<LPBYTE>(input.data()),
