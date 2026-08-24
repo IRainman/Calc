@@ -70,10 +70,9 @@ public:
    * Initialize Calc GUI and load user data into it.
    */
   void init(const HWND window, const HINSTANCE instance) {
+    set_window_icons(window, instance);
 
     add_about_menu_to_system_menu(window);
-
-    set_window_icons(window, instance);
 
 #ifdef CALC_SUPPORT_DPI_CHANGES
     dpi = get_window_dpi(window);
