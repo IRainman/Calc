@@ -156,7 +156,7 @@ private:
   /**
    * Read the user input from GUI to input buffer and return its size.
    */
-  inline const InputSize &get_user_input() {
+  auto get_user_input() {
     input.set_size(get_window_text(layout.get_constraints_handle(0),
                                    input.data(), input.max_size()));
     return input.size();
@@ -165,7 +165,7 @@ private:
   /**
    * Set the result text in the GUI.
    */
-  inline void set_result(const char *result_text, char *result_text_end) const {
+  void set_result(const char *result_text, char *result_text_end) const {
     set_window_text(layout.get_constraints_handle(1), result_text,
                     result_text_end);
   }

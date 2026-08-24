@@ -81,23 +81,18 @@
 #include "resource.h" // GUI symbols
 
 /**
- * Calc GUI types
- */
-typedef uint_fast16_t InputSize;
-
-/**
  * Calc GUI configuration: matches RC and system internals for correct work.
  */
 struct CalcConfiguration {
   static constexpr const char *reg_key = "Software\\HedgehogInTheCPP\\Calc";
-  static constexpr uint8_t min_width = 232;  // matches RC
-  static constexpr uint8_t min_height = 158; // matches RC
-  static constexpr uint8_t elements = 3;     // matches RC
+  static constexpr LONG min_width = 232;  // matches RC
+  static constexpr LONG min_height = 158; // matches RC
+  static constexpr uint8_t elements = 3;  // matches RC
 
-  static constexpr uint8_t default_shift_px = 100;
+  static constexpr UINT default_shift_px = 100;
 
   // https://learn.microsoft.com/windows/win32/controls/em-limittext
-  static constexpr InputSize input_max_data_size =
+  static constexpr UINT input_max_data_size =
 #ifdef CALC_SUPPORT_SET_LIMIT_TEXT
       // Win32 ANSI multiline EDIT max is 64 KiB for classic Edit control:
       64 * 1024;
@@ -106,7 +101,7 @@ struct CalcConfiguration {
       32 * 1024;
 #endif
   // because the number above including C zero terminator maximum symbols are:
-  static constexpr InputSize input_max_symbols = input_max_data_size - 1;
+  static constexpr UINT input_max_symbols = input_max_data_size - 1;
 };
 
 /**
@@ -114,9 +109,9 @@ struct CalcConfiguration {
  */
 struct CalcEquation {
 
-  const auto &size() const { return _size; }
+  const auto size() const { return _size; }
 
-  void set_size(InputSize s) { _size = s; }
+  void set_size(UINT s) { _size = s; }
 
   auto max_size() const { return _max_size; }
 
@@ -125,8 +120,8 @@ struct CalcEquation {
   auto data() { return _data; }
 
 private:
-  static constexpr InputSize _max_size = CalcConfiguration::input_max_symbols;
-  InputSize _size [[indeterminate]];
+  static constexpr UINT _max_size = CalcConfiguration::input_max_symbols;
+  UINT _size [[indeterminate]];
   char _data[CalcConfiguration::input_max_data_size];
 };
 
@@ -234,9 +229,9 @@ static void set_window_text(const HWND hWnd, LPCSTR text,
 /**
  * Utility: get text from window and return its size.
  */
-static [[nodiscard]] InputSize get_window_text(const HWND hWnd, CHAR *text,
-                                               const InputSize max_size) {
-  return static_cast<InputSize>(GetWindowTextA(hWnd, text, max_size));
+static [[nodiscard]] auto get_window_text(const HWND hWnd, CHAR *text,
+                                          const int max_size) {
+  return GetWindowTextA(hWnd, text, max_size);
 }
 
 #ifdef CALC_SUPPORT_SET_LIMIT_TEXT

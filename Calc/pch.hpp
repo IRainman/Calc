@@ -102,13 +102,14 @@ __pragma(warning(pop));
 #endif
 #endif
 
-// because we have cleaner output:
+// because we have cleaner output we can reduce i-cache pressure:
 #define FMT_OPTIMIZE_SIZE 2 // Tests time is: 49612ms.
 #define FMT_OS 0
 #define FMT_USE_RTTI 0
-//  reduce cache pressure:
 #define FMT_CPP_LIB_FILESYSTEM 0 // Tests time is: 49980ms.
+#define FMT_BUILTIN_TYPES 0
 #define FMT_UNICODE 0
+#define FMT_REDUCE_INT_INSTANTIATIONS 1
 #define FMT_USE_FULL_CACHE_DRAGONBOX 0 // Tests time is: 50111ms.
 #define FMT_USE_LOCALE 0
 #define FMT_STATIC_THOUSANDS_SEPARATOR '\''
@@ -125,11 +126,11 @@ __pragma(warning(pop));
 #endif
 
 // https://github.com/fastfloat/fast_float/pull/307
-// Tests time is: 48459ms. wo options Tests time is: 53278ms. Original Tests
-// time is: 56140ms.
+// Tests time is: 48459ms.
 #define FASTFLOAT_ONLY_POSITIVE_C_NUMBER_WO_INF_NAN
 #define FASTFLOAT_ONLY_ROUNDS_TO_NEAREST_SUPPORTED
 #define FASTFLOAT_ISNOT_CHECKED_BOUNDS
+// Wo options Tests time is: 53278ms. Original Tests time is: 56140ms.
 #include "../../fast_float/include/fast_float/fast_float.h"
 
 #endif
