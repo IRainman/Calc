@@ -92,20 +92,20 @@ public:
 
     load_window_data(window);
 
-    const auto input_handle = layout.get_constraints_handle(0);
 #ifdef CALC_SUPPORT_SET_LIMIT_TEXT
-    set_window_text_limit(input_handle, input.max_size());
+    set_window_text_limit(layout.get_handle(0), input.max_size());
 #endif
 
 #ifdef CALC_TESTS_ENABLED
-    auto input_init = calc_tests();
+    auto tests = calc_tests();
+    set_window_text(layout.get_handle(0), tests.data(),
+                    tests.data() + tests.size());
 #else
-    auto &input_init = input;
+    set_window_text(layout.get_handle(0), input.data(),
+                    input.data() + input.size());
 #endif
-    set_window_text(input_handle, input_init.data(),
-                    input_init.data() + input_init.size());
 
-    goto_end_of_window_text(input_handle);
+    goto_end_of_window_text(layout.get_handle(0));
   }
 
   /**
@@ -155,9 +155,9 @@ private:
   /**
    * Read the user input from GUI to input buffer and return its size.
    */
-  auto get_user_input() {
-    input.set_size(get_window_text(layout.get_constraints_handle(0),
-                                   input.data(), input.max_size()));
+  UINT get_user_input() {
+    input.set_size(
+        get_window_text(layout.get_handle(0), input.data(), input.max_size()));
     return input.size();
   }
 
@@ -165,8 +165,7 @@ private:
    * Set the result text in the GUI.
    */
   void set_result(const char *result_text, char *result_text_end) const {
-    set_window_text(layout.get_constraints_handle(1), result_text,
-                    result_text_end);
+    set_window_text(layout.get_handle(1), result_text, result_text_end);
   }
 
 #ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
@@ -197,7 +196,7 @@ private:
                           requiredClient.get_heigth());
   }
 
-  inline void load_window_data(const HWND window) {
+  void load_window_data(const HWND window) {
 
     const RegRead reg(HKEY_CURRENT_USER, CalcConfiguration::reg_key);
 #ifndef CALC_TESTS_ENABLED

@@ -87,7 +87,7 @@ struct CalcConfiguration {
   static constexpr const char *reg_key = "Software\\HedgehogInTheCPP\\Calc";
   static constexpr LONG min_width = 232;  // matches RC
   static constexpr LONG min_height = 158; // matches RC
-  static constexpr uint8_t elements = 3;  // matches RC
+  static constexpr UINT elements = 3;     // matches RC
 
   static constexpr UINT default_shift_px = 100;
 
@@ -194,7 +194,7 @@ private:
 /**
  * Utility: add "About..." menu item to system menu for window.
  */
-static void add_about_menu_to_system_menu(const HWND window) {
+void add_about_menu_to_system_menu(const HWND window) {
   // IDM_ABOUTBOX must be in the system command range.
   static_assert((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
   static_assert(IDM_ABOUTBOX < 0xF000);
@@ -207,7 +207,7 @@ static void add_about_menu_to_system_menu(const HWND window) {
 /**
  * Utility: set window icons (small and big)
  */
-static void set_window_icons(const HWND window, const HINSTANCE instance) {
+void set_window_icons(const HWND window, const HINSTANCE instance) {
   SendMessageA(window, WM_SETICON, ICON_SMALL,
                reinterpret_cast<LPARAM>(
                    LoadIconA(instance, MAKEINTRESOURCEA(IDR_MAINFRAME_SMALL))));
@@ -219,7 +219,7 @@ static void set_window_icons(const HWND window, const HINSTANCE instance) {
 /**
  * Utility: set text to window from begin to end (end is not included).
  */
-static void set_window_text(const HWND hWnd, LPCSTR text,
+void set_window_text(const HWND hWnd, LPCSTR text,
                             LPSTR const text_end) {
   *text_end = '\0'; // because of C string
   SetWindowTextA(hWnd, text);
@@ -228,7 +228,7 @@ static void set_window_text(const HWND hWnd, LPCSTR text,
 /**
  * Utility: get text from window and return its size.
  */
-static [[nodiscard]] auto get_window_text(const HWND hWnd, CHAR *text,
+[[nodiscard]] UINT get_window_text(const HWND hWnd, CHAR *text,
                                           const int max_size) {
   return GetWindowTextA(hWnd, text, max_size);
 }
@@ -237,7 +237,7 @@ static [[nodiscard]] auto get_window_text(const HWND hWnd, CHAR *text,
 /**
  * Utility: set window text limit
  */
-static void set_window_text_limit(const HWND hWnd, WPARAM max_symbols) {
+void set_window_text_limit(const HWND hWnd, WPARAM max_symbols) {
   SendMessageA(hWnd, EM_LIMITTEXT, max_symbols, 0);
 }
 #endif
@@ -245,7 +245,7 @@ static void set_window_text_limit(const HWND hWnd, WPARAM max_symbols) {
 /**
  * Utility: goto end of text in window and scroll caret to it
  */
-static void goto_end_of_window_text(const HWND hWnd) {
+void goto_end_of_window_text(const HWND hWnd) {
   SendMessageA(hWnd, EM_SETSEL, static_cast<WPARAM>(0),
                static_cast<LPARAM>(-1));
   SendMessageA(hWnd, EM_SCROLLCARET, 0, 0);
@@ -255,7 +255,7 @@ static void goto_end_of_window_text(const HWND hWnd) {
 /**
  * Utility: return dpi for window
  */
-static UINT get_window_dpi(const HWND window) {
+UINT get_window_dpi(const HWND window) {
 #ifdef CALC_SUPPORT_DPI_FOR_WINDOW
   // Use per-window DPI
   return GetDpiForWindow(window);
@@ -271,7 +271,7 @@ static UINT get_window_dpi(const HWND window) {
 /**
  * Utility: coordinate convertor from logical to physical for window
  */
-static LONG to_physical(LONG value, LONG dpi) {
+LONG to_physical(LONG value, LONG dpi) {
   return std::lroundf(static_cast<float>(value) * static_cast<float>(dpi) /
                       static_cast<float>(USER_DEFAULT_SCREEN_DPI));
 }
@@ -279,7 +279,7 @@ static LONG to_physical(LONG value, LONG dpi) {
 /**
  * Utility: coordinate convertor from physical to logical for window
  */
-static LONG to_logical(LONG value, LONG dpi) {
+LONG to_logical(LONG value, LONG dpi) {
   return std::lroundf(static_cast<float>(value) *
                       static_cast<float>(USER_DEFAULT_SCREEN_DPI) /
                       static_cast<float>(dpi));
@@ -331,14 +331,14 @@ enum class HorizontalMode : BYTE { Stretch, Left, Right };
 enum class VerticalMode : BYTE { Stretch, Top, Bottom };
 
 struct Anchor {
-  HorizontalMode horizontal [[indeterminate]];
-  VerticalMode vertical [[indeterminate]];
+  [[no_unique_address]] HorizontalMode horizontal [[indeterminate]];
+  [[no_unique_address]] VerticalMode vertical [[indeterminate]];
 };
 
 /**
  * Utility: helper to work with window layout
  */
-template <typename size_t elements> class Layout {
+template <typename UINT elements> class Layout {
 public:
   struct Constraint {
     constexpr void init(const Layout *layout, const HWND _handle,
@@ -361,7 +361,7 @@ public:
     Rect relative_margins [[indeterminate]];
     LONG width [[indeterminate]];
     LONG height [[indeterminate]];
-    Anchor anchor [[indeterminate]];
+    [[no_unique_address]] Anchor anchor [[indeterminate]];
   };
 
   void init_window(const HWND window) {
@@ -462,12 +462,13 @@ public:
 
   constexpr auto get_min_y() const { return min_height; }
 
-  constexpr auto get_constraints_handle(const uint8_t index) const {
+  constexpr auto get_handle(const UINT index) const {
     return constraints[index].handle;
   }
 
 private:
-  std::array<Constraint, elements> constraints [[indeterminate]];
+  [[no_unique_address]] std::array<Constraint, elements> constraints
+      [[indeterminate]];
 
   LONG width [[indeterminate]];
   LONG height [[indeterminate]];
