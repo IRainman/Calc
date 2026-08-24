@@ -197,7 +197,7 @@ private:
                           requiredClient.get_heigth());
   }
 
-  void load_window_data(const HWND window) {
+  inline void load_window_data(const HWND window) {
     const RegRead reg(HKEY_CURRENT_USER, CalcConfiguration::reg_key);
 #ifndef CALC_TESTS_ENABLED
     input.set_size(reg.read("input", reinterpret_cast<LPBYTE>(input.data()),
@@ -306,8 +306,9 @@ static INT_PTR CALLBACK AboutDlgProc(const HWND dlg, const UINT msg,
       return TRUE;
     }
     return FALSE;
+
 #ifdef CALC_SUPPORT_LINK_WINDOW
-  case WM_NOTIFY: {
+  case WM_NOTIFY:
     const auto nm = reinterpret_cast<LPNMHDR>(lParam);
     if (nm->idFrom == IDC_LINK_HOMEPAGE && nm->code == NM_CLICK) {
       const auto link = reinterpret_cast<NMLINK *>(lParam);
@@ -316,11 +317,10 @@ static INT_PTR CALLBACK AboutDlgProc(const HWND dlg, const UINT msg,
       return TRUE;
     }
     return FALSE;
-  }
 #endif
-  default: {
+
+  default:
     return FALSE;
-  }
   }
 }
 
@@ -334,26 +334,26 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND window, const UINT msg,
   static bool dpi_change_in_progress = false;
 #endif
   switch (msg) {
-  case WM_COMMAND: {
+  case WM_COMMAND:
     if (LOWORD(wParam) == IDC_BUTTON_CALC && HIWORD(wParam) == BN_CLICKED) {
       calc.perform_calculation();
       return TRUE;
     }
     return FALSE;
-  }
-  case WM_SYSCOMMAND: {
+
+  case WM_SYSCOMMAND:
     if ((wParam & 0xFFF0) == IDM_ABOUTBOX) {
       DialogBoxParamA(GetModuleHandleA(nullptr), MAKEINTRESOURCEA(IDD_ABOUTBOX),
                       window, AboutDlgProc, FALSE);
       return TRUE;
     }
     return FALSE;
-  }
-  case WM_GETMINMAXINFO: {
+
+  case WM_GETMINMAXINFO:
     calc.get_minmaxinfo(reinterpret_cast<LPMINMAXINFO>(lParam));
     return TRUE;
-  }
-  case WM_SIZE: {
+
+  case WM_SIZE:
 #ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
     if (dpi_change_in_progress) {
       calc.layout_init(window);
@@ -362,44 +362,39 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND window, const UINT msg,
 #endif
     calc.resize(LOWORD(lParam), HIWORD(lParam));
     return TRUE;
-  }
+
 #ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
-  case WM_GETDPISCALEDSIZE: {
+  case WM_GETDPISCALEDSIZE:
     // https://learn.microsoft.com/en-us/windows/win32/hidpi/wm-getdpiscaledsize
     dpi_change_in_progress = true;
     return FALSE;
-  }
-  case WM_DPICHANGED: {
+
+  case WM_DPICHANGED:
     calc.set_dpi(window, HIWORD(wParam),
                  reinterpret_cast<const Rect_ptr>(lParam));
     dpi_change_in_progress = false;
     return TRUE;
-  }
 #endif
-  case WM_INITDIALOG: {
+
+  case WM_INITDIALOG:
     calc.init(window, reinterpret_cast<HINSTANCE>(lParam));
     return TRUE;
-  }
+
 #ifdef CALC_SUPPORT_AUTO_RESTART
-  case WM_ENDSESSION: {
+  case WM_ENDSESSION:
     if (wParam) {
       calc.save_user_data(window);
     }
     return TRUE;
-  }
 #endif
-  case WM_CLOSE: {
+
+  case WM_CLOSE:
     calc.save_user_data(window);
     calc.close(window);
     return TRUE;
-  }
-  case WM_DESTROY: {
-    PostQuitMessage(EXIT_SUCCESS);
+
+  default:
     return FALSE;
-  }
-  default: {
-    return FALSE;
-  }
   }
 }
 
