@@ -1,5 +1,7 @@
 # Calc
 
+[![Windows MSBuild](https://github.com/IRainman/Calc/actions/workflows/windows-msbuild.yml/badge.svg)](https://github.com/IRainman/Calc/actions/workflows/windows-msbuild.yml)
+
 The home of Calc is here:
 
 http://studio2000.xyz/txt/calc.shtml
