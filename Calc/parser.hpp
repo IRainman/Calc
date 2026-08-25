@@ -64,6 +64,6 @@ private:
 
   [[nodiscard]] Value parse_function() noexcept;
 
-  Lexer &_lex;
-  Token _current [[indeterminate]];
+  [[no_unique_address]] Lexer &_lex;
+  [[no_unique_address]] Token _current [[indeterminate]];
 };

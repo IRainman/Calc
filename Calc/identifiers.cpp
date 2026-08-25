@@ -21,7 +21,7 @@ template <const ParamCount N>
 using WrappedFn = decltype(WrappedFnImpl(std::make_index_sequence<N>()));
 
 template <typename Fn, const ParamCount... Is>
-[[nodiscard]] constexpr auto call_fn(Fn fn, std::span<const Value> params,
+[[nodiscard]] constexpr auto call_fn(Fn fn, std::span<Value> params,
                                      std::index_sequence<Is...>) noexcept {
   return fn(params[Is]...);
 }
@@ -34,7 +34,7 @@ function_pointer_impl(std::span<Value> params) noexcept {
 
 template <const ParamCount N, WrappedFn<N> wrappedFn>
 [[nodiscard]] consteval Fn function_pointer() noexcept {
-  return {{N, N}, function_pointer_impl<N, wrappedFn>};
+  return {function_pointer_impl<N, wrappedFn>, {true, N, N}};
 }
 
 template <const Value value>
@@ -43,7 +43,49 @@ template <const Value value>
 }
 
 template <const Value value> [[nodiscard]] consteval Fn constant() noexcept {
-  return {{0, 0}, constant_impl<value>};
+  return {constant_impl<value>, {false, 0, 0}};
+}
+
+[[nodiscard]] static constexpr bool is_integer(Value x) noexcept {
+  return std::isfinite(x) && std::trunc(x) == x &&
+         x >= static_cast<Value>(std::numeric_limits<Integer>::min()) &&
+         x <= static_cast<Value>(std::numeric_limits<Integer>::max());
+}
+
+[[nodiscard]] constexpr Integer gcd(Integer a, Integer b) noexcept {
+  while (b != 0) {
+    auto const r = a % b;
+    a = b;
+    b = r;
+  }
+  return a;
+}
+
+[[nodiscard]] static constexpr Integer lcm(Integer a, Integer b) noexcept {
+  if (a == 0 || b == 0) {
+    return 0;
+  }
+
+  auto const g = gcd(a, b);
+  return (a / g) * b;
+}
+
+[[nodiscard]] static constexpr Value gcd(Value a, Value b) noexcept {
+  if (is_integer(a) && is_integer(b)) {
+    return static_cast<Value>(
+        gcd(static_cast<Integer>(a), static_cast<Integer>(b)));
+  } else {
+    return std::numeric_limits<Value>::quiet_NaN();
+  }
+}
+
+[[nodiscard]] static constexpr Value lcm(Value a, Value b) noexcept {
+  if (is_integer(a) && is_integer(b)) {
+    return static_cast<Value>(
+        lcm(static_cast<Integer>(a), static_cast<Integer>(b)));
+  } else {
+    return std::numeric_limits<Value>::quiet_NaN();
+  }
 }
 
 [[nodiscard]] static constexpr Value min(std::span<Value> params) noexcept {
@@ -83,104 +125,141 @@ template <const Value value> [[nodiscard]] consteval Fn constant() noexcept {
 [[nodiscard]] constexpr Value radians_to_turn(const Value x) noexcept {
   return x / (2.0 * std::numbers::pi_v<Value>);
 }
-#ifdef CALC_TEST_BINARY_FUNCTIONS
+
 [[nodiscard]] static /*constexpr*/ Value OR(const Value n,
                                             const Value m) noexcept {
-  return static_cast<Value>(static_cast<std::uint64_t>(std::lrint(n)) |
-                            static_cast<std::uint64_t>(std::lrint(m)));
+  if (is_integer(n) && is_integer(m)) {
+    return static_cast<Value>(static_cast<UInteger>(std::lrint(n)) |
+                              static_cast<UInteger>(std::lrint(m)));
+  } else {
+    return std::numeric_limits<Value>::quiet_NaN();
+  }
 }
 
 [[nodiscard]] static /*constexpr*/ Value XOR(const Value n,
                                              const Value m) noexcept {
-  return static_cast<Value>(static_cast<std::uint64_t>(std::lrint(n)) ^
-                            static_cast<std::uint64_t>(std::lrint(m)));
+  if (is_integer(n) && is_integer(m)) {
+    return static_cast<Value>(static_cast<UInteger>(std::lrint(n)) ^
+                              static_cast<UInteger>(std::lrint(m)));
+  } else {
+    return std::numeric_limits<Value>::quiet_NaN();
+  }
 }
 
 [[nodiscard]] static /*constexpr*/ Value AND(const Value n,
                                              const Value m) noexcept {
-  return static_cast<Value>(static_cast<std::uint64_t>(std::lrint(n)) &
-                            static_cast<std::uint64_t>(std::lrint(m)));
+  if (is_integer(n) && is_integer(m)) {
+    return static_cast<Value>(static_cast<UInteger>(std::lrint(n)) &
+                              static_cast<UInteger>(std::lrint(m)));
+  } else {
+    return std::numeric_limits<Value>::quiet_NaN();
+  }
 }
 
 [[nodiscard]] static /*constexpr*/ Value NOT(const Value n) noexcept {
-  return static_cast<Value>(~(static_cast<std::uint64_t>(std::lrint(n))));
+  if (is_integer(n)) {
+    return static_cast<Value>(~(static_cast<UInteger>(std::lrint(n))));
+  } else {
+    return std::numeric_limits<Value>::quiet_NaN();
+  }
 }
 
 [[nodiscard]] static /*constexpr*/ Value SHL(const Value n) noexcept {
-  return static_cast<Value>(static_cast<std::uint64_t>(std::lrint(n)) << 1);
+  if (is_integer(n)) {
+    return static_cast<Value>(static_cast<UInteger>(std::lrint(n)) << 1);
+  } else {
+    return std::numeric_limits<Value>::quiet_NaN();
+  }
 }
 
 [[nodiscard]] static /*constexpr*/ Value SHR(const Value n) noexcept {
-  return static_cast<Value>(static_cast<std::uint64_t>(std::lrint(n)) >> 1);
+  if (is_integer(n)) {
+    return static_cast<Value>(static_cast<UInteger>(std::lrint(n)) >> 1);
+  } else {
+    return std::numeric_limits<Value>::quiet_NaN();
+  }
 }
 
 [[nodiscard]] static /*constexpr*/ Value SAR(const Value n) noexcept {
-  return static_cast<Value>(static_cast<std::int64_t>(std::lrint(n)) >> 1);
+  if (is_integer(n)) {
+    return static_cast<Value>(static_cast<std::int64_t>(std::lrint(n)) >> 1);
+  } else {
+    return std::numeric_limits<Value>::quiet_NaN();
+  }
 }
-#endif
-[[nodiscard]] static /*constexpr*/ Value factorial(const Value n) noexcept {
-  auto num = std::lrint(n);
-  Value result = 1.0;
-  if (0.0 <= num && num == n) {
-    while (num > 0.0) {
-      if (!std::isfinite(result)) {
-        break;
+
+[[nodiscard]] static constexpr Value factorial(const Value n) noexcept {
+  if (is_integer(n)) {
+    Integer num = std::lrint(n);
+    Value result = 1.0;
+    if (0.0 <= num && num == n) {
+      while (num > 0.0) {
+        if (!std::isfinite(result)) {
+          break;
+        }
+        result = result * num;
+        num = num - 1;
       }
-      result = result * num;
-      num = num - 1;
+      return result;
     }
-    return result;
   }
   return std::numeric_limits<Value>::quiet_NaN();
 }
 
-[[nodiscard]] static /*constexpr*/ Value permutation(const Value n,
-                                                     const Value r) noexcept {
-  auto num = std::lrint(n);
-  auto den = std::lrint(r);
-  Value result = 1.0;
-  if (0.0 <= num && 0.0 <= den && den <= num && num == n && den == r) {
-    while (den > 0.0) {
-      if (!std::isfinite(result)) {
-        break;
+[[nodiscard]] static constexpr Value permutation(const Value n,
+                                                 const Value r) noexcept {
+  if (is_integer(n) && is_integer(r)) {
+    auto num = std::lrint(n);
+    auto den = std::lrint(r);
+    Value result = 1.0;
+    if (0.0 <= num && 0.0 <= den && den <= num && num == n && den == r) {
+      while (den > 0.0) {
+        if (!std::isfinite(result)) {
+          break;
+        }
+        result = result * num;
+        --num;
+        --den;
       }
-      result = result * num;
-      --num;
-      --den;
+      return result;
     }
-    return result;
   }
   return std::numeric_limits<Value>::quiet_NaN();
 }
 
 [[nodiscard]] static /*constexpr*/ Value combination(const Value n,
                                                      const Value r) noexcept {
-  auto num = std::lrint(n);
-  auto den = std::lrint(r);
-  Value res1 = 1.0;
-  Value res2 = 1.0;
-  if (0 <= num && 0 <= den && den <= num && num == n && den == r) {
-    while (den > 0) {
-      if (!std::isfinite(res1)) {
-        break;
+  if (is_integer(n) && is_integer(r)) {
+    auto num = std::lrint(n);
+    auto den = std::lrint(r);
+    Value res1 = 1.0;
+    Value res2 = 1.0;
+    if (0 <= num && 0 <= den && den <= num && num == n && den == r) {
+      while (den > 0) {
+        if (!std::isfinite(res1)) {
+          break;
+        }
+        res1 = res1 * num;
+        res2 = res2 * den;
+        --num;
+        --den;
       }
-      res1 = res1 * num;
-      res2 = res2 * den;
-      --num;
-      --den;
+      return res1 / res2;
     }
-    return res1 / res2;
   }
   return std::numeric_limits<Value>::quiet_NaN();
 }
 #if 0
 [[nodiscard]] static constexpr Value
 accumulate(std::span<Value> params) noexcept {
-  return std::accumulate(params.begin(), params.end(), 0.0);
+  return std::accumulate(
+      params.begin(), params.end(),
+      0.0); // https://en.cppreference.com/cpp/algorithm/accumulate
 }
 
 [[nodiscard]] static constexpr Value reduce(std::span<Value> params) noexcept {
   return std::reduce(params.begin(), params.end());
+  // https://en.cppreference.com/cpp/algorithm/reduce
 }
 #endif
 [[nodiscard]] static constexpr Value hypot(std::span<Value> params) noexcept {
@@ -200,15 +279,15 @@ parabola(std::span<Value> params) noexcept {
 }
 
 // for better precision
-[[nodiscard]] /*constexpr*/ Value pow(Value x, Value y) noexcept {
+[[nodiscard]] Value pow(Value x, Value y) noexcept {
   if (compare(x, std::numbers::e_v<Value>)) {
     return std::exp(y);
   }
   return std::pow(x, y);
 }
 
-[[nodiscard]]
-Value normalize_sine(Value value) noexcept {
+// for better precision
+[[nodiscard]] static Value normalize_sine(Value value) noexcept {
   if (std::isnan(value)) {
     // remove -nan
     return std::numeric_limits<Value>::quiet_NaN();
@@ -231,8 +310,8 @@ Value normalize_sine(Value value) noexcept {
   return value;
 }
 
-[[nodiscard]]
-Value normalize_tan(Value value) noexcept {
+// for better precision
+[[nodiscard]] static Value normalize_tan(Value value) noexcept {
   if (std::isnan(value)) {
     // remove -nan
     return std::numeric_limits<Value>::quiet_NaN();
@@ -256,21 +335,21 @@ Value normalize_tan(Value value) noexcept {
 }
 
 // for better precision
-[[nodiscard]] /*constexpr*/ Value sin(Value x) noexcept {
+[[nodiscard]] static Value sin(Value x) noexcept {
   return normalize_sine(std::sin(x));
 }
 
 // for better precision
-[[nodiscard]] /*constexpr*/ Value cos(Value x) noexcept {
+[[nodiscard]] static Value cos(Value x) noexcept {
   return normalize_sine(std::cos(x));
 }
 
 // for better precision
-[[nodiscard]] /*constexpr*/ Value tan(Value x) noexcept {
+[[nodiscard]] static Value tan(Value x) noexcept {
   return normalize_tan(std::tan(x));
 }
 
-[[nodiscard]] /*constexpr*/ static Value
+[[nodiscard]] static /*constexpr*/ Value
 assoc_legendre(std::span<Value> params) noexcept {
   return std::assoc_legendre(static_cast<unsigned int>(params[0]),
                              static_cast<unsigned int>(params[1]), params[2]);
@@ -558,7 +637,7 @@ static const map ids = {
     {"E_h", constant<E_h>()},
     {"V_h", constant<V_h>()},
     // clang-format off
-    {"e_atomic", constant<e>()}, // use distinct name to avoid collision with math "e"
+    {"e_atomic", constant<e>()},// use distinct name to avoid collision with math "e"
     // clang-format on
     {"I_h", constant<I_h>()},
     {"mu_h", constant<mu_h>()},
@@ -589,7 +668,7 @@ static const map ids = {
     {"h", constant<h>()},
     {"hbar", constant<hbar>()},
     // clang-format off
-    {"e_charge", constant<e>()}, // use distinct name to avoid collision with math "e"
+    {"e_charge", constant<e>()},// use distinct name to avoid collision with math "e"
     // clang-format on
     {"NA", constant<NA>()},
     {"kB", constant<kB>()},
@@ -651,23 +730,23 @@ static const map ids = {
     {"arctan", function_pointer<1, std::atan>()},
 
     {"factorial", function_pointer<1, factorial>()},
-#if 0 // def CALC_TESTS_ENABLED
-    { "gcd", function_pointer<2, std::gcd>() },
-	{ "lcm", function_pointer<2, std::lcm>() },
-#endif
+
+    {"gcd", function_pointer<2, gcd>()},
+    {"lcm", function_pointer<2, lcm>()},
 
     {"permutation", function_pointer<2, permutation>()},
     {"P", function_pointer<2, permutation>()},
     {"combination", function_pointer<2, combination>()},
     {"C", function_pointer<2, combination>()},
 #if 0
-	{ "accumulate", {{2, std::numeric_limits<ParamCount>::max()}, accumulate} },
-	{ "reduce", {{2, std::numeric_limits<ParamCount>::max()}, reduce} },
+    {"accumulate",
+     {accumulate, {true, 2, std::numeric_limits<ParamCount>::max()}}},
+    {"reduce", {reduce, {true, 2, std::numeric_limits<ParamCount>::max()}}},
 #endif
     {"atan2", function_pointer<2, std::atan2>()},
-    {"hypot", {{2, 3}, hypot}},
-    {"parabola", {{1, 1}, parabola}},
-    {"distance", {{2, std::numeric_limits<ParamCount>::max()}, distance}},
+    {"hypot", {hypot, {true, 2, 3}}},
+    {"parabola", {parabola, {true, 1, 1}}},
+    {"distance", {distance, {true, 2, std::numeric_limits<ParamCount>::max()}}},
 
     {"sh", function_pointer<1, std::sinh>()},
     {"ch", function_pointer<1, std::cosh>()},
@@ -710,8 +789,8 @@ static const map ids = {
     {"turn_to_radians", function_pointer<1, turn_to_radians>()},
     {"radians_to_turn", function_pointer<1, radians_to_turn>()},
 
-    {"min", {{1, std::numeric_limits<ParamCount>::max()}, min}},
-    {"max", {{1, std::numeric_limits<ParamCount>::max()}, max}},
+    {"min", {min, {true, 1, std::numeric_limits<ParamCount>::max()}}},
+    {"max", {max, {true, 1, std::numeric_limits<ParamCount>::max()}}},
 
     {"abs", function_pointer<1, std::abs>()},
 
@@ -731,11 +810,11 @@ static const map ids = {
     {"mod", function_pointer<2, std::fmod>()},
 
 #if 0 // def CALC_TESTS_ENABLED
-	{ "clamp", function_pointer<3, std::clamp>() },
-	{ "midpoint", function_pointer <2, std::midpoint>() },
-	{ "lerp", function_pointer<3, std::std::lerp>() },
+    {"clamp", function_pointer<3, std::clamp>()},
+    {"midpoint", function_pointer<2, std::midpoint>()},
+    {"lerp", function_pointer<3, std::std::lerp>()},
 #endif
-#ifdef CALC_TEST_BINARY_FUNCTIONS
+
     {"not", function_pointer<1, NOT>()},
     {"and", function_pointer<2, AND>()},
     {"or", function_pointer<2, OR>()},
@@ -744,25 +823,24 @@ static const map ids = {
     {"shr", function_pointer<1, SHR>()},
     {"sar", function_pointer<1, SAR>()},
 #if 0 // def CALC_TESTS_ENABLED
-	{ "rotl", function_pointer<2, std::rotl>() },
-	{ "rotr", function_pointer<2, std::rotr>() },
-	{ "countl_zero", function_pointer<1, std::countl_zero>() },
-	{ "countl_one", function_pointer<1, std::countl_one>() },
-	{ "countr_zero", function_pointer<1, std::countr_zero>() },
-	{ "countr_one", function_pointer<1, std::countr_one>() },
-	{ "popcount", function_pointer<1, std::popcount>() },
-#endif
+    {"rotl", function_pointer<2, std::rotl>()},
+    {"rotr", function_pointer<2, std::rotr>()},
+    {"countl_zero", function_pointer<1, std::countl_zero>()},
+    {"countl_one", function_pointer<1, std::countl_one>()},
+    {"countr_zero", function_pointer<1, std::countr_zero>()},
+    {"countr_one", function_pointer<1, std::countr_one>()},
+    {"popcount", function_pointer<1, std::popcount>()},
 #endif
     //---------------------------------------------------------------------------
     // C++17 https://en.cppreference.com/w/cpp/numeric/special_math
 
     {"beta", function_pointer<2, std::beta>()},
 
-    {"assoc_legendre", {{3, 3}, assoc_legendre}},
-    {"assoc_laguerre", {{3, 3}, assoc_laguerre}},
+    {"assoc_legendre", {assoc_legendre, {true, 3, 3}}},
+    {"assoc_laguerre", {assoc_laguerre, {true, 3, 3}}},
 
-    {"legendre", {{2, 2}, legendre}},
-    {"laguerre", {{2, 2}, laguerre}},
+    {"legendre", {legendre, {true, 2, 2}}},
+    {"laguerre", {laguerre, {true, 2, 2}}},
 
     {"comp_ellint_1", function_pointer<1, std::comp_ellint_1>()},
     {"comp_ellint_2", function_pointer<1, std::comp_ellint_2>()},
@@ -774,9 +852,9 @@ static const map ids = {
 
     {"cyl_neumann", function_pointer<2, std::cyl_neumann>()},
 
-    {"sph_bessel", {{2, 2}, sph_bessel}},
-    {"sph_legendre", {{3, 3}, sph_legendre}},
-    {"sph_neumann", {{2, 2}, sph_neumann}},
+    {"sph_bessel", {sph_bessel, {true, 2, 2}}},
+    {"sph_legendre", {sph_legendre, {true, 3, 3}}},
+    {"sph_neumann", {sph_neumann, {true, 2, 2}}},
 
     {"ellint_1", function_pointer<2, std::ellint_1>()},
     {"ellint_2", function_pointer<2, std::ellint_2>()},
@@ -784,7 +862,7 @@ static const map ids = {
 
     {"expint", function_pointer<1, std::expint>()},
 
-    {"hermite", {{2, 2}, hermite}},
+    {"hermite", {hermite, {true, 2, 2}}},
 
     {"riemann_zeta", function_pointer<1, std::riemann_zeta>()},
 

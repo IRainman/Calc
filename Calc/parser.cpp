@@ -177,7 +177,7 @@ inline void Parser::advance() noexcept { _lex.next(_current); }
   if (_current.type == Token::Type::LPAREN) [[likely]] {
     advance();
 
-    const auto &[check, function] = i->second;
+    const auto &[caller, check] = i->second;
 
     std::array<Value, std::numeric_limits<ParamCount>::max()> parameters
         [[indeterminate]];
@@ -191,8 +191,8 @@ inline void Parser::advance() noexcept { _lex.next(_current); }
       case Token::Type::RPAREN:
         [[likely]] {
           advance();
-          if (check.params_count_is_valid(count)) [[likely]] {
-            return function({parameters.begin(), parameters.begin() + count});
+          if (check.is_function() && check.params_count_is_valid(count)) [[likely]] {
+            return caller({parameters.begin(), parameters.begin() + count});
           } else [[unlikely]] {
             function_start_pos -= i->first.size();
 #ifdef CALC_USE_ERROR_TOKEN

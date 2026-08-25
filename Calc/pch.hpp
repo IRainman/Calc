@@ -52,6 +52,11 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 
 // Calc compile options:
 
+__pragma(warning(disable : 4514));
+__pragma(warning(disable : 5045));
+__pragma(warning(disable : 4365));
+__pragma(warning(disable : 4668));
+__pragma(warning(disable : 4626));
 __pragma(warning(disable : 5030));
 __pragma(warning(disable : 5222));
 
@@ -81,8 +86,7 @@ __pragma(warning(pop));
     "128-bit float type isn't supported by zmij. The library convert any output values to 64-bit double."
 #endif
 
-#if !defined(CALC_USE_ERROR_TOKEN) || defined(CALC_TEST_FASTFLOAT) ||          \
-    defined(CALC_TESTS_DEV_ENABLED)
+#if !defined(CALC_USE_ERROR_TOKEN) || defined(CALC_TESTS_DEV_ENABLED)
 
 // fmt compile options:
 
@@ -115,8 +119,11 @@ __pragma(warning(pop));
 #define FMT_STATIC_THOUSANDS_SEPARATOR '\''
 // used because otherwise fmt produces much larger code:
 #define FMT_ENFORCE_COMPILE_STRING
+__pragma(warning(push));
+__pragma(warning(disable : 5027));
 #include "../../fmt/include/fmt/compile.h"
 #endif
+__pragma(warning(pop));
 
 // fast_float compile options:
 

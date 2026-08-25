@@ -294,7 +294,7 @@ private:
   Layout<CalcConfiguration::elements> layout [[indeterminate]];
 
 #ifdef CALC_SUPPORT_DPI_CHANGES
-  DWORD dpi [[indeterminate]];
+  UINT dpi [[indeterminate]];
 #endif
 #ifndef CALC_USED_EDIT_VIEW
   // Should be always as last member, has a big size for handling user input.

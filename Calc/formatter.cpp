@@ -8,21 +8,10 @@
 #include "issue_manager.hpp"
 
 #ifdef CALC_SUPPORT_FRACTIONAL_OUTPUT
-// Recursive function to
-// return GCD of a and b
-int64_t gcd(int64_t a, int64_t b) {
-  if (a == 0)
-    return b;
-  else if (b == 0)
-    return a;
-  if (a < b)
-    return gcd(a, b % a);
-  else
-    return gcd(b, a % b);
-}
+#include "identifiers.hpp"
 
 // Function to convert decimal to fraction
-std::pair<int64_t, int64_t> decimalToFraction(Value number) {
+std::pair<Integer, Integer> decimalToFraction(Value number) {
   if (std::isnan(number) || std::isinf(number))
     return {0, 1};
 
@@ -35,18 +24,19 @@ std::pair<int64_t, int64_t> decimalToFraction(Value number) {
   // Consider precision value to
   // convert fractional part to
   // integral equivalent
-  constexpr int64_t pVal = 1e15;
+  constexpr Integer pVal = 1e15;
 
   // Calculate GCD of integral
   // equivalent of fractional
   // part and precision value
-  int64_t gcdVal = gcd(std::round(fVal * pVal), pVal);
+  Integer gcdVal = Identifiers::gcd(std::round(fVal * pVal), pVal);
 
   // Calculate num and deno
-  int64_t num = std::round(fVal * pVal) / gcdVal;
-  int64_t deno = pVal / gcdVal;
+  Integer num = std::round(fVal * pVal) / gcdVal;
+  Integer deno = pVal / gcdVal;
 
-  if (std::abs(num) > 1e14 || deno == 1 || deno > 1e14)
+  if (std::abs(num) > huge_value_precision || deno == 1 ||
+      deno > huge_value_precision)
     return {0, 1};
 
   // Return the fraction

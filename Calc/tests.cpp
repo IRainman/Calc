@@ -4,53 +4,46 @@
 
 #include "pch.hpp"
 #ifdef CALC_TESTS_ENABLED
-#include <chrono>
-#ifdef CALC_TEST_FASTFLOAT
-#include <cfenv>
-#endif
 #include "formatter.hpp"
 #include "issue_manager.hpp"
 #include "lexer.hpp"
 #include "parser.hpp"
 #include "tests.hpp"
 #include "tests_equasions.hpp"
+#include <cfenv>
+#include <chrono>
 
-#ifdef CALC_TEST_BINARY_FUNCTIONS
-[[nodiscard]] constexpr Value bin(const std::string_view x) noexcept {
-  uint32_t bin_val;
+[[nodiscard]] constexpr static Value bin(const std::string_view x) noexcept {
+  UInteger bin_val;
   auto res = fast_float::from_chars(x.data(), x.data() + x.size(), bin_val, 2);
   if (res.ec == std::errc{}) [[likely]] {
-    return bin_val;
+    return static_cast<Value>(bin_val);
   }
 
   [[unlikely]] return std::numeric_limits<Value>::quiet_NaN();
 }
 
-[[nodiscard]] constexpr Value hex(const std::string_view x) noexcept {
-  uint32_t hex_val;
+[[nodiscard]] constexpr static Value hex(const std::string_view x) noexcept {
+  UInteger hex_val;
   auto res = fast_float::from_chars(x.data(), x.data() + x.size(), hex_val, 16);
   if (res.ec == std::errc{}) [[likely]] {
-    return hex_val;
+    return static_cast<Value>(hex_val);
   }
 
   [[unlikely]] return std::numeric_limits<Value>::quiet_NaN();
 }
 
-constexpr std::string binary_and_hex_parsing() {
-  std::string ret;
+constexpr static auto binary_and_hex_parsing(char *ret) {
   {
     constexpr std::string_view data = "10101011110011011110111101101001";
-    ret += fmt::format(FMT_COMPILE("bin {} -> {}\r\n"), data, bin(data));
+    ret = fmt::format_to(ret, FMT_COMPILE("bin {} -> {}\r\n"), data, bin(data));
   }
   {
     constexpr std::string_view data = "ABCDEF69";
-    ret += fmt::format(FMT_COMPILE("hex {} -> {}\r\n"), data, hex(data));
+    ret = fmt::format_to(ret, FMT_COMPILE("hex {} -> {}\r\n"), data, hex(data));
   }
   return ret;
 }
-#endif
-
-#ifdef CALC_TEST_FASTFLOAT
 
 #define CASE_RETURN_NAME(x)                                                    \
   case x:                                                                      \
@@ -68,7 +61,6 @@ constexpr std::string_view round_name(int const d) {
 }
 
 #undef CASE_RETURN_NAME
-#endif
 
 /*
 static_assert(std::has_unique_object_representations_v<CalcWindowState>);
@@ -168,6 +160,8 @@ std::string calc_tests() {
   }
   const auto end = std::chrono::steady_clock::now();
 
+  output_end = binary_and_hex_parsing(output_end);
+
 #ifdef CALC_TESTS_DEV_ENABLED
   output.resize(output_end - output.data());
 #endif
@@ -176,16 +170,14 @@ std::string calc_tests() {
   output += std::format("Tests"
 #ifdef CALC_TESTS_DEV_ENABLED
                         ":\r\n passed: {},\r\n failed: {}\r\n"
-#ifdef CALC_TEST_FASTFLOAT
+
                         "fegetround() == {}\r\n"
-#endif
 #endif
                         " time is: {}.",
 #ifdef CALC_TESTS_DEV_ENABLED
                         tests.size() - failed, failed,
-#ifdef CALC_TEST_FASTFLOAT
+
                         round_name(std::fegetround()),
-#endif
 #endif
                         std::chrono::duration_cast<std::chrono::
 #ifdef CALC_TESTS_DEV_ENABLED
@@ -195,9 +187,6 @@ std::string calc_tests() {
 #endif
                                                    >(end - start));
 
-#ifdef CALC_TEST_BINARY_FUNCTIONS
-  output += "\r\n\r\n" + binary_and_hex_parsing();
-#endif
   return output;
 }
 #endif

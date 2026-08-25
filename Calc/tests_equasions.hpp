@@ -40,7 +40,7 @@ constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>({
 	// very big or very small numbers: it's should produce error, we don't need to round it to 0 or inf.
 	{ "9999999999999999999e1000000000000000000000000000000", std::numeric_limits<Value>::quiet_NaN() },
 	{ "999999999999999999e-1000000000000000000000000000000", std::numeric_limits<Value>::quiet_NaN() },
-	// CALC_TEST_FASTFLOAT
+	
 	// check overflow in internal processing of fast_float:
 	{ "1.00000000001e-2147483638",							 std::numeric_limits<Value>::quiet_NaN() },
 	{ "1.00000000001e+2147483638",							 std::numeric_limits<Value>::quiet_NaN() },

@@ -21,8 +21,12 @@ using Value = std::float128_t;
 #else
 #if __STDCPP_FLOAT64_T__ == 1
 using Value = std::float64_t;
+using Integer = std::int64_t;
+using UInteger = std::uint64_t;
 #else
 using Value = double;
+using Integer = std::int64_t;
+using UInteger = std::uint64_t;
 #endif
 #define CALC_USE_128_BIT_FLOAT 0
 constexpr auto huge_value_precision = 1e15;
@@ -38,18 +42,19 @@ using ParamCount = char;
 #define CALC_TESTS_DEV_ENABLED // if commented test is measurement performance
 #endif
 #ifdef CALC_TESTS_DEV_ENABLED
-
-// using for test changes in my fork of the library:
-#define CALC_TEST_FASTFLOAT
-
-// TODO
-// #define CALC_TEST_BINARY_FUNCTIONS // WIP
-
 // TODO
 // #define CALC_TEST_EQUATION_SOLVER // WIP
+
+// TODO
+// #define CALC_TEST_UNICODE // WIP
+
+// TODO
+#define CALC_SUPPORT_FRACTIONAL_OUTPUT // WIP
 #endif
 
+// TODO
 // #define CALC_USE_ERROR_TOKEN // WIP
+
 #endif
 //---------------------------------------------------------------------------
 // Usage of fmt is improve performance.

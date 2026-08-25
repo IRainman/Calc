@@ -7,19 +7,21 @@
 
 namespace Identifiers {
 struct Fn {
-  struct P {
+  [[no_unique_address]] Value (*const fn)(std::span<Value>);
+
+  [[no_unique_address]] struct P {
     /**
      * Test is Fn is a constant and no needs arguments.
      */
     [[nodiscard]] constexpr bool is_constant() const noexcept {
-      return min == 0 && max == 0;
+      return !is_function();
     }
 
     /**
      * Test is Fn is a function and needs arguments.
      */
     [[nodiscard]] constexpr bool is_function() const noexcept {
-      return !is_constant();
+      return this_is_function;
     }
 
     /**
@@ -30,11 +32,10 @@ struct Fn {
       return min <= count && count <= max;
     }
 
+    [[no_unique_address]] const bool this_is_function;
     [[no_unique_address]] const ParamCount min;
     [[no_unique_address]] const ParamCount max;
   } check;
-
-  Value (*const fn)(std::span<Value>);
 };
 
 /**
@@ -48,6 +49,8 @@ using map = const std::unordered_map<std::string_view, const Fn>;
 [[nodiscard]] constexpr Value degrees_to_radians(const Value x) noexcept;
 
 [[nodiscard]] constexpr Value radians_to_degrees(const Value x) noexcept;
+
+[[nodiscard]] constexpr Integer gcd(Integer a, Integer b) noexcept;
 
 [[nodiscard]] /*constexpr*/ bool compare(const Value a, const Value b) noexcept;
 }; // namespace Identifiers

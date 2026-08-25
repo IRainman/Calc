@@ -7,6 +7,10 @@
 
 #ifdef _WIN32
 
+// Explicitely enble C++ support by Windows SDK to use Unicode on systems before
+// Windows Vista or Windows 2008
+#define WINDOWS_ENABLE_CPLUSPLUS
+
 // Disable warnings about unsafe functions in Windows API
 #define _CRT_SECURE_NO_WARNINGS
 
@@ -47,12 +51,286 @@
     "In Windows before Windows 10 or Windows Server 2016 the HiDPI isn't supported and Dialog based applications not resized automatically when DPI changed."
 #endif
 
-#ifdef UNICODE
+#ifdef CALC_TEST_UNICODE
 // TODO: don't copy data from Win32 Edit control to the buffer. This can'be
 // usable only with UNICODE and only if multiline and local edit enabled in the
 // edit control. This is needs to be enable after preprocessing and converting
 // mathematical values, like 𝜋 -> pi i.e to it's representatin.
 #define CALC_USED_EDIT_VIEW
+
+namespace CalcUnicode {
+
+[[nodiscard]] static bool normalize(std::u16string_view input,
+                                    std::string &output) noexcept {
+  output.clear();
+  output.reserve(input.size());
+
+  for (const char16_t c : input) {
+    if (c <= Token::ERROR) {
+      output.push_back(static_cast<char>(c));
+      continue;
+    }
+
+    switch (c) {
+    // Whitespace accepted by mathematical input.
+    case u'\u00A0': // NBSP
+    case u'\u2000': // EN QUAD
+    case u'\u2001': // EM QUAD
+    case u'\u2002': // EN SPACE
+    case u'\u2003': // EM SPACE
+    case u'\u2004':
+    case u'\u2005':
+    case u'\u2006':
+    case u'\u2007':
+    case u'\u2008':
+    case u'\u2009': // THIN SPACE
+    case u'\u200A': // HAIR SPACE
+    case u'\u202F': // NARROW NBSP
+    case u'\u205F': // MEDIUM MATHEMATICAL SPACE
+    case u'\u3000': // IDEOGRAPHIC SPACE
+      output.push_back(' ');
+      break;
+
+    // Fullwidth digits.
+    case u'\uFF10':
+      output.push_back('0');
+      break;
+    case u'\uFF11':
+      output.push_back('1');
+      break;
+    case u'\uFF12':
+      output.push_back('2');
+      break;
+    case u'\uFF13':
+      output.push_back('3');
+      break;
+    case u'\uFF14':
+      output.push_back('4');
+      break;
+    case u'\uFF15':
+      output.push_back('5');
+      break;
+    case u'\uFF16':
+      output.push_back('6');
+      break;
+    case u'\uFF17':
+      output.push_back('7');
+      break;
+    case u'\uFF18':
+      output.push_back('8');
+      break;
+    case u'\uFF19':
+      output.push_back('9');
+      break;
+
+    // Fullwidth operators/punctuation.
+    case u'\uFF0B':
+      output.push_back('+');
+      break; // ＋
+    case u'\uFF0D':
+      output.push_back('-');
+      break; // －
+    case u'\uFF0A':
+      output.push_back('*');
+      break; // ＊
+    case u'\uFF0F':
+      output.push_back('/');
+      break; // ／
+    case u'\uFF08':
+      output.push_back('(');
+      break; // （
+    case u'\uFF09':
+      output.push_back(')');
+      break; // ）
+    case u'\uFF0C':
+      output.push_back(',');
+      break; // ，
+    case u'\uFF05':
+      output.push_back('%');
+      break; // ％
+
+    // Alternative minus characters.
+    case u'\u2010': // ‐
+    case u'\u2011': // -
+    case u'\u2012': // ‒
+    case u'\u2013': // –
+    case u'\u2014': // —
+    case u'\u2212': // −
+    case u'\uFE63': // ﹣
+      output.push_back('-');
+      break;
+
+    // Multiplication.
+    case u'\u00B7': // ·
+    case u'\u00D7': // ×
+    case u'\u2217': // ∗
+    case u'\u2219': // ∙
+    case u'\u22C5': // ⋅
+    case u'\u204E': // ⁎
+    case u'\u2A2F': // ⨯
+      output.push_back('*');
+      break;
+
+    // Division.
+    case u'\u00F7': // ÷
+    case u'\u2044': // ⁄
+    case u'\u2215': // ∕
+      output.push_back('/');
+      break;
+
+    // Parentheses.
+    case u'\uFE59': // ﹙
+      output.push_back('(');
+      break;
+
+    case u'\uFE5A': // ﹚
+      output.push_back(')');
+      break;
+
+    // Comma.
+    case u'\uFE50': // ﹐
+      output.push_back(',');
+      break;
+
+    // Mathematical constants.
+    case u'\u03C0': // π
+    case u'\u03D6': // ϖ
+      output.append("pi");
+      break;
+
+    case u'\u03C6': // φ
+    case u'\u03D5': // ϕ
+      output.append("phi");
+      break;
+
+    case u'\u03B3': // γ
+      output.append("e_gamma");
+      break;
+
+    case u'\u03B1': // α
+      output.append("alpha");
+      break;
+
+    case u'\u03C3': // σ
+      output.append("sigma");
+      break;
+
+    case u'\u03BC': // μ
+      output.append("mu");
+      break;
+
+    case u'\u221E': // ∞
+      output.append("inf");
+      break;
+
+    case u'\u212F': // ℯ
+      output.push_back('e');
+      break;
+
+    // Physical constants.
+    case u'\u210F': // ℏ
+      output.append("hbar");
+      break;
+
+    // Roots.
+    case u'\u221A': // √
+      output.append("sqrt");
+      break;
+
+    case u'\u221B': // ∛
+      output.append("cbrt");
+      break;
+
+    // Superscript/subscript signs and digits.
+    case u'\u207A': // ⁺
+    case u'\u208A': // ₊
+      output.push_back('+');
+      break;
+
+    case u'\u207B': // ⁻
+    case u'\u208B': // ₋
+      output.push_back('-');
+      break;
+
+    case u'\u207D': // ⁽
+    case u'\u208D': // ₍
+      output.push_back('(');
+      break;
+
+    case u'\u207E': // ⁾
+    case u'\u208E': // ₎
+      output.push_back(')');
+      break;
+
+    case u'\u2070': // ⁰
+    case u'\u2080': // ₀
+      output.push_back('0');
+      break;
+
+    case u'\u00B9': // ¹
+    case u'\u2081': // ₁
+      output.push_back('1');
+      break;
+
+    case u'\u00B2': // ²
+    case u'\u2082': // ₂
+      output.push_back('2');
+      break;
+
+    case u'\u00B3': // ³
+    case u'\u2083': // ₃
+      output.push_back('3');
+      break;
+
+    case u'\u2074': // ⁴
+    case u'\u2084': // ₄
+      output.push_back('4');
+      break;
+
+    case u'\u2075': // ⁵
+    case u'\u2085': // ₅
+      output.push_back('5');
+      break;
+
+    case u'\u2076': // ⁶
+    case u'\u2086': // ₆
+      output.push_back('6');
+      break;
+
+    case u'\u2077': // ⁷
+    case u'\u2087': // ₇
+      output.push_back('7');
+      break;
+
+    case u'\u2078': // ⁸
+    case u'\u2088': // ₈
+      output.push_back('8');
+      break;
+
+    case u'\u2079': // ⁹
+    case u'\u2089': // ₉
+      output.push_back('9');
+      break;
+
+    // Any other non-ASCII character is not part of the current Calc
+    // language and should be rejected here.
+    default:
+      return false;
+    }
+  }
+
+  return true;
+}
+
+[[nodiscard]] static const auto& normalize(std::u16string_view input) {
+  static std::string output;
+  if (!normalize(input, output)) {
+    output.clear();
+  }
+  return output;
+}
+
+}
 
 /*
 
@@ -553,6 +831,8 @@ R⊕ → r_earth
 
 
 
+
+
 */
 #endif
 
@@ -653,6 +933,10 @@ R⊕ → r_earth
 #define NOTOOLTIPS
 #define NOREBAR
 
+__pragma(warning(push));
+__pragma(warning(disable : 5039));
+__pragma(warning(disable : 4865));
+
 #include <windows.h>
 
 #ifdef CALC_SUPPORT_LINK_WINDOW
@@ -660,6 +944,8 @@ R⊕ → r_earth
 
 #include <shellapi.h>
 #endif
+
+__pragma(warning(pop));
 
 #include "resource.h" // GUI symbols
 
@@ -717,13 +1003,13 @@ public:
   }
 
   [[nodiscard]]
-  std::string_view get_view() const noexcept {
+  std::u16string_view get_view() const noexcept {
     return {_data, _size};
   }
 
 private:
   HLOCAL _handle [[indeterminate]];
-  char const *_data [[indeterminate]];
+  LPCWSTR _data [[indeterminate]];
   UINT _size;
 };
 #else
@@ -860,8 +1146,8 @@ static void set_window_text(const HWND hWnd, LPCSTR text,
 /**
  * Utility: get text from window and return its size.
  */
-static [[nodiscard]] UINT get_window_text(const HWND hWnd, CHAR *text,
-                                          const int max_size) noexcept {
+[[nodiscard]] static UINT get_window_text(const HWND hWnd, CHAR *text,
+                                          const UINT max_size) noexcept {
   return GetWindowTextA(hWnd, text, max_size);
 }
 #endif
@@ -889,7 +1175,7 @@ static void goto_end_of_window_text(const HWND hWnd) noexcept {
 /**
  * Utility: return dpi for window
  */
-static [[nodiscard]] UINT get_window_dpi(const HWND window) noexcept {
+[[nodiscard]] static UINT get_window_dpi(const HWND window) noexcept {
 #ifdef CALC_SUPPORT_DPI_FOR_WINDOW
   // Use per-window DPI
   return GetDpiForWindow(window);
@@ -905,7 +1191,7 @@ static [[nodiscard]] UINT get_window_dpi(const HWND window) noexcept {
 /**
  * Utility: coordinate convertor from logical to physical for window
  */
-static [[nodiscard]] LONG to_physical(LONG value, LONG dpi) noexcept {
+[[nodiscard]] static LONG to_physical(LONG value, LONG dpi) noexcept {
   return std::lroundf(static_cast<float>(value) * static_cast<float>(dpi) /
                       static_cast<float>(USER_DEFAULT_SCREEN_DPI));
 }
@@ -913,7 +1199,7 @@ static [[nodiscard]] LONG to_physical(LONG value, LONG dpi) noexcept {
 /**
  * Utility: coordinate convertor from physical to logical for window
  */
-static [[nodiscard]] LONG to_logical(LONG value, LONG dpi) noexcept {
+[[nodiscard]] static LONG to_logical(LONG value, LONG dpi) noexcept {
   return std::lroundf(static_cast<float>(value) *
                       static_cast<float>(USER_DEFAULT_SCREEN_DPI) /
                       static_cast<float>(dpi));
@@ -980,6 +1266,10 @@ struct Anchor {
  */
 template <typename UINT elements> class Layout {
 public:
+  constexpr Layout() = default;
+  Layout(const Layout &) = delete;
+  Layout(Layout &&) = delete;
+
   struct Constraint {
     constexpr void init(const Layout *layout, const HWND _handle,
                         const Rect &client, const Anchor _anchor) noexcept {
