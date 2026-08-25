@@ -11,7 +11,7 @@
 #include "identifiers.hpp"
 
 // Function to convert decimal to fraction
-std::pair<Integer, Integer> decimalToFraction(Value number) {
+constexpr static std::pair<Integer, Integer> decimalToFraction(Value number) {
   if (std::isnan(number) || std::isinf(number))
     return {0, 1};
 
@@ -24,19 +24,19 @@ std::pair<Integer, Integer> decimalToFraction(Value number) {
   // Consider precision value to
   // convert fractional part to
   // integral equivalent
-  constexpr Integer pVal = 1e15;
+  constexpr Integer value = 1000000000000000;
+  constexpr Integer limit = 100000000000000;
 
   // Calculate GCD of integral
   // equivalent of fractional
   // part and precision value
-  Integer gcdVal = Identifiers::gcd(std::round(fVal * pVal), pVal);
+  Integer gcdVal = Identifiers::gcd(std::round(fVal * value), value);
 
   // Calculate num and deno
-  Integer num = std::round(fVal * pVal) / gcdVal;
-  Integer deno = pVal / gcdVal;
+  Integer num = std::round(fVal * value) / gcdVal;
+  Integer deno = value / gcdVal;
 
-  if (std::abs(num) > huge_value_precision || deno == 1 ||
-      deno > huge_value_precision)
+  if (std::abs(num) > limit || deno == 1 || deno > limit)
     return {0, 1};
 
   // Return the fraction

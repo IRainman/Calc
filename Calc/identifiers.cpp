@@ -46,6 +46,11 @@ template <const Value value> [[nodiscard]] consteval Fn constant() noexcept {
   return {constant_impl<value>, {false, 0, 0}};
 }
 
+[[nodiscard]] static constexpr bool is_unsigned_integer(Value x) noexcept {
+  return std::isfinite(x) && std::trunc(x) == x && x >= 0 &&
+         x <= static_cast<Value>(std::numeric_limits<Integer>::max());
+}
+
 [[nodiscard]] static constexpr bool is_integer(Value x) noexcept {
   return std::isfinite(x) && std::trunc(x) == x &&
          x >= static_cast<Value>(std::numeric_limits<Integer>::min()) &&
@@ -129,8 +134,8 @@ template <const Value value> [[nodiscard]] consteval Fn constant() noexcept {
 [[nodiscard]] static /*constexpr*/ Value OR(const Value n,
                                             const Value m) noexcept {
   if (is_integer(n) && is_integer(m)) {
-    return static_cast<Value>(static_cast<UInteger>(std::lrint(n)) |
-                              static_cast<UInteger>(std::lrint(m)));
+    return static_cast<Value>(static_cast<UInteger>(std::llrint(n)) |
+                              static_cast<UInteger>(std::llrint(m)));
   } else {
     return std::numeric_limits<Value>::quiet_NaN();
   }
@@ -139,8 +144,8 @@ template <const Value value> [[nodiscard]] consteval Fn constant() noexcept {
 [[nodiscard]] static /*constexpr*/ Value XOR(const Value n,
                                              const Value m) noexcept {
   if (is_integer(n) && is_integer(m)) {
-    return static_cast<Value>(static_cast<UInteger>(std::lrint(n)) ^
-                              static_cast<UInteger>(std::lrint(m)));
+    return static_cast<Value>(static_cast<UInteger>(std::llrint(n)) ^
+                              static_cast<UInteger>(std::llrint(m)));
   } else {
     return std::numeric_limits<Value>::quiet_NaN();
   }
@@ -149,8 +154,8 @@ template <const Value value> [[nodiscard]] consteval Fn constant() noexcept {
 [[nodiscard]] static /*constexpr*/ Value AND(const Value n,
                                              const Value m) noexcept {
   if (is_integer(n) && is_integer(m)) {
-    return static_cast<Value>(static_cast<UInteger>(std::lrint(n)) &
-                              static_cast<UInteger>(std::lrint(m)));
+    return static_cast<Value>(static_cast<UInteger>(std::llrint(n)) &
+                              static_cast<UInteger>(std::llrint(m)));
   } else {
     return std::numeric_limits<Value>::quiet_NaN();
   }
@@ -158,7 +163,7 @@ template <const Value value> [[nodiscard]] consteval Fn constant() noexcept {
 
 [[nodiscard]] static /*constexpr*/ Value NOT(const Value n) noexcept {
   if (is_integer(n)) {
-    return static_cast<Value>(~(static_cast<UInteger>(std::lrint(n))));
+    return static_cast<Value>(~(static_cast<UInteger>(std::llrint(n))));
   } else {
     return std::numeric_limits<Value>::quiet_NaN();
   }
@@ -166,7 +171,7 @@ template <const Value value> [[nodiscard]] consteval Fn constant() noexcept {
 
 [[nodiscard]] static /*constexpr*/ Value SHL(const Value n) noexcept {
   if (is_integer(n)) {
-    return static_cast<Value>(static_cast<UInteger>(std::lrint(n)) << 1);
+    return static_cast<Value>(static_cast<UInteger>(std::llrint(n)) << 1);
   } else {
     return std::numeric_limits<Value>::quiet_NaN();
   }
@@ -174,7 +179,7 @@ template <const Value value> [[nodiscard]] consteval Fn constant() noexcept {
 
 [[nodiscard]] static /*constexpr*/ Value SHR(const Value n) noexcept {
   if (is_integer(n)) {
-    return static_cast<Value>(static_cast<UInteger>(std::lrint(n)) >> 1);
+    return static_cast<Value>(static_cast<UInteger>(std::llrint(n)) >> 1);
   } else {
     return std::numeric_limits<Value>::quiet_NaN();
   }
@@ -182,26 +187,24 @@ template <const Value value> [[nodiscard]] consteval Fn constant() noexcept {
 
 [[nodiscard]] static /*constexpr*/ Value SAR(const Value n) noexcept {
   if (is_integer(n)) {
-    return static_cast<Value>(static_cast<std::int64_t>(std::lrint(n)) >> 1);
+    return static_cast<Value>(static_cast<std::int64_t>(std::llrint(n)) >> 1);
   } else {
     return std::numeric_limits<Value>::quiet_NaN();
   }
 }
 
 [[nodiscard]] static constexpr Value factorial(const Value n) noexcept {
-  if (is_integer(n)) {
-    Integer num = std::lrint(n);
+  if (is_unsigned_integer(n)) {
+    Integer num = std::llrint(n);
     Value result = 1.0;
-    if (0.0 <= num && num == n) {
-      while (num > 0.0) {
-        if (!std::isfinite(result)) {
-          break;
-        }
-        result = result * num;
-        num = num - 1;
+    while (num > 0) {
+      if (!std::isfinite(result)) {
+        break;
       }
-      return result;
+      result = result * static_cast<Value>(num);
+      num = num - 1;
     }
+    return result;
   }
   return std::numeric_limits<Value>::quiet_NaN();
 }

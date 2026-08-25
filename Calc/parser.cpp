@@ -191,7 +191,8 @@ inline void Parser::advance() noexcept { _lex.next(_current); }
       case Token::Type::RPAREN:
         [[likely]] {
           advance();
-          if (check.is_function() && check.params_count_is_valid(count)) [[likely]] {
+          if (check.is_function() && check.params_count_is_valid(count))
+              [[likely]] {
             return caller({parameters.begin(), parameters.begin() + count});
           } else [[unlikely]] {
             function_start_pos -= i->first.size();
