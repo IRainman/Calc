@@ -53,6 +53,507 @@
 // edit control. This is needs to be enable after preprocessing and converting
 // mathematical values, like 𝜋 -> pi i.e to it's representatin.
 #define CALC_USED_EDIT_VIEW
+
+/*
+
+TODO: mapping and converting functionality
+
+∑ → sum
+∏ → prod
+∫ → integral
+
+| Unicode | Calc |
+| ------- | ---- |
+| `-`     | `-`  |
+| `−`     | `-`  |
+| `‐`     | `-`  |
+| `-`     | `-`  |
+| `‒`     | `-`  |
+| `–`     | `-`  |
+| `—`     | `-`  |
+| `﹣`     | `-`  |
+| `－`     | `-`  |
+
+
+
+| Unicode | Calc |
+| ------- | ---- |
+| `+`     | `+`  |
+| `＋`     | `+`  |
+
+
+× ⋅ · ∙ ∗ ⨯ → *
+
+| Unicode | Calc                                                         |
+| ------- | ------------------------------------------------------------ |
+| `∞`     | `inf`                                                        |
+| `π`     | `pi`                                                         |
+| `ϖ`     | `pi`                                                         |
+| `e`     | `e`                                                          |
+| `ℯ`     | `e`                                                          |
+| `φ`     | `phi`                                                        |
+| `ϕ`     | `phi`                                                        |
+| `γ`     | `e_gamma`                                                    |
+| `ℇ`     | `e`                                                          |
+Γ → gamma
+
+| Unicode | Calc |
+| ------- | ---- |
+| `/`     | `/`  |
+| `÷`     | `/`  |
+| `∕`     | `/`  |
+| `⁄`     | `/`  |
+| `／`     | `/`  |
+
+| Unicode | Calc  |
+| ------- | ----- |
+| `%`     | `%`   |
+| `％`     | `%`   |
+| `mod`   | `mod` |
+
+
+| Unicode | Calc |
+| ------- | ---- |
+| `(`     | `(`  |
+| `（`     | `(`  |
+| `﹙`     | `(`  |
+| `)`     | `)`  |
+| `）`     | `)`  |
+| `﹚`     | `)`  |
+| `,`     | `,`  |
+| `，`     | `,`  |
+| `﹐`     | `,`  |
+
+⟮ → (
+⟯ → )
+
+∜x → pow(x, 1/4)
+| Unicode | Calc      |
+| ------- | --------- |
+| `√`     | `sqrt`    |
+| `√x`    | `sqrt(x)` |
+| `∛`     | `cbrt`    |
+| `∛x`    | `cbrt(x)` |
+| `∜`     | `pow`*    |
+| `√`     | `sqrt`    |
+| `⎷`     | `sqrt`    |
+| `⏥`     | `sqrt`*   |
+
+
+
+| Unicode  | Calc     |
+| -------- | -------- |
+| `arcsin` | `arcsin` |
+| `asin`   | `arcsin` |
+| `sin⁻¹`  | `arcsin` |
+| `cos⁻¹`  | `arccos` |
+| `acos`   | `arccos` |
+| `tan⁻¹`  | `arctan` |
+| `atan`   | `arctan` |
+
+
+asin(x)    → arcsin(x)
+acos(x)    → arccos(x)
+atan(x)    → arctan(x)
+
+|  notation | Calc    |
+| ------------------ | ------- |
+| `sinh`             | `sh`    |
+| `cosh`             | `ch`    |
+| `tanh`             | `tanh`  |
+| `arsinh`           | `asinh` |
+| `arcsinh`          | `asinh` |
+| `arsinh`           | `asinh` |
+| `arcosh`           | `acosh` |
+| `arctanh`          | `atanh` |
+
+
+
+| Unicode    | Calc       |
+| ---------- | ---------- |
+| `㏑`        | `ln`       |
+| `㏒`        | `log`      |
+| `log₁₀`    | `log10`    |
+| `log₁₀(x)` | `log10(x)` |
+| `log₂`     | `log2`     |
+| `log₂(x)`  | `log2(x)`  |
+
+| Unicode / notation | Calc       |
+| ------------------ | ---------- |
+| `eˣ`               | `exp`*     |
+| `exp`              | `exp`      |
+| `e^x`              | `e^x`      |
+| `eˣ`               | `exp(x)`*  |
+| `expm1`            | `expm1`    |
+| `2ˣ`               | `exp2(x)`* |
+
+
+| Unicode notation | Calc      |   |           |
+| ---------------- | --------- | - | --------- |
+| `                | x         | ` | `abs(x)`* |
+| `‖x‖`            | `abs(x)`* |   |           |
+| `abs(x)`         | `abs(x)`  |   |           |
+
+
+| Unicode / notation | Calc            |
+| ------------------ | --------------- |
+| `n!`               | `factorial(n)`* |
+| `n‼`               | `factorial(n)`* |
+| `P(n,r)`           | `P(n,r)`        |
+| `C(n,r)`           | `C(n,r)`        |
+| `nPr`              | `P(n,r)`*       |
+| `nCr`              | `C(n,r)`*       |
+| `nP r`             | `P(n,r)`*       |
+| `nC r`             | `C(n,r)`*       |
+
+
+| Unicode    | Calc       |
+| ---------- | ---------- |
+| `min`      | `min`      |
+| `minimum`  | `min`      |
+| `min(x,y)` | `min(x,y)` |
+| `max`      | `max`      |
+| `maximum`  | `max`      |
+| `max(x,y)` | `max(x,y)` |
+
+
+| Unicode / notation | Calc        |
+| ------------------ | ----------- |
+| `⌊x⌋`              | `floor(x)`* |
+| `⌈x⌉`              | `ceil(x)`*  |
+| `⌊x⌋`              | `floor(x)`* |
+| `⌈x⌉`              | `ceil(x)`*  |
+| `round(x)`         | `round(x)`  |
+| `trunc(x)`         | `trunc(x)`  |
+
+
+
+| Unicode    | Calc             |
+| ---------- | ---------------- |
+| `Γ(x)`     | `gamma(x)`       |
+| `Γ`        | `gamma`*         |
+| `ln Γ(x)`  | `log(gamma(x))`* |
+| `log Γ(x)` | `lgamma(x)`*     |
+
+γ → e_gamma
+Γ(x) → gamma(x)
+
+
+| Unicode / notation | Calc      |
+| ------------------ | --------- |
+| `erf`              | `erf`     |
+| `erfc`             | `erfc`    |
+| `erf(x)`           | `erf(x)`  |
+| `erfc(x)`          | `erfc(x)` |
+
+
+| Notation     | Calc                |
+| ------------ | ------------------- |
+| `√(x²+y²)`   | existing expression |
+| `‖(x,y)‖`    | `hypot(x,y)`*       |
+| `hypot(x,y)` | `hypot(x,y)`        |
+| `d(p,q)`     | `distance(...)`*    |
+
+
+90° → 90 * pi / 180
+| Unicode   | Calc               |
+| --------- | ------------------ |
+| `°`       | `deg`*             |
+| `º`       | `deg`*             |
+| `rad`     | `rad`              |
+| `radian`  | `rad`              |
+| `radians` | `rad`              |
+| `deg`     | `deg`              |
+| `degree`  | `deg`              |
+| `degrees` | `deg`              |
+| `grad`    | `grad_to_radians`* |
+| `gon`     | `grad_to_radians`* |
+| `turn`    | `turn_to_radians`* |
+| `τ`       | `2*pi`*            |
+
+
+| Unicode | Calc        |
+| ------- | ----------- |
+| `c`     | `c`         |
+| `ℏ`     | `hbar`      |
+| `ħ`     | `hbar`      |
+| `h`     | `h`         |
+| `e`     | `e_charge`* |
+| `e₀`    | `epsilon0`* |
+| `ε₀`    | `epsilon0`  |
+| `μ₀`    | `mu0`       |
+| `Z₀`    | `Z0`        |
+| `k_B`   | `kB`        |
+| `N_A`   | `NA`        |
+| `F`     | `F`         |
+| `R`     | `R`         |
+| `α`     | `alpha`     |
+| `G`     | `G`         |
+| `g₀`    | `g0`        |
+
+ℯ → e
+e → e
+qₑ → e_charge
+
+
+| Unicode | Calc        |
+| ------- | ----------- |
+| `a₀`    | `a0`        |
+| `a.u.`  | `au`        |
+| `AU`    | `au`        |
+| `ly`    | `ly`        |
+| `pc`    | `pc`        |
+| `M☉`    | `m_sun`     |
+| `M⊕`    | `m_earth`   |
+| `M♃`    | `m_jupiter` |
+| `R☉`    | `r_sun`     |
+| `R⊕`    | `r_earth`   |
+
+
+| Unicode | Calc     |
+| ------- | -------- |
+| `mₑ`    | `m_e`    |
+| `mₚ`    | `mp`     |
+| `mₙ`    | `mn`     |
+| `mᵤ`    | `mu`     |
+| `m_d`   | `md`     |
+| `m_α`   | `malpha` |
+| `μ_B`   | `muB`    |
+| `μ_N`   | `muN`    |
+| `μₑ`    | `mue`    |
+| `μₚ`    | `mup`    |
+| `μₙ`    | `mun`    |
+| `μ_d`   | `mud`    |
+| `rₑ`    | `re`     |
+
+
+| Unicode | Calc  |
+| ------- | ----- |
+| `ℓ_P`   | `l_P` |
+| `l_P`   | `l_P` |
+| `m_P`   | `m_P` |
+| `t_P`   | `t_P` |
+| `q_P`   | `q_P` |
+| `T_P`   | `T_P` |
+| `E_P`   | `E_P` |
+
+
+| Unicode / notation | Calc  |
+| ------------------ | ----- |
+| `a₀`               | `a0`  |
+| `mₑ`               | `m_e` |
+| `E_h`              | `Eh`  |
+| `𝜇_B`             | `muB` |
+| `𝜇_N`             | `muN` |
+
+
+
+| Unicode notation | Calc           |   |          |
+| ---------------- | -------------- | - | -------- |
+| `√x`             | `sqrt(x)`      |   |          |
+| `∛x`             | `cbrt(x)`      |   |          |
+| `                | x              | ` | `abs(x)` |
+| `⌊x⌋`            | `floor(x)`     |   |          |
+| `⌈x⌉`            | `ceil(x)`      |   |          |
+| `x!`             | `factorial(x)` |   |          |
+| `Γ(x)`           | `gamma(x)`     |   |          |
+| `sin⁻¹(x)`       | `arcsin(x)`    |   |          |
+| `cos⁻¹(x)`       | `arccos(x)`    |   |          |
+| `tan⁻¹(x)`       | `arctan(x)`    |   |          |
+| `log₁₀(x)`       | `log10(x)`     |   |          |
+| `log₂(x)`        | `log2(x)`      |   |          |
+| `eˣ`             | `exp(x)`       |   |          |
+| `2ˣ`             | `exp2(x)`*     |   |          |
+| `‖(x,y)‖`        | `hypot(x,y)`   |   |          |
+
+
+
+| Unicode | ASCII |
+| ------- | ----- |
+| `⁰`     | `0`   |
+| `¹`     | `1`   |
+| `²`     | `2`   |
+| `³`     | `3`   |
+| `⁴`     | `4`   |
+| `⁵`     | `5`   |
+| `⁶`     | `6`   |
+| `⁷`     | `7`   |
+| `⁸`     | `8`   |
+| `⁹`     | `9`   |
+| `⁺`     | `+`   |
+| `⁻`     | `-`   |
+| `⁽`     | `(`   |
+| `⁾`     | `)`   |
+
+
+
+| Unicode | ASCII |
+| ------- | ----- |
+| `₀`     | `0`   |
+| `₁`     | `1`   |
+| `₂`     | `2`   |
+| `₃`     | `3`   |
+| `₄`     | `4`   |
+| `₅`     | `5`   |
+| `₆`     | `6`   |
+| `₇`     | `7`   |
+| `₈`     | `8`   |
+| `₉`     | `9`   |
+| `₊`     | `+`   |
+| `₋`     | `-`   |
+| `₍`     | `(`   |
+| `₎`     | `)`   |
+
+
+| Unicode | Calc      |
+| ------- | --------- |
+| `π`     | `pi`      |
+| `φ`     | `phi`     |
+| `ϕ`     | `phi`     |
+| `γ`     | `e_gamma` |
+| `α`     | `alpha`   |
+
+
+
+| Unicode | Calc            |
+| ------- | --------------- |
+| `α`     | `alpha`         |
+| `μ`     | `mu`            |
+| `μ₀`    | `mu0`           |
+| `μ_B`   | `muB`           |
+| `μ_N`   | `muN`           |
+| `λₑ`    | `lambda_e`      |
+| `λ̄ₑ`   | `lambda_bar_e`  |
+| `σ`     | `sigma`         |
+| `σₑ`    | `sigmae`        |
+| `ε₀`    | `epsilon0`      |
+| `φ₀`    | `phi0`          |
+| `Γ`     | `gamma`*        |
+| `ζ`     | `riemann_zeta`* |
+
+
+| Unicode / notation | Calc           |
+| ------------------ | -------------- |
+| `√`                | `sqrt`         |
+| `∛`                | `cbrt`         |
+| `Γ`                | `gamma`        |
+| `ζ`                | `riemann_zeta` |
+| `η`                | `?`            |
+| `β`                | `beta`         |
+| `Hₙ`               | `hermite`*     |
+| `Lₙ`               | `laguerre`*    |
+| `Pₙ`               | `legendre`*    |
+
+
+
+| Unicode | Tempting mapping | Status            |
+| ------- | ---------------- | ----------------- |
+| `∑`     | `sum`            | **not supported** |
+| `Σ`     | `sum`            | **not supported** |
+| `∏`     | `prod`           | **not supported** |
+| `Π`     | `prod`           | **not supported** |
+| `∫`     | `integral`       | **not supported** |
+| `∬`     | `integral`       | **not supported** |
+| `∭`     | `integral`       | **not supported** |
+| `∮`     | `integral`       | **not supported** |
+| `∂`     | `partial`        | **not supported** |
+| `∇`     | `nabla`          | **not supported** |
+| `∆`     | `delta`          | **not supported** |
+| `∀`     | `forall`         | **not supported** |
+| `∃`     | `exists`         | **not supported** |
+| `∈`     | `in`             | **not supported** |
+| `∉`     | `notin`          | **not supported** |
+| `⊂`     | `subset`         | **not supported** |
+| `⊆`     | `subseteq`       | **not supported** |
+| `∩`     | `intersection`   | **not supported** |
+| `∪`     | `union`          | **not supported** |
+
+
+| Unicode | Potential ASCII |
+| ------- | --------------- |
+| `=`     | `=`             |
+| `≠`     | `!=`            |
+| `≤`     | `<=`            |
+| `≥`     | `>=`            |
+| `<`     | `<`             |
+| `>`     | `>`             |
+| `≡`     | `==`            |
+| `≈`     | `~=`            |
+| `≃`     | `~=`            |
+| `≅`     | `~=`            |
+
+
+
+First step:
+
+
+∞  → inf
+
+π  → pi
+ϖ  → pi
+φ  → phi
+ϕ  → phi
+γ  → e_gamma
+α  → alpha
+
+√  → sqrt
+∛  → cbrt
+
+×  → *
+⋅  → *
+·  → *
+∙  → *
+∗  → *
+⨯  → *
+
+÷  → /
+∕  → /
+⁄  → /
+
+−  → -
+‐  → -
+-  → -
+‒  → -
+–  → -
+—  → -
+
+＋  → +
+－  → -
+
+％  → %
+
+（  → (
+）  → )
+，  → ,
+
+ℏ  → hbar
+ħ  → hbar
+ε₀ → epsilon0
+μ₀ → mu0
+Z₀ → Z0
+N_A → NA
+k_B → kB
+
+mₑ → m_e
+mₚ → mp
+mₙ → mn
+μ_B → muB
+μ_N → muN
+rₑ → re
+
+ℓ_P → l_P
+a₀ → a0
+
+M☉ → m_sun
+M⊕ → m_earth
+M♃ → m_jupiter
+R☉ → r_sun
+R⊕ → r_earth
+
+
+
+
+*/
 #endif
 
 /**
