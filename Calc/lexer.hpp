@@ -1,7 +1,9 @@
-#pragma once
 /*
  * Copyright 2023-present Elle Solomina, a.rainman on gmail point com
  */
+
+#ifndef LEXER_HPP
+#define LEXER_HPP
 
 #include "token.hpp"
 
@@ -61,3 +63,4 @@ private:
   const std::string_view::const_pointer _begin;
   friend class Parser;
 };
+#endif

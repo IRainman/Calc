@@ -1,12 +1,12 @@
 #pragma once
 
-// Including SDKDDKVer.h defines the highest available Windows platform.
+// Including sdkddkver.h defines the highest available Windows platform.
 
 // If you wish to build Calc for a previous Windows platform, include
-// WinSDKVer.h and set the _WIN32_WINNT macro to the platform you wish to
-// support before including SDKDDKVer.h.
+// winsdkver.h and set the _WIN32_WINNT macro to the platform you wish to
+// support before including sdkddkver.h.
 
-#include <WinSDKVer.h>
+#include <winsdkver.h>
 
 // To set minimal version of OS supported by Calc:
 // please uncomment one line below:
@@ -40,10 +40,10 @@
 #define _WIN32_WINNT _WIN32_WINNT_WIN10
 #endif
 
-#include <SDKDDKVer.h>
+#include <sdkddkver.h>
 
 #if (_WIN32_WINNT >= 0x0501)
-#define CALC_SUPPORT_LINK_WINDOW // LinkWindow
+#define CALC_SUPPORT_LINK_WINDOW // LinkWindow, NMLINK
 #if (_WIN32_WINNT >= 0x0502)
 #define CALC_SUPPORT_SET_LIMIT_TEXT // EM_LIMITTEXT message
 #if (_WIN32_WINNT >= 0x0600)

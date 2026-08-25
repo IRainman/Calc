@@ -1,8 +1,9 @@
-#pragma once
-
 /*
  * Copyright 2023-present Elle Solomina, a.rainman on gmail point com
  */
+
+#ifndef IDENTIFIERS_HPP
+#define IDENTIFIERS_HPP
 
 namespace Identifiers {
 struct Fn {
@@ -50,3 +51,4 @@ using map = const std::unordered_map<std::string_view, const Fn>;
 
 [[nodiscard]] /*constexpr*/ bool compare(const Value a, const Value b) noexcept;
 }; // namespace Identifiers
+#endif

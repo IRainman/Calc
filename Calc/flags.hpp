@@ -6,8 +6,8 @@
 #define FLAGS_HPP
 
 //---------------------------------------------------------------------------
-/*
- * Type using as a type for calculation.
+/**
+ * Types using for calculation.
  */
 // Don't need more than 65536 symbols for equation, because GUI input limit is
 // 64 KiB right now. But use only size_t here because it's a CPU related

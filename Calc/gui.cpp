@@ -15,24 +15,32 @@
 #include "tests.hpp"
 #endif
 
-// ================= GUI ===============
-
 #include "gui.hpp"
 
 #ifdef _WIN32
 
+/**
+ * Calc GUI window also it's application itself.
+ */
 class CalcWindow {
 public:
-  CalcWindow() noexcept = default;
+  constexpr CalcWindow() noexcept = default;
+
   CalcWindow(const CalcWindow &) = delete;
   CalcWindow(CalcWindow &&) = delete;
-  ~CalcWindow() = default;
+
+  constexpr ~CalcWindow() noexcept = default;
 
   /**
    * Perform calculation from the GUI
    */
-  void perform_calculation() {
+  void perform_calculation() noexcept {
+#ifdef CALC_USED_EDIT_VIEW
+    EditTextView text(layout.get_handle(0));
+    Lexer l(text.get_view());
+#else
     Lexer l({input.data(), get_user_input()});
+#endif
     Parser p(l);
     const auto value = p.parse();
 
@@ -42,14 +50,9 @@ public:
       yyy;
     }
 #endif
-    const auto has_errors = IssueManager::has_errors();
-
-    if (has_errors) [[unlikely]] {
+    if (IssueManager::has_errors()) [[unlikely]] {
       Formatter::Summary summary [[indeterminate]];
-      const auto summary_text_end = Formatter::create_summary(summary);
-      IssueManager::clear();
-
-      set_result(summary.data(), summary_text_end);
+      set_result(summary.data(), Formatter::create_summary(summary));
     } else [[likely]] {
       Formatter::Result result [[indeterminate]];
       set_result(result.data(), Formatter::format(value, result));
@@ -59,17 +62,17 @@ public:
   /**
    * Save user data from GUI.
    */
-  void save_user_data(const HWND window) { save_window_data(window); }
+  void save_user_data(const HWND window) noexcept { save_window_data(window); }
 
   /**
    * Close Calc GUI.
    */
-  void close(const HWND window) const { EndDialog(window, FALSE); }
+  void close(const HWND window) const noexcept { EndDialog(window, FALSE); }
 
   /**
    * Initialize Calc GUI and load user data into it.
    */
-  void init(const HWND window, const HINSTANCE instance) {
+  void init(const HWND window, const HINSTANCE instance) noexcept {
     set_window_icons(window, instance);
 
     add_about_menu_to_system_menu(window);
@@ -93,7 +96,13 @@ public:
     load_window_data(window);
 
 #ifdef CALC_SUPPORT_SET_LIMIT_TEXT
-    set_window_text_limit(layout.get_handle(0), input.max_size());
+    set_window_text_limit(layout.get_handle(0),
+#ifdef CALC_USED_EDIT_VIEW
+                          CalcConfiguration::input_max_symbols
+#else
+                          input.max_size()
+#endif
+    );
 #endif
 
 #ifdef CALC_TESTS_ENABLED
@@ -111,19 +120,20 @@ public:
   /**
    * Resize Calc window.
    */
-  inline void resize(const WORD new_width, const WORD new_height) {
+  inline void resize(const WORD new_width, const WORD new_height) noexcept {
     layout.resize(new_width, new_height);
   }
 
   /**
    * Return to the system minimal sizes for Calc window.
    */
-  inline void get_minmaxinfo(const LPMINMAXINFO lpMMI) const {
+  inline void get_minmaxinfo(const LPMINMAXINFO lpMMI) const noexcept {
     lpMMI->ptMinTrackSize.x = layout.get_min_x();
     lpMMI->ptMinTrackSize.y = layout.get_min_y();
   }
 #ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
-  void set_dpi(const HWND window, const WORD new_dpi, Rect_ptr new_rect) {
+  void set_dpi(const HWND window, const WORD new_dpi,
+               Rect_ptr new_rect) noexcept {
     // Store new DPI
     dpi = new_dpi;
 
@@ -140,7 +150,7 @@ public:
   /**
    * Initialize layout helper for resizing.
    */
-  void layout_init(const HWND window) {
+  void layout_init(const HWND window) noexcept {
     layout.init_window(window);
     layout.init_anchor(window, 0, IDC_EDIT_INPUT,
                        Anchor{HorizontalMode::Stretch, VerticalMode::Stretch});
@@ -152,29 +162,32 @@ public:
   }
 
 private:
+#ifndef CALC_USED_EDIT_VIEW
   /**
    * Read the user input from GUI to input buffer and return its size.
    */
-  UINT get_user_input() {
+  [[nodiscard]] UINT get_user_input() noexcept {
     input.set_size(
         get_window_text(layout.get_handle(0), input.data(), input.max_size()));
     return input.size();
   }
+#endif
 
   /**
    * Set the result text in the GUI.
    */
-  void set_result(const char *result_text, char *result_text_end) const {
+  void set_result(const char *result_text,
+                  char *result_text_end) const noexcept {
     set_window_text(layout.get_handle(1), result_text, result_text_end);
   }
 
+  void init_min_sizes(const HWND window, const LONG requested_min_width,
+                      const LONG requested_min_height
 #ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
-  void init_min_sizes(const HWND window, const LONG requested_min_width,
-                      const LONG requested_min_height, UINT new_dpi) {
-#else
-  void init_min_sizes(const HWND window, const LONG requested_min_width,
-                      const LONG requested_min_height) {
+                      ,
+                      UINT new_dpi
 #endif
+                      ) noexcept {
     // Convert minimum client area size to window (outer) size so the user can't
     // resize window smaller than the intended client area. WM_GETMINMAXINFO
     // expects window dimensions.
@@ -196,7 +209,7 @@ private:
                           requiredClient.get_heigth());
   }
 
-  void load_window_data(const HWND window) {
+  void load_window_data(const HWND window) noexcept {
 
     const RegRead reg(HKEY_CURRENT_USER, CalcConfiguration::reg_key);
 #ifndef CALC_TESTS_ENABLED
@@ -252,7 +265,7 @@ private:
     SetWindowPlacement(window, &wp);
   }
 
-  void save_window_data(const HWND hWnd) {
+  void save_window_data(const HWND hWnd) noexcept {
     const RegWrite reg(HKEY_CURRENT_USER, CalcConfiguration::reg_key);
 #ifndef CALC_TESTS_ENABLED
     reg.write("input", reinterpret_cast<const BYTE *>(input.data()),
@@ -283,8 +296,10 @@ private:
 #ifdef CALC_SUPPORT_DPI_CHANGES
   DWORD dpi [[indeterminate]];
 #endif
-  // Shold be always as last member, because has a big size.
-  CalcEquation input [[indeterminate]];
+#ifndef CALC_USED_EDIT_VIEW
+  // Should be always as last member, has a big size for handling user input.
+  UserInput input [[indeterminate]];
+#endif
 };
 
 static CalcWindow calc;
@@ -298,7 +313,7 @@ static INT_PTR CALLBACK AboutDlgProc(const HWND dlg, const UINT msg,
 #ifdef CALC_SUPPORT_LINK_WINDOW
                                          lParam
 #endif
-) {
+                                     ) noexcept {
   switch (msg) {
   case WM_COMMAND: {
     if (LOWORD(wParam) == IDCANCEL) {
@@ -312,7 +327,7 @@ static INT_PTR CALLBACK AboutDlgProc(const HWND dlg, const UINT msg,
     const auto nm = reinterpret_cast<LPNMHDR>(lParam);
     if (nm->idFrom == IDC_LINK_HOMEPAGE && nm->code == NM_CLICK) {
       const auto link = reinterpret_cast<NMLINK *>(lParam);
-      ShellExecuteW(nullptr, L"open", link->item.szUrl, nullptr, nullptr,
+      ShellExecuteW(dlg, L"open", link->item.szUrl, nullptr, nullptr,
                     SW_SHOWNORMAL);
       return TRUE;
     }
@@ -330,7 +345,7 @@ static INT_PTR CALLBACK AboutDlgProc(const HWND dlg, const UINT msg,
  */
 static INT_PTR CALLBACK CalcDialogProc(const HWND window, const UINT msg,
                                        const WPARAM wParam,
-                                       const LPARAM lParam) {
+                                       const LPARAM lParam) noexcept {
 #ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
   static bool dpi_change_in_progress = false;
 #endif
@@ -423,6 +438,7 @@ int WINAPI WinMain(const HINSTANCE instance, const HINSTANCE /*prev_instance*/,
   SetProcessDPIAware();
 #endif
 #endif
+
 #ifdef CALC_SUPPORT_AUTO_RESTART
   RegisterApplicationRestart(nullptr, FALSE);
 #endif
@@ -450,12 +466,20 @@ int WINAPI WinMain(const HINSTANCE instance, const HINSTANCE /*prev_instance*/,
     "/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #endif
 
+#ifdef CALC_SUPPORT_LINK_WINDOW
 #pragma comment(lib, "comctl32.lib")
+#endif
 #pragma comment(lib, "imm32.lib")
 #pragma comment(lib, "user32.lib")
 
 #else
 
 // TODO Qt
+
+// for now, just print a message and exit with failure code
+int main(int /*argc*/, char * /*argv[]*/) noexcept {
+  fmt::print("Calc: GUI is not implemented for this platform yet.\n");
+  return EXIT_FAILURE;
+}
 
 #endif

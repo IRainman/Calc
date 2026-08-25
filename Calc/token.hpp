@@ -1,7 +1,9 @@
-#pragma once
 /*
  * Copyright 2023-present Elle Solomina, a.rainman on gmail point com
  */
+
+#ifndef TOKEN_HPP
+#define TOKEN_HPP
 
 #include "identifiers.hpp"
 
@@ -51,3 +53,4 @@ struct Token {
   // Type of this token.
   [[no_unique_address]] Type type [[indeterminate]];
 };
+#endif

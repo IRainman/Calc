@@ -71,6 +71,7 @@ char *Formatter::create_summary(Summary &ret) noexcept {
   for (const auto &error : IssueManager::_errors) {
     end = fmt::format_to(end, FMT_COMPILE("{}: {}\r\n"), error.pos, error.text);
   }
+  IssueManager::clear();
   return end;
 }
 #endif

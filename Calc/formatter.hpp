@@ -1,8 +1,9 @@
-#pragma once
-
 /*
  * Copyright 2023-present Elle Solomina, a.rainman on gmail point com
  */
+
+#ifndef FORMATTER_HPP
+#define FORMATTER_HPP
 
 class Formatter {
 public:
@@ -31,3 +32,4 @@ public:
   static char *create_summary(Summary &ret) noexcept;
 #endif
 };
+#endif

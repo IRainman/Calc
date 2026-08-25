@@ -1,7 +1,9 @@
-#pragma once
 /*
  * Copyright 2023-present Elle Solomina, a.rainman on gmail point com
  */
+
+#ifndef ISSUE_MANAGER_HPP
+#define ISSUE_MANAGER_HPP
 
 #ifndef CALC_USE_ERROR_TOKEN
 #include <vector>
@@ -53,4 +55,5 @@ private:
   friend class Formatter;
 };
 
+#endif
 #endif

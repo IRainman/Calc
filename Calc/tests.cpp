@@ -58,10 +58,10 @@ constexpr std::string binary_and_hex_parsing() {
 
 constexpr std::string_view round_name(int const d) {
   switch (d) {
-    CASE_RETURN_NAME(FE_UPWARD);
-    CASE_RETURN_NAME(FE_DOWNWARD);
-    CASE_RETURN_NAME(FE_TOWARDZERO);
     CASE_RETURN_NAME(FE_TONEAREST);
+    CASE_RETURN_NAME(FE_DOWNWARD);
+    CASE_RETURN_NAME(FE_UPWARD);
+    CASE_RETURN_NAME(FE_TOWARDZERO);
   default:
     std::unreachable();
   }
@@ -102,20 +102,17 @@ std::string calc_tests() {
 
       const std::string_view formated_value(
           buffer_value.data(), Formatter::format(value, buffer_value));
+      const std::string_view formated_test(
+          buffer_test.data(), Formatter::format(t.second, buffer_test));
 
       const auto is_error = std::isnan(t.second) && has_errors;
       const auto is_nan = std::isnan(t.second) && std::isnan(value);
       const auto is_equal = t.second == value;
       const auto is_less_than_epsilon = Identifiers::compare(t.second, value);
       const auto is_normal = std::isnormal(value);
-      const auto is_identical_output =
-          formated_value ==
-          std::string_view(buffer_test.data(),
-                           Formatter::format(t.second, buffer_test));
+      const auto is_identical_output = formated_value == formated_test;
 
-      const auto passed = is_error || is_nan ||
-                          /* is_equal || is_less_than_epsilon ||*/
-                          is_identical_output;
+      const auto passed = is_error || is_nan || is_identical_output;
 
       if (!passed) {
         ++failed;
@@ -142,7 +139,7 @@ std::string calc_tests() {
 
           "output = {}\r\n"
           "{}\r\n"),
-                                           passed ? "OK" : "FAILED", t.first,
+                                         passed ? "OK" : "FAILED", t.first,
           is_error,
           is_nan,
           is_equal,
@@ -161,7 +158,6 @@ std::string calc_tests() {
         Formatter::Summary buffer_summary [[indeterminate]];
         [[maybe_unused]] const std::string_view formated_summary(
             buffer_summary.data(), Formatter::create_summary(buffer_summary));
-        IssueManager::clear();
       } else {
         Formatter::Result buffer_value [[indeterminate]];
         [[maybe_unused]] const std::string_view formated_value(
@@ -204,5 +200,4 @@ std::string calc_tests() {
 #endif
   return output;
 }
-
 #endif
