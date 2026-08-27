@@ -72,18 +72,8 @@ public:
   /**
    * Initialize Calc GUI and load user data into it.
    */
-  void init(HWND window, const HINSTANCE instance) noexcept {
-#ifdef CALC_SUPPORT_DARK_MODE
-    // Initialize dark-mode APIs before the dialog/menu is created.
-    const bool dark = is_dark_mode();
+  void init(const HWND window, const HINSTANCE instance) noexcept {
 
-    apply_dark_mode(window, dark);
-#if 0
-    darkmode.initialize();
-
-    darkmode.apply(window);
-#endif
-#endif
     set_window_icons(window, instance);
 
     add_about_menu_to_system_menu(window);
@@ -312,7 +302,7 @@ private:
       [[indeterminate]];
 
 #if 0 // def CALC_SUPPORT_DARK_MODE
-  [[no_unique_address]] DarkMode darkmode [[indeterminate]];
+  [[no_unique_address]] Theme theme [[indeterminate]];
 #endif
 #ifdef CALC_SUPPORT_DPI_CHANGES
   [[no_unique_address]] UINT dpi [[indeterminate]];
@@ -353,6 +343,20 @@ static INT_PTR CALLBACK AboutDlgProc(const HWND window, const UINT msg,
       return TRUE;
     }
     break;
+  }
+#endif
+#ifdef CALC_SUPPORT_DARK_MODE
+  case WM_INITDIALOG: {
+    theme.apply_dark_mode(window);
+    return TRUE;
+  }
+  case WM_CTLCOLORDLG:
+  case WM_CTLCOLORSTATIC: {
+    return theme.apply_dark_mode(wParam);
+  }
+  case WM_SYSCOLORCHANGE: {
+    theme.apply_dark_mode(window, true);
+    return TRUE;
   }
 #endif
   }
@@ -412,6 +416,10 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND window, const UINT msg,
   }
 #endif
   case WM_INITDIALOG: {
+#ifdef CALC_SUPPORT_DARK_MODE
+    // Initialize dark-mode APIs before the window/dialog/menu is created.
+    theme.init(window);
+#endif
     calc.init(window, reinterpret_cast<HINSTANCE>(lParam));
     return TRUE;
   }
@@ -424,48 +432,15 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND window, const UINT msg,
   }
 #endif
 #ifdef CALC_SUPPORT_DARK_MODE
-    // case WM_DWMCOLORIZATIONCOLORCHANGED:
-  case WM_SYSCOLORCHANGE: {
-    const bool dark = is_dark_mode();
-    apply_dark_mode(window, dark);
-    return TRUE;
-  }
-#if 0
-    /*
-  case WM_CTLCOLORMSGBOX:
-  case WM_CTLCOLOREDIT:
-  case WM_CTLCOLORLISTBOX:
-  case WM_CTLCOLORBTN:
-  case WM_CTLCOLORDLG:
-  case WM_CTLCOLORSCROLLBAR:
   case WM_CTLCOLORSTATIC:
+  case WM_CTLCOLOREDIT:
+  case WM_CTLCOLORDLG: {
+    return theme.apply_dark_mode(wParam);
+  }
   case WM_SYSCOLORCHANGE: {
-    break;
-  }
-  */
-
-#endif
-#if 0 
-  case WM_SETTINGCHANGE: {
-    if (!lstrcmpA(reinterpret_cast<LPCTSTR>(lParam), "ImmersiveColorSet")) {
-      darkmode.apply(window);
-      return TRUE;
-    }
-    break;
-  }
-  case WM_PALETTECHANGED: {
-    darkmode.apply(window);
+    theme.apply_dark_mode(window, true, true);
     return TRUE;
   }
-  case WM_DWMCOLORIZATIONCOLORCHANGED: {
-    darkmode.apply(window);
-    return TRUE;
-  }
-  case WM_THEMECHANGED: {
-    darkmode.apply(window);
-    return TRUE;
-  }
-#endif
 #endif
   case WM_CLOSE: {
     calc.save_user_data(window);
