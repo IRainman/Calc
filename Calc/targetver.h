@@ -49,13 +49,19 @@
 #if (_WIN32_WINNT >= 0x0600)
 #define CALC_SUPPORT_DPI_CHANGES  // SetProcessDPIAware
 #define CALC_SUPPORT_AUTO_RESTART // RegisterApplicationRestart
+#define CALC_SUPPORT_DARK_MODE    // WM_DWMCOLORIZATIONCOLORCHANGED
 #if (_WIN32_WINNT >= 0x0605)
 #define CALC_SUPPORT_DPI_FOR_WINDOW // GetDpiForWindow,
 // Not enabled because very hard to implement
-// #define CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART // WM_DPICHANGED signal,
+// #define CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART // :
+// WM_DPICHANGED signal,
 // AdjustWindowRectExForDpi,
 // SetProcessDpiAwarenessContext,
 // WM_GETDPISCALEDSIZE signal
+
+#if (_WIN32_WINNT >= 0x0A00)
+#define CALC_SUPPORT_EXTENDENT_STYLES // ES_EX_ALLOWEOL_ALL
+#endif
 #endif
 #endif
 #endif

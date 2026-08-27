@@ -58,8 +58,6 @@
 // mathematical values, like 𝜋 -> pi i.e to it's representatin.
 #define CALC_USED_EDIT_VIEW
 
-namespace CalcUnicode {
-
 [[nodiscard]] static bool normalize(std::u16string_view input,
                                     std::string &output) noexcept {
   output.clear();
@@ -322,14 +320,12 @@ namespace CalcUnicode {
   return true;
 }
 
-[[nodiscard]] static const auto& normalize(std::u16string_view input) {
+[[nodiscard]] static const auto &normalize(std::u16string_view input) {
   static std::string output;
   if (!normalize(input, output)) {
     output.clear();
   }
   return output;
-}
-
 }
 
 /*
@@ -873,10 +869,14 @@ R⊕ → r_earth
 #define OEMRESOURCE -OEM Resource values
 #define NOATOM -Atom Manager routines
 #define NOCLIPBOARD -Clipboard routines
+#ifndef CALC_SUPPORT_DARK_MODE
 #define NOCOLOR -Screen colors
+#endif
 // #define NOCTLMGR -Control and Dialog routines
 #define NODRAWTEXT -DrawText() and DT_ *
+#ifndef CALC_SUPPORT_DARK_MODE
 #define NOGDI -All GDI defines and routines
+#endif
 #define NOKERNEL -All KERNEL defines and routines
 // #define NOUSER -All USER defines and routines
 #define NONLS -All NLS defines and routines
@@ -908,14 +908,18 @@ R⊕ → r_earth
 #define NOPROGRESS Progress gas gauge.
 #define NOHOTKEY HotKey control
 #define NOHEADER Header bar control.
+#ifndef CALC_SUPPORT_DARK_MODE
 #define NOIMAGEAPIS ImageList apis.
+#endif
 #define NOLISTVIEW ListView control.
 #define NOTREEVIEW TreeView control.
 #define NOTABCONTROL Tab control.
 #define NOANIMATE Animate control.
 #define NOBUTTON Button control.
 #define NOSTATIC Static control.
+#ifndef CALC_SUPPORT_EXTENDENT_STYLES
 #define NOEDIT Edit control.
+#endif
 #define NOLISTBOX Listbox control.
 #define NOCOMBOBOX Combobox control.
 #define NOSCROLLBAR Scrollbar control.
@@ -936,15 +940,15 @@ R⊕ → r_earth
 __pragma(warning(push));
 __pragma(warning(disable : 5039));
 __pragma(warning(disable : 4865));
-
 #include <windows.h>
-
 #ifdef CALC_SUPPORT_LINK_WINDOW
 #include <commctrl.h>
-
 #include <shellapi.h>
 #endif
-
+#ifdef CALC_SUPPORT_DARK_MODE
+#include <dwmapi.h>
+#include <uxtheme.h>
+#endif
 __pragma(warning(pop));
 
 #include "resource.h" // GUI symbols
@@ -1029,8 +1033,8 @@ struct UserInput {
 
 private:
   static constexpr UINT _max_size = CalcConfiguration::input_max_symbols;
-  UINT _size [[indeterminate]];
-  char _data[CalcConfiguration::input_max_data_size];
+  [[no_unique_address]] UINT _size [[indeterminate]];
+  [[no_unique_address]] char _data[CalcConfiguration::input_max_data_size];
 };
 #endif
 
@@ -1132,7 +1136,16 @@ static void set_window_icons(const HWND window,
                reinterpret_cast<LPARAM>(
                    LoadIconA(instance, MAKEINTRESOURCEA(IDR_MAINFRAME_BIG))));
 }
-
+#ifdef CALC_SUPPORT_EXTENDENT_STYLES
+/**
+ * Utility: set Edit control extended styles.
+ */
+static void edit_set_extended_style(const HWND edit, const DWORD mask,
+                                    const DWORD style) noexcept {
+  SendMessageA(edit, EM_SETEXTENDEDSTYLE, static_cast<WPARAM>(mask),
+               static_cast<LPARAM>(style));
+}
+#endif
 /**
  * Utility: set text to window from begin to end (end is not included).
  */
@@ -1205,7 +1218,159 @@ static void goto_end_of_window_text(const HWND hWnd) noexcept {
                       static_cast<float>(dpi));
 };
 #endif
+#ifdef CALC_SUPPORT_DARK_MODE
+/**
+ * Utility: determine whether Windows uses the dark app theme.
+ */
+[[nodiscard]] static auto is_dark_mode() noexcept {
+  const RegRead personalization(
+      HKEY_CURRENT_USER,
+      "Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize");
 
+  const auto app_uses_light_theme = personalization.read("AppsUseLightTheme");
+  return app_uses_light_theme && app_uses_light_theme.value() == 0;
+}
+
+/**
+ * Utility: apply dark/light theme to a application bar and frame.
+ */
+static void apply_title_bar_and_frame(HWND hwnd, bool dark) noexcept {
+  BOOL value = dark ? TRUE : FALSE;
+  DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value,
+                        sizeof(value));
+}
+
+/**
+ * Utility: apply dark/light theme to a window.
+ */
+[[nodiscard]]
+static BOOL CALLBACK apply_theme(const HWND child, const LPARAM dark) noexcept {
+  // apply_title_bar_and_frame(child, dark);
+  SetWindowTheme(child, dark ? L"DarkMode_Explorer" : L"Explorer", nullptr);
+  // SetWindowTheme(child, dark ? L"DarkMode_CFD" : L"CFD", nullptr);
+
+#if 0
+
+  GetSysColor
+    // SetWindowTheme(..., L"ExplorerStatusBar", nullptr); // for
+    // msctls_statusbar32
+
+    SetWindowTheme(layout.get_handle(0), dark ? L"DarkMode_CFD" : L"CFD",
+                   nullptr); // for COMBOBOX and EDIT
+    SetWindowTheme(layout.get_handle(1), dark ? L"DarkMode_CFD" : L"CFD",
+                   nullptr); // for COMBOBOX and EDIT
+    // SetWindowTheme(..., L"DarkMode_ItemsView", nullptr); // for
+    // SysHeader32 and SysListView32
+
+    SetWindowTheme(window, dark ? L"DarkMode_Explorer" : L"Explorer",
+                   nullptr); // in general
+
+#endif
+  return TRUE;
+}
+
+/**
+ * Utility: apply dark/light appearance to a window and its controls.
+ */
+static void apply_dark_mode(const HWND window, bool dark) noexcept {
+
+  apply_title_bar_and_frame(window, dark);
+
+  EnumChildWindows(window, apply_theme, dark);
+
+#if 0
+   RedrawWindow(window, nullptr, nullptr,
+               RDW_INVALIDATE | RDW_ERASE | RDW_FRAME | RDW_ALLCHILDREN);
+               #endif
+}
+
+/**
+ * Dark-mode support for Win32.
+ *
+ * Uses:
+ *   - undocumented UxTheme dark-mode ordinals where available:
+ *       132 ShouldAppsUseDarkMode
+ *       133 AllowDarkModeForWindow
+ *       135 SetPreferredAppMode
+ *       104 RefreshImmersiveColorPolicyState
+ *       136 FlushMenuThemes
+ *
+ * All undocumented functions are resolved dynamically, it does not
+ * require a static import for these APIs.
+ */
+#if 0
+struct DarkMode {
+  /**
+   * Preferred application theme mode used by the undocumented UxTheme API.
+   */
+  enum class PreferredAppMode : int {
+    Default = 0,
+    AllowDark = 1,
+    ForceDark = 2,
+    ForceLight = 3,
+    Max = 4
+  };
+
+  using SetPreferredAppModeFn = PreferredAppMode(WINAPI *)(PreferredAppMode);
+
+  [[no_unique_address]] SetPreferredAppModeFn pSetPreferredAppMode
+      [[indeterminate]];
+
+  using ShouldAppsUseDarkModeFn = bool(WINAPI *)();
+
+  [[no_unique_address]] ShouldAppsUseDarkModeFn pShouldAppsUseDarkMode
+      [[indeterminate]];
+
+  [[no_unique_address]] bool dark [[indeterminate]];
+
+  void initialize() noexcept {
+    HMODULE uxtheme = GetModuleHandleA("uxtheme.dll");
+
+    pSetPreferredAppMode = reinterpret_cast<SetPreferredAppModeFn>(
+        GetProcAddress(uxtheme, MAKEINTRESOURCEA(135)));
+
+    pShouldAppsUseDarkMode = reinterpret_cast<ShouldAppsUseDarkModeFn>(
+        GetProcAddress(uxtheme, MAKEINTRESOURCEA(132)));
+
+    SetThemeAppProperties(STAP_ALLOW_NONCLIENT | STAP_ALLOW_CONTROLS);
+
+    if (pSetPreferredAppMode) {
+      pSetPreferredAppMode(PreferredAppMode::AllowDark);
+    }
+  }
+
+  void apply(HWND hwnd) noexcept {
+    update();
+
+    apply_frame(hwnd);
+
+    EnumChildWindows(hwnd, apply_frame_callback, dark);
+
+    RedrawWindow(hwnd, nullptr, nullptr,
+                 RDW_INVALIDATE | RDW_ERASE | RDW_FRAME | RDW_ALLCHILDREN);
+  }
+
+private:
+  [[nodiscard]]
+  static BOOL CALLBACK apply_frame_callback(HWND child, LPARAM dark) noexcept {
+    SetWindowTheme(child, dark ? L"DarkMode_Explorer" : L"Explorer", nullptr);
+    return TRUE;
+  }
+
+  void update() noexcept {
+    dark = pShouldAppsUseDarkMode != nullptr && pShouldAppsUseDarkMode();
+  }
+
+  void apply_frame(HWND hwnd) const noexcept {
+    BOOL value = dark ? TRUE : FALSE;
+    DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value,
+                          sizeof(value));
+  }
+};
+
+static DarkMode darkmode;
+#endif
+#endif
 /**
  * Utility: helper to work with points in window layout
  */
@@ -1287,10 +1452,10 @@ public:
       anchor = _anchor;
     }
 
-    HWND handle [[indeterminate]];
-    Rect relative_margins [[indeterminate]];
-    LONG width [[indeterminate]];
-    LONG height [[indeterminate]];
+    [[no_unique_address]] HWND handle [[indeterminate]];
+    [[no_unique_address]] Rect relative_margins [[indeterminate]];
+    [[no_unique_address]] LONG width [[indeterminate]];
+    [[no_unique_address]] LONG height [[indeterminate]];
     [[no_unique_address]] Anchor anchor [[indeterminate]];
   };
 
@@ -1405,11 +1570,11 @@ private:
   [[no_unique_address]] std::array<Constraint, elements> constraints
       [[indeterminate]];
 
-  LONG width [[indeterminate]];
-  LONG height [[indeterminate]];
+  [[no_unique_address]] LONG width [[indeterminate]];
+  [[no_unique_address]] LONG height [[indeterminate]];
 
-  LONG min_width [[indeterminate]];
-  LONG min_height [[indeterminate]];
+  [[no_unique_address]] LONG min_width [[indeterminate]];
+  [[no_unique_address]] LONG min_height [[indeterminate]];
 };
 
 #else

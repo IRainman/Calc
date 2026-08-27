@@ -72,7 +72,18 @@ public:
   /**
    * Initialize Calc GUI and load user data into it.
    */
-  void init(const HWND window, const HINSTANCE instance) noexcept {
+  void init(HWND window, const HINSTANCE instance) noexcept {
+#ifdef CALC_SUPPORT_DARK_MODE
+    // Initialize dark-mode APIs before the dialog/menu is created.
+    const bool dark = is_dark_mode();
+
+    apply_dark_mode(window, dark);
+#if 0
+    darkmode.initialize();
+
+    darkmode.apply(window);
+#endif
+#endif
     set_window_icons(window, instance);
 
     add_about_menu_to_system_menu(window);
@@ -105,6 +116,11 @@ public:
     );
 #endif
 
+#ifdef CALC_SUPPORT_EXTENDENT_STYLES
+    edit_set_extended_style(layout.get_handle(0), ES_EX_ALLOWEOL_ALL,
+                            ES_EX_ALLOWEOL_ALL);
+#endif
+
 #ifdef CALC_TESTS_ENABLED
     auto tests = calc_tests();
     set_window_text(layout.get_handle(0), tests.data(),
@@ -121,6 +137,7 @@ public:
    * Resize Calc window.
    */
   inline void resize(const WORD new_width, const WORD new_height) noexcept {
+
     layout.resize(new_width, new_height);
   }
 
@@ -291,14 +308,18 @@ private:
 #endif
   }
 
-  Layout<CalcConfiguration::elements> layout [[indeterminate]];
+  [[no_unique_address]] Layout<CalcConfiguration::elements> layout
+      [[indeterminate]];
 
+#if 0 // def CALC_SUPPORT_DARK_MODE
+  [[no_unique_address]] DarkMode darkmode [[indeterminate]];
+#endif
 #ifdef CALC_SUPPORT_DPI_CHANGES
-  UINT dpi [[indeterminate]];
+  [[no_unique_address]] UINT dpi [[indeterminate]];
 #endif
 #ifndef CALC_USED_EDIT_VIEW
   // Should be always as last member, has a big size for handling user input.
-  UserInput input [[indeterminate]];
+  [[no_unique_address]] UserInput input [[indeterminate]];
 #endif
 };
 
@@ -307,7 +328,7 @@ static CalcWindow calc;
 /**
  * About dialog callback processing (resource-based).
  */
-static INT_PTR CALLBACK AboutDlgProc(const HWND dlg, const UINT msg,
+static INT_PTR CALLBACK AboutDlgProc(const HWND window, const UINT msg,
                                      const WPARAM wParam,
                                      const LPARAM
 #ifdef CALC_SUPPORT_LINK_WINDOW
@@ -317,27 +338,25 @@ static INT_PTR CALLBACK AboutDlgProc(const HWND dlg, const UINT msg,
   switch (msg) {
   case WM_COMMAND: {
     if (LOWORD(wParam) == IDCANCEL) {
-      EndDialog(dlg, FALSE);
+      EndDialog(window, FALSE);
       return TRUE;
     }
-    return FALSE;
+    break;
   }
 #ifdef CALC_SUPPORT_LINK_WINDOW
   case WM_NOTIFY: {
     const auto nm = reinterpret_cast<LPNMHDR>(lParam);
     if (nm->idFrom == IDC_LINK_HOMEPAGE && nm->code == NM_CLICK) {
       const auto link = reinterpret_cast<NMLINK *>(lParam);
-      ShellExecuteW(dlg, L"open", link->item.szUrl, nullptr, nullptr,
+      ShellExecuteW(window, L"open", link->item.szUrl, nullptr, nullptr,
                     SW_SHOWNORMAL);
       return TRUE;
     }
-    return FALSE;
+    break;
   }
 #endif
-  default: {
-    return FALSE;
   }
-  }
+  return FALSE;
 }
 
 /**
@@ -355,7 +374,7 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND window, const UINT msg,
       calc.perform_calculation();
       return TRUE;
     }
-    return FALSE;
+    break;
   }
   case WM_SYSCOMMAND: {
     if ((wParam & 0xFFF0) == IDM_ABOUTBOX) {
@@ -363,7 +382,7 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND window, const UINT msg,
                       window, AboutDlgProc, FALSE);
       return TRUE;
     }
-    return FALSE;
+    break;
   }
   case WM_GETMINMAXINFO: {
     calc.get_minmaxinfo(reinterpret_cast<LPMINMAXINFO>(lParam));
@@ -373,7 +392,7 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND window, const UINT msg,
 #ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
     if (dpi_change_in_progress) {
       calc.layout_init(window);
-      return FALSE;
+      break;
     }
 #endif
     calc.resize(LOWORD(lParam), HIWORD(lParam));
@@ -383,7 +402,7 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND window, const UINT msg,
   case WM_GETDPISCALEDSIZE: {
     // https://learn.microsoft.com/en-us/windows/win32/hidpi/wm-getdpiscaledsize
     dpi_change_in_progress = true;
-    return FALSE;
+    break;
   }
   case WM_DPICHANGED: {
     calc.set_dpi(window, HIWORD(wParam),
@@ -404,15 +423,57 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND window, const UINT msg,
     return TRUE;
   }
 #endif
+#ifdef CALC_SUPPORT_DARK_MODE
+    // case WM_DWMCOLORIZATIONCOLORCHANGED:
+  case WM_SYSCOLORCHANGE: {
+    const bool dark = is_dark_mode();
+    apply_dark_mode(window, dark);
+    return TRUE;
+  }
+#if 0
+    /*
+  case WM_CTLCOLORMSGBOX:
+  case WM_CTLCOLOREDIT:
+  case WM_CTLCOLORLISTBOX:
+  case WM_CTLCOLORBTN:
+  case WM_CTLCOLORDLG:
+  case WM_CTLCOLORSCROLLBAR:
+  case WM_CTLCOLORSTATIC:
+  case WM_SYSCOLORCHANGE: {
+    break;
+  }
+  */
+
+#endif
+#if 0 
+  case WM_SETTINGCHANGE: {
+    if (!lstrcmpA(reinterpret_cast<LPCTSTR>(lParam), "ImmersiveColorSet")) {
+      darkmode.apply(window);
+      return TRUE;
+    }
+    break;
+  }
+  case WM_PALETTECHANGED: {
+    darkmode.apply(window);
+    return TRUE;
+  }
+  case WM_DWMCOLORIZATIONCOLORCHANGED: {
+    darkmode.apply(window);
+    return TRUE;
+  }
+  case WM_THEMECHANGED: {
+    darkmode.apply(window);
+    return TRUE;
+  }
+#endif
+#endif
   case WM_CLOSE: {
     calc.save_user_data(window);
     calc.close(window);
     return TRUE;
   }
-  default: {
-    return FALSE;
   }
-  }
+  return FALSE;
 }
 
 /**
@@ -471,6 +532,10 @@ int WINAPI WinMain(const HINSTANCE instance, const HINSTANCE /*prev_instance*/,
 #endif
 #pragma comment(lib, "imm32.lib")
 #pragma comment(lib, "user32.lib")
+#ifdef CALC_SUPPORT_DARK_MODE
+#pragma comment(lib, "dwmapi.lib")
+#pragma comment(lib, "uxtheme.lib")
+#endif
 
 #else
 
