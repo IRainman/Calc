@@ -869,12 +869,12 @@ R⊕ → r_earth
 #define OEMRESOURCE -OEM Resource values
 #define NOATOM -Atom Manager routines
 #define NOCLIPBOARD -Clipboard routines
-#ifndef CALC_SUPPORT_DARK_MODE
+#ifndef CALC_SUPPORT_THEMING
 #define NOCOLOR -Screen colors
 #endif
 // #define NOCTLMGR -Control and Dialog routines
 #define NODRAWTEXT -DrawText() and DT_ *
-#ifndef CALC_SUPPORT_DARK_MODE
+#ifndef CALC_SUPPORT_THEMING
 #define NOGDI -All GDI defines and routines
 #endif
 #define NOKERNEL -All KERNEL defines and routines
@@ -908,7 +908,7 @@ R⊕ → r_earth
 #define NOPROGRESS Progress gas gauge.
 #define NOHOTKEY HotKey control
 #define NOHEADER Header bar control.
-#ifndef CALC_SUPPORT_DARK_MODE
+#ifndef CALC_SUPPORT_THEMING
 #define NOIMAGEAPIS ImageList apis.
 #endif
 #define NOLISTVIEW ListView control.
@@ -945,7 +945,7 @@ __pragma(warning(disable : 4865));
 #include <commctrl.h>
 #include <shellapi.h>
 #endif
-#ifdef CALC_SUPPORT_DARK_MODE
+#ifdef CALC_SUPPORT_THEMING
 #include <dwmapi.h>
 #include <uxtheme.h>
 #endif
@@ -1218,7 +1218,7 @@ static void goto_end_of_window_text(const HWND hWnd) noexcept {
                       static_cast<float>(dpi));
 };
 #endif
-#ifdef CALC_SUPPORT_DARK_MODE
+#ifdef CALC_SUPPORT_THEMING
 struct Theme {
   /**
    * initialization
@@ -1281,10 +1281,9 @@ struct Theme {
   [[nodiscard]] INT_PTR apply_dark_mode(const WPARAM dc) noexcept {
     const HDC hdc = reinterpret_cast<HDC>(dc);
     if (is_dark_mode(false)) {
-
       SetBkColor(hdc, GetSysColor(COLOR_WINDOWTEXT));
       SetTextColor(hdc, GetSysColor(COLOR_WINDOW));
-      return reinterpret_cast<INT_PTR>(GetSysColorBrush(COLOR_WINDOW));
+      return reinterpret_cast<INT_PTR>(GetSysColorBrush(COLOR_WINDOWTEXT));
     }
     return FALSE;
   }
@@ -1376,8 +1375,6 @@ private:
 #endif
   [[no_unique_address]] bool dark_mode_enabled [[indeterminate]];
 };
-
-Theme theme [[indeterminate]];
 #endif
 /**
  * Utility: helper to work with points in window layout

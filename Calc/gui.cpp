@@ -168,6 +168,10 @@ public:
     static_assert(3 == CalcConfiguration::elements);
   }
 
+#ifdef CALC_SUPPORT_THEMING
+  Theme &get_theme() { return theme; }
+#endif
+
 private:
 #ifndef CALC_USED_EDIT_VIEW
   /**
@@ -301,7 +305,7 @@ private:
   [[no_unique_address]] Layout<CalcConfiguration::elements> layout
       [[indeterminate]];
 
-#if 0 // def CALC_SUPPORT_DARK_MODE
+#ifdef CALC_SUPPORT_THEMING
   [[no_unique_address]] Theme theme [[indeterminate]];
 #endif
 #ifdef CALC_SUPPORT_DPI_CHANGES
@@ -313,7 +317,7 @@ private:
 #endif
 };
 
-static CalcWindow calc;
+static CalcWindow calc [[indeterminate]];
 
 /**
  * About dialog callback processing (resource-based).
@@ -345,17 +349,17 @@ static INT_PTR CALLBACK AboutDlgProc(const HWND window, const UINT msg,
     break;
   }
 #endif
-#ifdef CALC_SUPPORT_DARK_MODE
+#ifdef CALC_SUPPORT_THEMING
   case WM_INITDIALOG: {
-    theme.apply_dark_mode(window);
+    calc.get_theme().apply_dark_mode(window);
     return TRUE;
   }
   case WM_CTLCOLORDLG:
   case WM_CTLCOLORSTATIC: {
-    return theme.apply_dark_mode(wParam);
+    return calc.get_theme().apply_dark_mode(wParam);
   }
   case WM_SYSCOLORCHANGE: {
-    theme.apply_dark_mode(window, true);
+    calc.get_theme().apply_dark_mode(window, true);
     return TRUE;
   }
 #endif
@@ -416,9 +420,9 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND window, const UINT msg,
   }
 #endif
   case WM_INITDIALOG: {
-#ifdef CALC_SUPPORT_DARK_MODE
+#ifdef CALC_SUPPORT_THEMING
     // Initialize dark-mode APIs before the window/dialog/menu is created.
-    theme.init(window);
+    calc.get_theme().init(window);
 #endif
     calc.init(window, reinterpret_cast<HINSTANCE>(lParam));
     return TRUE;
@@ -431,14 +435,14 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND window, const UINT msg,
     return TRUE;
   }
 #endif
-#ifdef CALC_SUPPORT_DARK_MODE
+#ifdef CALC_SUPPORT_THEMING
   case WM_CTLCOLORSTATIC:
   case WM_CTLCOLOREDIT:
   case WM_CTLCOLORDLG: {
-    return theme.apply_dark_mode(wParam);
+    return calc.get_theme().apply_dark_mode(wParam);
   }
   case WM_SYSCOLORCHANGE: {
-    theme.apply_dark_mode(window, true, true);
+    calc.get_theme().apply_dark_mode(window, true, true);
     return TRUE;
   }
 #endif
@@ -507,7 +511,7 @@ int WINAPI WinMain(const HINSTANCE instance, const HINSTANCE /*prev_instance*/,
 #endif
 #pragma comment(lib, "imm32.lib")
 #pragma comment(lib, "user32.lib")
-#ifdef CALC_SUPPORT_DARK_MODE
+#ifdef CALC_SUPPORT_THEMING
 #pragma comment(lib, "dwmapi.lib")
 #pragma comment(lib, "uxtheme.lib")
 #endif
