@@ -1219,44 +1219,40 @@ static void goto_end_of_window_text(const HWND hWnd) noexcept {
 };
 #endif
 #ifdef CALC_SUPPORT_THEMING
+/**
+ * Utility: helper to work with theming
+ */
 struct Theme {
   /**
-   * initialization
+   * init application theming. Should be called before any window/dialog/menu is
+   * created.
    */
-  void init(const HWND window) noexcept {
-
-    apply_dark_mode(window, false, true);
+  void init(const HWND application_main_window) noexcept {
 
 #if (_WIN32_WINNT >= 0x0600)
-    HMODULE uxtheme = GetModuleHandleA("uxtheme.dll");
+    init_uxtheme_callers();
 
-    pSetPreferredAppMode = reinterpret_cast<SetPreferredAppModeFn>(
-        GetProcAddress(uxtheme, MAKEINTRESOURCEA(135)));
+    SetPreferredAppMode(PreferredAppMode::AllowDark);
+#endif
 
-    if (pSetPreferredAppMode) {
-      pSetPreferredAppMode(PreferredAppMode::AllowDark);
-    }
+    apply(application_main_window, false, true);
 
-    pRefreshImmersiveColorPolicyState =
-        reinterpret_cast<RefreshImmersiveColorPolicyStateFn>(
-            GetProcAddress(uxtheme, MAKEINTRESOURCEA(104)));
+#if (_WIN32_WINNT >= 0x0600)
+    apply_menus();
 
-    pFlushMenuThemes = reinterpret_cast<FlushMenuThemesFn>(
-        GetProcAddress(uxtheme, MAKEINTRESOURCEA(136)));
-
-    apply_dark_mode();
-
-    apply_title_bar_and_frame(window);
+    apply_title_bar_and_frame(application_main_window);
 #endif
   }
 
   /**
-   * Utility: apply dark/light appearance title bar, frame and non interactive
-   * controls: BUTTON, SCROLLBAR, COMBOBOX, LISTBOX, LISTVIEW, TREEVIEW, TAB,
-   * PROGRESSBAR, TRACKBAR.
+   * apply dark/light appearance to application title bar and aplication frame.
+   * Also this update theme settings for interactive controls that repaints
+   * itself based on it's current state and application theme: BUTTON,
+   * SCROLLBAR, COMBOBOX, LISTBOX, LISTVIEW, TREEVIEW, TAB, PROGRESSBAR,
+   * TRACKBAR.
    */
-  void apply_dark_mode(const HWND window, const bool redraw = false,
-                       const bool is_main_window = false) noexcept {
+  void apply(const HWND window, const bool redraw = false,
+             const bool is_main_window = false) noexcept {
 
     apply_theme(window, is_dark_mode(is_main_window));
 
@@ -1268,21 +1264,22 @@ struct Theme {
     }
 
 #if (_WIN32_WINNT >= 0x0600)
-    apply_dark_mode();
+    apply_menus();
 
     apply_title_bar_and_frame(window);
 #endif
   }
 
   /**
-   * Utility: apply dark/light appearance to interactive controls:
-   * EDIT, STATIC, DIALOG
+   * apply dark/light appearance to controls that needs external repainting,
+   * they don't using theming and get global colors from Win32 settings, but we
+   * can simply swap colors to use dark theme for them: EDIT, STATIC, DIALOG
    */
-  [[nodiscard]] INT_PTR apply_dark_mode(const WPARAM dc) noexcept {
+  [[nodiscard]] INT_PTR apply(const WPARAM dc) noexcept {
     const HDC hdc = reinterpret_cast<HDC>(dc);
     if (is_dark_mode(false)) {
       SetBkColor(hdc, GetSysColor(COLOR_WINDOWTEXT));
-      SetTextColor(hdc, GetSysColor(COLOR_WINDOW));
+      SetTextColor(hdc, GetSysColor(COLOR_APPWORKSPACE));
       return reinterpret_cast<INT_PTR>(GetSysColorBrush(COLOR_WINDOWTEXT));
     }
     return FALSE;
@@ -1290,16 +1287,18 @@ struct Theme {
 
 private:
   /**
-   * Utility: apply dark/light theme to chaild windows.
+   * apply dark/light theme to window based on a global theme.
    */
-  static BOOL CALLBACK apply_theme(const HWND child,
+  static BOOL CALLBACK apply_theme(const HWND window,
                                    const LPARAM dark) noexcept {
-    SetWindowTheme(child, dark ? L"DarkMode_Explorer" : L"Explorer", nullptr);
+    SetWindowTheme(window, dark ? L"DarkMode_Explorer" : L"Explorer", nullptr);
     return TRUE;
   }
 
+  // EnableThemeDialogTexture(window, ETDT_ENABLE);
+
   /**
-   * Utility: determine whether applications uses the dark app theme.
+   * determine whether applications uses the dark app theme.
    */
   [[nodiscard]] bool is_dark_mode(const bool is_main_window) noexcept {
     if (is_main_window) {
@@ -1317,14 +1316,16 @@ private:
 
 #if (_WIN32_WINNT >= 0x0600)
   /**
-   * Utility: apply dark/light theme to a application bar and frame. Win32 API
-   * for Windows 6+ with working DWM.
+   * apply dark/light theme to a application bar and frame. Win32 API for
+   * Windows 6+ with working DWM.
    */
   void apply_title_bar_and_frame(const HWND hwnd) const noexcept {
     BOOL value = dark_mode_enabled ? TRUE : FALSE;
     DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value,
                           sizeof(value));
   }
+
+  // DLL hell begin()
 
   /**
    * Preferred application theme mode used by the undocumented UxTheme API.
@@ -1337,11 +1338,12 @@ private:
     Max = 4
   };
 
-  /** Menu dark-mode support for Win32 API for Windows 6+ with working DWM.
+  /**
+   * Menu dark-mode support for Win32 API for Windows 6+ with working DWM.
    *
    * Uses the undocumented uxtheme exports:
-   *   #132 ShouldAppsUseDarkMode
    *   #135 SetPreferredAppMode
+   *   #104 RefreshImmersiveColorPolicyState
    *   #136 FlushMenuThemes
    *
    * The menu itself remains owned by Windows. No owner-draw, no WM_DRAWITEM,
@@ -1349,33 +1351,48 @@ private:
    */
   using SetPreferredAppModeFn = PreferredAppMode(WINAPI *)(PreferredAppMode);
 
-  [[no_unique_address]] SetPreferredAppModeFn pSetPreferredAppMode
-      [[indeterminate]];
+  SetPreferredAppModeFn SetPreferredAppMode [[indeterminate]];
 
   using RefreshImmersiveColorPolicyStateFn = void(WINAPI *)();
 
-  [[no_unique_address]] RefreshImmersiveColorPolicyStateFn
-      pRefreshImmersiveColorPolicyState [[indeterminate]];
+  RefreshImmersiveColorPolicyStateFn RefreshImmersiveColorPolicyState
+      [[indeterminate]];
 
   using FlushMenuThemesFn = void(WINAPI *)();
 
-  [[no_unique_address]] FlushMenuThemesFn pFlushMenuThemes [[indeterminate]];
+  FlushMenuThemesFn FlushMenuThemes [[indeterminate]];
 
   /**
-   * for menus only is DWM enabled
+   * technical helper for dll hell ^^
    */
-  void apply_dark_mode() const noexcept {
-    if (pRefreshImmersiveColorPolicyState) {
-      pRefreshImmersiveColorPolicyState();
-    }
-    if (pFlushMenuThemes) {
-      pFlushMenuThemes();
-    }
+  void init_uxtheme_callers() noexcept {
+    HMODULE uxtheme = GetModuleHandleW(L"uxtheme.dll");
+
+    SetPreferredAppMode = reinterpret_cast<SetPreferredAppModeFn>(
+        GetProcAddress(uxtheme, MAKEINTRESOURCEA(135)));
+
+    RefreshImmersiveColorPolicyState =
+        reinterpret_cast<RefreshImmersiveColorPolicyStateFn>(
+            GetProcAddress(uxtheme, MAKEINTRESOURCEA(104)));
+
+    FlushMenuThemes = reinterpret_cast<FlushMenuThemesFn>(
+        GetProcAddress(uxtheme, MAKEINTRESOURCEA(136)));
+  }
+
+  // DLL hell end()
+
+  /**
+   * apply dark/light theme to menus. Win32 API for Windows 6+ with working DWM.
+   */
+  void apply_menus() const noexcept {
+    RefreshImmersiveColorPolicyState();
+    FlushMenuThemes();
   }
 #endif
   [[no_unique_address]] bool dark_mode_enabled [[indeterminate]];
 };
 #endif
+
 /**
  * Utility: helper to work with points in window layout
  */

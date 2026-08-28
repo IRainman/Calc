@@ -169,7 +169,7 @@ public:
   }
 
 #ifdef CALC_SUPPORT_THEMING
-  Theme &get_theme() { return theme; }
+  Theme &theme() { return _theme; }
 #endif
 
 private:
@@ -306,7 +306,7 @@ private:
       [[indeterminate]];
 
 #ifdef CALC_SUPPORT_THEMING
-  [[no_unique_address]] Theme theme [[indeterminate]];
+  [[no_unique_address]] Theme _theme [[indeterminate]];
 #endif
 #ifdef CALC_SUPPORT_DPI_CHANGES
   [[no_unique_address]] UINT dpi [[indeterminate]];
@@ -351,15 +351,15 @@ static INT_PTR CALLBACK AboutDlgProc(const HWND window, const UINT msg,
 #endif
 #ifdef CALC_SUPPORT_THEMING
   case WM_INITDIALOG: {
-    calc.get_theme().apply_dark_mode(window);
+    calc.theme().apply(window);
     return TRUE;
   }
   case WM_CTLCOLORDLG:
   case WM_CTLCOLORSTATIC: {
-    return calc.get_theme().apply_dark_mode(wParam);
+    return calc.theme().apply(wParam);
   }
   case WM_SYSCOLORCHANGE: {
-    calc.get_theme().apply_dark_mode(window, true);
+    calc.theme().apply(window, true);
     return TRUE;
   }
 #endif
@@ -421,8 +421,7 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND window, const UINT msg,
 #endif
   case WM_INITDIALOG: {
 #ifdef CALC_SUPPORT_THEMING
-    // Initialize dark-mode APIs before the window/dialog/menu is created.
-    calc.get_theme().init(window);
+    calc.theme().init(window);
 #endif
     calc.init(window, reinterpret_cast<HINSTANCE>(lParam));
     return TRUE;
@@ -439,10 +438,10 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND window, const UINT msg,
   case WM_CTLCOLORSTATIC:
   case WM_CTLCOLOREDIT:
   case WM_CTLCOLORDLG: {
-    return calc.get_theme().apply_dark_mode(wParam);
+    return calc.theme().apply(wParam);
   }
   case WM_SYSCOLORCHANGE: {
-    calc.get_theme().apply_dark_mode(window, true, true);
+    calc.theme().apply(window, true, true);
     return TRUE;
   }
 #endif
