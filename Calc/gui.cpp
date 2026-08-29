@@ -168,7 +168,7 @@ public:
     static_assert(3 == CalcConfiguration::elements);
   }
 
-#ifdef CALC_SUPPORT_THEMING
+#ifdef CALC_SUPPORT_DARK_MODE
   Theme &theme() { return _theme; }
 #endif
 
@@ -305,7 +305,7 @@ private:
   [[no_unique_address]] Layout<CalcConfiguration::elements> layout
       [[indeterminate]];
 
-#ifdef CALC_SUPPORT_THEMING
+#ifdef CALC_SUPPORT_DARK_MODE
   [[no_unique_address]] Theme _theme [[indeterminate]];
 #endif
 #ifdef CALC_SUPPORT_DPI_CHANGES
@@ -349,15 +349,17 @@ static INT_PTR CALLBACK AboutDlgProc(const HWND window, const UINT msg,
     break;
   }
 #endif
-#ifdef CALC_SUPPORT_THEMING
+#ifdef CALC_SUPPORT_DARK_MODE
   case WM_INITDIALOG: {
     calc.theme().apply(window);
     return TRUE;
   }
+#ifdef CALC_SUPPORT_DARK_MODE_WITHOUT_WIN32_HELPER
   case WM_CTLCOLORDLG:
   case WM_CTLCOLORSTATIC: {
     return calc.theme().apply(wParam);
   }
+#endif
   case WM_SYSCOLORCHANGE: {
     calc.theme().apply(window, true);
     return TRUE;
@@ -420,7 +422,7 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND window, const UINT msg,
   }
 #endif
   case WM_INITDIALOG: {
-#ifdef CALC_SUPPORT_THEMING
+#ifdef CALC_SUPPORT_DARK_MODE
     calc.theme().init(window);
 #endif
     calc.init(window, reinterpret_cast<HINSTANCE>(lParam));
@@ -434,12 +436,14 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND window, const UINT msg,
     return TRUE;
   }
 #endif
-#ifdef CALC_SUPPORT_THEMING
+#ifdef CALC_SUPPORT_DARK_MODE
+#ifdef CALC_SUPPORT_DARK_MODE_WITHOUT_WIN32_HELPER
   case WM_CTLCOLORSTATIC:
   case WM_CTLCOLOREDIT:
   case WM_CTLCOLORDLG: {
     return calc.theme().apply(wParam);
   }
+#endif
   case WM_SYSCOLORCHANGE: {
     calc.theme().apply(window, true, true);
     return TRUE;
@@ -510,7 +514,7 @@ int WINAPI WinMain(const HINSTANCE instance, const HINSTANCE /*prev_instance*/,
 #endif
 #pragma comment(lib, "imm32.lib")
 #pragma comment(lib, "user32.lib")
-#ifdef CALC_SUPPORT_THEMING
+#ifdef CALC_SUPPORT_DARK_MODE
 #pragma comment(lib, "dwmapi.lib")
 #pragma comment(lib, "uxtheme.lib")
 #endif

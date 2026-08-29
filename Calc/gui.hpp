@@ -869,12 +869,12 @@ R⊕ → r_earth
 #define OEMRESOURCE -OEM Resource values
 #define NOATOM -Atom Manager routines
 #define NOCLIPBOARD -Clipboard routines
-#ifndef CALC_SUPPORT_THEMING
+#ifndef CALC_SUPPORT_DARK_MODE
 #define NOCOLOR -Screen colors
 #endif
 // #define NOCTLMGR -Control and Dialog routines
 #define NODRAWTEXT -DrawText() and DT_ *
-#ifndef CALC_SUPPORT_THEMING
+#ifndef CALC_SUPPORT_DARK_MODE
 #define NOGDI -All GDI defines and routines
 #endif
 #define NOKERNEL -All KERNEL defines and routines
@@ -908,7 +908,7 @@ R⊕ → r_earth
 #define NOPROGRESS Progress gas gauge.
 #define NOHOTKEY HotKey control
 #define NOHEADER Header bar control.
-#ifndef CALC_SUPPORT_THEMING
+#ifndef CALC_SUPPORT_DARK_MODE
 #define NOIMAGEAPIS ImageList apis.
 #endif
 #define NOLISTVIEW ListView control.
@@ -945,7 +945,7 @@ __pragma(warning(disable : 4865));
 #include <commctrl.h>
 #include <shellapi.h>
 #endif
-#ifdef CALC_SUPPORT_THEMING
+#ifdef CALC_SUPPORT_DARK_MODE
 #include <dwmapi.h>
 #include <uxtheme.h>
 #endif
@@ -1218,7 +1218,7 @@ static void goto_end_of_window_text(const HWND hWnd) noexcept {
                       static_cast<float>(dpi));
 };
 #endif
-#ifdef CALC_SUPPORT_THEMING
+#ifdef CALC_SUPPORT_DARK_MODE
 /**
  * Utility: helper to work with theming
  */
@@ -1229,19 +1229,11 @@ struct Theme {
    */
   void init(const HWND application_main_window) noexcept {
 
-#if (_WIN32_WINNT >= 0x0600)
     init_uxtheme_callers();
 
     SetPreferredAppMode(PreferredAppMode::AllowDark);
-#endif
 
     apply(application_main_window, false, true);
-
-#if (_WIN32_WINNT >= 0x0600)
-    apply_menus();
-
-    apply_title_bar_and_frame(application_main_window);
-#endif
   }
 
   /**
@@ -1258,18 +1250,17 @@ struct Theme {
 
     EnumChildWindows(window, apply_theme, is_dark_mode(false));
 
+    apply_menus();
+
+    apply_title_bar_and_frame(window);
+
     if (redraw) {
       RedrawWindow(window, nullptr, nullptr,
                    RDW_INVALIDATE | RDW_ERASE | RDW_FRAME | RDW_ALLCHILDREN);
     }
-
-#if (_WIN32_WINNT >= 0x0600)
-    apply_menus();
-
-    apply_title_bar_and_frame(window);
-#endif
   }
 
+#ifdef CALC_SUPPORT_DARK_MODE_WITHOUT_WIN32_HELPER
   /**
    * apply dark/light appearance to controls that needs external repainting,
    * they don't using theming and get global colors from Win32 settings, but we
@@ -1284,6 +1275,7 @@ struct Theme {
     }
     return FALSE;
   }
+#endif
 
 private:
   /**
@@ -1294,8 +1286,6 @@ private:
     SetWindowTheme(window, dark ? L"DarkMode_Explorer" : L"Explorer", nullptr);
     return TRUE;
   }
-
-  // EnableThemeDialogTexture(window, ETDT_ENABLE);
 
   /**
    * determine whether applications uses the dark app theme.
@@ -1314,7 +1304,6 @@ private:
     return dark_mode_enabled;
   }
 
-#if (_WIN32_WINNT >= 0x0600)
   /**
    * apply dark/light theme to a application bar and frame. Win32 API for
    * Windows 6+ with working DWM.
@@ -1339,7 +1328,7 @@ private:
   };
 
   /**
-   * Menu dark-mode support for Win32 API for Windows 6+ with working DWM.
+   * Menu dynamic colors for Win32 API for Windows 6+ with working DWM.
    *
    * Uses the undocumented uxtheme exports:
    *   #135 SetPreferredAppMode
@@ -1382,13 +1371,13 @@ private:
   // DLL hell end()
 
   /**
-   * apply dark/light theme to menus. Win32 API for Windows 6+ with working DWM.
+   * apply theme to menus. Win32 API for Windows 6+ with working DWM.
    */
   void apply_menus() const noexcept {
     RefreshImmersiveColorPolicyState();
     FlushMenuThemes();
   }
-#endif
+
   [[no_unique_address]] bool dark_mode_enabled [[indeterminate]];
 };
 #endif

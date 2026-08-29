@@ -42,12 +42,12 @@
 
 #include <sdkddkver.h>
 
-#define CALC_SUPPORT_THEMING // ...
 #if (_WIN32_WINNT >= 0x0501)
 #define CALC_SUPPORT_LINK_WINDOW // LinkWindow, NMLINK
 #if (_WIN32_WINNT >= 0x0502)
 #define CALC_SUPPORT_SET_LIMIT_TEXT // EM_LIMITTEXT message
 #if (_WIN32_WINNT >= 0x0600)
+// #define CALC_SUPPORT_DWM          // ...
 #define CALC_SUPPORT_DPI_CHANGES  // SetProcessDPIAware
 #define CALC_SUPPORT_AUTO_RESTART // RegisterApplicationRestart
 #if (_WIN32_WINNT >= 0x0605)
@@ -61,6 +61,9 @@
 
 #if (_WIN32_WINNT >= 0x0A00)
 #define CALC_SUPPORT_EXTENDENT_STYLES // ES_EX_ALLOWEOL_ALL
+#define CALC_SUPPORT_DARK_MODE        // ...
+// #define CALC_SUPPORT_DARK_MODE_WITHOUT_WIN32_HELPER // disabled because we
+// should use system wide helper for this
 #endif
 #endif
 #endif
