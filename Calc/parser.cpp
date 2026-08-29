@@ -23,8 +23,7 @@ const auto &ids = Identifiers::get();
 #else
     return result;
 #endif
-  }
-  if (_current.type == Token::Type::ERROR) [[unlikely]] {
+  } else if (_current.type == Token::Type::ERROR) [[unlikely]] {
 #ifdef CALC_USE_ERROR_TOKEN
     return _current;
 #endif

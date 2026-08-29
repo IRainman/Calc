@@ -160,9 +160,9 @@ std::string calc_tests() {
   }
   const auto end = std::chrono::steady_clock::now();
 
+#ifdef CALC_TESTS_DEV_ENABLED
   output_end = binary_and_hex_parsing(output_end);
 
-#ifdef CALC_TESTS_DEV_ENABLED
   output.resize(output_end - output.data());
 #endif
 
