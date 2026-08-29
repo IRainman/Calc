@@ -189,7 +189,7 @@
       <UseStandardPreprocessor>true</UseStandardPreprocessor>
       <CompileAs>CompileAsCpp</CompileAs>
       <GuardEHContMetadata>true</GuardEHContMetadata>
-      <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <AdditionalOptions>/Zc:__cplusplus /std:c++latest</AdditionalOptions>
       <CompileAsWinRT>false</CompileAsWinRT>
       <WarningLevel>EnableAllWarnings</WarningLevel>
@@ -325,7 +325,7 @@
       <UseUnicodeForAssemblerListing>true</UseUnicodeForAssemblerListing>
       <UseStandardPreprocessor>true</UseStandardPreprocessor>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <AdditionalOptions>/Zc:__cplusplus /std:c++latest</AdditionalOptions>
       <CompileAsWinRT>false</CompileAsWinRT>
       <WarningLevel>EnableAllWarnings</WarningLevel>

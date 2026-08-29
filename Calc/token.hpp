@@ -10,7 +10,7 @@
 struct Token {
   enum class Type : ParamCount {
     // https://en.cppreference.com/w/cpp/language/ascii
-    END = 0x00,
+    RESULT = 0x00,
 
     ADD = '+',
     SUB = '-',

@@ -5,6 +5,10 @@
 #ifndef IDENTIFIERS_HPP
 #define IDENTIFIERS_HPP
 
+#ifdef CALC_USE_ERROR_TOKEN
+#include "token.hpp"
+#endif
+
 namespace Identifiers {
 struct Fn {
   [[no_unique_address]] Value (*const fn)(std::span<Value>);
@@ -14,14 +18,20 @@ struct Fn {
      * Test is Fn is a constant and no needs arguments.
      */
     [[nodiscard]] constexpr bool is_constant() const noexcept {
+#ifdef CALC_USE_ERROR_TOKEN
+#else
       return !is_function();
+#endif
     }
 
     /**
      * Test is Fn is a function and needs arguments.
      */
     [[nodiscard]] constexpr bool is_function() const noexcept {
+#ifdef CALC_USE_ERROR_TOKEN
+#else
       return this_is_function;
+#endif
     }
 
     /**

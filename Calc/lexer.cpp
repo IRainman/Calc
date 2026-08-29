@@ -94,8 +94,8 @@ Lexer::read_ident(Token &token) const noexcept {
   [[unlikely]] return read_unparsable(token);
 }
 
-inline void Lexer::read_end(Token &token) const noexcept {
-  token.type = Token::Type::END;
+inline void Lexer::return_result(Token &token) const noexcept {
+  token.type = Token::Type::RESULT;
 }
 
 void Lexer::next(Token &token) noexcept {
@@ -119,17 +119,10 @@ void Lexer::next(Token &token) noexcept {
       advance(1);
       continue;
     }
-#if 0
-    if (cur == '\t' || cur == '\n' || cur == '\v' || cur == '\f' || cur == '\r')
-        [[unlikely]] {
-      advance(1);
-      continue;
-    }
-#endif
 
     [[unlikely]] advance(read_unparsable(token));
     return;
   }
 
-  [[likely]] read_end(token);
+  [[likely]] return_result(token);
 }

@@ -64,7 +64,7 @@
   output.reserve(input.size());
 
   for (const char16_t c : input) {
-    if (c <= Token::ERROR) {
+    if (c <= Token::Type::ERROR) {
       output.push_back(static_cast<char>(c));
       continue;
     }
@@ -86,6 +86,12 @@
     case u'\u202F': // NARROW NBSP
     case u'\u205F': // MEDIUM MATHEMATICAL SPACE
     case u'\u3000': // IDEOGRAPHIC SPACE
+#if 0
+    if (cur == '\t' || cur == '\n' || cur == '\v' || cur == '\f' || cur == '\r')
+             output.push_back(' ');
+     
+    }
+#endif
       output.push_back(' ');
       break;
 
@@ -1587,6 +1593,258 @@ private:
   [[no_unique_address]] LONG min_width [[indeterminate]];
   [[no_unique_address]] LONG min_height [[indeterminate]];
 };
+
+namespace Win32Theme {
+
+/**
+ * Number of classic Win32 system-color entries.
+ *
+ * COLOR_SCROLLBAR .. COLOR_MENUBAR are the standard system-color indices.
+ *
+ * COLOR_DESKTOP is an alias for COLOR_BACKGROUND, therefore it is not
+ * stored as an additional independent entry.
+ */
+constexpr UINT classic_color_count = COLOR_MENUBAR + 1;
+
+/**
+ * All classic COLOR_* indices accepted by GetSysColor()/SetSysColors().
+ *
+ * The array intentionally contains the actual Win32 indices instead of
+ * assuming that every integer in the range is a unique semantic color.
+ *
+ * COLOR_DESKTOP == COLOR_BACKGROUND, so it is intentionally omitted.
+ */
+constexpr std::array<INT, classic_color_count> classic_color_indices = {
+    COLOR_SCROLLBAR,
+    COLOR_BACKGROUND,
+    COLOR_ACTIVECAPTION,
+    COLOR_INACTIVECAPTION,
+    COLOR_MENU,
+    COLOR_WINDOW,
+    COLOR_WINDOWFRAME,
+    COLOR_MENUTEXT,
+    COLOR_WINDOWTEXT,
+    COLOR_CAPTIONTEXT,
+    COLOR_ACTIVEBORDER,
+    COLOR_INACTIVEBORDER,
+    COLOR_APPWORKSPACE,
+    COLOR_HIGHLIGHT,
+    COLOR_HIGHLIGHTTEXT,
+    COLOR_BTNFACE,
+    COLOR_BTNSHADOW,
+    COLOR_GRAYTEXT,
+    COLOR_BTNTEXT,
+    COLOR_INACTIVECAPTIONTEXT,
+    COLOR_BTNHIGHLIGHT,
+    COLOR_3DDKSHADOW,
+    COLOR_3DLIGHT,
+    COLOR_INFOTEXT,
+    COLOR_INFOBK,
+    COLOR_HOTLIGHT,
+    COLOR_GRADIENTACTIVECAPTION,
+    COLOR_GRADIENTINACTIVECAPTION,
+    COLOR_MENUHILIGHT,
+    COLOR_MENUBAR};
+
+/**
+ * Complete snapshot of classic Win32 system colors.
+ *
+ * The values are indexed by the corresponding COLOR_* value:
+ *
+ *   colors[COLOR_WINDOW]
+ *   colors[COLOR_WINDOWTEXT]
+ *
+ * etc.
+ */
+struct ClassicColors final {
+  std::array<COLORREF, classic_color_count> values;
+
+  /**
+   * Get a classic system color by its COLOR_* index.
+   */
+  [[nodiscard]]
+  COLORREF operator[](const UINT index) const noexcept {
+    return values[static_cast<std::size_t>(index)];
+  }
+
+  /**
+   * Get a mutable classic system color by its COLOR_* index.
+   */
+  [[nodiscard]]
+  COLORREF &operator[](const UINT index) noexcept {
+    return values[static_cast<std::size_t>(index)];
+  }
+};
+
+/**
+ * Get all classic Win32 system colors.
+ *
+ * Win32 provides GetSysColor() only as a scalar API, so the complete
+ * system-color table is collected with one GetSysColor() call per entry.
+ */
+[[nodiscard]]
+ClassicColors get_classic_colors() noexcept {
+  ClassicColors result;
+
+  for (std::size_t i = 0; i < classic_color_indices.size(); ++i) {
+    const INT index = classic_color_indices[i];
+
+    result.values[static_cast<std::size_t>(index)] = GetSysColor(index);
+  }
+
+  return result;
+}
+
+/**
+ * Set all classic Win32 system colors.
+ *
+ * SetSysColors() accepts an array of COLOR_* indices and an array of
+ * COLORREF values. Windows broadcasts WM_SYSCOLORCHANGE after a successful
+ * change and repaints affected visible windows.
+ */
+[[nodiscard]]
+inline bool set_classic_colors(const ClassicColors &colors) noexcept {
+  return SetSysColors(static_cast<INT>(classic_color_indices.size()),
+                      classic_color_indices.data(),
+                      colors.values.data()) != FALSE;
+}
+
+/**
+ * Modern Windows/DWM colors.
+ *
+ * There is no single global Windows 10/11 "modern color palette" exposed
+ * through DWM.
+ *
+ * DWM provides:
+ *
+ *   - a global colorization/accent color;
+ *   - per-window caption color;
+ *   - per-window caption text color;
+ *   - per-window border color.
+ *
+ * The latter three require a HWND.
+ */
+struct ModernColors final {
+  /**
+   * Global DWM colorization color in 0xAARRGGBB format.
+   *
+   * This is NOT a COLORREF.
+   */
+  DWORD colorization_argb;
+
+  /**
+   * True when DwmGetColorizationColor() succeeded.
+   */
+  bool has_colorization;
+
+  /**
+   * DWM window border color.
+   */
+  COLORREF border;
+
+  /**
+   * DWM window caption/title-bar color.
+   */
+  COLORREF caption;
+
+  /**
+   * DWM window caption text color.
+   */
+  COLORREF text;
+
+  /**
+   * True when at least one of the DWMWA_* window color attributes could be
+   * queried successfully.
+   */
+  bool has_window_colors;
+};
+
+/**
+ * Get modern DWM colors.
+ *
+ * DwmGetColorizationColor() is queried independently because it is a
+ * global DWM value.
+ *
+ * DWMWA_BORDER_COLOR, DWMWA_CAPTION_COLOR and DWMWA_TEXT_COLOR are
+ * per-window attributes introduced for Windows 11 build 22000.
+ *
+ * On unsupported Windows versions the corresponding values remain zero
+ * and has_window_colors stays false.
+ */
+[[nodiscard]]
+inline ModernColors get_modern_colors(const HWND window) noexcept {
+  ModernColors result{};
+
+  /**
+   * Global DWM colorization/accent color.
+   *
+   * Returns ARGB rather than COLORREF.
+   */
+  DWORD colorization{};
+  BOOL opaque{};
+
+  if (SUCCEEDED(DwmGetColorizationColor(&colorization, &opaque))) {
+    result.colorization_argb = colorization;
+    result.has_colorization = true;
+  }
+
+  if (window == nullptr) {
+    return result;
+  }
+
+  /**
+   * DWM window border color.
+   */
+  COLORREF value{};
+
+  if (SUCCEEDED(DwmGetWindowAttribute(window, DWMWA_BORDER_COLOR, &value,
+                                      sizeof(value)))) {
+    result.border = value;
+    result.has_window_colors = true;
+  }
+
+  /**
+   * DWM window caption/title-bar color.
+   */
+  value = 0;
+
+  if (SUCCEEDED(DwmGetWindowAttribute(window, DWMWA_CAPTION_COLOR, &value,
+                                      sizeof(value)))) {
+    result.caption = value;
+    result.has_window_colors = true;
+  }
+
+  /**
+   * DWM window caption text color.
+   */
+  value = 0;
+
+  if (SUCCEEDED(DwmGetWindowAttribute(window, DWMWA_TEXT_COLOR, &value,
+                                      sizeof(value)))) {
+    result.text = value;
+    result.has_window_colors = true;
+  }
+
+  return result;
+}
+
+/**
+ * Convert a DWM 0xAARRGGBB color to a Win32 COLORREF.
+ *
+ * DWM uses:
+ *
+ *   0xAARRGGBB
+ *
+ * while COLORREF uses:
+ *
+ *   0x00BBGGRR
+ */
+[[nodiscard]]
+inline COLORREF argb_to_colorref(const DWORD value) noexcept {
+  return RGB((value >> 16) & 0xFF, (value >> 8) & 0xFF, value & 0xFF);
+}
+
+} // namespace Win32Theme
 
 #else
 

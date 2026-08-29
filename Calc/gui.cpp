@@ -45,11 +45,13 @@ public:
     const auto value = p.parse();
 
 #if defined(CALC_USE_ERROR_TOKEN)
-    const bool has_errors = xxx;
-    if (has_errors) {
-      yyy;
+    if (value.type == Token::Type::RESULT) [[likely]] {
+      Formatter::Result result [[indeterminate]];
+      set_result(result.data(), Formatter::format(value, result));
+    } else [[unlikely]] {
+      set_result(value.error_text);
     }
-#endif
+#else
     if (IssueManager::has_errors()) [[unlikely]] {
       Formatter::Summary summary [[indeterminate]];
       set_result(summary.data(), Formatter::create_summary(summary));
@@ -57,6 +59,7 @@ public:
       Formatter::Result result [[indeterminate]];
       set_result(result.data(), Formatter::format(value, result));
     }
+#endif
   }
 
   /**

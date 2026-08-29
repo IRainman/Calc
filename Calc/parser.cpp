@@ -11,38 +11,50 @@ namespace {
 const auto &ids = Identifiers::get();
 };
 
+[[nodiscard]]
 #ifdef CALC_USE_ERROR_TOKEN
-[[nodiscard]] Token Parser::parse() noexcept {
+Token
 #else
-[[nodiscard]] Value Parser::parse() noexcept {
+Value
 #endif
+     Parser::parse() noexcept {
   const auto result = parse_expr_4();
-  if (_current.type == Token::Type::END) [[likely]] {
+
 #ifdef CALC_USE_ERROR_TOKEN
-    return _current;
-#else
-    return result;
-#endif
-  } else if (_current.type == Token::Type::ERROR) [[unlikely]] {
-#ifdef CALC_USE_ERROR_TOKEN
-    return _current;
-#endif
-  } else [[unlikely]] {
-#ifdef CALC_USE_ERROR_TOKEN
+  switch (_current.type) {
+  case Token::Type::RESULT:
+    [[likely]] return result;
+  case Token::Type::ERROR:
+    [[unlikely]] return _current;
+  default:
+    [[unlikely]] _current.type = Token::Type::ERROR;
     _current.error_text = "extraneous input";
     return _current;
-#else
-    IssueManager::report_error(_lex.get_position(), "extraneous input");
-#endif
   }
-#ifndef CALC_USE_ERROR_TOKEN
-  [[unlikely]] return std::numeric_limits<Value>::quiet_NaN();
+#else
+  switch (_current.type) {
+  case Token::Type::RESULT:
+    [[likely]] return result;
+  case Token::Type::ERROR:
+  [[unlikely]]
+  default:
+    [[unlikely]] IssueManager::report_error(_lex.get_position(),
+                                            "extraneous input");
+    break;
+  }
+  return std::numeric_limits<Value>::quiet_NaN();
 #endif
 }
 
 inline void Parser::advance() noexcept { _lex.next(_current); }
 
-[[nodiscard]] Value Parser::parse_expr_4() noexcept {
+[[nodiscard]]
+#ifdef CALC_USE_ERROR_TOKEN
+Token
+#else
+Value
+#endif
+Parser::parse_expr_4() noexcept {
   auto result = parse_expr_3();
   while (true) {
     switch (_current.type) {
@@ -60,7 +72,13 @@ inline void Parser::advance() noexcept { _lex.next(_current); }
   }
 }
 
-[[nodiscard]] Value Parser::parse_expr_3() noexcept {
+[[nodiscard]]
+#ifdef CALC_USE_ERROR_TOKEN
+Token
+#else
+Value
+#endif
+Parser::parse_expr_3() noexcept {
   auto result = parse_expr_2();
   while (true) {
     switch (_current.type) {
@@ -78,9 +96,22 @@ inline void Parser::advance() noexcept { _lex.next(_current); }
   }
 }
 
-[[nodiscard]] Value Parser::parse_expr_2() noexcept {
-  std::array<Value, std::numeric_limits<ParamCount>::max()> values
-      [[indeterminate]];
+[[nodiscard]]
+#ifdef CALC_USE_ERROR_TOKEN
+Token
+#else
+    Value
+#endif
+    Parser::parse_expr_2() noexcept {
+  std::array<
+#ifdef CALC_USE_ERROR_TOKEN
+      Token
+#else
+      Value
+#endif
+      ,
+      std::numeric_limits<ParamCount>::max()>
+      values [[indeterminate]];
 
   ParamCount count = 0;
   do {
@@ -104,15 +135,40 @@ inline void Parser::advance() noexcept { _lex.next(_current); }
 #endif
   }
 
-  Value &result = values[count];
+#ifdef CALC_USE_ERROR_TOKEN
+  Token
+#else
+  Value
+#endif
+      &result = values[count];
   while (--count != static_cast<ParamCount>(-1)) {
-    result = Identifiers::pow(values[count], result);
+    result
+#ifdef CALC_USE_ERROR_TOKEN
+        .number
+#endif
+        = Identifiers::pow(values[count]
+#ifdef CALC_USE_ERROR_TOKEN
+                               .number
+#endif
+                           ,
+                           result
+#ifdef CALC_USE_ERROR_TOKEN
+                               .number
+#endif
+
+        );
   };
 
   return result;
 }
 
-[[nodiscard]] Value Parser::parse_expr_1() noexcept {
+[[nodiscard]]
+#ifdef CALC_USE_ERROR_TOKEN
+Token
+#else
+Value
+#endif
+Parser::parse_expr_1() noexcept {
   switch (_current.type) {
   case Token::Type::SUB:
     advance();
@@ -122,7 +178,13 @@ inline void Parser::advance() noexcept { _lex.next(_current); }
   }
 }
 
-[[nodiscard]] Value Parser::parse_expr_0() noexcept {
+[[nodiscard]]
+#ifdef CALC_USE_ERROR_TOKEN
+Token
+#else
+Value
+#endif
+Parser::parse_expr_0() noexcept {
   switch (_current.type) {
   case Token::Type::LPAREN:
     [[likely]] {
@@ -168,7 +230,13 @@ inline void Parser::advance() noexcept { _lex.next(_current); }
   }
 }
 
-[[nodiscard]] Value Parser::parse_function() noexcept {
+[[nodiscard]]
+#ifdef CALC_USE_ERROR_TOKEN
+Token
+#else
+Value
+#endif
+Parser::parse_function() noexcept {
   auto function_start_pos = _lex.get_position();
   const auto i = _current.function;
 
@@ -178,8 +246,15 @@ inline void Parser::advance() noexcept { _lex.next(_current); }
 
     const auto &[caller, check] = i->second;
 
-    std::array<Value, std::numeric_limits<ParamCount>::max()> parameters
-        [[indeterminate]];
+    std::array<
+#ifdef CALC_USE_ERROR_TOKEN
+        Token
+#else
+        Value
+#endif
+        ,
+        std::numeric_limits<ParamCount>::max()>
+        parameters [[indeterminate]];
     ParamCount count = 0;
 
     do {
@@ -192,7 +267,14 @@ inline void Parser::advance() noexcept { _lex.next(_current); }
           advance();
           if (check.is_function() && check.params_count_is_valid(count))
               [[likely]] {
+#ifdef CALC_USE_ERROR_TOKEN
+            _current.type = Token::Type::NUM;
+            _current.number =
+                caller({parameters.begin(), parameters.begin() + count});
+            return _current;
+#else
             return caller({parameters.begin(), parameters.begin() + count});
+#endif
           } else [[unlikely]] {
             function_start_pos -= i->first.size();
 #ifdef CALC_USE_ERROR_TOKEN

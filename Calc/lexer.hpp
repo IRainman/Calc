@@ -51,7 +51,7 @@ private:
   /**
    * Read the normal end at the beginning of the input view.
    */
-  void read_end(Token &token) const noexcept;
+  void return_result(Token &token) const noexcept;
 
   /**
    * Read an some unparsable in the input view and return 0 to reparse from this

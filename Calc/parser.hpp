@@ -9,7 +9,7 @@ class Parser {
   /*
    * This is a recursive descent parser with the following grammar:
    *
-   * expr   = expr_4 <END>
+   * expr   = expr_4 <RESULT>
    *
    * expr_4 = expr_3 ( ('+' | '-' ) expr_3 )*;
    *
@@ -38,13 +38,15 @@ public:
   Parser(Parser &&) = default;
 
   /**
-   * Parse and evaluate an expression. Return nan in case of an error.
+   * Parse and evaluate an expression.
    */
+  [[nodiscard]]
 #ifdef CALC_USE_ERROR_TOKEN
-  [[nodiscard]] Token parse() noexcept;
+  Token
 #else
-  [[nodiscard]] Value parse() noexcept;
+  Value
 #endif
+  parse() noexcept;
 
 private:
   /**
@@ -52,17 +54,53 @@ private:
    */
   void advance() noexcept;
 
-  [[nodiscard]] Value parse_expr_4() noexcept;
+  [[nodiscard]]
+#ifdef CALC_USE_ERROR_TOKEN
+  Token
+#else
+  Value
+#endif
+  parse_expr_4() noexcept;
 
-  [[nodiscard]] Value parse_expr_3() noexcept;
+  [[nodiscard]]
+#ifdef CALC_USE_ERROR_TOKEN
+  Token
+#else
+  Value
+#endif
+  parse_expr_3() noexcept;
 
-  [[nodiscard]] Value parse_expr_2() noexcept;
+  [[nodiscard]]
+#ifdef CALC_USE_ERROR_TOKEN
+  Token
+#else
+  Value
+#endif
+  parse_expr_2() noexcept;
 
-  [[nodiscard]] Value parse_expr_1() noexcept;
+  [[nodiscard]]
+#ifdef CALC_USE_ERROR_TOKEN
+  Token
+#else
+  Value
+#endif
+  parse_expr_1() noexcept;
 
-  [[nodiscard]] Value parse_expr_0() noexcept;
+  [[nodiscard]]
+#ifdef CALC_USE_ERROR_TOKEN
+  Token
+#else
+  Value
+#endif
+  parse_expr_0() noexcept;
 
-  [[nodiscard]] Value parse_function() noexcept;
+  [[nodiscard]]
+#ifdef CALC_USE_ERROR_TOKEN
+  Token
+#else
+  Value
+#endif
+  parse_function() noexcept;
 
   [[no_unique_address]] Lexer &_lex;
   [[no_unique_address]] Token _current [[indeterminate]];

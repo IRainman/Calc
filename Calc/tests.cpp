@@ -86,21 +86,40 @@ std::string calc_tests() {
       Lexer l(t.first);
       Parser p(l);
       [[maybe_unused]] const auto value = p.parse();
-      const auto has_errors = IssueManager::has_errors();
+      const auto has_errors =
+#ifdef CALC_USE_ERROR_TOKEN
+          value.type == Token::Type::ERROR;
+#else
+          IssueManager::has_errors();
+#endif
 
 #ifdef CALC_TESTS_DEV_ENABLED // Development
       Formatter::Result buffer_value [[indeterminate]];
       Formatter::Result buffer_test [[indeterminate]];
 
-      const std::string_view formated_value(
-          buffer_value.data(), Formatter::format(value, buffer_value));
+      const std::string_view formated_value(buffer_value.data(),
+                                            Formatter::format(value
+#ifdef CALC_USE_ERROR_TOKEN
+                                                                  .number
+#endif
+                                                              ,
+                                                              buffer_value));
       const std::string_view formated_test(
           buffer_test.data(), Formatter::format(t.second, buffer_test));
 
       const auto is_error = std::isnan(t.second) && has_errors;
       const auto is_nan = std::isnan(t.second) && std::isnan(value);
-      const auto is_equal = t.second == value;
-      const auto is_less_than_epsilon = Identifiers::compare(t.second, value);
+      const auto is_equal = t.second == value
+#ifdef CALC_USE_ERROR_TOKEN
+                                            .number
+#endif
+          ;
+      const auto is_less_than_epsilon =
+          Identifiers::compare(t.second, value
+#ifdef CALC_USE_ERROR_TOKEN
+                                             .number
+#endif
+          );
       const auto is_normal = std::isnormal(value);
       const auto is_identical_output = formated_value == formated_test;
 
@@ -110,11 +129,11 @@ std::string calc_tests() {
         ++failed;
       }
 
+#ifndef CALC_USE_ERROR_TOKEN
       Formatter::Summary buffer_summary [[indeterminate]];
       const std::string_view formated_summary(
           buffer_summary.data(), Formatter::create_summary(buffer_summary));
-
-      IssueManager::clear();
+#endif
 
       // clang-format off
       output_end = fmt::format_to(output_end, FMT_COMPILE("Test {}: {}\r\n"
@@ -143,7 +162,13 @@ std::string calc_tests() {
           t.second,
 
  has_errors ? "" : formated_value,
-!has_errors ? "" : formated_summary);
+!has_errors ? "" : 
+#ifdef CALC_USE_ERROR_TOKEN
+value.error_text
+#else
+formated_summary
+#endif
+);
       // clang-format on
 #else // Performance
       if (has_errors) {
