@@ -35,12 +35,8 @@ public:
    * Perform calculation from the GUI
    */
   void perform_calculation() noexcept {
-#ifdef CALC_USED_EDIT_VIEW
-    EditTextView text(layout.get_handle(0));
-    Lexer l(text.get_view());
-#else
-    Lexer l({input.data(), get_user_input()});
-#endif
+    const EditTextView text(layout.get_handle(0));
+    Lexer l(get_user_input(text.get_data(), text.get_size()));
     Parser p(l);
     const auto value = p.parse();
 
@@ -48,8 +44,11 @@ public:
     if (value.type == Token::Type::RESULT) [[likely]] {
       Formatter::Result result [[indeterminate]];
       set_result(result.data(), Formatter::format(value, result));
-    } else [[unlikely]] {
+    } else if (value.type == Token::Type::ERROR) {
       set_result(value.error_text);
+    } else [[unlikely]] {
+      constexpr auto err = "parser internal error";
+      set_result(err);
     }
 #else
     if (IssueManager::has_errors()) [[unlikely]] {
@@ -101,12 +100,7 @@ public:
 
 #ifdef CALC_SUPPORT_SET_LIMIT_TEXT
     set_window_text_limit(layout.get_handle(0),
-#ifdef CALC_USED_EDIT_VIEW
-                          CalcConfiguration::input_max_symbols
-#else
-                          input.max_size()
-#endif
-    );
+                          CalcConfiguration::input_max_symbols);
 #endif
 
 #ifdef CALC_SUPPORT_EXTENDENT_STYLES
@@ -176,16 +170,17 @@ public:
 #endif
 
 private:
-#ifndef CALC_USED_EDIT_VIEW
   /**
    * Read the user input from GUI to input buffer and return its size.
    */
-  [[nodiscard]] UINT get_user_input() noexcept {
-    input.set_size(
-        get_window_text(layout.get_handle(0), input.data(), input.max_size()));
-    return input.size();
+  [[nodiscard]] const auto &get_user_input(LPCWSTR data,
+                                           const UINT size) noexcept {
+    if (!normalize(data, size, input)) {
+      input.clear();
+    }
+
+    return input;
   }
-#endif
 
   /**
    * Set the result text in the GUI.
@@ -305,6 +300,8 @@ private:
 #endif
   }
 
+  [[no_unique_address]] std::string input;
+
   [[no_unique_address]] Layout<CalcConfiguration::elements> layout
       [[indeterminate]];
 
@@ -313,10 +310,6 @@ private:
 #endif
 #ifdef CALC_SUPPORT_DPI_CHANGES
   [[no_unique_address]] UINT dpi [[indeterminate]];
-#endif
-#ifndef CALC_USED_EDIT_VIEW
-  // Should be always as last member, has a big size for handling user input.
-  [[no_unique_address]] UserInput input [[indeterminate]];
 #endif
 };
 

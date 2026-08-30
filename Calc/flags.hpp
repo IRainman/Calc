@@ -46,9 +46,6 @@ using ParamCount = char;
 // #define CALC_TEST_EQUATION_SOLVER // WIP
 
 // TODO
-// #define CALC_TEST_UNICODE // WIP
-
-// TODO
 #define CALC_SUPPORT_FRACTIONAL_OUTPUT // WIP
 #endif
 

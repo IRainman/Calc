@@ -21,6 +21,15 @@
 #include "targetver.h"
 
 /**
+ * Check that unicode is enabled
+ */
+
+#if !defined(_UNICODE)
+#error                                                                         \
+    "Because _UNICODE isn't enabled we can't effectively proccess user input and user can't use mathematical symbols."
+#endif
+
+/**
  * Check Windows version support for Calc GUI application. The minimal supported
  * version is Windows 2000, but some features are not available in older
  * versions below Windows 10 or Windows Server 2016.
@@ -51,20 +60,165 @@
     "In Windows before Windows 10 or Windows Server 2016 the HiDPI isn't supported and Dialog based applications not resized automatically when DPI changed."
 #endif
 
-#ifdef CALC_TEST_UNICODE
-// TODO: don't copy data from Win32 Edit control to the buffer. This can'be
-// usable only with UNICODE and only if multiline and local edit enabled in the
-// edit control. This is needs to be enable after preprocessing and converting
-// mathematical values, like 𝜋 -> pi i.e to it's representatin.
-#define CALC_USED_EDIT_VIEW
+/**
+ * Disable rarely-used stuff from Windows headers
+ */
 
-[[nodiscard]] static bool normalize(std::u16string_view input,
+#define NOAPISET
+
+#define NODDEMLSPY
+#define NO_COMMCTRL_DA
+#define NOWINBASEINTERLOCK
+// #define NOIME // For ImmDisableIME
+#define NORESOURCE
+#define NODESKTOP
+#define NOWINDOWSTATION
+#define NOSECURITY
+#define NOMSG
+#define NONCMESSAGES
+#define NOMDI
+#define NOSYSPARAMSINFO
+#ifndef CALC_SUPPORT_DPI_CHANGES
+#define NOWINABLE
+#endif
+#define NO_STATE_FLAGS
+
+#define NOGDICAPMASKS -CC_ *, LC_ *, PC_ *, CP_ *, TC_ *, RC_ *
+#define NOVIRTUALKEYCODES -VK_ *
+// #define NOWINMESSAGES -WM_ *, EM_ *, LB_ *, CB_ *
+#define NOWINSTYLES -WS_ *, CS_ *, ES_ *, LBS_ *, SBS_ *, CBS_ *
+#define NOSYSMETRICS -SM_ *
+// #define NOMENUS -MF_ *
+#define NOICONS -IDI_ *
+#define NOKEYSTATES -MK_ *
+#define NOSYSCOMMANDS -SC_ *
+#define NORASTEROPS -Binary and Tertiary raster ops
+// #define NOSHOWWINDOW -SW_ *
+#define OEMRESOURCE -OEM Resource values
+#define NOATOM -Atom Manager routines
+#define NOCLIPBOARD -Clipboard routines
+#ifndef CALC_SUPPORT_DARK_MODE
+#define NOCOLOR -Screen colors
+#endif
+//  #define NOCTLMGR -Control and Dialog routines
+#define NODRAWTEXT -DrawText() and DT_ *
+#ifndef CALC_SUPPORT_DARK_MODE
+#define NOGDI -All GDI defines and routines
+#endif
+#define NOKERNEL -All KERNEL defines and routines
+// #define NOUSER -All USER defines and routines
+#define NONLS -All NLS defines and routines
+#define NOMB -MB_ *and MessageBox()
+#define NOMEMMGR -GMEM_ *, LMEM_ *, GHND, LHND, associated routines
+#define NOMETAFILE -typedef METAFILEPICT
+#define NOMINMAX -Macros min(a, b) and max(a, b)
+// #define NOMSG -typedef MSG and associated routines
+#define NOOPENFILE -OpenFile(), OemToAnsi, AnsiToOem, and OF_ *
+#define NOSCROLL -SB_ *and scrolling routines
+#define NOSERVICE -All Service Controller routines, SERVICE_ equates, etc.
+#define NOSOUND -Sound driver routines
+#define NOTEXTMETRIC -typedef TEXTMETRIC and associated routines
+#define NOWH -SetWindowsHook and WH_ *
+// #define NOWINOFFSETS -GWL_ *, GCL_ *, associated routines
+#define NOCOMM -COMM driver routines
+#define NOKANJI -Kanji support stuff.
+#define NOHELP -Help engine interface.
+#define NOPROFILER -Profiler interface.
+// #define NODEFERWINDOWPOS -DeferWindowPos routines
+#define NOMCX -Modem Configuration Extensions
+
+#define NOTOOLBAR Customizable bitmap - button toolbar control.
+#define NOUPDOWN Up and Down arrow increment / decrement control.
+#define NOSTATUSBAR Status bar control.
+#define NOMENUHELP APIs to help manage menus, especially with a status bar.
+#define NOTRACKBAR Customizable column - width tracking control.
+#define NODRAGLIST APIs to make a listbox source and sink drag &drop actions.
+#define NOPROGRESS Progress gas gauge.
+#define NOHOTKEY HotKey control
+#define NOHEADER Header bar control.
+#ifndef CALC_SUPPORT_DARK_MODE
+#define NOIMAGEAPIS ImageList apis.
+#endif
+#define NOLISTVIEW ListView control.
+#define NOTREEVIEW TreeView control.
+#define NOTABCONTROL Tab control.
+#define NOANIMATE Animate control.
+#define NOBUTTON Button control.
+#define NOSTATIC Static control.
+#ifndef CALC_SUPPORT_EXTENDENT_STYLES
+#define NOEDIT Edit control.
+#endif
+#define NOLISTBOX Listbox control.
+#define NOCOMBOBOX Combobox control.
+#define NOSCROLLBAR Scrollbar control.
+#define NOTASKDIALOG Task Dialog.
+
+#define NOMUI
+#define NOTRACKMOUSEEVENT
+#define NOFLATSBAPIS
+#define NONATIVEFONTCTL
+#define NOPAGESCROLLER
+#define NOIPADDRESS
+#define NODATETIMEPICK
+#define NOMONTHCAL
+#define NOUSEREXCONTROLS
+#define NOTOOLTIPS
+#define NOREBAR
+
+__pragma(warning(push));
+__pragma(warning(disable : 5039));
+__pragma(warning(disable : 4865));
+#include <windows.h>
+#ifdef CALC_SUPPORT_LINK_WINDOW
+#include <commctrl.h>
+#include <shellapi.h>
+#endif
+#ifdef CALC_SUPPORT_DARK_MODE
+#include <dwmapi.h>
+#include <uxtheme.h>
+#endif
+__pragma(warning(pop));
+
+#include "resource.h" // GUI symbols
+
+/**
+ * Calc GUI configuration: matches RC and system internals for correct work.
+ */
+struct CalcConfiguration {
+  static constexpr const char *reg_key = "Software\\HedgehogInTheCPP\\Calc";
+  static constexpr LONG min_width = 232;  // matches RC
+  static constexpr LONG min_height = 158; // matches RC
+  static constexpr BYTE elements = 3;     // matches RC
+
+  static constexpr BYTE default_shift_px = 100;
+
+  // https://learn.microsoft.com/windows/win32/controls/em-limittext
+  static constexpr UINT input_max_data_size =
+#ifdef CALC_SUPPORT_SET_LIMIT_TEXT
+      // Win32 ANSI multiline EDIT max is 64 KiB for classic Edit control:
+      64 * 1024;
+#else
+      // Win32 ANSI multiline EDIT max is 32 KiB for classic Edit control:
+      32 * 1024;
+#endif
+  // because the number above including C zero terminator maximum symbols are:
+  static constexpr UINT input_max_symbols = input_max_data_size - 1;
+};
+
+/**
+ * The normalization needed for preprocessing and converting mathematical
+ * values, like 𝜋 -> pi i.e to it's ANSI representation that Calc understand.
+ */
+[[nodiscard]] static bool normalize(LPCWSTR input, const UINT size,
                                     std::string &output) noexcept {
   output.clear();
-  output.reserve(input.size());
+  output.reserve(size);
 
-  for (const char16_t c : input) {
-    if (c <= Token::Type::ERROR) {
+  for (const auto const end = input + size; input != end; ++input) {
+    const auto &c = *input;
+
+    // ANSI chars converted directly
+    if (c <= char16_t(0x7F)) {
       output.push_back(static_cast<char>(c));
       continue;
     }
@@ -316,25 +470,7 @@
       output.push_back('9');
       break;
 
-    // Any other non-ASCII character is not part of the current Calc
-    // language and should be rejected here.
-    default:
-      return false;
-    }
-  }
-
-  return true;
-}
-
-[[nodiscard]] static const auto &normalize(std::u16string_view input) {
-  static std::string output;
-  if (!normalize(input, output)) {
-    output.clear();
-  }
-  return output;
-}
-
-/*
+      /*
 
 TODO: mapping and converting functionality
 
@@ -831,161 +967,22 @@ R☉ → r_sun
 R⊕ → r_earth
 
 
-
-
-
-
 */
-#endif
+
+    // Any other non-ASCII character is not part of the current Calc
+    // language and should be rejected here.
+    default:
+      return false;
+    }
+  }
+
+  return true;
+}
 
 /**
- * Disable rarely-used stuff from Windows headers
- */
-
-#define NOAPISET
-
-#define NODDEMLSPY
-#define NO_COMMCTRL_DA
-#define NOWINBASEINTERLOCK
-// #define NOIME // For ImmDisableIME
-#define NORESOURCE
-#define NODESKTOP
-#define NOWINDOWSTATION
-#define NOSECURITY
-#define NOMSG
-#define NONCMESSAGES
-#define NOMDI
-#define NOSYSPARAMSINFO
-#ifndef CALC_SUPPORT_DPI_CHANGES
-#define NOWINABLE
-#endif
-#define NO_STATE_FLAGS
-
-#define NOGDICAPMASKS -CC_ *, LC_ *, PC_ *, CP_ *, TC_ *, RC_ *
-#define NOVIRTUALKEYCODES -VK_ *
-// #define NOWINMESSAGES -WM_ *, EM_ *, LB_ *, CB_ *
-#define NOWINSTYLES -WS_ *, CS_ *, ES_ *, LBS_ *, SBS_ *, CBS_ *
-#define NOSYSMETRICS -SM_ *
-// #define NOMENUS -MF_ *
-#define NOICONS -IDI_ *
-#define NOKEYSTATES -MK_ *
-#define NOSYSCOMMANDS -SC_ *
-#define NORASTEROPS -Binary and Tertiary raster ops
-// #define NOSHOWWINDOW -SW_ *
-#define OEMRESOURCE -OEM Resource values
-#define NOATOM -Atom Manager routines
-#define NOCLIPBOARD -Clipboard routines
-#ifndef CALC_SUPPORT_DARK_MODE
-#define NOCOLOR -Screen colors
-#endif
-// #define NOCTLMGR -Control and Dialog routines
-#define NODRAWTEXT -DrawText() and DT_ *
-#ifndef CALC_SUPPORT_DARK_MODE
-#define NOGDI -All GDI defines and routines
-#endif
-#define NOKERNEL -All KERNEL defines and routines
-// #define NOUSER -All USER defines and routines
-#define NONLS -All NLS defines and routines
-#define NOMB -MB_ *and MessageBox()
-#define NOMEMMGR -GMEM_ *, LMEM_ *, GHND, LHND, associated routines
-#define NOMETAFILE -typedef METAFILEPICT
-#define NOMINMAX -Macros min(a, b) and max(a, b)
-// #define NOMSG -typedef MSG and associated routines
-#define NOOPENFILE -OpenFile(), OemToAnsi, AnsiToOem, and OF_ *
-#define NOSCROLL -SB_ *and scrolling routines
-#define NOSERVICE -All Service Controller routines, SERVICE_ equates, etc.
-#define NOSOUND -Sound driver routines
-#define NOTEXTMETRIC -typedef TEXTMETRIC and associated routines
-#define NOWH -SetWindowsHook and WH_ *
-// #define NOWINOFFSETS -GWL_ *, GCL_ *, associated routines
-#define NOCOMM -COMM driver routines
-#define NOKANJI -Kanji support stuff.
-#define NOHELP -Help engine interface.
-#define NOPROFILER -Profiler interface.
-// #define NODEFERWINDOWPOS -DeferWindowPos routines
-#define NOMCX -Modem Configuration Extensions
-
-#define NOTOOLBAR Customizable bitmap - button toolbar control.
-#define NOUPDOWN Up and Down arrow increment / decrement control.
-#define NOSTATUSBAR Status bar control.
-#define NOMENUHELP APIs to help manage menus, especially with a status bar.
-#define NOTRACKBAR Customizable column - width tracking control.
-#define NODRAGLIST APIs to make a listbox source and sink drag &drop actions.
-#define NOPROGRESS Progress gas gauge.
-#define NOHOTKEY HotKey control
-#define NOHEADER Header bar control.
-#ifndef CALC_SUPPORT_DARK_MODE
-#define NOIMAGEAPIS ImageList apis.
-#endif
-#define NOLISTVIEW ListView control.
-#define NOTREEVIEW TreeView control.
-#define NOTABCONTROL Tab control.
-#define NOANIMATE Animate control.
-#define NOBUTTON Button control.
-#define NOSTATIC Static control.
-#ifndef CALC_SUPPORT_EXTENDENT_STYLES
-#define NOEDIT Edit control.
-#endif
-#define NOLISTBOX Listbox control.
-#define NOCOMBOBOX Combobox control.
-#define NOSCROLLBAR Scrollbar control.
-#define NOTASKDIALOG Task Dialog.
-
-#define NOMUI
-#define NOTRACKMOUSEEVENT
-#define NOFLATSBAPIS
-#define NONATIVEFONTCTL
-#define NOPAGESCROLLER
-#define NOIPADDRESS
-#define NODATETIMEPICK
-#define NOMONTHCAL
-#define NOUSEREXCONTROLS
-#define NOTOOLTIPS
-#define NOREBAR
-
-__pragma(warning(push));
-__pragma(warning(disable : 5039));
-__pragma(warning(disable : 4865));
-#include <windows.h>
-#ifdef CALC_SUPPORT_LINK_WINDOW
-#include <commctrl.h>
-#include <shellapi.h>
-#endif
-#ifdef CALC_SUPPORT_DARK_MODE
-#include <dwmapi.h>
-#include <uxtheme.h>
-#endif
-__pragma(warning(pop));
-
-#include "resource.h" // GUI symbols
-
-/**
- * Calc GUI configuration: matches RC and system internals for correct work.
- */
-struct CalcConfiguration {
-  static constexpr const char *reg_key = "Software\\HedgehogInTheCPP\\Calc";
-  static constexpr LONG min_width = 232;  // matches RC
-  static constexpr LONG min_height = 158; // matches RC
-  static constexpr BYTE elements = 3;     // matches RC
-
-  static constexpr BYTE default_shift_px = 100;
-
-  // https://learn.microsoft.com/windows/win32/controls/em-limittext
-  static constexpr UINT input_max_data_size =
-#ifdef CALC_SUPPORT_SET_LIMIT_TEXT
-      // Win32 ANSI multiline EDIT max is 64 KiB for classic Edit control:
-      64 * 1024;
-#else
-      // Win32 ANSI multiline EDIT max is 32 KiB for classic Edit control:
-      32 * 1024;
-#endif
-  // because the number above including C zero terminator maximum symbols are:
-  static constexpr UINT input_max_symbols = input_max_data_size - 1;
-};
-
-#ifdef CALC_USED_EDIT_VIEW
-/**
- * GUI helper structure to process user input.
+ * GUI helper to process user input. Don't copy data from Win32 Edit control to
+ * the buffer. This can'be usable only with UNICODE and only if Edit is
+ * multiline and local edit enabled in the its settings.
  */
 class EditTextView {
 public:
@@ -994,7 +991,7 @@ public:
     if (is_present()) {
       _handle =
           reinterpret_cast<HLOCAL>(SendMessageA(edit, EM_GETHANDLE, 0, 0));
-      _data = static_cast<char const *>(LocalLock(_handle));
+      _data = static_cast<LPCWSTR>(LocalLock(_handle));
     }
   }
 
@@ -1008,25 +1005,31 @@ public:
   EditTextView &operator=(EditTextView const &) = delete;
 
   [[nodiscard]]
-  bool is_present() const noexcept {
+  constexpr bool is_present() const noexcept {
     return _size != 0;
   }
 
   [[nodiscard]]
-  std::u16string_view get_view() const noexcept {
-    return {_data, _size};
+  constexpr auto get_size() const noexcept {
+    return _size;
   }
+
+  [[nodiscard]] constexpr auto get_data() const noexcept { return _data; }
 
 private:
   HLOCAL _handle [[indeterminate]];
   LPCWSTR _data [[indeterminate]];
   UINT _size;
 };
-#else
+
 /**
  * GUI helper structure to handle user input.
  */
 struct UserInput {
+  [[deprecated(
+      "Use EditTextView and interact with data directly")]] UserInput() =
+      default;
+
   [[nodiscard]] auto size() const noexcept { return _size; }
 
   void set_size(UINT s) noexcept { _size = s; }
@@ -1042,7 +1045,6 @@ private:
   [[no_unique_address]] UINT _size [[indeterminate]];
   [[no_unique_address]] char _data[CalcConfiguration::input_max_data_size];
 };
-#endif
 
 /**
  * Utility: helper to write data to system database.
@@ -1142,6 +1144,7 @@ static void set_window_icons(const HWND window,
                reinterpret_cast<LPARAM>(
                    LoadIconA(instance, MAKEINTRESOURCEA(IDR_MAINFRAME_BIG))));
 }
+
 #ifdef CALC_SUPPORT_EXTENDENT_STYLES
 /**
  * Utility: set Edit control extended styles.
@@ -1152,6 +1155,7 @@ static void edit_set_extended_style(const HWND edit, const DWORD mask,
                static_cast<LPARAM>(style));
 }
 #endif
+
 /**
  * Utility: set text to window from begin to end (end is not included).
  */
@@ -1161,15 +1165,14 @@ static void set_window_text(const HWND hWnd, LPCSTR text,
   SetWindowTextA(hWnd, text);
 }
 
-#ifndef CALC_USED_EDIT_VIEW
 /**
  * Utility: get text from window and return its size.
  */
-[[nodiscard]] static UINT get_window_text(const HWND hWnd, CHAR *text,
-                                          const UINT max_size) noexcept {
+[[deprecated("Use EditTextView and interact with data directly")]]
+[[nodiscard]] static UINT
+get_window_text(const HWND hWnd, CHAR *text, const UINT max_size) noexcept {
   return GetWindowTextA(hWnd, text, max_size);
 }
-#endif
 
 #ifdef CALC_SUPPORT_SET_LIMIT_TEXT
 /**
@@ -1224,6 +1227,7 @@ static void goto_end_of_window_text(const HWND hWnd) noexcept {
                       static_cast<float>(dpi));
 };
 #endif
+
 #ifdef CALC_SUPPORT_DARK_MODE
 /**
  * Utility: helper to work with theming
@@ -1361,7 +1365,7 @@ private:
    * technical helper for dll hell ^^
    */
   void init_uxtheme_callers() noexcept {
-    HMODULE uxtheme = GetModuleHandleW(L"uxtheme.dll");
+    HMODULE uxtheme = GetModuleHandleA("uxtheme.dll");
 
     SetPreferredAppMode = reinterpret_cast<SetPreferredAppModeFn>(
         GetProcAddress(uxtheme, MAKEINTRESOURCEA(135)));
