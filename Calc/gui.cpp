@@ -34,10 +34,15 @@ public:
   /**
    * Perform calculation from the GUI
    */
-  void perform_calculation() noexcept {
-    const EditTextView text(layout.get_handle(0));
-    Lexer l(get_user_input(text.get_data(), text.get_size()));
+  void calc() noexcept {
+    EditTextView text(layout.get_handle(0));
+
+    EquasionHandler input(text, equasion);
+
+    Lexer l(input.data());
+
     Parser p(l);
+
     const auto value = p.parse();
 
 #if defined(CALC_USE_ERROR_TOKEN)
@@ -113,8 +118,8 @@ public:
     set_window_text(layout.get_handle(0), tests.data(),
                     tests.data() + tests.size());
 #else
-    set_window_text(layout.get_handle(0), input.data(),
-                    input.data() + input.size());
+    set_window_text(layout.get_handle(0), user input .data(),
+                    user input .data() + user input .size());
 #endif
 
     goto_end_of_window_text(layout.get_handle(0));
@@ -171,18 +176,6 @@ public:
 
 private:
   /**
-   * Read the user input from GUI to input buffer and return its size.
-   */
-  [[nodiscard]] const auto &get_user_input(LPCWSTR data,
-                                           const UINT size) noexcept {
-    if (!normalize(data, size, input)) {
-      input.clear();
-    }
-
-    return input;
-  }
-
-  /**
    * Set the result text in the GUI.
    */
   void set_result(const char *result_text,
@@ -222,8 +215,9 @@ private:
 
     const RegRead reg(HKEY_CURRENT_USER, CalcConfiguration::reg_key);
 #ifndef CALC_TESTS_ENABLED
-    input.set_size(reg.read("input", reinterpret_cast<LPBYTE>(input.data()),
-                            input.max_size()));
+    user input .reserve(CalcConfiguration::input_max_data_size);
+    user input .resize(reg.read("input", reinterpret_cast<LPBYTE>( user input .data()),
+                             CalcConfiguration::input_max_data_size));
 #endif
 
     const auto flags = reg.read("flags");
@@ -300,7 +294,7 @@ private:
 #endif
   }
 
-  [[no_unique_address]] std::string input;
+  [[no_unique_address]] std::string equasion;
 
   [[no_unique_address]] Layout<CalcConfiguration::elements> layout
       [[indeterminate]];
@@ -313,7 +307,7 @@ private:
 #endif
 };
 
-static CalcWindow calc [[indeterminate]];
+static CalcWindow gui;
 
 /**
  * About dialog callback processing (resource-based).
@@ -347,17 +341,17 @@ static INT_PTR CALLBACK AboutDlgProc(const HWND window, const UINT msg,
 #endif
 #ifdef CALC_SUPPORT_DARK_MODE
   case WM_INITDIALOG: {
-    calc.theme().apply(window);
+    gui.theme().apply(window);
     return TRUE;
   }
 #ifdef CALC_SUPPORT_DARK_MODE_WITHOUT_WIN32_HELPER
   case WM_CTLCOLORDLG:
   case WM_CTLCOLORSTATIC: {
-    return calc.theme().apply(wParam);
+    return gui.theme().apply(wParam);
   }
 #endif
   case WM_SYSCOLORCHANGE: {
-    calc.theme().apply(window, true);
+    gui.theme().apply(window, true);
     return TRUE;
   }
 #endif
@@ -377,7 +371,7 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND window, const UINT msg,
   switch (msg) {
   case WM_COMMAND: {
     if (LOWORD(wParam) == IDC_BUTTON_CALC && HIWORD(wParam) == BN_CLICKED) {
-      calc.perform_calculation();
+      gui.calc();
       return TRUE;
     }
     break;
@@ -391,17 +385,17 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND window, const UINT msg,
     break;
   }
   case WM_GETMINMAXINFO: {
-    calc.get_minmaxinfo(reinterpret_cast<LPMINMAXINFO>(lParam));
+    gui.get_minmaxinfo(reinterpret_cast<LPMINMAXINFO>(lParam));
     return TRUE;
   }
   case WM_SIZE: {
 #ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
     if (dpi_change_in_progress) {
-      calc.layout_init(window);
+      gui.layout_init(window);
       break;
     }
 #endif
-    calc.resize(LOWORD(lParam), HIWORD(lParam));
+    gui.resize(LOWORD(lParam), HIWORD(lParam));
     return TRUE;
   }
 #ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
@@ -411,23 +405,23 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND window, const UINT msg,
     break;
   }
   case WM_DPICHANGED: {
-    calc.set_dpi(window, HIWORD(wParam),
-                 reinterpret_cast<const Rect_ptr>(lParam));
+    gui.set_dpi(window, HIWORD(wParam),
+                reinterpret_cast<const Rect_ptr>(lParam));
     dpi_change_in_progress = false;
     return TRUE;
   }
 #endif
   case WM_INITDIALOG: {
 #ifdef CALC_SUPPORT_DARK_MODE
-    calc.theme().init(window);
+    gui.theme().init(window);
 #endif
-    calc.init(window, reinterpret_cast<HINSTANCE>(lParam));
+    gui.init(window, reinterpret_cast<HINSTANCE>(lParam));
     return TRUE;
   }
 #ifdef CALC_SUPPORT_AUTO_RESTART
   case WM_ENDSESSION: {
     if (wParam) {
-      calc.save_user_data(window);
+      gui.save_user_data(window);
     }
     return TRUE;
   }
@@ -437,17 +431,17 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND window, const UINT msg,
   case WM_CTLCOLORSTATIC:
   case WM_CTLCOLOREDIT:
   case WM_CTLCOLORDLG: {
-    return calc.theme().apply(wParam);
+    return gui.theme().apply(wParam);
   }
 #endif
   case WM_SYSCOLORCHANGE: {
-    calc.theme().apply(window, true, true);
+    gui.theme().apply(window, true, true);
     return TRUE;
   }
 #endif
   case WM_CLOSE: {
-    calc.save_user_data(window);
-    calc.close(window);
+    gui.save_user_data(window);
+    gui.close(window);
     return TRUE;
   }
   }

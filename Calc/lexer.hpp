@@ -25,7 +25,7 @@ private:
   /**
    * Return the current position.
    */
-  [[nodiscard]] EquationSize get_position() const noexcept;
+  [[nodiscard]] EquationSize position() const noexcept;
 
   /**
    * Move current position n symbols further.
@@ -57,7 +57,7 @@ private:
    * Read an some unparsable in the input view and return 0 to reparse from this
    * point.
    */
-  [[nodiscard]] EquationSize read_unparsable(Token &token) const noexcept;
+  EquationSize return_unparsable(Token &token) const noexcept;
 
   std::string_view _view;
   const std::string_view::const_pointer _begin;

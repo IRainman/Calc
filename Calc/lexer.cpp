@@ -11,21 +11,20 @@ namespace {
 const auto &ids = Identifiers::get();
 };
 
-[[nodiscard]] inline EquationSize Lexer::get_position() const noexcept {
+[[nodiscard]] inline EquationSize Lexer::position() const noexcept {
   [[assume(_view.data() - _begin >= 0)]];
   return static_cast<EquationSize>(_view.data() - _begin);
 }
 
 inline void Lexer::advance(EquationSize n) noexcept { _view.remove_prefix(n); }
 
-[[nodiscard]] inline EquationSize
-Lexer::read_unparsable(Token &token) const noexcept {
+inline EquationSize Lexer::return_unparsable(Token &token) const noexcept {
 #ifdef CALC_USE_ERROR_TOKEN
   constexpr static auto err_str = "unparsable";
   token.error_text = err_str;
-  token.error_position = get_position();
+  token.error_position = position();
 #else
-  IssueManager::report_error(get_position(), "unparsable");
+  IssueManager::report_error(position(), "unparsable");
 #endif
   token.type = Token::Type::ERROR;
   return 0;
@@ -58,11 +57,11 @@ Lexer::read_number(Token &token) const noexcept {
     [[assume(res.ptr - begin >= 1)]];
     const auto n = static_cast<EquationSize>(res.ptr - begin);
     return n;
+  } else [[unlikely]] {
+    // Handles the situation with a value that is either too small or too large
+    // to parse correctly.
+    return return_unparsable(token);
   }
-
-  // Handles the situation with a value that is either too small or too large to
-  // parse correctly.
-  [[unlikely]] return read_unparsable(token);
 }
 
 [[nodiscard]] inline EquationSize
@@ -89,9 +88,9 @@ Lexer::read_ident(Token &token) const noexcept {
       token.type = Token::Type::FUNCT;
     }
     return n;
+  } else [[unlikely]] {
+    return return_unparsable(token);
   }
-
-  [[unlikely]] return read_unparsable(token);
 }
 
 inline void Lexer::return_result(Token &token) const noexcept {
@@ -107,7 +106,7 @@ void Lexer::next(Token &token) noexcept {
       advance(read_operator(token));
       return;
     }
-    if ((cur >= '0' && cur <= '9')) {
+    if ((cur >= '0' && cur <= '9')) [[likely]] {
       advance(read_number(token));
       return;
     }
@@ -115,14 +114,15 @@ void Lexer::next(Token &token) noexcept {
       advance(read_ident(token));
       return;
     }
-    if (cur == ' ') [[likely]] {
+    if (cur == ' ') [[unlikely]] {
       advance(1);
       continue;
     }
 
-    [[unlikely]] advance(read_unparsable(token));
+    [[unlikely]] return_unparsable(token);
     return;
   }
 
   [[likely]] return_result(token);
+  return;
 }

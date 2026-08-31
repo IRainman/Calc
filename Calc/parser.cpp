@@ -38,7 +38,7 @@ Value
   case Token::Type::ERROR:
   [[unlikely]]
   default:
-    [[unlikely]] IssueManager::report_error(_lex.get_position(),
+    [[unlikely]] IssueManager::report_error(_lex.position(),
                                             "extraneous input");
     break;
   }
@@ -127,10 +127,10 @@ Token
   if (count == static_cast<ParamCount>(values.size())) [[unlikely]] {
 #ifdef CALC_USE_ERROR_TOKEN
     _current.error_text = "too many ^ in expression";
-    _current.error_position = _lex.get_position();
+    _current.error_position = _lex.position();
     return _current;
 #else
-    IssueManager::report_error(_lex.get_position(), "too many ^ in expression");
+    IssueManager::report_error(_lex.position(), "too many ^ in expression");
     return _current.number;
 #endif
   }
@@ -197,11 +197,11 @@ Parser::parse_expr_0() noexcept {
 #ifdef CALC_USE_ERROR_TOKEN
         constexpr static auto err_str = "expected parenthesis";
         _current.error_text = err_str;
-        _current.error_position = _lex.get_position();
+        _current.error_position = _lex.position();
         return _current;
         ? needs to form nan with adress of an error.
 #else
-        IssueManager::report_error(_lex.get_position(), "expected parenthesis");
+        IssueManager::report_error(_lex.position(), "expected parenthesis");
         return _current.number;
 #endif
       }
@@ -219,11 +219,11 @@ Parser::parse_expr_0() noexcept {
 #ifdef CALC_USE_ERROR_TOKEN
       constexpr static auto err_str = "unexpected";
       _current.error_text = err_str;
-      _current.error_position = _lex.get_position();
+      _current.error_position = _lex.position();
       return _current;
       ? needs to form nan with adress of an error.
 #else
-      IssueManager::report_error(_lex.get_position(), "unexpected");
+      IssueManager::report_error(_lex.position(), "unexpected");
       return _current.number;
 #endif
     }
@@ -237,7 +237,7 @@ Token
 Value
 #endif
 Parser::parse_function() noexcept {
-  auto function_start_pos = _lex.get_position();
+  auto function_start_pos = _lex.position();
   const auto i = _current.function;
 
   advance();
@@ -300,11 +300,11 @@ Parser::parse_function() noexcept {
 #ifdef CALC_USE_ERROR_TOKEN
           constexpr static auto err_str = "expected parenthesis";
           _current.error_text = err_str;
-          _current.error_position = _lex.get_position();
+          _current.error_position = _lex.position();
           return _current;
           ? needs to form nan with adress of an error.
 #else
-          IssueManager::report_error(_lex.get_position(),
+          IssueManager::report_error(_lex.position(),
                                      "expected parenthesis");
           return _current.number;
 #endif
@@ -316,22 +316,22 @@ Parser::parse_function() noexcept {
 #ifdef CALC_USE_ERROR_TOKEN
     constexpr static auto err_str = "too many parameters";
     _current.error_text = err_str;
-    _current.error_position = _lex.get_position();
+    _current.error_position = _lex.position();
     return _current;
     ? needs to form nan with adress of an error.
 #else
-    IssueManager::report_error(_lex.get_position(), "too many parameters");
+    IssueManager::report_error(_lex.position(), "too many parameters");
     return _current.number;
 #endif
   } else [[unlikely]] {
 #ifdef CALC_USE_ERROR_TOKEN
     constexpr static auto err_str = "expected parenthesis";
     _current.error_text = err_str;
-    _current.error_position = _lex.get_position();
+    _current.error_position = _lex.position();
     return _current;
     ? needs to form nan with adress of an error.
 #else
-    IssueManager::report_error(_lex.get_position(), "expected parenthesis");
+    IssueManager::report_error(_lex.position(), "expected parenthesis");
     return _current.number;
 #endif
   }

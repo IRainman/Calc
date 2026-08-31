@@ -43,10 +43,11 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 #include <limits>        // Calc
 #include <new>           // Formatter
 #include <numbers>       // Calc
-#include <optional>      // Win32 GUI RegRead helper.
+#include <optional>      // Win32 GUI RegRead helper
 #include <ranges>        // Calc
 #include <span>          // Calc
 #include <stdfloat>      // Calc
+#include <string>        // Win32 GUI EquasionHandler
 #include <string_view>   // Calc
 #include <unordered_map> // Calc
 
@@ -79,7 +80,7 @@ __pragma(warning(disable : 4554));
 __pragma(warning(disable : 4804));
 __pragma(warning(disable : 4100));
 __pragma(warning(disable : 4189));
-#include "../../zmij/zmij.cc"
+#include "../../zmij_next/zmij.cc"
 __pragma(warning(pop));
 #if CALC_USE_128_BIT_FLOAT
 #warning                                                                       \

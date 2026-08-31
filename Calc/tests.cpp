@@ -137,36 +137,32 @@ std::string calc_tests() {
 
       // clang-format off
       output_end = fmt::format_to(output_end, FMT_COMPILE("Test {}: {}\r\n"
+                                                          "is error = {}\r\n"
+                                                          "is nan = {}\r\n"
+                                                          "is equal = {}\r\n"
+                                                          "is less than epsilon = {}\r\n"
+                                                          "is normal = {}\r\n"
+                                                          "is identical output = {}\r\n"
+                                                          "return = {}\r\n"
+                                                          "expect = {}\r\n"
+                                                          "output = {}\r\n"
+                                                          "{}\r\n"),
 
-          "is error = {}\r\n"
-          "is nan = {}\r\n"
-          "is equal = {}\r\n"
-          "is less than epsilon = {}\r\n"
-          "is normal = {}\r\n"
-          "is identical output = {}\r\n"
-
-          "return = {}\r\n"
-          "expect = {}\r\n"
-
-          "output = {}\r\n"
-          "{}\r\n"),
-                                         passed ? "OK" : "FAILED", t.first,
-          is_error,
-          is_nan,
-          is_equal,
-          is_less_than_epsilon,
-          is_normal,
-          is_identical_output,
-
-          value,
-          t.second,
-
- has_errors ? "" : formated_value,
-!has_errors ? "" : 
+                                                 passed ? "OK" : "FAILED", t.first,
+                                                          is_error,
+                                                          is_nan,
+                                                          is_equal,
+                                                          is_less_than_epsilon,
+                                                          is_normal,
+                                                          is_identical_output,
+                                                          value,
+                                                          t.second,
+                                             has_errors ? "" : formated_value,
+                                            !has_errors ? "" : 
 #ifdef CALC_USE_ERROR_TOKEN
-value.error_text
+                                                          value.error_text
 #else
-formated_summary
+                                                          formated_summary
 #endif
 );
       // clang-format on
