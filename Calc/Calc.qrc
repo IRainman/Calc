@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RCC version="1.0">
+
+ <qresource prefix="/icons">
+
+  <!--
+      Calc.rc2:
+
+          IDR_MAINFRAME_SMALL ICON "res\\Calc_small.ico"
+          IDR_MAINFRAME_BIG   ICON "res\\Calc_big.ico"
+  -->
+
+  <file>res/Calc_small.ico</file>
+  <file>res/Calc_big.ico</file>
+
+ </qresource>
+
+</RCC>

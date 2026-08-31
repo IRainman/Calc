@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>CalcMainWindow</class>
+
+ <widget class="QMainWindow" name="CalcMainWindow">
+
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>320</width>
+    <height>190</height>
+   </rect>
+  </property>
+
+  <property name="minimumSize">
+   <size>
+    <width>240</width>
+    <height>140</height>
+   </size>
+  </property>
+
+  <property name="windowTitle">
+   <string>Calc</string>
+  </property>
+
+  <property name="windowIcon">
+   <iconset resource="Calc.qrc">
+    <normaloff>:/icons/Calc_big.ico</normaloff>:/icons/Calc_big.ico
+   </iconset>
+  </property>
+
+
+  <widget class="QWidget" name="centralWidget">
+
+   <layout class="QVBoxLayout" name="mainLayout">
+
+    <property name="leftMargin">
+     <number>2</number>
+    </property>
+
+    <property name="topMargin">
+     <number>2</number>
+    </property>
+
+    <property name="rightMargin">
+     <number>2</number>
+    </property>
+
+    <property name="bottomMargin">
+     <number>2</number>
+    </property>
+
+    <property name="spacing">
+     <number>3</number>
+    </property>
+
+
+    <!--
+        Original Win32:
+
+            EDITTEXT IDC_EDIT_INPUT, 2, 2, 129, 60
+
+        Horizontal and vertical behavior:
+
+            Stretch / Stretch
+
+        QPlainTextEdit is therefore Expanding in both directions.
+    -->
+    <item>
+     <widget class="QPlainTextEdit" name="editInput">
+
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+
+      <property name="verticalScrollBarPolicy">
+       <enum>Qt::ScrollBarAsNeeded</enum>
+      </property>
+
+      <property name="horizontalScrollBarPolicy">
+       <enum>Qt::ScrollBarAsNeeded</enum>
+      </property>
+
+      <property name="lineWrapMode">
+       <enum>QPlainTextEdit::NoWrap</enum>
+      </property>
+
+      <property name="tabChangesFocus">
+       <bool>false</bool>
+      </property>
+
+     </widget>
+    </item>
+
+
+    <!--
+        Bottom controls.
+
+        The Win32 implementation keeps both controls at their original
+        width and height and anchors them to the bottom/right side.
+
+        Therefore:
+
+            spacer  = Expanding
+            Enter   = Fixed
+            Result  = Fixed
+    -->
+    <item>
+
+     <layout class="QHBoxLayout" name="bottomLayout">
+
+      <property name="spacing">
+       <number>4</number>
+      </property>
+
+
+      <!--
+          All additional horizontal space is assigned here.
+
+          This keeps Enter and Result at their natural/fixed widths.
+      -->
+      <item>
+
+       <spacer name="bottomHorizontalSpacer">
+
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+
+        <property name="sizeType">
+         <enum>QSizePolicy::Expanding</enum>
+        </property>
+
+        <property name="sizeHint">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
+
+       </spacer>
+
+      </item>
+
+
+      <!-- Enter -->
+      <item>
+
+       <widget class="QPushButton" name="buttonCalc">
+
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+
+        <property name="text">
+         <string>Enter</string>
+        </property>
+
+        <property name="default">
+         <bool>true</bool>
+        </property>
+
+        <property name="autoDefault">
+         <bool>true</bool>
+        </property>
+
+       </widget>
+
+      </item>
+
+
+      <!-- Result -->
+      <item>
+
+       <widget class="QLineEdit" name="editResult">
+
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+
+       </widget>
+
+      </item>
+
+     </layout>
+
+    </item>
+
+   </layout>
+
+  </widget>
+
+ </widget>
+
+
+ <resources>
+  <include location="Calc.qrc"/>
+ </resources>
+
+
+ <connections/>
+
+</ui>
+

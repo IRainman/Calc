@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>AboutWindow</class>
+
+ <widget class="QWidget" name="AboutWindow">
+
+  <property name="windowTitle">
+   <string>About Calc</string>
+  </property>
+
+  <property name="windowIcon">
+   <iconset resource="Calc.qrc">
+    <normaloff>:/icons/Calc_small.ico</normaloff>:/icons/Calc_small.ico</iconset>
+  </property>
+
+
+  <layout class="QVBoxLayout" name="aboutLayout">
+
+   <property name="leftMargin">
+    <number>8</number>
+   </property>
+   <property name="topMargin">
+    <number>8</number>
+   </property>
+   <property name="rightMargin">
+    <number>8</number>
+   </property>
+   <property name="bottomMargin">
+    <number>8</number>
+   </property>
+
+   <property name="spacing">
+    <number>4</number>
+   </property>
+
+
+   <!-- Version -->
+   <item>
+
+    <widget class="QLabel" name="labelVersion">
+
+     <property name="text">
+      <string>Calc 2.12.0 2026</string>
+     </property>
+
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+
+    </widget>
+
+   </item>
+
+
+   <!-- Author -->
+   <item>
+
+    <widget class="QLabel" name="labelAuthor">
+
+     <property name="text">
+      <string>HedgehogInTheCPP</string>
+     </property>
+
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+
+    </widget>
+
+   </item>
+
+
+   <!-- Homepage -->
+   <item>
+
+    <widget class="QLabel" name="linkHomepage">
+
+     <property name="text">
+      <string>&lt;a href="https://github.com/IRainman/Calc"&gt;Homepage&lt;/a&gt;</string>
+     </property>
+
+     <property name="textFormat">
+      <enum>Qt::RichText</enum>
+     </property>
+
+     <property name="textInteractionFlags">
+      <set>Qt::LinksAccessibleByMouse|Qt::LinksAccessibleByKeyboard</set>
+     </property>
+
+     <property name="openExternalLinks">
+      <bool>true</bool>
+     </property>
+
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+
+    </widget>
+
+   </item>
+
+
+   <!-- Close -->
+   <item>
+
+    <widget class="QPushButton" name="buttonClose">
+
+     <property name="text">
+      <string>Close</string>
+     </property>
+
+     <property name="default">
+      <bool>true</bool>
+     </property>
+
+    </widget>
+
+   </item>
+
+  </layout>
+
+ </widget>
+
+
+ <resources>
+  <include location="Calc.qrc"/>
+ </resources>
+
+
+ <connections>
+  <connection>
+   <sender>buttonClose</sender>
+   <signal>clicked()</signal>
+   <receiver>AboutWindow</receiver>
+   <slot>close()</slot>
+  </connection>
+ </connections>
+
+</ui>
