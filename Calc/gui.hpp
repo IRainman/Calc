@@ -223,6 +223,7 @@ struct CalcConfiguration {
     case WCHAR('\v'):
     case WCHAR('\f'):
     case WCHAR('\r'):
+    case WCHAR(' '):
       // output.push_back(' ');
       break;
     default:
