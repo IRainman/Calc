@@ -62,8 +62,14 @@
 #if (_WIN32_WINNT >= 0x0A00)
 #define CALC_SUPPORT_EXTENDENT_STYLES // ES_EX_ALLOWEOL_ALL
 #define CALC_SUPPORT_DARK_MODE        // ...
-// #define CALC_SUPPORT_DARK_MODE_WITHOUT_WIN32_HELPER // disabled because we
-// should use system wide helper for this
+#ifdef NDEBUG
+// TODO: needs to be disabled because we should use system wide helper for this
+#define CALC_SUPPORT_DARK_MODE_WITHOUT_WIN32_HELPER
+#else
+// for testing only, not for production, this code needs to be moved to it's own
+// utility
+#define CALC_SUPPORT_DARK_MODE_TEST_WIN32_HELPER_REALIZATION
+#endif
 #endif
 #endif
 #endif

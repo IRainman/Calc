@@ -70,16 +70,23 @@ static_assert(std::is_standard_layout_v<CalcWindowState>);
 
 std::string calc_tests() {
   std::string output;
+  output.resize(
 #ifdef CALC_TESTS_DEV_ENABLED
-  output.resize(128 * 1024);
-  auto output_end = output.data();
-  unsigned int failed = 0;
+      128 * 1024
+#else
+      std::hardware_destructive_interference_size
 #endif
+  );
+
+  auto output_end = output.data();
 
   const auto start = std::chrono::steady_clock::now();
 
 #ifndef CALC_TESTS_DEV_ENABLED
+
   for (unsigned int i = 1'000'000; --i != 0;)
+#else
+  unsigned int failed = 0;
 #endif
   {
     for (const auto &t : tests) {
@@ -183,30 +190,25 @@ std::string calc_tests() {
 
 #ifdef CALC_TESTS_DEV_ENABLED
   output_end = binary_and_hex_parsing(output_end);
+#endif
+
+#ifdef CALC_TESTS_DEV_ENABLED
+  output_end = fmt::format_to(
+      output_end,
+      FMT_COMPILE("Tests:\r\n passed: {},\r\n failed: {}\r\n"
+                  " fegetround() == {}\r\n"
+                  " time is: {}."),
+      tests.size() - static_cast<size_t>(failed), failed,
+      round_name(std::fegetround()),
+      std::chrono::duration_cast<std::chrono::microseconds>(end - start)
+          .count());
+#else
+  output_end = fmt::format_to(
+      output_end, FMT_COMPILE("Tests time is: {}."),
+      std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()));
+#endif
 
   output.resize(output_end - output.data());
-#endif
-
-  // Don't use fmt here, because it isn't compile.
-  output += std::format("Tests"
-#ifdef CALC_TESTS_DEV_ENABLED
-                        ":\r\n passed: {},\r\n failed: {}\r\n"
-
-                        "fegetround() == {}\r\n"
-#endif
-                        " time is: {}.",
-#ifdef CALC_TESTS_DEV_ENABLED
-                        tests.size() - failed, failed,
-
-                        round_name(std::fegetround()),
-#endif
-                        std::chrono::duration_cast<std::chrono::
-#ifdef CALC_TESTS_DEV_ENABLED
-                                                       microseconds
-#else
-                                                       milliseconds
-#endif
-                                                   >(end - start));
 
   return output;
 }

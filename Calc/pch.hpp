@@ -53,13 +53,23 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 
 // Calc compile options:
 
-__pragma(warning(disable : 4514));
-__pragma(warning(disable : 5045));
-__pragma(warning(disable : 4365));
-__pragma(warning(disable : 4668));
-__pragma(warning(disable : 4626));
-__pragma(warning(disable : 5030));
-__pragma(warning(disable : 5222));
+__pragma(warning(disable : 4365)); // signed/unsigned mismatch
+__pragma(warning(disable
+                 : 4514)); // unreferenced inline function has been removed
+__pragma(warning(
+    disable : 4623)); // default constructor was implicitly defined as deleted
+__pragma(warning(disable
+                 : 4625)); // copy constructor was implicitly defined as deleted
+__pragma(warning(
+    disable : 4626)); // assignment operator was implicitly defined as deleted
+__pragma(warning(disable : 4668)); // is not defined as a preprocessor macro,
+                                   // replacing with '0' for 'directives'
+__pragma(warning(
+    disable
+    : 5027)); // move assignment operator was implicitly defined as deleted
+__pragma(warning(disable : 5030)); // attribute 'nodiscard' is not recognized
+__pragma(warning(disable : 5045)); // warning for unsafe buffer usage
+__pragma(warning(disable : 5222)); // warning for deprecated declaration
 
 #include "flags.hpp"
 
@@ -71,15 +81,23 @@ __pragma(warning(disable : 5222));
 
 //  Tests time is : 81207ms. Without Tests time is : 118164ms.
 __pragma(warning(push));
-__pragma(warning(disable : 4390));
-__pragma(warning(disable : 4244));
-__pragma(warning(disable : 4459));
-__pragma(warning(disable : 4456));
-__pragma(warning(disable : 4324));
-__pragma(warning(disable : 4554));
-__pragma(warning(disable : 4804));
-__pragma(warning(disable : 4100));
-__pragma(warning(disable : 4189));
+__pragma(warning(disable : 4390)); // empty control statement has no effect
+__pragma(warning(
+    disable
+    : 4244)); // conversion from 'double' to 'float', possible loss of data
+__pragma(warning(disable
+                 : 4459)); // declaration of 'x' hides global declaration
+__pragma(warning(
+    disable : 4456)); // declaration of 'x' hides previous local declaration
+__pragma(warning(disable
+                 : 4324)); // structure was padded due to alignment specifier
+__pragma(warning(disable : 4554)); // '<<' : check operator precedence for
+                                   // possible error; use parentheses to
+__pragma(warning(disable
+                 : 4804)); // '!=' : unsafe use of type 'bool' in operation
+__pragma(warning(disable : 4100)); // unreferenced formal parameter
+__pragma(warning(disable
+                 : 4189)); // local variable is initialized but not referenced
 #include "../../zmij_next/zmij.cc"
 __pragma(warning(pop));
 #if CALC_USE_128_BIT_FLOAT
@@ -120,11 +138,8 @@ __pragma(warning(pop));
 #define FMT_STATIC_THOUSANDS_SEPARATOR '\''
 // used because otherwise fmt produces much larger code:
 #define FMT_ENFORCE_COMPILE_STRING
-__pragma(warning(push));
-__pragma(warning(disable : 5027));
 #include "../../fmt/include/fmt/compile.h"
 #endif
-__pragma(warning(pop));
 
 // fast_float compile options:
 

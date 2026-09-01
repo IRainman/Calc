@@ -101,11 +101,9 @@ public:
 
     layout_init(window);
 
-    load_window_data(window);
-
 #ifdef CALC_SUPPORT_SET_LIMIT_TEXT
     set_window_text_limit(layout.get_handle(0),
-                          CalcConfiguration::input_max_symbols);
+                          CalcConfiguration::input_max_text_length);
 #endif
 
 #ifdef CALC_SUPPORT_EXTENDENT_STYLES
@@ -113,14 +111,7 @@ public:
                             ES_EX_ALLOWEOL_ALL);
 #endif
 
-#ifdef CALC_TESTS_ENABLED
-    auto tests = calc_tests();
-    set_window_text(layout.get_handle(0), tests.data(),
-                    tests.data() + tests.size());
-#else
-    set_window_text(layout.get_handle(0), user input .data(),
-                    user input .data() + user input .size());
-#endif
+    load_window_data(window);
 
     goto_end_of_window_text(layout.get_handle(0));
   }
@@ -162,11 +153,11 @@ public:
   void layout_init(const HWND window) noexcept {
     layout.init_window(window);
     layout.init_anchor(window, 0, IDC_EDIT_INPUT,
-                       Anchor{HorizontalMode::Stretch, VerticalMode::Stretch});
+                       Anchor::HorizontalStretch | Anchor::VerticalStretch);
     layout.init_anchor(window, 1, IDC_EDIT_RESULT,
-                       Anchor{HorizontalMode::Right, VerticalMode::Bottom});
+                       Anchor::Right | Anchor::Bottom);
     layout.init_anchor(window, 2, IDC_BUTTON_CALC,
-                       Anchor{HorizontalMode::Right, VerticalMode::Bottom});
+                       Anchor::Right | Anchor::Bottom);
     static_assert(3 == CalcConfiguration::elements);
   }
 
@@ -180,6 +171,11 @@ private:
    */
   void set_result(const char *result_text,
                   char *result_text_end) const noexcept {
+    set_window_text(layout.get_handle(1), result_text, result_text_end);
+  }
+
+  void set_result(const wchar_t *result_text,
+                  wchar_t *result_text_end) const noexcept {
     set_window_text(layout.get_handle(1), result_text, result_text_end);
   }
 
@@ -214,12 +210,22 @@ private:
   void load_window_data(const HWND window) noexcept {
 
     const RegRead reg(HKEY_CURRENT_USER, CalcConfiguration::reg_key);
-#ifndef CALC_TESTS_ENABLED
-    user input .reserve(CalcConfiguration::input_max_data_size);
-    user input .resize(reg.read("input", reinterpret_cast<LPBYTE>( user input .data()),
-                             CalcConfiguration::input_max_data_size));
-#endif
+    {
+#ifdef CALC_TESTS_ENABLED
+      auto tests = calc_tests();
+      set_window_text(layout.get_handle(0), tests.data(),
+                      tests.data() + tests.size());
+#else
+      EditTextWriter input(layout.get_handle(0),
+                           CalcConfiguration::input_max_data_size);
 
+      if (input.valid() && input.writable()) [[likely]] {
+
+        input.set_size(reg.read("input", input.bytes(),
+                                CalcConfiguration::input_max_data_size));
+      }
+#endif
+    }
     const auto flags = reg.read("flags");
     const auto show = reg.read("showCmd");
 
@@ -271,8 +277,10 @@ private:
   void save_window_data(const HWND hWnd) noexcept {
     const RegWrite reg(HKEY_CURRENT_USER, CalcConfiguration::reg_key);
 #ifndef CALC_TESTS_ENABLED
-    reg.write("input", reinterpret_cast<const BYTE *>(input.data()),
-              get_user_input());
+    {
+      EditTextView input(layout.get_handle(0));
+      reg.write("input", input.bytes(), input.size());
+    }
 #endif
 
     WINDOWPLACEMENT wp [[indeterminate]];
@@ -298,12 +306,11 @@ private:
 
   [[no_unique_address]] Layout<CalcConfiguration::elements> layout
       [[indeterminate]];
-
-#ifdef CALC_SUPPORT_DARK_MODE
-  [[no_unique_address]] Theme _theme [[indeterminate]];
-#endif
 #ifdef CALC_SUPPORT_DPI_CHANGES
   [[no_unique_address]] UINT dpi [[indeterminate]];
+#endif
+#ifdef CALC_SUPPORT_DARK_MODE
+  [[no_unique_address]] Theme _theme [[indeterminate]];
 #endif
 };
 

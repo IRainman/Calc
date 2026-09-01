@@ -11,6 +11,12 @@ namespace {
 const auto &ids = Identifiers::get();
 };
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable                                                        \
+                : 4061) // enumerator in switch of enum not explicitly handled
+#endif
+
 [[nodiscard]]
 #ifdef CALC_USE_ERROR_TOKEN
 Token
@@ -304,8 +310,7 @@ Parser::parse_function() noexcept {
           return _current;
           ? needs to form nan with adress of an error.
 #else
-          IssueManager::report_error(_lex.position(),
-                                     "expected parenthesis");
+          IssueManager::report_error(_lex.position(), "expected parenthesis");
           return _current.number;
 #endif
         }
@@ -336,3 +341,7 @@ Parser::parse_function() noexcept {
 #endif
   }
 }
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif

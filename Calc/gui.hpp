@@ -201,7 +201,7 @@ struct CalcConfiguration {
       // Win32 multiline EDIT max is 32 KiB for classic Edit control:
       (32 * 1024) * sizeof(WCHAR);
 #endif
-  static constexpr UINT input_max_symbols = input_max_data_size / sizeof(WCHAR);
+  static constexpr UINT input_max_text_length = input_max_data_size / sizeof(WCHAR);
 };
 
 /**
@@ -212,7 +212,7 @@ struct CalcConfiguration {
 [[nodiscard]] static bool normalize_equasion(LPCWSTR input, const UINT size,
                                              std::string &output) noexcept {
 
-  for (const auto const end = input + size; input != end; ++input) [[likely]] {
+  for (const auto end = input + size; input != end; ++input) [[likely]] {
     const auto &c = *input;
 
     // Process ANSI part:
@@ -223,7 +223,7 @@ struct CalcConfiguration {
     case WCHAR('\v'):
     case WCHAR('\f'):
     case WCHAR('\r'):
-      //output.push_back(' ');
+      // output.push_back(' ');
       break;
     default:
       break;
@@ -253,7 +253,7 @@ struct CalcConfiguration {
     case u'\u202F': // NARROW NBSP
     case u'\u205F': // MEDIUM MATHEMATICAL SPACE
     case u'\u3000': // IDEOGRAPHIC SPACE
-      //output.push_back(' ');
+      // output.push_back(' ');
       break;
 
     // Fullwidth digits.
@@ -987,7 +987,9 @@ struct CalcConfiguration {
 }
 
 /**
- * GUI helper to process user input. Don't need to copy Unicode user input from Win32 Edit control. This can'be usable only if Edit is multiline and for Dialog local edit option is enabled.
+ * GUI helper to process user input. Don't need to copy Unicode user input from
+ * Edit control. This can'be usable only if Edit is multiline and for Dialog
+ * local edit option is enabled.
  */
 class EditTextView {
 public:
@@ -996,7 +998,7 @@ public:
   EditTextView &operator=(EditTextView const &) = delete;
 
   explicit EditTextView(const HWND edit) noexcept {
-    _size = SendMessageA(edit, WM_GETTEXTLENGTH, 0, 0);
+    _size = static_cast<UINT>(SendMessageA(edit, WM_GETTEXTLENGTH, 0, 0));
     if (!empty()) [[likely]] {
       _handle =
           reinterpret_cast<HLOCAL>(SendMessageA(edit, EM_GETHANDLE, 0, 0));
@@ -1015,17 +1017,103 @@ public:
     return _size == 0;
   }
 
+  /**
+   * length in characters of the text in the edit control. This is useful for
+   * text processing and validation.
+   */
   [[nodiscard]]
-  constexpr auto size() const noexcept {
+  constexpr auto length() const noexcept {
     return _size;
   }
 
-  [[nodiscard]] constexpr auto data() const noexcept { return _data; }
+  [[nodiscard]] constexpr auto text() const noexcept { return _data; }
+
+  /**
+   * size in bytes of the text in the edit control. This is useful for writing
+   * to the system database.
+   */
+  [[nodiscard]]
+  constexpr auto size() const noexcept {
+    return static_cast<DWORD>(_size * sizeof(WCHAR));
+  }
+
+  [[nodiscard]] constexpr auto bytes() const noexcept {
+    return reinterpret_cast<const BYTE *>(_data);
+  }
 
 private:
   [[no_unique_address]] HLOCAL _handle [[indeterminate]];
   [[no_unique_address]] LPCWSTR _data [[indeterminate]];
   [[no_unique_address]] UINT _size;
+};
+
+/**
+ * GUI helper to write data to the GUI and restore user data from system
+ * database.
+ */
+class EditTextWriter {
+public:
+  EditTextWriter() = delete;
+  EditTextWriter(EditTextWriter const &) = delete;
+  EditTextWriter &operator=(EditTextWriter const &) = delete;
+
+  explicit EditTextWriter(const HWND edit, const UINT max_size) noexcept
+      : _edit(edit), _max_size(max_size) {
+
+    const auto orig_memory =
+        reinterpret_cast<HLOCAL>(SendMessageA(edit, EM_GETHANDLE, 0, 0));
+
+    _handle = LocalReAlloc(orig_memory, _max_size, LMEM_MOVEABLE);
+
+    if (valid()) [[likely]] {
+      _data = static_cast<LPWSTR>(LocalLock(_handle));
+    }
+  }
+
+  ~EditTextWriter() noexcept {
+    if (valid()) [[likely]] {
+      LocalUnlock(_handle);
+      SendMessageA(_edit, EM_SETHANDLE, reinterpret_cast<WPARAM>(_handle), 0);
+    }
+  }
+
+  /**
+   * length in characters of the text in the edit control. This is useful for
+   * setting text.
+   */
+  constexpr void set_length(const UINT length) noexcept {
+    _data[length] = L'\0'; // because of C string
+  }
+
+  [[nodiscard]] constexpr auto text() const noexcept { return _data; }
+
+  /**
+   * size in bytes of the text in the edit control. This is useful for loading
+   * data from the system database.
+   */
+  constexpr void set_size(const UINT size) noexcept {
+    set_length(size / sizeof(WCHAR));
+  }
+
+  [[nodiscard]] constexpr auto bytes() noexcept {
+    return reinterpret_cast<BYTE *>(_data);
+  }
+
+  [[nodiscard]]
+  constexpr bool valid() const noexcept {
+    return _handle != nullptr;
+  }
+
+  [[nodiscard]]
+  constexpr bool writable() const noexcept {
+    return _data != nullptr;
+  }
+
+private:
+  [[no_unique_address]] const HWND _edit;
+  [[no_unique_address]] HLOCAL _handle [[indeterminate]];
+  [[no_unique_address]] LPWSTR _data [[indeterminate]];
+  [[no_unique_address]] const UINT _max_size;
 };
 
 /**
@@ -1037,9 +1125,10 @@ public:
   EquasionHandler(EquasionHandler const &) = delete;
   EquasionHandler &operator=(EquasionHandler const &) = delete;
 
-  explicit constexpr EquasionHandler(const EditTextView &edit, std::string &buffer)
+  explicit constexpr EquasionHandler(const EditTextView &edit,
+                                     std::string &buffer)
       : _data(buffer) {
-    if (!normalize_equasion(edit.data(), edit.size(), buffer)) [[unlikely]] {
+    if (!normalize_equasion(edit.text(), edit.length(), buffer)) [[unlikely]] {
       _data.clear();
     }
   }
@@ -1109,13 +1198,13 @@ struct RegRead {
     return std::nullopt;
   }
 
-  [[nodiscard]] DWORD read(const char *name, LPBYTE out,
-                           DWORD out_size) const noexcept {
+  [[nodiscard]] UINT read(const char *name, LPBYTE out,
+                          DWORD out_size) const noexcept {
     DWORD type [[indeterminate]];
     if (RegQueryValueExA(key, name, nullptr, &type, out, &out_size) ==
         ERROR_SUCCESS) {
       if (type == REG_BINARY) {
-        return out_size;
+        return static_cast<UINT>(out_size);
       }
     }
     return 0;
@@ -1171,21 +1260,39 @@ static void set_window_text(const HWND hWnd, LPCSTR text,
   SetWindowTextA(hWnd, text);
 }
 
+#if defined(_MSC_VER)
+__pragma(warning(push))
+    __pragma(warning(disable
+                     : 4505)) // allow unused static function in release build
+#endif
+
+    /**
+     * Utility: set text to window from begin to end (end is not included).
+     */
+    static void set_window_text(const HWND hWnd, LPCWSTR text,
+                                LPWSTR const text_end) noexcept {
+  *text_end = L'\0'; // because of C string
+  SetWindowTextW(hWnd, text);
+}
+
 /**
  * Utility: get text from window and return its size.
  */
-[[deprecated("Use EditTextView and interact with data directly")]]
-[[nodiscard]] static UINT
-get_window_text(const HWND hWnd, CHAR *text, const UINT max_size) noexcept {
+[[nodiscard]] static UINT get_window_text(const HWND hWnd, CHAR *text,
+                                          const UINT max_size) noexcept {
   return GetWindowTextA(hWnd, text, max_size);
 }
 
+#if defined(_MSC_VER)
+__pragma(warning(pop))
+#endif
+
 #ifdef CALC_SUPPORT_SET_LIMIT_TEXT
-/**
- * Utility: set window text limit
- */
-static void set_window_text_limit(const HWND hWnd,
-                                  WPARAM max_symbols) noexcept {
+    /**
+     * Utility: set window text limit
+     */
+    static void set_window_text_limit(const HWND hWnd,
+                                      WPARAM max_symbols) noexcept {
   SendMessageA(hWnd, EM_LIMITTEXT, max_symbols, 0);
 }
 #endif
@@ -1373,8 +1480,13 @@ private:
   void init_uxtheme_callers() noexcept {
     HMODULE uxtheme = GetModuleHandleA("uxtheme.dll");
 
-    SetPreferredAppMode = reinterpret_cast<SetPreferredAppModeFn>(
-        GetProcAddress(uxtheme, MAKEINTRESOURCEA(135)));
+#if defined(_MSC_VER)
+    __pragma(warning(push)) __pragma(
+        warning(disable : 4191)) // allow FARPROC -> function pointer casts here
+#endif
+
+        SetPreferredAppMode = reinterpret_cast<SetPreferredAppModeFn>(
+            GetProcAddress(uxtheme, MAKEINTRESOURCEA(135)));
 
     RefreshImmersiveColorPolicyState =
         reinterpret_cast<RefreshImmersiveColorPolicyStateFn>(
@@ -1382,6 +1494,10 @@ private:
 
     FlushMenuThemes = reinterpret_cast<FlushMenuThemesFn>(
         GetProcAddress(uxtheme, MAKEINTRESOURCEA(136)));
+
+#if defined(_MSC_VER)
+    __pragma(warning(pop))
+#endif
   }
 
   // DLL hell end()
@@ -1402,7 +1518,7 @@ private:
  * Utility: helper to work with points in window layout
  */
 struct Point : tagPOINT {
-  Point() = default;
+  constexpr Point() noexcept = default;
 
   constexpr Point(const LONG _x, const LONG _y) noexcept {
     x = _x;
@@ -1445,20 +1561,43 @@ struct Rect : tagRECT {
 
 using Rect_ptr = Rect *;
 
-enum class HorizontalMode : BYTE { Stretch, Left, Right };
-enum class VerticalMode : BYTE { Stretch, Top, Bottom };
+/**
+ * Utility: helper for resize Layout
+ */
 
-struct Anchor {
-  [[no_unique_address]] HorizontalMode horizontal [[indeterminate]];
-  [[no_unique_address]] VerticalMode vertical [[indeterminate]];
+enum class Anchor : uint8_t {
+  None = 0,
+  HorizontalStretch = 1 << 0,
+  Left = 1 << 1,
+  Right = 1 << 2,
+  VerticalStretch = 1 << 3,
+  Top = 1 << 4,
+  Bottom = 1 << 5
 };
+
+// Enable bitwise OR
+constexpr Anchor operator|(Anchor lhs, Anchor rhs) noexcept {
+  using T = std::underlying_type_t<Anchor>;
+  return static_cast<Anchor>(static_cast<T>(lhs) | static_cast<T>(rhs));
+}
+
+// Enable bitwise AND
+constexpr Anchor operator&(Anchor lhs, Anchor rhs) noexcept {
+  using T = std::underlying_type_t<Anchor>;
+  return static_cast<Anchor>(static_cast<T>(lhs) & static_cast<T>(rhs));
+}
+
+// Helper to check if a flag is set
+constexpr bool hasFlag(Anchor value, Anchor flag) noexcept {
+  return static_cast<bool>(value & flag);
+}
 
 /**
  * Utility: helper to work with window layout
  */
 template <typename UINT elements> class Layout {
 public:
-  constexpr Layout() = default;
+  constexpr Layout() noexcept = default;
   Layout(const Layout &) = delete;
   Layout(Layout &&) = delete;
 
@@ -1480,9 +1619,9 @@ public:
     }
 
     [[no_unique_address]] HWND handle [[indeterminate]];
-    [[no_unique_address]] Rect relative_margins [[indeterminate]];
     [[no_unique_address]] LONG width [[indeterminate]];
     [[no_unique_address]] LONG height [[indeterminate]];
+    [[no_unique_address]] Rect relative_margins [[indeterminate]];
     [[no_unique_address]] Anchor anchor [[indeterminate]];
   };
 
@@ -1500,7 +1639,7 @@ public:
     min_height = _min_height;
   }
 
-  void init_anchor(const HWND parent, const uint8_t index, const int id,
+  void init_anchor(const HWND parent, const BYTE index, const int id,
                    const Anchor anchor) noexcept {
     const auto handle = GetDlgItem(parent, id);
 
@@ -1526,44 +1665,26 @@ public:
     for (const auto &c : constraints) {
       Rect rect [[indeterminate]];
 
-      switch (c.anchor.horizontal) {
-      case HorizontalMode::Left:
+      if (hasFlag(c.anchor, Anchor::Left)) {
         rect.right = c.relative_margins.left + c.width;
         rect.left = c.relative_margins.left;
-        break;
-
-      case HorizontalMode::Right:
+      } else if (hasFlag(c.anchor, Anchor::Right)) {
         rect.right = width - c.relative_margins.right;
         rect.left = rect.right - c.width;
-        break;
-
-      case HorizontalMode::Stretch:
+      } else if (hasFlag(c.anchor, Anchor::HorizontalStretch)) {
         rect.right = width - c.relative_margins.right;
         rect.left = c.relative_margins.left;
-        break;
-
-      default:
-        std::unreachable();
       }
 
-      switch (c.anchor.vertical) {
-      case VerticalMode::Top:
+      if (hasFlag(c.anchor, Anchor::Top)) {
         rect.bottom = c.relative_margins.top + c.height;
         rect.top = c.relative_margins.top;
-        break;
-
-      case VerticalMode::Bottom:
+      } else if (hasFlag(c.anchor, Anchor::Bottom)) {
         rect.bottom = height - c.relative_margins.bottom;
         rect.top = rect.bottom - c.height;
-        break;
-
-      case VerticalMode::Stretch:
+      } else if (hasFlag(c.anchor, Anchor::VerticalStretch)) {
         rect.bottom = height - c.relative_margins.bottom;
         rect.top = c.relative_margins.top;
-        break;
-
-      default:
-        std::unreachable();
       }
 
       hdwp = DeferWindowPos(hdwp, c.handle, nullptr, rect.left, rect.top,
@@ -1594,70 +1715,62 @@ public:
   }
 
 private:
-  [[no_unique_address]] std::array<Constraint, elements> constraints
-      [[indeterminate]];
-
   [[no_unique_address]] LONG width [[indeterminate]];
   [[no_unique_address]] LONG height [[indeterminate]];
 
   [[no_unique_address]] LONG min_width [[indeterminate]];
   [[no_unique_address]] LONG min_height [[indeterminate]];
+  [[no_unique_address]] std::array<Constraint, elements> constraints
+      [[indeterminate]];
 };
 
-namespace Win32Theme {
+#ifdef CALC_SUPPORT_DARK_MODE_TEST_WIN32_HELPER_REALIZATION
+namespace Colors {
 
 /**
- * Number of classic Win32 system-color entries.
+ * All COLOR_* indices accepted by GetSysColor()/SetSysColors().
  *
  * COLOR_SCROLLBAR .. COLOR_MENUBAR are the standard system-color indices.
  *
- * COLOR_DESKTOP is an alias for COLOR_BACKGROUND, therefore it is not
- * stored as an additional independent entry.
- */
-constexpr UINT classic_color_count = COLOR_MENUBAR + 1;
-
-/**
- * All classic COLOR_* indices accepted by GetSysColor()/SetSysColors().
- *
- * The array intentionally contains the actual Win32 indices instead of
- * assuming that every integer in the range is a unique semantic color.
+ * The array intentionally contains the actual indices instead of assuming that
+ * every integer in the range is a unique semantic color.
  *
  * COLOR_DESKTOP == COLOR_BACKGROUND, so it is intentionally omitted.
  */
-constexpr std::array<INT, classic_color_count> classic_color_indices = {
-    COLOR_SCROLLBAR,
-    COLOR_BACKGROUND,
-    COLOR_ACTIVECAPTION,
-    COLOR_INACTIVECAPTION,
-    COLOR_MENU,
-    COLOR_WINDOW,
-    COLOR_WINDOWFRAME,
-    COLOR_MENUTEXT,
-    COLOR_WINDOWTEXT,
-    COLOR_CAPTIONTEXT,
-    COLOR_ACTIVEBORDER,
-    COLOR_INACTIVEBORDER,
-    COLOR_APPWORKSPACE,
-    COLOR_HIGHLIGHT,
-    COLOR_HIGHLIGHTTEXT,
-    COLOR_BTNFACE,
-    COLOR_BTNSHADOW,
-    COLOR_GRAYTEXT,
-    COLOR_BTNTEXT,
-    COLOR_INACTIVECAPTIONTEXT,
-    COLOR_BTNHIGHLIGHT,
-    COLOR_3DDKSHADOW,
-    COLOR_3DLIGHT,
-    COLOR_INFOTEXT,
-    COLOR_INFOBK,
-    COLOR_HOTLIGHT,
-    COLOR_GRADIENTACTIVECAPTION,
-    COLOR_GRADIENTINACTIVECAPTION,
-    COLOR_MENUHILIGHT,
-    COLOR_MENUBAR};
+constexpr static const auto colors_indexes =
+    std::to_array<INT>({COLOR_SCROLLBAR,
+                        COLOR_BACKGROUND,
+                        COLOR_ACTIVECAPTION,
+                        COLOR_INACTIVECAPTION,
+                        COLOR_MENU,
+                        COLOR_WINDOW,
+                        COLOR_WINDOWFRAME,
+                        COLOR_MENUTEXT,
+                        COLOR_WINDOWTEXT,
+                        COLOR_CAPTIONTEXT,
+                        COLOR_ACTIVEBORDER,
+                        COLOR_INACTIVEBORDER,
+                        COLOR_APPWORKSPACE,
+                        COLOR_HIGHLIGHT,
+                        COLOR_HIGHLIGHTTEXT,
+                        COLOR_BTNFACE,
+                        COLOR_BTNSHADOW,
+                        COLOR_GRAYTEXT,
+                        COLOR_BTNTEXT,
+                        COLOR_INACTIVECAPTIONTEXT,
+                        COLOR_BTNHIGHLIGHT,
+                        COLOR_3DDKSHADOW,
+                        COLOR_3DLIGHT,
+                        COLOR_INFOTEXT,
+                        COLOR_INFOBK,
+                        COLOR_HOTLIGHT,
+                        COLOR_GRADIENTACTIVECAPTION,
+                        COLOR_GRADIENTINACTIVECAPTION,
+                        COLOR_MENUHILIGHT,
+                        COLOR_MENUBAR});
 
 /**
- * Complete snapshot of classic Win32 system colors.
+ * Complete snapshot of system colors.
  *
  * The values are indexed by the corresponding COLOR_* value:
  *
@@ -1666,40 +1779,42 @@ constexpr std::array<INT, classic_color_count> classic_color_indices = {
  *
  * etc.
  */
-struct ClassicColors final {
-  std::array<COLORREF, classic_color_count> values;
+class Colors final {
+  [[no_unique_address]] std::array<COLORREF, colors_indexes.size()> values
+      [[indeterminate]];
 
+public:
   /**
-   * Get a classic system color by its COLOR_* index.
+   * Get a system color by its COLOR_* index.
    */
   [[nodiscard]]
-  COLORREF operator[](const UINT index) const noexcept {
-    return values[static_cast<std::size_t>(index)];
+  const COLORREF &operator[](const INT index) const noexcept {
+    return values[index];
   }
 
   /**
-   * Get a mutable classic system color by its COLOR_* index.
+   * Get a mutable system color by its COLOR_* index.
    */
   [[nodiscard]]
-  COLORREF &operator[](const UINT index) noexcept {
-    return values[static_cast<std::size_t>(index)];
+  COLORREF &operator[](const INT index) noexcept {
+    return values[index];
   }
+
+  [[nodiscard]] LPCOLORREF data() noexcept { return values.data(); }
 };
 
 /**
- * Get all classic Win32 system colors.
+ * Get all system colors.
  *
  * Win32 provides GetSysColor() only as a scalar API, so the complete
  * system-color table is collected with one GetSysColor() call per entry.
  */
 [[nodiscard]]
-ClassicColors get_classic_colors() noexcept {
-  ClassicColors result;
+Colors colors() noexcept {
+  Colors result [[indeterminate]];
 
-  for (std::size_t i = 0; i < classic_color_indices.size(); ++i) {
-    const INT index = classic_color_indices[i];
-
-    result.values[static_cast<std::size_t>(index)] = GetSysColor(index);
+  for (const auto i : colors_indexes) {
+    result[i] = GetSysColor(i);
   }
 
   return result;
@@ -1708,131 +1823,95 @@ ClassicColors get_classic_colors() noexcept {
 /**
  * Set all classic Win32 system colors.
  *
- * SetSysColors() accepts an array of COLOR_* indices and an array of
- * COLORREF values. Windows broadcasts WM_SYSCOLORCHANGE after a successful
- * change and repaints affected visible windows.
+ * SetSysColors() accepts an array of COLOR_* indices and an array of COLORREF
+ * values. Windows broadcasts WM_SYSCOLORCHANGE after a successful change and
+ * repaints affected visible windows.
  */
 [[nodiscard]]
-inline bool set_classic_colors(const ClassicColors &colors) noexcept {
-  return SetSysColors(static_cast<INT>(classic_color_indices.size()),
-                      classic_color_indices.data(),
-                      colors.values.data()) != FALSE;
+inline bool set_colors(Colors &&new_values) noexcept {
+  return SetSysColors(static_cast<INT>(colors_indexes.size()),
+                      colors_indexes.data(), new_values.data()) != FALSE;
 }
 
 /**
- * Modern Windows/DWM colors.
+ * Windows/DWM colors.
  *
- * There is no single global Windows 10/11 "modern color palette" exposed
- * through DWM.
+ * There is no single global Windows 10/11 "color palette" exposed through DWM.
  *
  * DWM provides:
  *
- *   - a global colorization/accent color;
+ *   - a global colorization/accent color and opaque;
  *   - per-window caption color;
  *   - per-window caption text color;
  *   - per-window border color.
- *
- * The latter three require a HWND.
  */
-struct ModernColors final {
+struct DWMColors final {
   /**
    * Global DWM colorization color in 0xAARRGGBB format.
    *
    * This is NOT a COLORREF.
    */
-  DWORD colorization_argb;
+  [[no_unique_address]] DWORD colorization_argb [[indeterminate]];
+
+  [[no_unique_address]] BOOL colorization_opaque [[indeterminate]];
+
+  /**
+   * DWM window border color.
+   */
+  [[no_unique_address]] COLORREF border [[indeterminate]];
+
+  /**
+   * DWM window caption/title-bar color.
+   */
+  [[no_unique_address]] COLORREF caption [[indeterminate]];
+
+  /**
+   * DWM window caption text color.
+   */
+  [[no_unique_address]] COLORREF text [[indeterminate]];
 
   /**
    * True when DwmGetColorizationColor() succeeded.
    */
-  bool has_colorization;
+  [[no_unique_address]] bool has_window_colors [[indeterminate]];
 
-  /**
-   * DWM window border color.
-   */
-  COLORREF border;
-
-  /**
-   * DWM window caption/title-bar color.
-   */
-  COLORREF caption;
-
-  /**
-   * DWM window caption text color.
-   */
-  COLORREF text;
-
-  /**
-   * True when at least one of the DWMWA_* window color attributes could be
-   * queried successfully.
-   */
-  bool has_window_colors;
+  [[no_unique_address]] bool has_colorization [[indeterminate]];
 };
 
 /**
- * Get modern DWM colors.
+ * Get DWM colors for Windows 10/11.
  *
- * DwmGetColorizationColor() is queried independently because it is a
- * global DWM value.
+ * DwmGetColorizationColor() is queried independently because it is a global DWM
+ * value.
  *
- * DWMWA_BORDER_COLOR, DWMWA_CAPTION_COLOR and DWMWA_TEXT_COLOR are
- * per-window attributes introduced for Windows 11 build 22000.
+ * DWMWA_BORDER_COLOR, DWMWA_CAPTION_COLOR and DWMWA_TEXT_COLOR are per-window
+ * attributes introduced for Windows 11 build 22000.
  *
- * On unsupported Windows versions the corresponding values remain zero
- * and has_window_colors stays false.
+ * On unsupported Windows versions the corresponding values remain zero and
+ * has_window_colors stays false.
  */
 [[nodiscard]]
-inline ModernColors get_modern_colors(const HWND window) noexcept {
-  ModernColors result{};
+inline DWMColors dwm_colors(const HWND window) noexcept {
+  DWMColors result;
 
   /**
    * Global DWM colorization/accent color.
-   *
-   * Returns ARGB rather than COLORREF.
    */
-  DWORD colorization{};
-  BOOL opaque{};
-
-  if (SUCCEEDED(DwmGetColorizationColor(&colorization, &opaque))) {
-    result.colorization_argb = colorization;
+  if (SUCCEEDED(DwmGetColorizationColor(&result.colorization_argb,
+                                        &result.colorization_opaque))) {
     result.has_colorization = true;
   }
 
-  if (window == nullptr) {
-    return result;
-  }
-
-  /**
-   * DWM window border color.
-   */
-  COLORREF value{};
-
-  if (SUCCEEDED(DwmGetWindowAttribute(window, DWMWA_BORDER_COLOR, &value,
-                                      sizeof(value)))) {
-    result.border = value;
-    result.has_window_colors = true;
-  }
-
-  /**
-   * DWM window caption/title-bar color.
-   */
-  value = 0;
-
-  if (SUCCEEDED(DwmGetWindowAttribute(window, DWMWA_CAPTION_COLOR, &value,
-                                      sizeof(value)))) {
-    result.caption = value;
-    result.has_window_colors = true;
-  }
-
-  /**
-   * DWM window caption text color.
-   */
-  value = 0;
-
-  if (SUCCEEDED(DwmGetWindowAttribute(window, DWMWA_TEXT_COLOR, &value,
-                                      sizeof(value)))) {
-    result.text = value;
-    result.has_window_colors = true;
+  if (SUCCEEDED(DwmGetWindowAttribute(window, DWMWA_BORDER_COLOR,
+                                      &result.border, sizeof(result.border)))) {
+    if (SUCCEEDED(DwmGetWindowAttribute(window, DWMWA_CAPTION_COLOR,
+                                        &result.caption,
+                                        sizeof(result.caption)))) {
+      if (SUCCEEDED(DwmGetWindowAttribute(window, DWMWA_TEXT_COLOR,
+                                          &result.text, sizeof(result.text)))) {
+        result.has_window_colors = true;
+      }
+    }
   }
 
   return result;
@@ -1850,11 +1929,12 @@ inline ModernColors get_modern_colors(const HWND window) noexcept {
  *   0x00BBGGRR
  */
 [[nodiscard]]
-inline COLORREF argb_to_colorref(const DWORD value) noexcept {
+constexpr static inline COLORREF argb_to_colorref(const DWORD value) noexcept {
   return RGB((value >> 16) & 0xFF, (value >> 8) & 0xFF, value & 0xFF);
 }
 
-} // namespace Win32Theme
+} // namespace Colors
+#endif
 
 #else
 

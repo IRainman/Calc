@@ -30,27 +30,30 @@ constexpr static std::pair<Integer, Integer> decimalToFraction(Value number) {
   // Calculate GCD of integral
   // equivalent of fractional
   // part and precision value
-  Integer gcdVal = Identifiers::gcd(std::round(fVal * value), value);
+  Integer gcdVal =
+      Identifiers::gcd(static_cast<Integer>(std::round(fVal * value)), value);
 
   // Calculate num and deno
-  Integer num = std::round(fVal * value) / gcdVal;
+  Integer num = static_cast<Integer>(std::round(fVal * value)) / gcdVal;
   Integer deno = value / gcdVal;
 
   if (std::abs(num) > limit || deno == 1 || deno > limit)
     return {0, 1};
 
   // Return the fraction
-  return std::make_pair((intVal * deno) + num, deno);
+  return std::make_pair((static_cast<Integer>(intVal) * deno) + num, deno);
 }
 #endif
 
 char *Formatter::format(Value value, Result &ret) noexcept {
-  char *end;
+  auto end = ret.data();
   // https://www.exploringbinary.com/decimal-precision-of-binary-floating-point-numbers/
   if (std::isnormal(value)) {
-    end = zmij::detail::write_general(ret.data(), value, output_precision);
+    // end = fmt::format_to(end, FMT_COMPILE(L"{:.15g} "), value);
+    end = zmij::detail::write_general(end, value, output_precision);
   } else {
-    end = zmij::detail::write(ret.data(), value);
+    // fmt::format_to(end, FMT_COMPILE(L"{}"), value);
+    end = zmij::detail::write(end, value);
   }
   return end;
 }

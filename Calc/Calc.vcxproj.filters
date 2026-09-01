@@ -44,7 +44,7 @@
     <ClInclude Include="flags.hpp">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Resource.h">
+    <ClInclude Include="resource.h">
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="pch.hpp">

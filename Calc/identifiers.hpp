@@ -11,9 +11,11 @@
 
 namespace Identifiers {
 struct Fn {
+
   [[no_unique_address]] Value (*const fn)(std::span<Value>);
 
   [[no_unique_address]] struct P {
+
     /**
      * Test is Fn is a constant and no needs arguments.
      */

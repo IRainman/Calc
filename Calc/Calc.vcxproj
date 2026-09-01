@@ -380,7 +380,7 @@
     <ClInclude Include="issue_manager.hpp" />
     <ClInclude Include="lexer.hpp" />
     <ClInclude Include="parser.hpp" />
-    <ClInclude Include="Resource.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="pch.hpp" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="tests.hpp" />
