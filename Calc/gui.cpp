@@ -120,7 +120,6 @@ public:
    * Resize Calc window.
    */
   inline void resize(const WORD new_width, const WORD new_height) noexcept {
-
     layout.resize(new_width, new_height);
   }
 
@@ -220,7 +219,6 @@ private:
                            CalcConfiguration::input_max_data_size);
 
       if (input.valid() && input.writable()) [[likely]] {
-
         input.set_size(reg.read("input", input.bytes(),
                                 CalcConfiguration::input_max_data_size));
       }
