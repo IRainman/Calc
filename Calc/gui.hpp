@@ -1034,7 +1034,7 @@ public:
    * to the system database.
    */
   [[nodiscard]]
-  constexpr auto size() const noexcept {
+  constexpr auto size() const noexcept {Update gui.hpp
     return static_cast<DWORD>(_size * sizeof(WCHAR));
   }
 
@@ -1191,8 +1191,8 @@ struct RegRead {
     DWORD outSize = sizeof(out);
     if (RegQueryValueExA(key, name, nullptr, &type,
                          reinterpret_cast<LPBYTE>(&out),
-                         &outSize) == ERROR_SUCCESS) {
-      if (type == REG_DWORD) {
+                         &outSize) == ERROR_SUCCESS)  [[likely]] {
+      if (type == REG_DWORD) [[likely]]  {
         return out;
       }
     }
@@ -1203,8 +1203,8 @@ struct RegRead {
                           DWORD out_size) const noexcept {
     DWORD type [[indeterminate]];
     if (RegQueryValueExA(key, name, nullptr, &type, out, &out_size) ==
-        ERROR_SUCCESS) {
-      if (type == REG_BINARY) {
+        ERROR_SUCCESS) [[likely]]  {
+      if (type == REG_BINARY) [[likely]]  {
         return static_cast<UINT>(out_size);
       }
     }
@@ -1656,7 +1656,7 @@ public:
   }
 
   void resize(const LONG new_width, const LONG new_height) noexcept {
-    if (width == new_width && height == new_height) {
+    if (width == new_width && height == new_height)  [[unlikely]]  {
       return;
     }
     width = new_width;
