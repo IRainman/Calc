@@ -82,11 +82,11 @@ std::string calc_tests() {
 
   const auto start = std::chrono::steady_clock::now();
 
-#ifndef CALC_TESTS_DEV_ENABLED
-
-  for (unsigned int i = 1'000'000; --i != 0;)
-#else
+#ifdef CALC_TESTS_DEV_ENABLED
   unsigned int failed = 0;
+#else
+  constexpr unsigned int count = 1'000'000;
+  for (unsigned int i = count; --i != 0;)
 #endif
   {
     for (const auto &t : tests) {
@@ -193,19 +193,22 @@ std::string calc_tests() {
 #endif
 
 #ifdef CALC_TESTS_DEV_ENABLED
-  output_end = fmt::format_to(
-      output_end,
-      FMT_COMPILE("Tests:\r\n passed: {},\r\n failed: {}\r\n"
-                  " fegetround() == {}\r\n"
-                  " time is: {}."),
-      tests.size() - static_cast<size_t>(failed), failed,
-      round_name(std::fegetround()),
-      std::chrono::duration_cast<std::chrono::microseconds>(end - start)
-          .count());
+  output_end =
+      fmt::format_to(output_end,
+                     FMT_COMPILE("Tests:\r\n passed: {},\r\n failed: {}\r\n"
+                                 " fegetround() == {}\r\n"
+                                 " time is: {}ns per case."),
+                     tests.size() - static_cast<size_t>(failed), failed,
+                     round_name(std::fegetround()),
+                     std::chrono::duration_cast<std::chrono::nanoseconds>(
+                         (end - start) / tests.size())
+                         .count());
 #else
-  output_end = fmt::format_to(
-      output_end, FMT_COMPILE("Tests time is: {}."),
-      std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()));
+  output_end =
+      fmt::format_to(output_end, FMT_COMPILE("Tests time is: {}ns per case."),
+                     std::chrono::duration_cast<std::chrono::nanoseconds>(
+                         (end - start) / (tests.size() * count))
+                         .count());
 #endif
 
   output.resize(output_end - output.data());
