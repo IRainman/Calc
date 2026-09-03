@@ -13,7 +13,7 @@ class Parser {
    *
    * expr_4 = expr_3 ( ('+' | '-' ) expr_3 )*;
    *
-   * expr_3 = expr_2 ( ('*' | '/' | '%') expr_2 )*;
+   * expr_3 = expr_2 ( ('*' | '/' ) expr_2 )*;
    *
    * expr_2 = expr_1 ( '^' expr_1 )*;
    *

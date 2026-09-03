@@ -102,26 +102,23 @@ void Lexer::next(Token &token) noexcept {
   while (!_view.empty()) [[likely]] {
     // https://en.cppreference.com/w/cpp/language/ascii
     const auto &cur = _view.front();
-    if (cur == '%' || cur == '(' || cur == ')' || cur == '*' || cur == '+' ||
-        cur == ',' || cur == '-' || cur == '/' || cur == '^') [[likely]] {
+    if (cur == '(' || cur == ')' || cur == '*' || cur == '+' || cur == ',' ||
+        cur == '-' || cur == '/' || cur == '^') {
       advance(read_operator(token));
       return;
-    }
-    if ((cur >= '0' && cur <= '9')) [[likely]] {
+    } else if ((cur >= '0' && cur <= '9')) {
       advance(read_number(token));
       return;
-    }
-    if ((cur >= 'A' && cur <= 'Z') || (cur >= 'a' && cur <= 'z')) [[likely]] {
+    } else if ((cur >= 'A' && cur <= 'Z') || (cur >= 'a' && cur <= 'z')) {
       advance(read_ident(token));
       return;
-    }
-    if (cur == ' ') [[unlikely]] {
+    } else if (cur == ' ') {
       advance(1);
       continue;
+    } else {
+      [[unlikely]] return_unparsable(token);
+      return;
     }
-
-    [[unlikely]] return_unparsable(token);
-    return;
   }
 
   [[likely]] return_result(token);
