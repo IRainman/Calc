@@ -289,6 +289,8 @@ parabola(std::span<Value> params) noexcept {
   return std::pow(x, y);
 }
 
+[[nodiscard]] static Value qdrt(Value x) noexcept { return std::pow(x, 0.25); }
+
 // for better precision
 [[nodiscard]] static Value normalize_sine(Value value) noexcept {
   if (std::isnan(value)) {
@@ -516,15 +518,17 @@ static const map ids = {
     {"phi", constant<std::numbers::phi_v<Value>>()},
     /// https://en.wikipedia.org/wiki/Euler%27s_constant
     {"e_gamma", constant<std::numbers::egamma_v<Value>>()},
-#ifdef CALC_TESTS_ENABLED
+
+    // for unicode parsing
     {"log2e", constant<std::numbers::log2e_v<Value>>()},
     {"log10e", constant<std::numbers::log10e_v<Value>>()},
-    {"inv_pi", constant<std::numbers::inv_pi_v<Value>>()},
-    {"inv_sqrtpi", constant<std::numbers::inv_sqrtpi_v<Value>>()},
     {"ln2", constant<std::numbers::ln2_v<Value>>()},
     {"ln10", constant<std::numbers::ln10_v<Value>>()},
     {"sqrt2", constant<std::numbers::sqrt2_v<Value>>()},
     {"sqrt3", constant<std::numbers::sqrt3_v<Value>>()},
+#ifdef CALC_TESTS_ENABLED
+    {"inv_pi", constant<std::numbers::inv_pi_v<Value>>()},
+    {"inv_sqrtpi", constant<std::numbers::inv_sqrtpi_v<Value>>()},
     {"inv_sqrt3", constant<std::numbers::inv_sqrt3_v<Value>>()},
 #endif
     //---------------------------------------------------------------------------
@@ -770,6 +774,7 @@ static const map ids = {
 
     {"sqrt", function_pointer<1, std::sqrt>()},
     {"cbrt", function_pointer<1, std::cbrt>()},
+    {"qdrt", function_pointer<1, qdrt>()},
     {"pow", function_pointer<2, pow>()},
     {"exp", function_pointer<1, std::exp>()},
     {"expm1", function_pointer<1, std::expm1>()},
