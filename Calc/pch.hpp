@@ -45,7 +45,6 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 
 // Calc compile options:
 // clang-format off
-//__pragma(warning(disable : 4365)); // signed/unsigned mismatch
 __pragma(warning(disable : 4514)); // unreferenced inline function has been removed
 __pragma(warning(disable : 4623)); // default constructor was implicitly defined as deleted
 __pragma(warning(disable : 4625)); // copy constructor was implicitly defined as deleted
