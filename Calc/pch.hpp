@@ -76,7 +76,7 @@ __pragma(warning(disable : 4390)); // empty control statement has no effect
 //__pragma(warning(disable : 4459)); // declaration of 'x' hides global declaration
 //__pragma(warning(disable : 4804)); // '!=' : unsafe use of type 'bool' in operation
 // clang-format on
-#include "../../zmij_next/zmij.cc"
+#include "../../zmij/zmij.cc"
 __pragma(warning(pop));
 #if CALC_USE_128_BIT_FLOAT
 #warning                                                                       \
