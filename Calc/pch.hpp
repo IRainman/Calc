@@ -16,29 +16,21 @@
 // Don't needs to check _MSVC_LANG it's should be set by the compiler options
 static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 
-// Additional librarys arch helpers because MSVC is an unusual compiler:
-#if defined(_M_IX86)
-#define _M_IX86_FP 2
-#endif
-
 // My fast-float fork and Zmij uses those instructions:
-
-// explicitely enable SSE2 for 32 and 64 bit builds:
-#define __SSE2__ 1
-// explicitely enable SSE3 for 32 and 64 bit builds:
-#define __SSE3__ 1
-
+#if defined(_M_IX86) || defined(__i686__) || defined(__i386__) ||              \
+    defined(__i386) || defined(__X86__) || defined(_M_X64) ||                  \
+    defined(__x86_64__) || defined(__amd64__)
+#define _M_IX86_FP 2 // additional librarys arch helper for MSVC.
+#define __SSE2__ 1   // explicitely enable SSE2 for 32 and 64 bit builds
+#define __SSE3__ 1   // explicitely enable SSE3 for 32 and 64 bit builds
 #if defined(_M_X64) || defined(__x86_64__) || defined(__amd64__)
-// explicitely enable SSSE3 for 64 bit builds:
-#define __SSSE3__ 1
-// explicitely enable SSE4.1 for 64 bit builds:
-#define __SSE4_1__ 1
-// explicitely enable SSE4.2 for 64 bit builds:
-#define __SSE4_2__ 1
+#define __SSSE3__ 1  // explicitely enable SSSE3 for 64 bit builds
+#define __SSE4_1__ 1 // explicitely enable SSE4.1 for 64 bit builds
+#define __SSE4_2__ 1 // explicitely enable SSE4.2 for 64 bit builds
+#endif
 #endif
 
 // add headers that you want to pre-compile here:
-
 #include <array>         // Calc ang Win32 GUI
 #include <limits>        // Calc
 #include <new>           // Formatter
@@ -52,24 +44,18 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 #include <unordered_map> // Calc
 
 // Calc compile options:
-
-__pragma(warning(disable : 4365)); // signed/unsigned mismatch
-__pragma(warning(disable
-                 : 4514)); // unreferenced inline function has been removed
-__pragma(warning(
-    disable : 4623)); // default constructor was implicitly defined as deleted
-__pragma(warning(disable
-                 : 4625)); // copy constructor was implicitly defined as deleted
-__pragma(warning(
-    disable : 4626)); // assignment operator was implicitly defined as deleted
-__pragma(warning(disable : 4668)); // is not defined as a preprocessor macro,
-                                   // replacing with '0' for 'directives'
-__pragma(warning(
-    disable
-    : 5027)); // move assignment operator was implicitly defined as deleted
-__pragma(warning(disable : 5030)); // attribute 'nodiscard' is not recognized
+// clang-format off
+//__pragma(warning(disable : 4365)); // signed/unsigned mismatch
+__pragma(warning(disable : 4514)); // unreferenced inline function has been removed
+__pragma(warning(disable : 4623)); // default constructor was implicitly defined as deleted
+__pragma(warning(disable : 4625)); // copy constructor was implicitly defined as deleted
+__pragma(warning(disable : 4626)); // assignment operator was implicitly defined as deleted
+__pragma(warning(disable : 4668)); // is not defined as a preprocessor macro, replacing with '0' for 'directives'
+__pragma(warning(disable : 5027)); // move assignment operator was implicitly defined as deleted
+//__pragma(warning(disable : 5030)); // attribute 'nodiscard' is not recognized
 __pragma(warning(disable : 5045)); // warning for unsafe buffer usage
-__pragma(warning(disable : 5222)); // warning for deprecated declaration
+//__pragma(warning(disable : 5222)); // warning for deprecated declaration
+// clang-format on
 
 #include "flags.hpp"
 
@@ -78,26 +64,19 @@ __pragma(warning(disable : 5222)); // warning for deprecated declaration
 #endif
 
 // Zmij compile options:
-
+// clang-format off
 //  Tests time is : 81207ms. Without Tests time is : 118164ms.
 __pragma(warning(push));
-__pragma(warning(disable : 4390)); // empty control statement has no effect
-__pragma(warning(
-    disable
-    : 4244)); // conversion from 'double' to 'float', possible loss of data
-__pragma(warning(disable
-                 : 4459)); // declaration of 'x' hides global declaration
-__pragma(warning(
-    disable : 4456)); // declaration of 'x' hides previous local declaration
-__pragma(warning(disable
-                 : 4324)); // structure was padded due to alignment specifier
-__pragma(warning(disable : 4554)); // '<<' : check operator precedence for
-                                   // possible error; use parentheses to
-__pragma(warning(disable
-                 : 4804)); // '!=' : unsafe use of type 'bool' in operation
 __pragma(warning(disable : 4100)); // unreferenced formal parameter
-__pragma(warning(disable
-                 : 4189)); // local variable is initialized but not referenced
+//__pragma(warning(disable : 4189)); // local variable is initialized but not referenced
+__pragma(warning(disable : 4324)); // structure was padded due to alignment specifier
+//__pragma(warning(disable : 4244)); // conversion from 'double' to 'float', possible loss of data
+__pragma(warning(disable : 4554)); // '<<' : check operator precedence for possible error; use parentheses to...
+__pragma(warning(disable : 4390)); // empty control statement has no effect
+//__pragma(warning(disable : 4456)); // declaration of 'x' hides previous local declaration
+//__pragma(warning(disable : 4459)); // declaration of 'x' hides global declaration
+//__pragma(warning(disable : 4804)); // '!=' : unsafe use of type 'bool' in operation
+// clang-format on
 #include "../../zmij_next/zmij.cc"
 __pragma(warning(pop));
 #if CALC_USE_128_BIT_FLOAT
@@ -108,7 +87,6 @@ __pragma(warning(pop));
 #if !defined(CALC_USE_ERROR_TOKEN) || defined(CALC_TESTS_DEV_ENABLED)
 
 // fmt compile options:
-
 #define FMT_HEADER_ONLY 1
 #define FMT_USE_FLOAT 0
 #define FMT_USE_LONG_DOUBLE 0
@@ -124,7 +102,6 @@ __pragma(warning(pop));
 #define FMT_USE_FLOAT128 0
 #endif
 #endif
-
 // because we have cleaner output we can reduce i-cache pressure:
 #define FMT_OPTIMIZE_SIZE 2 // Tests time is: 49612ms.
 #define FMT_OS 0
@@ -142,12 +119,10 @@ __pragma(warning(pop));
 #endif
 
 // fast_float compile options:
-
 #if CALC_USE_128_BIT_FLOAT
 #warning                                                                       \
     "128-bit float type isn't supported by fast_float. The library convert any user input values to 64-bit double."
 #endif
-
 // https://github.com/fastfloat/fast_float/pull/307
 // Tests time is: 48459ms.
 #define FASTFLOAT_ONLY_POSITIVE_C_NUMBER_WO_INF_NAN

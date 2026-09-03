@@ -5,6 +5,8 @@
 #ifndef GUI_HPP
 #define GUI_HPP
 
+namespace GUI {
+
 #ifdef _WIN32
 
 // Explicitely enble C++ support by Windows SDK to use Unicode on systems before
@@ -14,20 +16,13 @@
 // Disable warnings about unsafe functions in Windows API
 #define _CRT_SECURE_NO_WARNINGS
 
+#if 0
 // Speed up build time by excluding rarely-used stuff from Windows headers
 #define VC_EXTRALEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
 
 #include "targetver.h"
-
-/**
- * Check that unicode is enabled
- */
-
-#if !defined(_UNICODE)
-#error                                                                         \
-    "Because _UNICODE isn't enabled we can't effectively proccess user input and user can't use mathematical symbols."
-#endif
 
 /**
  * Check Windows version support for Calc GUI application. The minimal supported
@@ -37,39 +32,41 @@
 
 #if (_WIN32_WINNT < _WIN32_WINNT_WIN2K)
 #error                                                                         \
-    "Because Calc is the Dialog based application version below Windows 2000 isn't supported."
+    "Calc is the dialog based application. Windows 2000 is the minimal version."
 #endif
 
 #if (_WIN32_WINNT < _WIN32_WINNT_WINXP)
-#warning                                                                       \
-    "In Windows before Windows XP the link in the About box isn't working bacause system API isn't exist."
+#warning "The homepage link in the about box working from XP."
 #endif
 
 #if (_WIN32_WINNT < _WIN32_WINNT_WS03)
-#warning                                                                       \
-    "In Windows before Windows Server 2003 the max input is limited to 32767 symbols."
+#warning "From Server 2003 we can use increased input up to 64k symbols."
 #endif
 
 #if (_WIN32_WINNT < _WIN32_WINNT_WIN6)
 #warning                                                                       \
-    "Restart manager and different DPI scaling isn't supported before Windows Vista or Windows Server 2008."
+    "Restart manager and different DPI scaling supported from Vista or Server 2008."
 #endif
 
 #if (_WIN32_WINNT < _WIN32_WINNT_WIN10)
 #warning                                                                       \
-    "In Windows before Windows 10 or Windows Server 2016 the HiDPI isn't supported and Dialog based applications not resized automatically when DPI changed."
+    "In Windows 10 or Server 2016 the HiDPI supported and Dialog based applications resized automatically when DPI changed. Also auto dark mode only available for Windows 10+."
 #endif
 
 /**
  * Disable rarely-used stuff from Windows headers
  */
 
+#if 0
+
 #define NOAPISET
 
 #define NODDEMLSPY
 #define NO_COMMCTRL_DA
 #define NOWINBASEINTERLOCK
-// #define NOIME // For ImmDisableIME
+#ifndef CALC_DISABLE_IME
+#define NOIME
+#endif
 #define NORESOURCE
 #define NODESKTOP
 #define NOWINDOWSTATION
@@ -102,12 +99,12 @@
 #endif
 //  #define NOCTLMGR -Control and Dialog routines
 #define NODRAWTEXT -DrawText() and DT_ *
-#ifndef CALC_SUPPORT_DARK_MODE
+#if !defined(CALC_SUPPORT_DARK_MODE) && !defined(CALC_SUPPORT_DPI_CHANGES)
 #define NOGDI -All GDI defines and routines
 #endif
 #define NOKERNEL -All KERNEL defines and routines
 // #define NOUSER -All USER defines and routines
-#define NONLS -All NLS defines and routines
+// #define NONLS -All NLS defines and routines
 #define NOMB -MB_ *and MessageBox()
 #define NOMEMMGR -GMEM_ *, LMEM_ *, GHND, LHND, associated routines
 #define NOMETAFILE -typedef METAFILEPICT
@@ -165,10 +162,15 @@
 #define NOTOOLTIPS
 #define NOREBAR
 
+#endif
+
+// clang-format off
 __pragma(warning(push));
-__pragma(warning(disable : 5039));
-__pragma(warning(disable : 4865));
+__pragma(warning(disable : 5039)); // potentially throwing function passed to extern C
+__pragma(warning(disable : 4865)); // vector<bool> is never constructed with a non-constant size
+// clang-format on
 #include <windows.h>
+// #include <stringapiset.h>
 #ifdef CALC_SUPPORT_LINK_WINDOW
 #include <commctrl.h>
 #include <shellapi.h>
@@ -176,6 +178,9 @@ __pragma(warning(disable : 4865));
 #ifdef CALC_SUPPORT_DARK_MODE
 #include <dwmapi.h>
 #include <uxtheme.h>
+#endif
+#ifdef _DEBUG
+#include <crtdbg.h>
 #endif
 __pragma(warning(pop));
 
@@ -193,128 +198,126 @@ struct CalcConfiguration {
   static constexpr BYTE default_shift_px = 100;
 
   // https://learn.microsoft.com/windows/win32/controls/em-limittext
-  static constexpr UINT input_max_data_size =
+  static constexpr UINT input_max_text_length =
 #ifdef CALC_SUPPORT_SET_LIMIT_TEXT
-      // Win32 multiline EDIT max is 64 KiB for classic Edit control:
-      (64 * 1024) * sizeof(WCHAR);
+      128 * 1024;
 #else
-      // Win32 multiline EDIT max is 32 KiB for classic Edit control:
-      (32 * 1024) * sizeof(WCHAR);
+      // max is 32k symbols for Edit control and can't be changed:
+      32 * 1024;
 #endif
-  static constexpr UINT input_max_text_length = input_max_data_size / sizeof(WCHAR);
+  static constexpr UINT input_max_data_size =
+      input_max_text_length * sizeof(WCHAR);
 };
 
 /**
  * The normalization needed for preprocessing and converting mathematical
- * values, like 𝜋 -> pi i.e to it's ANSI representation that Calc understand.
+ * values, like ℯ -> e, 𝜋 -> pi i.e to it's ANSI representation.
+ *
  * TODO: this function not transform any syntax construction!
+ * CALC_ALLOW_UNICODE_IN_GUI
  */
-[[nodiscard]] static bool normalize_equasion(LPCWSTR input, const UINT size,
+[[nodiscard]] static UINT normalize_equasion(LPCWSTR input, const UINT size,
                                              std::string &output) noexcept {
-
-  for (const auto end = input + size; input != end; ++input) [[likely]] {
-    const auto &c = *input;
-
-    // Process ANSI part:
-    switch (c) {
-    // Cleanup all string separation and formatting:
-    case WCHAR('\t'):
-    case WCHAR('\n'):
-    case WCHAR('\v'):
-    case WCHAR('\f'):
-    case WCHAR('\r'):
-      // output.push_back(' ');
-      break;
-    default:
-      break;
-    }
-
-    // All other ANSI chars converted directly
-    if (c <= WCHAR(0x7F)) {
-      output.push_back(static_cast<char>(c));
-      continue;
-    }
+  UINT position = 0;
+  for (; position != size; ++position) [[likely]] {
 
     // Process Unicode part:
-    switch (c) {
-    // Whitespace accepted by mathematical input.
-    case u'\u00A0': // NBSP
-    case u'\u2000': // EN QUAD
-    case u'\u2001': // EM QUAD
-    case u'\u2002': // EN SPACE
-    case u'\u2003': // EM SPACE
-    case u'\u2004':
-    case u'\u2005':
-    case u'\u2006':
-    case u'\u2007':
-    case u'\u2008':
-    case u'\u2009': // THIN SPACE
-    case u'\u200A': // HAIR SPACE
-    case u'\u202F': // NARROW NBSP
-    case u'\u205F': // MEDIUM MATHEMATICAL SPACE
-    case u'\u3000': // IDEOGRAPHIC SPACE
-      // output.push_back(' ');
+    switch (input[position]) {
+
+    // All string separation, formatting, and control characters:
+    case WCHAR('\t'): // TAB
+    case WCHAR('\n'): // LF
+    case WCHAR('\v'): // VT
+    case WCHAR('\f'): // FF
+    case WCHAR('\r'): // CR
+    case WCHAR(' '):  // SPACE
+    case u'\u00A0':   // NO-BREAK SPACE
+    case u'\u2000':   // EN QUAD
+    case u'\u2001':   // EM QUAD
+    case u'\u2002':   // EN SPACE
+    case u'\u2003':   // EM SPACE
+    case u'\u2004':   // THREE-PER-EM SPACE
+    case u'\u2005':   // FOUR-PER-EM SPACE
+    case u'\u2006':   // SIX-PER-EM SPACE
+    case u'\u2007':   // FIGURE SPACE
+    case u'\u2008':   // PUNCTUATION SPACE
+    case u'\u2009':   // THIN SPACE
+    case u'\u200A':   // HAIR SPACE
+    case u'\u200B':   // ZERO WIDTH SPACE
+    case u'\u200C':   // ZERO WIDTH NON-JOINER
+    case u'\u200D':   // ZERO WIDTH JOINER
+    case u'\u2060':   // WORD JOINER
+    case u'\u202F':   // NARROW NO-BREAK SPACE
+    case u'\u205F':   // MEDIUM MATHEMATICAL SPACE
+    case u'\u3000':   // IDEOGRAPHIC SPACE
+    case u'\u2028':   // LINE SEPARATOR
+    case u'\u2029':   // PARAGRAPH SEPARATOR
+    case u'\uFEFF':   // ZERO WIDTH NO-BREAK SPACE
+      output.push_back(' ');
       break;
 
-    // Fullwidth digits.
-    case u'\uFF10':
+    // Fullwidth, superscript, subscript digits.
+    case u'\uFF10': // ０
+    case u'\u2070': // ⁰
+    case u'\u2080': // ₀
       output.push_back('0');
       break;
-    case u'\uFF11':
+    case u'\uFF11': // １
+    case u'\u00B9': // ¹
+    case u'\u2081': // ₁
       output.push_back('1');
       break;
-    case u'\uFF12':
+    case u'\uFF12': // ２
+    case u'\u00B2': // ²
+    case u'\u2082': // ₂
       output.push_back('2');
       break;
-    case u'\uFF13':
+    case u'\uFF13': // ３
+    case u'\u00B3': // ³
+    case u'\u2083': // ₃
       output.push_back('3');
       break;
-    case u'\uFF14':
+    case u'\uFF14': // ４
+    case u'\u2074': // ⁴
+    case u'\u2084': // ₄
       output.push_back('4');
       break;
-    case u'\uFF15':
+    case u'\uFF15': // ５
+    case u'\u2075': // ⁵
+    case u'\u2085': // ₅
       output.push_back('5');
       break;
-    case u'\uFF16':
+    case u'\uFF16': // ６
+    case u'\u2076': // ⁶
+    case u'\u2086': // ₆
       output.push_back('6');
       break;
-    case u'\uFF17':
+    case u'\uFF17': // ７
+    case u'\u2077': // ⁷
+    case u'\u2087': // ₇
       output.push_back('7');
       break;
-    case u'\uFF18':
+    case u'\uFF18': // ８
+    case u'\u2078': // ⁸
+    case u'\u2088': // ₈
       output.push_back('8');
       break;
-    case u'\uFF19':
+    case u'\uFF19': // 9
+    case u'\u2079': // ⁹
+    case u'\u2089': // ₉
       output.push_back('9');
       break;
 
-    // Fullwidth operators/punctuation.
-    case u'\uFF0B':
-      output.push_back('+');
-      break; // ＋
-    case u'\uFF0D':
-      output.push_back('-');
-      break; // －
-    case u'\uFF0A':
-      output.push_back('*');
-      break; // ＊
-    case u'\uFF0F':
-      output.push_back('/');
-      break; // ／
-    case u'\uFF08':
-      output.push_back('(');
-      break; // （
-    case u'\uFF09':
-      output.push_back(')');
-      break; // ）
-    case u'\uFF0C':
-      output.push_back(',');
-      break; // ，
-    case u'\uFF05':
-      output.push_back('%');
-      break; // ％
+    // Fullwidth, superscript, subscript and alternative operators/punctuation.
+    case u'\uFF0B': // ＋
+    case u'\u207A': // ⁺
+    case u'\u208A': // ₊
 
-    // Alternative minus characters.
+      output.push_back('+');
+      break;
+    case u'\uFF0D': // －
+    case u'\u207B': // ⁻
+    case u'\u208B': // ₋
     case u'\u2010': // ‐
     case u'\u2011': // -
     case u'\u2012': // ‒
@@ -324,8 +327,7 @@ struct CalcConfiguration {
     case u'\uFE63': // ﹣
       output.push_back('-');
       break;
-
-    // Multiplication.
+    case u'\uFF0A': // ＊
     case u'\u00B7': // ·
     case u'\u00D7': // ×
     case u'\u2217': // ∗
@@ -335,28 +337,33 @@ struct CalcConfiguration {
     case u'\u2A2F': // ⨯
       output.push_back('*');
       break;
-
-    // Division.
     case u'\u00F7': // ÷
     case u'\u2044': // ⁄
     case u'\u2215': // ∕
+    case u'\uFF0F': // ／
       output.push_back('/');
       break;
-
-    // Parentheses.
+    case u'\uFF08': // （
+    case u'\u207D': // ⁽
+    case u'\u208D': // ₍
     case u'\uFE59': // ﹙
       output.push_back('(');
       break;
-
+    case u'\uFF09': // ）
+    case u'\u207E': // ⁾
+    case u'\u208E': // ₎
     case u'\uFE5A': // ﹚
       output.push_back(')');
       break;
-
-    // Comma.
+    case u'\uFF0C': // ，
     case u'\uFE50': // ﹐
       output.push_back(',');
       break;
+    case u'\uFF05': // ％
+      output.push_back('%');
+      break;
 
+#ifdef CALC_ALLOW_UNICODE_IN_GUI
     // Mathematical constants.
     case u'\u03C0': // π
     case u'\u03D6': // ϖ
@@ -405,78 +412,9 @@ struct CalcConfiguration {
     case u'\u221B': // ∛
       output.append("cbrt");
       break;
+#endif
 
-    // Superscript/subscript signs and digits.
-    case u'\u207A': // ⁺
-    case u'\u208A': // ₊
-      output.push_back('+');
-      break;
-
-    case u'\u207B': // ⁻
-    case u'\u208B': // ₋
-      output.push_back('-');
-      break;
-
-    case u'\u207D': // ⁽
-    case u'\u208D': // ₍
-      output.push_back('(');
-      break;
-
-    case u'\u207E': // ⁾
-    case u'\u208E': // ₎
-      output.push_back(')');
-      break;
-
-    case u'\u2070': // ⁰
-    case u'\u2080': // ₀
-      output.push_back('0');
-      break;
-
-    case u'\u00B9': // ¹
-    case u'\u2081': // ₁
-      output.push_back('1');
-      break;
-
-    case u'\u00B2': // ²
-    case u'\u2082': // ₂
-      output.push_back('2');
-      break;
-
-    case u'\u00B3': // ³
-    case u'\u2083': // ₃
-      output.push_back('3');
-      break;
-
-    case u'\u2074': // ⁴
-    case u'\u2084': // ₄
-      output.push_back('4');
-      break;
-
-    case u'\u2075': // ⁵
-    case u'\u2085': // ₅
-      output.push_back('5');
-      break;
-
-    case u'\u2076': // ⁶
-    case u'\u2086': // ₆
-      output.push_back('6');
-      break;
-
-    case u'\u2077': // ⁷
-    case u'\u2087': // ₇
-      output.push_back('7');
-      break;
-
-    case u'\u2078': // ⁸
-    case u'\u2088': // ₈
-      output.push_back('8');
-      break;
-
-    case u'\u2079': // ⁹
-    case u'\u2089': // ₉
-      output.push_back('9');
-      break;
-
+#ifdef CALC_ALLOW_UNICODE_IN_GUI
       /*
 
   TODO: mapping and converting functionality
@@ -976,14 +914,21 @@ struct CalcConfiguration {
 
   */
 
-    // Any other non-ASCII character is not part of the current Calc
-    // language and should be rejected here.
+#endif
     default:
-      [[unlikely]] return false;
+      // All ANSI chars converted directly
+      if (input[position] <= WCHAR(0x7F)) [[likely]] {
+        output.push_back(static_cast<char>(input[position]));
+        break;
+      }
+      // Any other non-ASCII character is not part of the current Calc
+      // language and should be rejected here.
+      [[unlikely]] return position;
     }
   }
-
-  [[likely]] return true;
+  // All characters processed successfully.
+  assert(position == size);
+  [[likely]] return position;
 }
 
 /**
@@ -991,31 +936,21 @@ struct CalcConfiguration {
  * Edit control. This can'be usable only if Edit is multiline and for Dialog
  * local edit option is enabled.
  */
-class EditTextView {
+class EditView {
 public:
-  EditTextView() = delete;
-  EditTextView(EditTextView const &) = delete;
-  EditTextView &operator=(EditTextView const &) = delete;
+  EditView() = delete;
+  EditView(EditView const &) = delete;
+  EditView &operator=(EditView const &) = delete;
 
-  explicit EditTextView(const HWND edit) noexcept {
-    _size = static_cast<UINT>(SendMessageA(edit, WM_GETTEXTLENGTH, 0, 0));
-    if (!empty()) [[likely]] {
-      _handle =
-          reinterpret_cast<HLOCAL>(SendMessageA(edit, EM_GETHANDLE, 0, 0));
-      _data = static_cast<LPCWSTR>(LocalLock(_handle));
-    }
+  explicit EditView(const HWND edit) noexcept {
+    _length = static_cast<UINT>(SendMessageA(edit, WM_GETTEXTLENGTH, 0, 0));
+    assert(_length);
+    _handle = reinterpret_cast<HLOCAL>(SendMessageA(edit, EM_GETHANDLE, 0, 0));
+    _data = static_cast<LPCWSTR>(LocalLock(_handle));
+    assert(_handle && _data);
   }
 
-  ~EditTextView() noexcept {
-    if (!empty()) [[likely]] {
-      LocalUnlock(_handle);
-    }
-  }
-
-  [[nodiscard]]
-  constexpr bool empty() const noexcept {
-    return _size == 0;
-  }
+  ~EditView() noexcept { LocalUnlock(_handle); }
 
   /**
    * length in characters of the text in the edit control. This is useful for
@@ -1023,7 +958,7 @@ public:
    */
   [[nodiscard]]
   constexpr auto length() const noexcept {
-    return _size;
+    return _length;
   }
 
   [[nodiscard]] constexpr auto text() const noexcept { return _data; }
@@ -1034,79 +969,98 @@ public:
    */
   [[nodiscard]]
   constexpr auto size() const noexcept {
-    return static_cast<DWORD>(_size * sizeof(WCHAR));
+    return static_cast<DWORD>(_length * sizeof(WCHAR));
   }
 
   [[nodiscard]] constexpr auto bytes() const noexcept {
     return reinterpret_cast<const BYTE *>(_data);
   }
 
+  [[nodiscard]]
+  constexpr bool empty() const noexcept {
+    return length() == 0;
+  }
+
 private:
   [[no_unique_address]] HLOCAL _handle [[indeterminate]];
   [[no_unique_address]] LPCWSTR _data [[indeterminate]];
-  [[no_unique_address]] UINT _size;
+  [[no_unique_address]] UINT _length;
 };
 
 /**
  * GUI helper to write data to the GUI and restore user data from system
  * database.
  */
-class EditTextWriter {
+class Edit {
 public:
-  EditTextWriter() = delete;
-  EditTextWriter(EditTextWriter const &) = delete;
-  EditTextWriter &operator=(EditTextWriter const &) = delete;
+  Edit() = delete;
+  Edit(Edit const &) = delete;
+  Edit &operator=(Edit const &) = delete;
 
-  explicit EditTextWriter(const HWND edit, const UINT max_size) noexcept
-      : _edit(edit), _max_size(max_size) {
-
-    const auto orig_memory =
-        reinterpret_cast<HLOCAL>(SendMessageA(edit, EM_GETHANDLE, 0, 0));
-
-    _handle = LocalReAlloc(orig_memory, _max_size, LMEM_MOVEABLE);
-
-    if (valid()) [[likely]] {
-      _data = static_cast<LPWSTR>(LocalLock(_handle));
+  explicit Edit(const HWND edit, const UINT max_length) noexcept
+      : _edit(edit), _max_size(max_length * sizeof(WCHAR)) {
+    _handle = reinterpret_cast<HLOCAL>(SendMessageA(edit, EM_GETHANDLE, 0, 0));
+    assert(_handle);
+    if (_max_size) {
+      _handle = LocalReAlloc(_handle, _max_size, LMEM_MOVEABLE);
+      assert(_handle);
     }
+    _data = static_cast<LPWSTR>(LocalLock(_handle));
+    assert(_data);
   }
 
-  ~EditTextWriter() noexcept {
-    if (valid()) [[likely]] {
-      LocalUnlock(_handle);
+  ~Edit() noexcept {
+    LocalUnlock(_handle);
+    if (_max_size) {
       SendMessageA(_edit, EM_SETHANDLE, reinterpret_cast<WPARAM>(_handle), 0);
     }
   }
 
   /**
-   * length in characters of the text in the edit control. This is useful for
-   * setting text.
+   * Length in characters of the text in the edit control.
    */
-  constexpr void set_length(const UINT length) noexcept {
-    _data[length] = L'\0'; // because of C string
-  }
-
   [[nodiscard]] constexpr auto text() const noexcept { return _data; }
 
-  /**
-   * size in bytes of the text in the edit control. This is useful for loading
-   * data from the system database.
-   */
-  constexpr void set_size(const UINT size) noexcept {
-    set_length(size / sizeof(WCHAR));
+  constexpr void set_end(LPWSTR end) const noexcept {
+    assert(end >= _data && end - _data <= _max_size / sizeof(WCHAR));
+    *end = L'\0'; // because of C string
   }
 
+  /**
+   * Length in characters of the text in the edit control.
+   */
+  constexpr void set_length(const UINT length) const noexcept {
+    assert(length <= _max_size / sizeof(WCHAR));
+    set_end(_data + length);
+  }
+
+  /**
+   * Write ANSI text to the edit control.
+   */
+  void write(const char *text, const UINT length) noexcept {
+    assert(length <= _max_size / sizeof(WCHAR));
+    set_length(MultiByteToWideChar(CP_ACP, 0, text, length, _data, length));
+  }
+
+  /**
+   * Write ANSI text to the edit control.
+   */
+  void write(const char *text, const char *text_end) noexcept {
+    write(text, static_cast<UINT>(text_end - text));
+  }
+
+  /**
+   * Size in bytes of the text in the edit control.
+   */
   [[nodiscard]] constexpr auto bytes() noexcept {
     return reinterpret_cast<BYTE *>(_data);
   }
 
-  [[nodiscard]]
-  constexpr bool valid() const noexcept {
-    return _handle != nullptr;
-  }
-
-  [[nodiscard]]
-  constexpr bool writable() const noexcept {
-    return _data != nullptr;
+  /**
+   * Size in bytes of the text in the edit control.
+   */
+  constexpr void set_size(const UINT size) noexcept {
+    set_length(size / sizeof(WCHAR));
   }
 
 private:
@@ -1125,20 +1079,30 @@ public:
   EquasionHandler(EquasionHandler const &) = delete;
   EquasionHandler &operator=(EquasionHandler const &) = delete;
 
-  explicit constexpr EquasionHandler(const EditTextView &edit,
-                                     std::string &buffer)
-      : _data(buffer) {
-    if (!normalize_equasion(edit.text(), edit.length(), buffer)) [[unlikely]] {
-      _data.clear();
-    }
+  explicit constexpr EquasionHandler(EditView &edit, std::string &equasion)
+      : _edit(edit), _equasion(equasion) {
+    _position = normalize_equasion(edit.text(), edit.length(), _equasion);
   }
 
-  constexpr ~EquasionHandler() noexcept { _data.clear(); }
+  constexpr ~EquasionHandler() noexcept { _equasion.clear(); }
 
-  [[nodiscard]] constexpr const auto &data() const noexcept { return _data; }
+  [[nodiscard]] constexpr bool failed() const noexcept {
+    // TODO Need to check _position in the edit control. And higlight _position
+    // in the edit control if it's not the end.
+
+    // TODO this check isn't complet, because ANSI string can be longer because
+    // of Unicode characters.
+    return _position != _equasion.length();
+  }
+
+  [[nodiscard]] constexpr const auto &data() const noexcept {
+    return _equasion;
+  }
 
 private:
-  [[no_unique_address]] std::string &_data;
+  [[no_unique_address]] std::string &_equasion;
+  [[no_unique_address]] EditView &_edit;
+  [[no_unique_address]] UINT _position;
 };
 
 /**
@@ -1232,10 +1196,10 @@ static void add_about_menu_to_system_menu(const HWND window) noexcept {
  */
 static void set_window_icons(const HWND window,
                              const HINSTANCE instance) noexcept {
-  SendMessageA(window, WM_SETICON, ICON_SMALL,
+  PostMessageA(window, WM_SETICON, ICON_SMALL,
                reinterpret_cast<LPARAM>(
                    LoadIconA(instance, MAKEINTRESOURCEA(IDR_MAINFRAME_SMALL))));
-  SendMessageA(window, WM_SETICON, ICON_BIG,
+  PostMessageA(window, WM_SETICON, ICON_BIG,
                reinterpret_cast<LPARAM>(
                    LoadIconA(instance, MAKEINTRESOURCEA(IDR_MAINFRAME_BIG))));
 }
@@ -1246,13 +1210,14 @@ static void set_window_icons(const HWND window,
  */
 static void edit_set_extended_style(const HWND edit, const DWORD mask,
                                     const DWORD style) noexcept {
-  SendMessageA(edit, EM_SETEXTENDEDSTYLE, static_cast<WPARAM>(mask),
+  PostMessageA(edit, EM_SETEXTENDEDSTYLE, static_cast<WPARAM>(mask),
                static_cast<LPARAM>(style));
 }
 #endif
 
 /**
- * Utility: set text to window from begin to end (end is not included).
+ * Utility: set text to window from begin to end (end is not included, but used
+ * because system API requires C strings).
  */
 static void set_window_text(const HWND hWnd, LPCSTR text,
                             LPSTR const text_end) noexcept {
@@ -1260,40 +1225,13 @@ static void set_window_text(const HWND hWnd, LPCSTR text,
   SetWindowTextA(hWnd, text);
 }
 
-#if defined(_MSC_VER)
-__pragma(warning(push))
-    __pragma(warning(disable
-                     : 4505)) // allow unused static function in release build
-#endif
-
-    /**
-     * Utility: set text to window from begin to end (end is not included).
-     */
-    static void set_window_text(const HWND hWnd, LPCWSTR text,
-                                LPWSTR const text_end) noexcept {
-  *text_end = L'\0'; // because of C string
-  SetWindowTextW(hWnd, text);
-}
-
-/**
- * Utility: get text from window and return its size.
- */
-[[nodiscard]] static UINT get_window_text(const HWND hWnd, CHAR *text,
-                                          const UINT max_size) noexcept {
-  return GetWindowTextA(hWnd, text, max_size);
-}
-
-#if defined(_MSC_VER)
-__pragma(warning(pop))
-#endif
-
 #ifdef CALC_SUPPORT_SET_LIMIT_TEXT
-    /**
-     * Utility: set window text limit
-     */
-    static void set_window_text_limit(const HWND hWnd,
-                                      WPARAM max_symbols) noexcept {
-  SendMessageA(hWnd, EM_LIMITTEXT, max_symbols, 0);
+/**
+ * Utility: set window text limit
+ */
+static void set_window_text_limit(const HWND hWnd,
+                                  WPARAM max_symbols) noexcept {
+  PostMessageA(hWnd, EM_LIMITTEXT, max_symbols, 0);
 }
 #endif
 
@@ -1301,9 +1239,9 @@ __pragma(warning(pop))
  * Utility: goto end of text in window and scroll caret to it
  */
 static void goto_end_of_window_text(const HWND hWnd) noexcept {
-  SendMessageA(hWnd, EM_SETSEL, static_cast<WPARAM>(0),
+  PostMessageA(hWnd, EM_SETSEL, static_cast<WPARAM>(0),
                static_cast<LPARAM>(-1));
-  SendMessageA(hWnd, EM_SCROLLCARET, 0, 0);
+  PostMessageA(hWnd, EM_SCROLLCARET, 0, 0);
 }
 
 #ifdef CALC_SUPPORT_DPI_CHANGES
@@ -1343,40 +1281,81 @@ static void goto_end_of_window_text(const HWND hWnd) noexcept {
 
 #ifdef CALC_SUPPORT_DARK_MODE
 /**
+ * Preferred application theme mode used by the undocumented UxTheme API.
+ */
+enum class PreferredAppMode : int {
+  Default = 0,
+  AllowDark = 1,
+  ForceDark = 2,
+  ForceLight = 3,
+  Max = 4
+};
+
+/**
+ * Menu dynamic colors API for Windows 6+ with working DWM.
+ *
+ * Uses the undocumented uxtheme exports:
+ *   #104 RefreshImmersiveColorPolicyState
+ *   #135 SetPreferredAppMode
+ *   #136 FlushMenuThemes
+ *
+ * The menu itself remains owned by system. No owner-draw, no WM_DRAWITEM,
+ * and no custom menu colors are required.
+ */
+// clang-format off
+using SetPreferredAppModeFn = PreferredAppMode(WINAPI *)(PreferredAppMode) noexcept;
+static SetPreferredAppModeFn SetPreferredAppMode [[indeterminate]];
+
+using RefreshImmersiveColorPolicyStateFn = void(WINAPI *)() noexcept;
+static RefreshImmersiveColorPolicyStateFn RefreshImmersiveColorPolicyState [[indeterminate]];
+
+using FlushMenuThemesFn = void(WINAPI *)() noexcept;
+static FlushMenuThemesFn FlushMenuThemes [[indeterminate]];
+// clang-format on
+
+/**
+ * init application theming. Should be called before any window/dialog/menu is
+ * created.
+ */
+static void init_uxtheme_callers() noexcept {
+  HMODULE uxtheme = GetModuleHandleA("uxtheme.dll");
+  // clang-format off
+  __pragma(warning(push))
+  __pragma(warning(disable : 4191)) // allow FARPROC -> function pointer casts here
+  RefreshImmersiveColorPolicyState = reinterpret_cast<RefreshImmersiveColorPolicyStateFn>(
+      GetProcAddress(uxtheme, MAKEINTRESOURCEA(104)));
+  SetPreferredAppMode = reinterpret_cast<SetPreferredAppModeFn>(
+      GetProcAddress(uxtheme, MAKEINTRESOURCEA(135)));
+  FlushMenuThemes = reinterpret_cast<FlushMenuThemesFn>(
+      GetProcAddress(uxtheme, MAKEINTRESOURCEA(136)));
+  __pragma(warning(pop))
+  // clang-format on
+}
+
+/**
  * Utility: helper to work with theming
  */
 struct Theme {
   /**
-   * init application theming. Should be called before any window/dialog/menu is
-   * created.
+   * init application theming. Should be called before any window is created.
    */
   void init(const HWND application_main_window) noexcept {
-
-    init_uxtheme_callers();
-
     SetPreferredAppMode(PreferredAppMode::AllowDark);
-
     apply(application_main_window, false, true);
   }
 
   /**
-   * apply dark/light appearance to application title bar and aplication frame.
-   * Also this update theme settings for interactive controls that repaints
-   * itself based on it's current state and application theme: BUTTON,
-   * SCROLLBAR, COMBOBOX, LISTBOX, LISTVIEW, TREEVIEW, TAB, PROGRESSBAR,
-   * TRACKBAR.
+   * apply dark/light appearance to application title bar, aplication frame,
+   * menus. Also update theme for interactive controls that repaints itself
+   * based on it's current state and application theme: BUTTON, SCROLLBAR,
+   * COMBOBOX, LISTBOX, LISTVIEW, TREEVIEW, TAB, PROGRESSBAR, TRACKBAR.
    */
   void apply(const HWND window, const bool redraw = false,
              const bool is_main_window = false) noexcept {
-
     apply_theme(window, is_dark_mode(is_main_window));
-
-    EnumChildWindows(window, apply_theme, is_dark_mode(false));
-
+    EnumChildWindows(window, apply_theme, is_dark_mode());
     apply_menus();
-
     apply_title_bar_and_frame(window);
-
     if (redraw) {
       RedrawWindow(window, nullptr, nullptr,
                    RDW_INVALIDATE | RDW_ERASE | RDW_FRAME | RDW_ALLCHILDREN);
@@ -1386,17 +1365,13 @@ struct Theme {
 #ifdef CALC_SUPPORT_DARK_MODE_WITHOUT_WIN32_HELPER
   /**
    * apply dark/light appearance to controls that needs external repainting,
-   * they don't using theming and get global colors from Win32 settings, but we
-   * can simply swap colors to use dark theme for them: EDIT, STATIC, DIALOG
+   * they don't using theming and get global colors from settings, but we can
+   * simply swap colors to use dark theme for them: EDIT, STATIC, DIALOG
    */
-  [[nodiscard]] INT_PTR apply(const WPARAM dc) noexcept {
-    const HDC hdc = reinterpret_cast<HDC>(dc);
-    if (is_dark_mode(false)) {
-      SetBkColor(hdc, GetSysColor(COLOR_WINDOWTEXT));
-      SetTextColor(hdc, GetSysColor(COLOR_APPWORKSPACE));
-      return reinterpret_cast<INT_PTR>(GetSysColorBrush(COLOR_WINDOWTEXT));
-    }
-    return FALSE;
+  [[nodiscard]] INT_PTR apply(const HDC hdc) const noexcept {
+    SetBkColor(hdc, GetSysColor(_background_index));
+    SetTextColor(hdc, GetSysColor(_text_index));
+    return reinterpret_cast<INT_PTR>(GetSysColorBrush(_background_index));
   }
 #endif
 
@@ -1411,106 +1386,52 @@ private:
   }
 
   /**
-   * determine whether applications uses the dark app theme.
+   * determine whether applications uses the dark app theme Windows 10+.
+   */
+  [[nodiscard]] bool is_dark_mode() const noexcept { return _dark_mode; }
+
+  /**
+   * for main application window only: determine uses of the dark app theme.
    */
   [[nodiscard]] bool is_dark_mode(const bool is_main_window) noexcept {
     if (is_main_window) {
-      const RegRead personalization(
-          HKEY_CURRENT_USER,
-          "Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize");
+      // clang-format off
+      const RegRead personalize(HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize");
+      const auto light_theme = personalize.read("AppsUseLightTheme");
+      _dark_mode = light_theme && light_theme.value() == 0;
 
-      const auto app_uses_light_theme =
-          personalization.read("AppsUseLightTheme");
-      dark_mode_enabled =
-          app_uses_light_theme && app_uses_light_theme.value() == 0;
+      _background_index = is_dark_mode() ? COLOR_WINDOWTEXT : COLOR_WINDOW;
+      _text_index =       is_dark_mode() ? COLOR_WINDOW : COLOR_WINDOWTEXT;
+      // clang-format on
     }
-    return dark_mode_enabled;
+    return is_dark_mode();
   }
 
   /**
-   * apply dark/light theme to a application bar and frame. Win32 API for
-   * Windows 6+ with working DWM.
+   * apply dark/light theme to a application bar and frame. Windows 6+ with
+   * working DWM.
    */
   void apply_title_bar_and_frame(const HWND hwnd) const noexcept {
-    BOOL value = dark_mode_enabled ? TRUE : FALSE;
+    BOOL value = is_dark_mode() ? TRUE : FALSE;
     DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value,
                           sizeof(value));
   }
 
-  // DLL hell begin()
-
   /**
-   * Preferred application theme mode used by the undocumented UxTheme API.
-   */
-  enum class PreferredAppMode : int {
-    Default = 0,
-    AllowDark = 1,
-    ForceDark = 2,
-    ForceLight = 3,
-    Max = 4
-  };
-
-  /**
-   * Menu dynamic colors for Win32 API for Windows 6+ with working DWM.
-   *
-   * Uses the undocumented uxtheme exports:
-   *   #135 SetPreferredAppMode
-   *   #104 RefreshImmersiveColorPolicyState
-   *   #136 FlushMenuThemes
-   *
-   * The menu itself remains owned by Windows. No owner-draw, no WM_DRAWITEM,
-   * and no custom menu colors are required.
-   */
-  using SetPreferredAppModeFn = PreferredAppMode(WINAPI *)(PreferredAppMode);
-
-  SetPreferredAppModeFn SetPreferredAppMode [[indeterminate]];
-
-  using RefreshImmersiveColorPolicyStateFn = void(WINAPI *)();
-
-  RefreshImmersiveColorPolicyStateFn RefreshImmersiveColorPolicyState
-      [[indeterminate]];
-
-  using FlushMenuThemesFn = void(WINAPI *)();
-
-  FlushMenuThemesFn FlushMenuThemes [[indeterminate]];
-
-  /**
-   * technical helper for dll hell ^^
-   */
-  void init_uxtheme_callers() noexcept {
-    HMODULE uxtheme = GetModuleHandleA("uxtheme.dll");
-
-#if defined(_MSC_VER)
-    __pragma(warning(push)) __pragma(
-        warning(disable : 4191)) // allow FARPROC -> function pointer casts here
-#endif
-
-        SetPreferredAppMode = reinterpret_cast<SetPreferredAppModeFn>(
-            GetProcAddress(uxtheme, MAKEINTRESOURCEA(135)));
-
-    RefreshImmersiveColorPolicyState =
-        reinterpret_cast<RefreshImmersiveColorPolicyStateFn>(
-            GetProcAddress(uxtheme, MAKEINTRESOURCEA(104)));
-
-    FlushMenuThemes = reinterpret_cast<FlushMenuThemesFn>(
-        GetProcAddress(uxtheme, MAKEINTRESOURCEA(136)));
-
-#if defined(_MSC_VER)
-    __pragma(warning(pop))
-#endif
-  }
-
-  // DLL hell end()
-
-  /**
-   * apply theme to menus. Win32 API for Windows 6+ with working DWM.
+   * apply theme to menus. API for Windows 6+ with working DWM.
    */
   void apply_menus() const noexcept {
     RefreshImmersiveColorPolicyState();
     FlushMenuThemes();
   }
 
-  [[no_unique_address]] bool dark_mode_enabled [[indeterminate]];
+  /**
+   * save dark mode state. This is used to avoid multiple registry reads for
+   * each window and control.
+   */
+  [[no_unique_address]] bool _dark_mode [[indeterminate]];
+  [[no_unique_address]] int _background_index [[indeterminate]];
+  [[no_unique_address]] int _text_index [[indeterminate]];
 };
 #endif
 
@@ -1524,10 +1445,6 @@ struct Point : tagPOINT {
     x = _x;
     y = _y;
   }
-
-  [[nodiscard]] constexpr auto get_x() const noexcept { return x; }
-
-  [[nodiscard]] constexpr auto get_y() const noexcept { return y; }
 };
 
 /**
@@ -1546,17 +1463,13 @@ struct Rect : tagRECT {
     bottom = y + heigth;
   }
 
-  [[nodiscard]] constexpr auto get_x() const noexcept { return left; }
+  [[nodiscard]] constexpr auto x() const noexcept { return left; }
 
-  [[nodiscard]] constexpr auto get_y() const noexcept { return top; }
+  [[nodiscard]] constexpr auto y() const noexcept { return top; }
 
-  [[nodiscard]] constexpr auto get_width() const noexcept {
-    return right - left;
-  }
+  [[nodiscard]] constexpr auto width() const noexcept { return right - left; }
 
-  [[nodiscard]] constexpr auto get_heigth() const noexcept {
-    return bottom - top;
-  }
+  [[nodiscard]] constexpr auto height() const noexcept { return bottom - top; }
 };
 
 using Rect_ptr = Rect *;
@@ -1564,7 +1477,6 @@ using Rect_ptr = Rect *;
 /**
  * Utility: helper for resize Layout
  */
-
 enum class Anchor : uint8_t {
   None = 0,
   HorizontalStretch = 1 << 0,
@@ -1588,7 +1500,7 @@ constexpr Anchor operator&(Anchor lhs, Anchor rhs) noexcept {
 }
 
 // Helper to check if a flag is set
-constexpr bool hasFlag(Anchor value, Anchor flag) noexcept {
+constexpr bool has_flag(Anchor value, Anchor flag) noexcept {
   return static_cast<bool>(value & flag);
 }
 
@@ -1602,125 +1514,122 @@ public:
   Layout(Layout &&) = delete;
 
   struct Constraint {
-    constexpr void init(const Layout *layout, const HWND _handle,
-                        const Rect &client, const Anchor _anchor) noexcept {
-      handle = _handle;
+    constexpr void init(const Layout *layout, const HWND handle,
+                        const Rect &client, const Anchor anchor) noexcept {
+      _handle = handle;
 
-      relative_margins.left = client.left;
-      relative_margins.right = layout->get_width() - client.right;
+      _relative_margins.left = client.left;
+      _relative_margins.right = layout->width() - client.right;
 
-      relative_margins.top = client.top;
-      relative_margins.bottom = layout->get_height() - client.bottom;
+      _relative_margins.top = client.top;
+      _relative_margins.bottom = layout->height() - client.bottom;
 
-      width = client.get_width();
-      height = client.get_heigth();
+      _width = client.width();
+      _height = client.height();
 
-      anchor = _anchor;
+      _anchor = anchor;
     }
 
-    [[no_unique_address]] HWND handle [[indeterminate]];
-    [[no_unique_address]] LONG width [[indeterminate]];
-    [[no_unique_address]] LONG height [[indeterminate]];
-    [[no_unique_address]] Rect relative_margins [[indeterminate]];
-    [[no_unique_address]] Anchor anchor [[indeterminate]];
+    [[no_unique_address]] HWND _handle [[indeterminate]];
+    [[no_unique_address]] LONG _width [[indeterminate]];
+    [[no_unique_address]] LONG _height [[indeterminate]];
+    [[no_unique_address]] Rect _relative_margins [[indeterminate]];
+    [[no_unique_address]] Anchor _anchor [[indeterminate]];
   };
 
-  void init_window(const HWND window) noexcept {
+  constexpr void init_window(const HWND window) noexcept {
     Rect client [[indeterminate]];
     GetClientRect(window, &client);
-
-    width = client.right;
-    height = client.bottom;
+    _width = client.right;
+    _height = client.bottom;
   }
 
-  constexpr void init_min_sizes(const LONG _min_width,
-                                const LONG _min_height) noexcept {
-    min_width = _min_width;
-    min_height = _min_height;
+  constexpr void init_min_sizes(const LONG min_width,
+                                const LONG min_height) noexcept {
+    _min_width = min_width;
+    _min_height = min_height;
   }
 
-  void init_anchor(const HWND parent, const BYTE index, const int id,
-                   const Anchor anchor) noexcept {
+  constexpr void init_anchor(const HWND parent, const BYTE index, const int id,
+                             const Anchor anchor) noexcept {
     const auto handle = GetDlgItem(parent, id);
 
     Rect window [[indeterminate]];
     GetWindowRect(handle, &window);
 
-    Point client_point(window.get_x(), window.get_y());
+    Point client_point(window.x(), window.y());
     ScreenToClient(parent, &client_point);
-    const Rect client(client_point.get_x(), client_point.get_y(),
-                      window.get_width(), window.get_heigth());
+    const Rect client(client_point.x, client_point.y, window.width(),
+                      window.height());
 
-    constraints[index].init(this, handle, client, anchor);
+    _constraints[index].init(this, handle, client, anchor);
   }
 
-  void resize(const LONG new_width, const LONG new_height) noexcept {
-    if (width == new_width && height == new_height) {
+  constexpr void resize(const LONG width, const LONG height) noexcept {
+    if (_width == width && _height == height) {
       return;
     }
-    width = new_width;
-    height = new_height;
+    _width = width;
+    _height = height;
 
-    HDWP hdwp = BeginDeferWindowPos(static_cast<int>(constraints.size()));
-    for (const auto &c : constraints) {
+    HDWP hdwp = BeginDeferWindowPos(static_cast<int>(_constraints.size()));
+    for (const auto &c : _constraints) {
       Rect rect [[indeterminate]];
 
-      if (hasFlag(c.anchor, Anchor::Left)) {
-        rect.right = c.relative_margins.left + c.width;
-        rect.left = c.relative_margins.left;
-      } else if (hasFlag(c.anchor, Anchor::Right)) {
-        rect.right = width - c.relative_margins.right;
-        rect.left = rect.right - c.width;
-      } else if (hasFlag(c.anchor, Anchor::HorizontalStretch)) {
-        rect.right = width - c.relative_margins.right;
-        rect.left = c.relative_margins.left;
+      if (has_flag(c._anchor, Anchor::Left)) {
+        rect.right = c._relative_margins.left + c._width;
+        rect.left = c._relative_margins.left;
+      } else if (has_flag(c._anchor, Anchor::Right)) {
+        rect.right = width - c._relative_margins.right;
+        rect.left = rect.right - c._width;
+      } else if (has_flag(c._anchor, Anchor::HorizontalStretch)) {
+        rect.right = width - c._relative_margins.right;
+        rect.left = c._relative_margins.left;
       }
 
-      if (hasFlag(c.anchor, Anchor::Top)) {
-        rect.bottom = c.relative_margins.top + c.height;
-        rect.top = c.relative_margins.top;
-      } else if (hasFlag(c.anchor, Anchor::Bottom)) {
-        rect.bottom = height - c.relative_margins.bottom;
-        rect.top = rect.bottom - c.height;
-      } else if (hasFlag(c.anchor, Anchor::VerticalStretch)) {
-        rect.bottom = height - c.relative_margins.bottom;
-        rect.top = c.relative_margins.top;
+      if (has_flag(c._anchor, Anchor::Top)) {
+        rect.bottom = c._relative_margins.top + c._height;
+        rect.top = c._relative_margins.top;
+      } else if (has_flag(c._anchor, Anchor::Bottom)) {
+        rect.bottom = height - c._relative_margins.bottom;
+        rect.top = rect.bottom - c._height;
+      } else if (has_flag(c._anchor, Anchor::VerticalStretch)) {
+        rect.bottom = height - c._relative_margins.bottom;
+        rect.top = c._relative_margins.top;
       }
 
-      hdwp = DeferWindowPos(hdwp, c.handle, nullptr, rect.left, rect.top,
-                            rect.get_width(), rect.get_heigth(),
+      hdwp = DeferWindowPos(hdwp, c._handle, nullptr, rect.left, rect.top,
+                            rect.width(), rect.height(),
                             SWP_NOZORDER | SWP_NOACTIVATE);
     }
     EndDeferWindowPos(hdwp);
   }
 
-  [[nodiscard]] constexpr auto get_width() const noexcept { return width; }
+  [[nodiscard]] constexpr auto width() const noexcept { return _width; }
 
-  [[nodiscard]] constexpr auto get_height() const noexcept { return height; }
+  [[nodiscard]] constexpr auto height() const noexcept { return _height; }
 
-  [[nodiscard]] constexpr auto get_min_width() const noexcept {
-    return min_width;
+  [[nodiscard]] constexpr auto min_width() const noexcept { return _min_width; }
+
+  [[nodiscard]] constexpr auto min_x() const noexcept { return _min_width; }
+
+  [[nodiscard]] constexpr auto min_height() const noexcept {
+    return _min_height;
   }
 
-  [[nodiscard]] constexpr auto get_min_x() const noexcept { return min_width; }
+  [[nodiscard]] constexpr auto min_y() const noexcept { return _min_height; }
 
-  [[nodiscard]] constexpr auto get_min_height() const noexcept {
-    return min_height;
-  }
-
-  [[nodiscard]] constexpr auto get_min_y() const noexcept { return min_height; }
-
-  [[nodiscard]] constexpr auto get_handle(const BYTE index) const noexcept {
-    return constraints[index].handle;
+  [[nodiscard]] constexpr auto handle(const BYTE index) const noexcept {
+    return _constraints[index]._handle;
   }
 
 private:
-  [[no_unique_address]] LONG width [[indeterminate]];
-  [[no_unique_address]] LONG height [[indeterminate]];
+  [[no_unique_address]] LONG _width [[indeterminate]];
+  [[no_unique_address]] LONG _height [[indeterminate]];
 
-  [[no_unique_address]] LONG min_width [[indeterminate]];
-  [[no_unique_address]] LONG min_height [[indeterminate]];
-  [[no_unique_address]] std::array<Constraint, elements> constraints
+  [[no_unique_address]] LONG _min_width [[indeterminate]];
+  [[no_unique_address]] LONG _min_height [[indeterminate]];
+  [[no_unique_address]] std::array<Constraint, elements> _constraints
       [[indeterminate]];
 };
 
@@ -1780,7 +1689,7 @@ constexpr static const auto colors_indexes =
  * etc.
  */
 class Colors final {
-  [[no_unique_address]] std::array<COLORREF, colors_indexes.size()> values
+  [[no_unique_address]] std::array<COLORREF, colors_indexes.size()> _values
       [[indeterminate]];
 
 public:
@@ -1789,7 +1698,7 @@ public:
    */
   [[nodiscard]]
   const COLORREF &operator[](const INT index) const noexcept {
-    return values[index];
+    return _values[index];
   }
 
   /**
@@ -1797,20 +1706,20 @@ public:
    */
   [[nodiscard]]
   COLORREF &operator[](const INT index) noexcept {
-    return values[index];
+    return _values[index];
   }
 
-  [[nodiscard]] LPCOLORREF data() noexcept { return values.data(); }
+  [[nodiscard]] LPCOLORREF data() noexcept { return _values.data(); }
 };
 
 /**
  * Get all system colors.
  *
- * Win32 provides GetSysColor() only as a scalar API, so the complete
+ * system provides GetSysColor() only as a scalar API, so the complete
  * system-color table is collected with one GetSysColor() call per entry.
  */
 [[nodiscard]]
-Colors colors() noexcept {
+constexpr static Colors colors() noexcept {
   Colors result [[indeterminate]];
 
   for (const auto i : colors_indexes) {
@@ -1821,14 +1730,14 @@ Colors colors() noexcept {
 }
 
 /**
- * Set all classic Win32 system colors.
+ * Set all system colors.
  *
  * SetSysColors() accepts an array of COLOR_* indices and an array of COLORREF
- * values. Windows broadcasts WM_SYSCOLORCHANGE after a successful change and
+ * values. System broadcasts WM_SYSCOLORCHANGE after a successful change and
  * repaints affected visible windows.
  */
 [[nodiscard]]
-inline bool set_colors(Colors &&new_values) noexcept {
+constexpr static bool set_colors(Colors &&new_values) noexcept {
   return SetSysColors(static_cast<INT>(colors_indexes.size()),
                       colors_indexes.data(), new_values.data()) != FALSE;
 }
@@ -1891,7 +1800,7 @@ struct DWMColors final {
  * has_window_colors stays false.
  */
 [[nodiscard]]
-inline DWMColors dwm_colors(const HWND window) noexcept {
+constexpr static DWMColors dwm_colors(const HWND window) noexcept {
   DWMColors result;
 
   /**
@@ -1903,15 +1812,13 @@ inline DWMColors dwm_colors(const HWND window) noexcept {
   }
 
   if (SUCCEEDED(DwmGetWindowAttribute(window, DWMWA_BORDER_COLOR,
-                                      &result.border, sizeof(result.border)))) {
-    if (SUCCEEDED(DwmGetWindowAttribute(window, DWMWA_CAPTION_COLOR,
-                                        &result.caption,
-                                        sizeof(result.caption)))) {
-      if (SUCCEEDED(DwmGetWindowAttribute(window, DWMWA_TEXT_COLOR,
-                                          &result.text, sizeof(result.text)))) {
-        result.has_window_colors = true;
-      }
-    }
+                                      &result.border, sizeof(result.border))) &&
+      SUCCEEDED(DwmGetWindowAttribute(window, DWMWA_CAPTION_COLOR,
+                                      &result.caption,
+                                      sizeof(result.caption))) &&
+      SUCCEEDED(DwmGetWindowAttribute(window, DWMWA_TEXT_COLOR, &result.text,
+                                      sizeof(result.text)))) {
+    result.has_window_colors = true;
   }
 
   return result;
@@ -1941,4 +1848,7 @@ constexpr static inline COLORREF argb_to_colorref(const DWORD value) noexcept {
 // TODO Qt
 
 #endif
+
+} // namespace GUI
+
 #endif

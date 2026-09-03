@@ -42,6 +42,8 @@
 
 #include <sdkddkver.h>
 
+// #define CALC_DISABLE_IME // disable IME for input
+
 #if (_WIN32_WINNT >= 0x0501)
 #define CALC_SUPPORT_LINK_WINDOW // LinkWindow, NMLINK
 #if (_WIN32_WINNT >= 0x0502)

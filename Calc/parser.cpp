@@ -34,7 +34,9 @@ Value
     [[unlikely]] return _current;
   default:
     [[unlikely]] _current.type = Token::Type::ERROR;
-    _current.error_text = "extraneous input";
+    constexpr std::string_view err = "extraneous input";
+    _current.error_text = err.data();
+    _current.error_text_size = err.size();
     return _current;
   }
 #else
@@ -132,7 +134,9 @@ Token
 
   if (count == static_cast<ParamCount>(values.size())) [[unlikely]] {
 #ifdef CALC_USE_ERROR_TOKEN
-    _current.error_text = "too many ^ in expression";
+    constexpr std::string_view err = "too many ^ in expression";
+    _current.error_text = err.data();
+    _current.error_text_size = err.size();
     _current.error_position = _lex.position();
     return _current;
 #else
@@ -201,8 +205,9 @@ Parser::parse_expr_0() noexcept {
         return result;
       } else [[unlikely]] {
 #ifdef CALC_USE_ERROR_TOKEN
-        constexpr static auto err_str = "expected parenthesis";
-        _current.error_text = err_str;
+        constexpr static std::string_view err = "expected parenthesis";
+        _current.error_text = err.data();
+        _current.error_text_size = err.size();
         _current.error_position = _lex.position();
         return _current;
         ? needs to form nan with adress of an error.
@@ -223,8 +228,9 @@ Parser::parse_expr_0() noexcept {
   default:
     [[unlikely]] {
 #ifdef CALC_USE_ERROR_TOKEN
-      constexpr static auto err_str = "unexpected";
-      _current.error_text = err_str;
+      constexpr static std::string_view err = "unexpected";
+      _current.error_text = err.data();
+      _current.error_text_size = err.size();
       _current.error_position = _lex.position();
       return _current;
       ? needs to form nan with adress of an error.
@@ -284,8 +290,10 @@ Parser::parse_function() noexcept {
           } else [[unlikely]] {
             function_start_pos -= i->first.size();
 #ifdef CALC_USE_ERROR_TOKEN
-            constexpr static auto err_str = "incorrect parameters count";
-            _current.error_text = err_str;
+            constexpr static std::string_view err =
+                "incorrect parameters count";
+            _current.error_text = err.data();
+            _current.error_text_size = err.size();
             _current.error_position = function_start_pos;
             return _current;
             ? needs to form nan with adress of an error.
@@ -304,8 +312,9 @@ Parser::parse_function() noexcept {
       default:
         [[unlikely]] {
 #ifdef CALC_USE_ERROR_TOKEN
-          constexpr static auto err_str = "expected parenthesis";
-          _current.error_text = err_str;
+          constexpr static std::string_view err = "expected parenthesis";
+          _current.error_text = err.data();
+          _current.error_text_size = err.size();
           _current.error_position = _lex.position();
           return _current;
           ? needs to form nan with adress of an error.
@@ -319,8 +328,9 @@ Parser::parse_function() noexcept {
     [[likely]]
 
 #ifdef CALC_USE_ERROR_TOKEN
-    constexpr static auto err_str = "too many parameters";
-    _current.error_text = err_str;
+    constexpr static std::string_view err = "too many parameters";
+    _current.error_text = err.data();
+    _current.error_text_size = err.size();
     _current.error_position = _lex.position();
     return _current;
     ? needs to form nan with adress of an error.
@@ -330,8 +340,9 @@ Parser::parse_function() noexcept {
 #endif
   } else [[unlikely]] {
 #ifdef CALC_USE_ERROR_TOKEN
-    constexpr static auto err_str = "expected parenthesis";
-    _current.error_text = err_str;
+    constexpr static std::string_view err = "expected parenthesis";
+    _current.error_text = err.data();
+    _current.error_text_size = err.size();
     _current.error_position = _lex.position();
     return _current;
     ? needs to form nan with adress of an error.

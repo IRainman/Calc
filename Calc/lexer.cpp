@@ -20,8 +20,9 @@ inline void Lexer::advance(EquationSize n) noexcept { _view.remove_prefix(n); }
 
 inline EquationSize Lexer::return_unparsable(Token &token) const noexcept {
 #ifdef CALC_USE_ERROR_TOKEN
-  constexpr static auto err_str = "unparsable";
-  token.error_text = err_str;
+  constexpr std::string_view err = "unparsable";
+  token.error_text = err.data();
+  token.error_text_size = err.size();
   token.error_position = position();
 #else
   IssueManager::report_error(position(), "unparsable");

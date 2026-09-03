@@ -17,43 +17,40 @@
 
 #include "gui.hpp"
 
+namespace GUI {
+
 #ifdef _WIN32
 
 /**
  * Calc GUI window also it's application itself.
  */
-class CalcWindow {
+class CalcGUI {
 public:
-  constexpr CalcWindow() noexcept = default;
+  constexpr CalcGUI() noexcept = default;
 
-  CalcWindow(const CalcWindow &) = delete;
-  CalcWindow(CalcWindow &&) = delete;
+  CalcGUI(const CalcGUI &) = delete;
+  CalcGUI(CalcGUI &&) = delete;
 
-  constexpr ~CalcWindow() noexcept = default;
+  constexpr ~CalcGUI() noexcept = default;
 
   /**
    * Perform calculation from the GUI
    */
   void calc() noexcept {
-    EditTextView text(layout.get_handle(0));
-
-    EquasionHandler input(text, equasion);
-
-    Lexer l(input.data());
-
+    EditView input(_layout.handle(0));
+    EquasionHandler equasion(input, _equasion);
+    Lexer l(equasion.data());
     Parser p(l);
-
     const auto value = p.parse();
-
 #if defined(CALC_USE_ERROR_TOKEN)
     if (value.type == Token::Type::RESULT) [[likely]] {
       Formatter::Result result [[indeterminate]];
       set_result(result.data(), Formatter::format(value, result));
     } else if (value.type == Token::Type::ERROR) {
-      set_result(value.error_text);
+        set_result(value.error_text, value.error_text + value.error_text_size));
     } else [[unlikely]] {
-      constexpr auto err = "parser internal error";
-      set_result(err);
+      constexpr std::string_view err = "parser internal error";
+      set_result(err.data(), err.data() + err.size());
     }
 #else
     if (IssueManager::has_errors()) [[unlikely]] {
@@ -69,30 +66,34 @@ public:
   /**
    * Save user data from GUI.
    */
-  void save_user_data(const HWND window) noexcept { save_window_data(window); }
+  constexpr void save_user_data(const HWND window) noexcept {
+    save_window_data(window);
+  }
 
   /**
    * Close Calc GUI.
    */
-  void close(const HWND window) const noexcept { EndDialog(window, FALSE); }
+  constexpr void close(const HWND window) const noexcept {
+    EndDialog(window, FALSE);
+  }
 
   /**
    * Initialize Calc GUI and load user data into it.
    */
-  void init(const HWND window, const HINSTANCE instance) noexcept {
+  constexpr void init(const HWND window, const HINSTANCE instance) noexcept {
 
     set_window_icons(window, instance);
 
     add_about_menu_to_system_menu(window);
 
 #ifdef CALC_SUPPORT_DPI_CHANGES
-    dpi = get_window_dpi(window);
+    _dpi = get_window_dpi(window);
 #ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
-    init_min_sizes(window, to_physical(CalcConfiguration::min_width, dpi),
-                   to_physical(CalcConfiguration::min_height, dpi), dpi);
+    init_min_sizes(window, to_physical(CalcConfiguration::min_width, _dpi),
+                   to_physical(CalcConfiguration::min_height, _dpi), _dpi);
 #else
-    init_min_sizes(window, to_physical(CalcConfiguration::min_width, dpi),
-                   to_physical(CalcConfiguration::min_height, dpi));
+    init_min_sizes(window, to_physical(CalcConfiguration::min_width, _dpi),
+                   to_physical(CalcConfiguration::min_height, _dpi));
 #endif
 #else
     init_min_sizes(window, CalcConfiguration::min_width,
@@ -102,90 +103,79 @@ public:
     layout_init(window);
 
 #ifdef CALC_SUPPORT_SET_LIMIT_TEXT
-    set_window_text_limit(layout.get_handle(0),
+    set_window_text_limit(_layout.handle(0),
                           CalcConfiguration::input_max_text_length);
 #endif
 
 #ifdef CALC_SUPPORT_EXTENDENT_STYLES
-    edit_set_extended_style(layout.get_handle(0), ES_EX_ALLOWEOL_ALL,
+    edit_set_extended_style(_layout.handle(0), ES_EX_ALLOWEOL_ALL,
                             ES_EX_ALLOWEOL_ALL);
 #endif
 
     load_window_data(window);
 
-    goto_end_of_window_text(layout.get_handle(0));
+    goto_end_of_window_text(_layout.handle(0));
   }
 
   /**
    * Resize Calc window.
    */
-  inline void resize(const WORD new_width, const WORD new_height) noexcept {
-
-    layout.resize(new_width, new_height);
+  constexpr inline void resize(const WORD width, const WORD height) noexcept {
+    _layout.resize(width, height);
   }
 
   /**
    * Return to the system minimal sizes for Calc window.
    */
-  inline void get_minmaxinfo(const LPMINMAXINFO lpMMI) const noexcept {
-    lpMMI->ptMinTrackSize.x = layout.get_min_x();
-    lpMMI->ptMinTrackSize.y = layout.get_min_y();
+  constexpr inline void minmaxinfo(const LPMINMAXINFO lpMMI) const noexcept {
+    lpMMI->ptMinTrackSize.x = _layout.min_x();
+    lpMMI->ptMinTrackSize.y = _layout.min_y();
   }
 #ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
-  void set_dpi(const HWND window, const WORD new_dpi,
-               Rect_ptr new_rect) noexcept {
-    // Store new DPI
-    dpi = new_dpi;
-
-    // Init min sizes
-    init_min_sizes(window, to_physical(CalcConfiguration::min_width, dpi),
-                   to_physical(CalcConfiguration::min_height, dpi), dpi);
-
-    // Rescale main window to suggestion and set the window position
-    SetWindowPos(window, nullptr, new_rect->get_x(), new_rect->get_y(),
-                 new_rect->get_width(), new_rect->get_heigth(),
-                 SWP_NOZORDER | SWP_NOACTIVATE);
+  constexpr void set_dpi(const HWND window, const WORD dpi,
+                         Rect_ptr rect) noexcept {
+    _dpi = dpi;
+    init_min_sizes(window, to_physical(CalcConfiguration::min_width, _dpi),
+                   to_physical(CalcConfiguration::min_height, _dpi), _dpi);
+    SetWindowPos(window, nullptr, rect->x(), rect->y(), rect->width(),
+                 rect->heigth(), SWP_NOZORDER | SWP_NOACTIVATE);
   }
 #endif
   /**
    * Initialize layout helper for resizing.
    */
-  void layout_init(const HWND window) noexcept {
-    layout.init_window(window);
-    layout.init_anchor(window, 0, IDC_EDIT_INPUT,
-                       Anchor::HorizontalStretch | Anchor::VerticalStretch);
-    layout.init_anchor(window, 1, IDC_EDIT_RESULT,
-                       Anchor::Right | Anchor::Bottom);
-    layout.init_anchor(window, 2, IDC_BUTTON_CALC,
-                       Anchor::Right | Anchor::Bottom);
+  constexpr void layout_init(const HWND window) noexcept {
+    _layout.init_window(window);
+    _layout.init_anchor(window, 0, IDC_EDIT_INPUT,
+                        Anchor::HorizontalStretch | Anchor::VerticalStretch);
+    _layout.init_anchor(window, 1, IDC_EDIT_RESULT,
+                        Anchor::Right | Anchor::Bottom);
+    _layout.init_anchor(window, 2, IDC_BUTTON_CALC,
+                        Anchor::Right | Anchor::Bottom);
     static_assert(3 == CalcConfiguration::elements);
   }
 
 #ifdef CALC_SUPPORT_DARK_MODE
-  Theme &theme() { return _theme; }
+  [[nodiscard]] constexpr auto &theme() { return _theme; }
 #endif
 
 private:
   /**
    * Set the result text in the GUI.
    */
-  void set_result(const char *result_text,
-                  char *result_text_end) const noexcept {
-    set_window_text(layout.get_handle(1), result_text, result_text_end);
+  constexpr void set_result(const char *result_text,
+                            char *result_text_end) const noexcept {
+    set_window_text(_layout.handle(1), result_text, result_text_end);
   }
 
-  void set_result(const wchar_t *result_text,
-                  wchar_t *result_text_end) const noexcept {
-    set_window_text(layout.get_handle(1), result_text, result_text_end);
-  }
-
-  void init_min_sizes(const HWND window, const LONG requested_min_width,
-                      const LONG requested_min_height
+  constexpr void init_min_sizes(const HWND window,
+                                const LONG requested_min_width,
+                                const LONG requested_min_height
 #ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
-                      ,
-                      UINT new_dpi
+                                ,
+                                UINT new_dpi
 #endif
-                      ) noexcept {
+                                ) noexcept {
     // Convert minimum client area size to window (outer) size so the user can't
     // resize window smaller than the intended client area. WM_GETMINMAXINFO
     // expects window dimensions.
@@ -203,29 +193,19 @@ private:
 #else
     AdjustWindowRectEx(&requiredClient, style, FALSE, exStyle);
 #endif
-    layout.init_min_sizes(requiredClient.get_width(),
-                          requiredClient.get_heigth());
+    _layout.init_min_sizes(requiredClient.width(), requiredClient.height());
   }
 
-  void load_window_data(const HWND window) noexcept {
-
+  constexpr void load_window_data(const HWND window) noexcept {
     const RegRead reg(HKEY_CURRENT_USER, CalcConfiguration::reg_key);
-    {
-#ifdef CALC_TESTS_ENABLED
-      auto tests = calc_tests();
-      set_window_text(layout.get_handle(0), tests.data(),
-                      tests.data() + tests.size());
+    Edit input(_layout.handle(0), CalcConfiguration::input_max_text_length);
+#ifndef CALC_TESTS_ENABLED
+    input.set_size(reg.read("input", input.bytes(),
+                            CalcConfiguration::input_max_data_size));
 #else
-      EditTextWriter input(layout.get_handle(0),
-                           CalcConfiguration::input_max_data_size);
-
-      if (input.valid() && input.writable()) [[likely]] {
-
-        input.set_size(reg.read("input", input.bytes(),
-                                CalcConfiguration::input_max_data_size));
-      }
+    auto tests = calc_tests();
+    input.write(tests.data(), tests.size());
 #endif
-    }
     const auto flags = reg.read("flags");
     const auto show = reg.read("showCmd");
 
@@ -234,7 +214,7 @@ private:
     const auto right = reg.read("right");
     const auto bottom = reg.read("bottom");
 #ifdef CALC_SUPPORT_DPI_CHANGES
-    const auto sSavedDpi = reg.read("savedDpi");
+    const auto dpi = reg.read("savedDpi");
 #endif
     WINDOWPLACEMENT wp [[indeterminate]];
     wp.length = sizeof(wp);
@@ -244,9 +224,9 @@ private:
     if (left && top && right && bottom) {
       // -> use saved position
 #ifdef CALC_SUPPORT_DPI_CHANGES
-      if (sSavedDpi) {
+      if (dpi) {
         // -> use with saved dpi
-        const auto saved_dpi = *sSavedDpi;
+        const auto saved_dpi = *dpi;
         wp.rcNormalPosition.left = to_physical(*left, saved_dpi);
         wp.rcNormalPosition.top = to_physical(*top, saved_dpi);
         wp.rcNormalPosition.right = to_physical(*right, saved_dpi);
@@ -262,25 +242,23 @@ private:
     } else {
       // -> use default position
 #ifdef CALC_SUPPORT_DPI_CHANGES
-      const auto shift = to_physical(CalcConfiguration::default_shift_px, dpi);
+      const auto shift = to_physical(CalcConfiguration::default_shift_px, _dpi);
 #else
       const auto &shift = CalcConfiguration::default_shift_px;
 #endif
       wp.rcNormalPosition.left = shift;
       wp.rcNormalPosition.top = shift;
-      wp.rcNormalPosition.right = layout.get_min_width() + shift;
-      wp.rcNormalPosition.bottom = layout.get_min_height() + shift;
+      wp.rcNormalPosition.right = _layout.min_width() + shift;
+      wp.rcNormalPosition.bottom = _layout.min_height() + shift;
     }
     SetWindowPlacement(window, &wp);
   }
 
-  void save_window_data(const HWND hWnd) noexcept {
+  constexpr void save_window_data(const HWND hWnd) noexcept {
     const RegWrite reg(HKEY_CURRENT_USER, CalcConfiguration::reg_key);
 #ifndef CALC_TESTS_ENABLED
-    {
-      EditTextView input(layout.get_handle(0));
-      reg.write("input", input.bytes(), input.size());
-    }
+    EditView input(_layout.handle(0));
+    reg.write("input", input.bytes(), input.size());
 #endif
 
     WINDOWPLACEMENT wp [[indeterminate]];
@@ -289,11 +267,11 @@ private:
     reg.write("flags", wp.flags);
     reg.write("showCmd", wp.showCmd);
 #ifdef CALC_SUPPORT_DPI_CHANGES
-    reg.write("left", to_logical(wp.rcNormalPosition.left, dpi));
-    reg.write("top", to_logical(wp.rcNormalPosition.top, dpi));
-    reg.write("right", to_logical(wp.rcNormalPosition.right, dpi));
-    reg.write("bottom", to_logical(wp.rcNormalPosition.bottom, dpi));
-    reg.write("savedDpi", dpi);
+    reg.write("left", to_logical(wp.rcNormalPosition.left, _dpi));
+    reg.write("top", to_logical(wp.rcNormalPosition.top, _dpi));
+    reg.write("right", to_logical(wp.rcNormalPosition.right, _dpi));
+    reg.write("bottom", to_logical(wp.rcNormalPosition.bottom, _dpi));
+    reg.write("savedDpi", _dpi);
 #else
     reg.write("left", wp.rcNormalPosition.left);
     reg.write("top", wp.rcNormalPosition.top);
@@ -302,30 +280,32 @@ private:
 #endif
   }
 
-  [[no_unique_address]] std::string equasion;
+  // clang-format off
+  [[no_unique_address]] std::string _equasion;
 
-  [[no_unique_address]] Layout<CalcConfiguration::elements> layout
-      [[indeterminate]];
-#ifdef CALC_SUPPORT_DPI_CHANGES
-  [[no_unique_address]] UINT dpi [[indeterminate]];
-#endif
+  [[no_unique_address]] Layout<CalcConfiguration::elements> _layout[[indeterminate]];
 #ifdef CALC_SUPPORT_DARK_MODE
   [[no_unique_address]] Theme _theme [[indeterminate]];
 #endif
+#ifdef CALC_SUPPORT_DPI_CHANGES
+  [[no_unique_address]] UINT _dpi [[indeterminate]];
+#endif
+  // clang-format on
 };
 
-static CalcWindow gui;
+static CalcGUI gui;
 
 /**
  * About dialog callback processing (resource-based).
  */
-static INT_PTR CALLBACK AboutDlgProc(const HWND window, const UINT msg,
-                                     const WPARAM wParam,
-                                     const LPARAM
+constexpr static INT_PTR CALLBACK AboutDlgProc(const HWND window,
+                                               const UINT msg,
+                                               const WPARAM wParam,
+                                               const LPARAM
 #ifdef CALC_SUPPORT_LINK_WINDOW
-                                         lParam
+                                                   lParam
 #endif
-                                     ) noexcept {
+                                               ) noexcept {
   switch (msg) {
   case WM_COMMAND: {
     if (LOWORD(wParam) == IDCANCEL) {
@@ -354,7 +334,7 @@ static INT_PTR CALLBACK AboutDlgProc(const HWND window, const UINT msg,
 #ifdef CALC_SUPPORT_DARK_MODE_WITHOUT_WIN32_HELPER
   case WM_CTLCOLORDLG:
   case WM_CTLCOLORSTATIC: {
-    return gui.theme().apply(wParam);
+    return gui.theme().apply(reinterpret_cast<HDC>(wParam));
   }
 #endif
   case WM_SYSCOLORCHANGE: {
@@ -369,9 +349,10 @@ static INT_PTR CALLBACK AboutDlgProc(const HWND window, const UINT msg,
 /**
  * Calc dialog callback processing (resource-based).
  */
-static INT_PTR CALLBACK CalcDialogProc(const HWND window, const UINT msg,
-                                       const WPARAM wParam,
-                                       const LPARAM lParam) noexcept {
+constexpr static INT_PTR CALLBACK CalcDialogProc(const HWND window,
+                                                 const UINT msg,
+                                                 const WPARAM wParam,
+                                                 const LPARAM lParam) noexcept {
 #ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
   static bool dpi_change_in_progress = false;
 #endif
@@ -392,7 +373,7 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND window, const UINT msg,
     break;
   }
   case WM_GETMINMAXINFO: {
-    gui.get_minmaxinfo(reinterpret_cast<LPMINMAXINFO>(lParam));
+    gui.minmaxinfo(reinterpret_cast<LPMINMAXINFO>(lParam));
     return TRUE;
   }
   case WM_SIZE: {
@@ -438,7 +419,7 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND window, const UINT msg,
   case WM_CTLCOLORSTATIC:
   case WM_CTLCOLOREDIT:
   case WM_CTLCOLORDLG: {
-    return gui.theme().apply(wParam);
+    return gui.theme().apply(reinterpret_cast<HDC>(wParam));
   }
 #endif
   case WM_SYSCOLORCHANGE: {
@@ -460,6 +441,16 @@ static INT_PTR CALLBACK CalcDialogProc(const HWND window, const UINT msg,
  */
 int WINAPI WinMain(const HINSTANCE instance, const HINSTANCE /*prev_instance*/,
                    const LPSTR /*cmd_line*/, const int /*cmd_show*/) {
+#ifdef _DEBUG
+  _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_CHECK_ALWAYS_DF |
+                 _CRTDBG_CHECK_CRT_DF | _CRTDBG_LEAK_CHECK_DF |
+                 _CRTDBG_CHECK_EVERY_1024_DF);
+#endif
+
+#ifdef CALC_SUPPORT_DARK_MODE
+  init_uxtheme_callers();
+#endif
+
 #ifdef CALC_SUPPORT_DPI_CHANGES
 #ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
   // https://learn.microsoft.com/en-us/windows/win32/hidpi/dpi-awareness-context
@@ -483,8 +474,10 @@ int WINAPI WinMain(const HINSTANCE instance, const HINSTANCE /*prev_instance*/,
   RegisterApplicationRestart(nullptr, FALSE);
 #endif
 
+#ifdef CALC_DISABLE_IME
   // Disable IME completely because Calc use only ANSI input in GUI
   ImmDisableIME(FALSE);
+#endif
 
   DialogBoxParamA(instance, MAKEINTRESOURCEA(IDD_CALC_DIALOG), nullptr,
                   CalcDialogProc, reinterpret_cast<LPARAM>(instance));
@@ -509,8 +502,13 @@ int WINAPI WinMain(const HINSTANCE instance, const HINSTANCE /*prev_instance*/,
 #ifdef CALC_SUPPORT_LINK_WINDOW
 #pragma comment(lib, "comctl32.lib")
 #endif
+
+#ifdef CALC_DISABLE_IME
 #pragma comment(lib, "imm32.lib")
+#endif
+
 #pragma comment(lib, "user32.lib")
+
 #ifdef CALC_SUPPORT_DARK_MODE
 #pragma comment(lib, "dwmapi.lib")
 #pragma comment(lib, "uxtheme.lib")
@@ -527,3 +525,5 @@ int main(int /*argc*/, char * /*argv[]*/) noexcept {
 }
 
 #endif
+
+} // namespace GUI

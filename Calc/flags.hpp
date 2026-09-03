@@ -41,16 +41,20 @@ using ParamCount = char;
 #ifndef NDEBUG
 #define CALC_TESTS_DEV_ENABLED // if commented test is measurement performance
 #endif
+
+// TODO
+// #define CALC_USE_ERROR_TOKEN // WIP
+
 #ifdef CALC_TESTS_DEV_ENABLED
 // TODO
 // #define CALC_TEST_EQUATION_SOLVER // WIP
 
 // TODO
 #define CALC_SUPPORT_FRACTIONAL_OUTPUT // WIP
-#endif
 
-// TODO
-// #define CALC_USE_ERROR_TOKEN // WIP
+// TODO: needs to be refactored because we loose error position.
+// #define CALC_ALLOW_UNICODE_IN_GUI // allow Unicode input in GUI
+#endif
 
 #endif
 //---------------------------------------------------------------------------
