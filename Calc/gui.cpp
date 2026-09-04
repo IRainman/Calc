@@ -133,7 +133,6 @@ public:
    * Save user data from GUI.
    */
   constexpr void save_user_data(const HWND window) noexcept {
-
     save_window_data(window);
   }
 
