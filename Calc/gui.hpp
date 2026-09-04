@@ -184,6 +184,8 @@ static void __cdecl _setup_crt_leak_check() {
   _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
   _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_DEBUG);
 }
+#else
+static void __cdecl _setup_crt_leak_check() {}
 #endif
 
 // Disable warnings for GUI code:
@@ -219,8 +221,8 @@ public:
   EditView(EditView const &) = delete;
   EditView &operator=(EditView const &) = delete;
 
-  explicit EditView(const HWND edit) noexcept {
-    _length = static_cast<UINT>(SendMessageA(edit, WM_GETTEXTLENGTH, 0, 0));
+  constexpr explicit EditView(const HWND edit) noexcept
+      : _length(static_cast<UINT>(SendMessageA(edit, WM_GETTEXTLENGTH, 0, 0))) {
     assert(_length);
     _handle = reinterpret_cast<HLOCAL>(SendMessageA(edit, EM_GETHANDLE, 0, 0));
     _data = static_cast<LPCWSTR>(LocalLock(_handle));
@@ -230,8 +232,7 @@ public:
   ~EditView() noexcept { LocalUnlock(_handle); }
 
   /**
-   * length in characters of the text in the edit control. This is useful for
-   * text processing and validation.
+   * Length in characters of the text in the edit control.
    */
   [[nodiscard]]
   constexpr auto length() const noexcept {
@@ -241,27 +242,36 @@ public:
   [[nodiscard]] constexpr auto text() const noexcept { return _data; }
 
   /**
-   * size in bytes of the text in the edit control. This is useful for writing
-   * to the system database.
+   * Return ANSI text from the edit control to the ouput paramether.
+   */
+  constexpr void ansi(std::string &output) const noexcept {
+    assert(_length <= output.capacity());
+    output.resize(output.capacity());
+    output.resize(WideCharToMultiByte(CP_ACP, 0, _data, _length, output.data(),
+                                      output.capacity(), NULL, NULL));
+  }
+
+  /**
+   * Size in bytes of the data in the edit control.
    */
   [[nodiscard]]
   constexpr auto size() const noexcept {
-    return static_cast<DWORD>(_length * sizeof(WCHAR));
+    return static_cast<UINT>(_length * sizeof(WCHAR));
   }
 
-  [[nodiscard]] constexpr auto bytes() const noexcept {
+  [[nodiscard]] constexpr auto data() const noexcept {
     return reinterpret_cast<const BYTE *>(_data);
   }
 
   [[nodiscard]]
   constexpr bool empty() const noexcept {
-    return length() == 0;
+    return _length == 0;
   }
 
 private:
   [[no_unique_address]] HLOCAL _handle [[indeterminate]];
   [[no_unique_address]] LPCWSTR _data [[indeterminate]];
-  [[no_unique_address]] UINT _length;
+  [[no_unique_address]] const UINT _length;
 };
 
 /**
@@ -296,19 +306,23 @@ public:
   /**
    * Length in characters of the text in the edit control.
    */
+  [[nodiscard]] constexpr UINT length() const noexcept {
+    return _max_size / sizeof(WCHAR);
+  }
+
   [[nodiscard]] constexpr auto text() const noexcept { return _data; }
 
-  constexpr void set_end(LPWSTR end) const noexcept {
-    assert(end >= _data && size_t(end - _data) <= _max_size / sizeof(WCHAR));
+  constexpr void set_text_end(LPWSTR end) const noexcept {
+    assert(end >= _data && UINT(end - _data) <= length());
     *end = L'\0'; // because of C string
   }
 
   /**
-   * Length in characters of the text in the edit control.
+   * Set length in characters of the text in the edit control.
    */
   constexpr void set_length(const UINT length) const noexcept {
     assert(length <= _max_size / sizeof(WCHAR));
-    set_end(_data + length);
+    set_text_end(_data + length);
   }
 
   /**
@@ -327,14 +341,14 @@ public:
   }
 
   /**
-   * Size in bytes of the text in the edit control.
+   * Size in bytes of the data in the edit control.
    */
-  [[nodiscard]] constexpr auto bytes() noexcept {
+  [[nodiscard]] constexpr auto data() noexcept {
     return reinterpret_cast<BYTE *>(_data);
   }
 
   /**
-   * Size in bytes of the text in the edit control.
+   * Set size in bytes of the data in the edit control.
    */
   constexpr void set_size(const UINT size) noexcept {
     set_length(size / sizeof(WCHAR));
@@ -456,12 +470,19 @@ static void set_extended_style(const HWND window, const DWORD style) noexcept {
 #endif
 
 /**
+ * Set text to window. Shoul be zero terminated!
+ */
+static void set_text(const HWND window, LPCSTR text) noexcept {
+  SetWindowTextA(window, text);
+}
+
+/**
  * Set text to window (end is for C string terminator).
  */
 static void set_text(const HWND window, LPCSTR text,
                      LPSTR const text_end) noexcept {
   *text_end = '\0'; // because of C string
-  SetWindowTextA(window, text);
+  set_text(window, text);
 }
 
 #ifdef CALC_SUPPORT_SET_LIMIT_TEXT
@@ -673,6 +694,8 @@ private:
   [[no_unique_address]] uint8_t _text_index [[indeterminate]];
   [[no_unique_address]] bool _dark_mode [[indeterminate]];
 };
+#else
+void init_uxtheme_callers() {};
 #endif
 
 /**

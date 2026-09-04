@@ -355,35 +355,36 @@
     <Manifest />
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="gui.cpp" />
-    <ClCompile Include="formatter.cpp" />
     <ClCompile Include="identifiers.cpp" />
-    <ClCompile Include="issue_manager.cpp" />
+    <ClCompile Include="tests.cpp" />
     <ClCompile Include="lexer.cpp" />
     <ClCompile Include="parser.cpp" />
+    <ClCompile Include="formatter.cpp" />
+    <ClCompile Include="issue_manager.cpp" />
+    <ClCompile Include="gui.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="tests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="codata2022.hpp" />
-    <ClInclude Include="flags.hpp" />
-    <ClInclude Include="formatter.hpp" />
-    <ClInclude Include="issue_manager.hpp" />
-    <ClInclude Include="lexer.hpp" />
-    <ClInclude Include="parser.hpp" />
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="pch.hpp" />
-    <ClInclude Include="targetver.h" />
-    <ClInclude Include="tests.hpp" />
     <ClInclude Include="identifiers.hpp" />
+    <ClInclude Include="tests.hpp" />
     <ClInclude Include="tests_equasions.hpp" />
     <ClInclude Include="token.hpp" />
+    <ClInclude Include="lexer.hpp" />
+    <ClInclude Include="parser.hpp" />
+    <ClInclude Include="formatter.hpp" />
+    <ClInclude Include="issue_manager.hpp" />
+    <ClInclude Include="pch.hpp" />
+    <ClInclude Include="flags.hpp" />
+    <ClInclude Include="targetver.h" />
     <ClInclude Include="gui.hpp" />
+    <ClInclude Include="gui_unicode_normalizer.hpp" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\Calc_big.ico" />

@@ -83,6 +83,9 @@
     <ClInclude Include="gui.hpp">
       <Filter>Headers</Filter>
     </ClInclude>
+    <ClInclude Include="gui_unicode_normalizer.hpp">
+      <Filter>Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\Calc.rc2">

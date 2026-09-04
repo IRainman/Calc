@@ -9,9 +9,6 @@
 /**
  * Types using for calculation.
  */
-// Don't need more than 65536 symbols for equation, because GUI input limit is
-// 64 KiB right now. But use only size_t here because it's a CPU related
-// hardware type.
 using EquationSize = size_t;
 
 #if _DEBUG && __STDCPP_FLOAT128_T__ == 1
@@ -36,14 +33,17 @@ constexpr auto output_precision = std::numeric_limits<Value>::digits10;
 
 using ParamCount = char;
 //---------------------------------------------------------------------------
+// TODO
+// #define CALC_USE_ERROR_TOKEN // WIP
+//---------------------------------------------------------------------------
+// TODO: needs to be refactored because code is very complicated:
+#define CALC_ALLOW_UNICODE_IN_GUI // allow Unicode input in GUI
+//---------------------------------------------------------------------------
 #ifdef _DEBUG
 #define CALC_TESTS_ENABLED
 #ifndef NDEBUG
 #define CALC_TESTS_DEV_ENABLED // if commented test is measurement performance
 #endif
-
-// TODO
-// #define CALC_USE_ERROR_TOKEN // WIP
 
 #ifdef CALC_TESTS_DEV_ENABLED
 // TODO
@@ -51,18 +51,9 @@ using ParamCount = char;
 
 // TODO
 #define CALC_SUPPORT_FRACTIONAL_OUTPUT // WIP
-
-// TODO: needs to be refactored because we loose error position.
-#define CALC_ALLOW_UNICODE_IN_GUI // allow Unicode input in GUI
 #endif
 
 #endif
-//---------------------------------------------------------------------------
-// Usage of fmt is improve performance.
-/*
-Tests:
- time is: 24744ms.
-*/
 //---------------------------------------------------------------------------
 // std::map<std::string_view, const Fn> // Tests: time is: 37931ms.
 // std::unordered_map<std::string_view, const Fn> // Tests: time is: 31515ms.

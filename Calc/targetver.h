@@ -42,7 +42,8 @@
 
 #include <sdkddkver.h>
 
-// #define CALC_DISABLE_IME // disable IME for input
+// deprecated because now it converted by EditView:
+// #define CALC_DISABLE_IME // Disable IME because Calc use ASCII
 
 #if (_WIN32_WINNT >= 0x0501)
 #define CALC_SUPPORT_LINK_WINDOW // LinkWindow, NMLINK
@@ -54,8 +55,8 @@
 #define CALC_SUPPORT_AUTO_RESTART // RegisterApplicationRestart
 #if (_WIN32_WINNT >= 0x0605)
 #define CALC_SUPPORT_DPI_FOR_WINDOW // GetDpiForWindow,
-// Not enabled because very hard to implement
-// #define CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART // :
+// Not enabled because very hard to implement and for Calc it's completely
+// overingineering and overhead: CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
 // WM_DPICHANGED signal,
 // AdjustWindowRectExForDpi,
 // SetProcessDpiAwarenessContext,
@@ -64,7 +65,8 @@
 #if (_WIN32_WINNT >= 0x0A00)
 #define CALC_SUPPORT_EXTENDENT_STYLES // ES_EX_ALLOWEOL_ALL
 #define CALC_SUPPORT_DARK_MODE        // ...
-// TODO: needs to be disabled because we should use system wide helper for this
+// TODO: needs to be disabled because we should use system wide helper for this,
+// because for Calc it's completely overingineering and overhead:
 #define CALC_SUPPORT_DARK_MODE_WITHOUT_WIN32_HELPER
 // for testing only, not for production, this code needs to be moved to it's own
 // utility
