@@ -112,11 +112,9 @@ void Lexer::next(Token &token) noexcept {
     } else if ((cur >= 'A' && cur <= 'Z') || (cur >= 'a' && cur <= 'z')) {
       advance(read_ident(token));
       return;
-#ifndef CALC_ALLOW_UNICODE_IN_GUI
     } else if (cur == ' ') {
       advance(1);
       continue;
-#endif
     } else {
       [[unlikely]] return_unparsable(token);
       return;
