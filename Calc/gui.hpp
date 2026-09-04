@@ -157,10 +157,40 @@ namespace GUI {
 #define NOTOOLTIPS
 #define NOREBAR
 
+#ifdef _DEBUG
+#define _CRTDBG_MAP_ALLOC
+#include <crtdbg.h>
+
+/**
+ * Enable CRT debug leak detection in debug builds so leaking allocations are
+ * reported with call stacks at process exit. This mirrors the usual pattern of
+ * calling _CrtSetDbgFlag and _CrtSetReportMode early in startup.
+ *
+ * Should be called before WinMain!
+ */
+static void __cdecl _setup_crt_leak_check() {
+  // Report to output window and perform leak check at exit.
+  int flags = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
+
+  flags |= _CRTDBG_ALLOC_MEM_DF;  // Turn on debug allocation
+  flags |= _CRTDBG_LEAK_CHECK_DF; // Perform leak check at program exit
+
+  // Don't enable _CRTDBG_CHECK_CRT_DF !
+
+  _CrtSetDbgFlag(flags);
+
+  // Ensure reports go to debugger output
+  _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
+  _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
+  _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_DEBUG);
+}
+#endif
+
+// Disable warnings for GUI code:
 // clang-format off
-__pragma(warning(push));
 __pragma(warning(disable : 5039)); // potentially throwing function passed to extern C
 __pragma(warning(disable : 4865)); // vector<bool> is never constructed with a non-constant size
+// clang-format on
 #include <windows.h>
 #ifdef CALC_SUPPORT_LINK_WINDOW
 #include <commctrl.h>
@@ -170,16 +200,13 @@ __pragma(warning(disable : 4865)); // vector<bool> is never constructed with a n
 #include <dwmapi.h>
 #include <uxtheme.h>
 #endif
-#ifdef _DEBUG
-#include <crtdbg.h>
-#endif
-__pragma(warning(pop));
 
 #include "resource.h" // GUI symbols
 
-// Disable warnings for GUI code:
-__pragma(warning(disable : 4365)); // signed/unsigned mismatch
-// clang-format on
+/**
+ * Dialog procedure type.
+ */
+typedef INT_PTR CALLBACK DlgProc(HWND, UINT, WPARAM, LPARAM);
 
 /**
  * GUI helper to process user input. Don't need to copy Unicode user input from
@@ -288,7 +315,7 @@ public:
    * Write ANSI text to the edit control.
    */
   void write(const char *text, const int length) noexcept {
-    assert(size_t(length) <= _max_size / sizeof(WCHAR));
+    assert(unsigned(length) <= _max_size / sizeof(WCHAR));
     set_length(MultiByteToWideChar(CP_ACP, 0, text, length, _data, length));
   }
 
@@ -526,9 +553,10 @@ static FlushMenuThemesFn FlushMenuThemes [[indeterminate]];
 
 /**
  * Init theming: get real adresses of uxtheme functions.
- * Should be called before anything else.
+ *
+ * Should be called before WinMain!
  */
-static void init_uxtheme_callers() noexcept {
+constexpr static void init_uxtheme_callers() noexcept {
   HMODULE uxtheme = GetModuleHandleA("uxtheme.dll");
   // clang-format off
   __pragma(warning(push))
@@ -544,14 +572,15 @@ static void init_uxtheme_callers() noexcept {
 }
 
 /**
- * Utility: helper to work with theming
+ * Application theme management.
  */
 struct Theme {
   /**
    * Init application theme.
-   * Should be called before any window is created.
+   *
+   * Should be called before any window is initialized!
    */
-  void init(const HWND application_main_window) noexcept {
+  constexpr void init(const HWND application_main_window) noexcept {
     SetPreferredAppMode(PreferredAppMode::AllowDark);
     apply(application_main_window, false, true);
   }
@@ -562,8 +591,8 @@ struct Theme {
    * BUTTON, SCROLLBAR, COMBOBOX, LISTBOX, LISTVIEW, TREEVIEW, TAB, PROGRESSBAR,
    * TRACKBAR.
    */
-  void apply(const HWND window, const bool redraw = false,
-             const bool is_main_window = false) noexcept {
+  constexpr void apply(const HWND window, const bool redraw = false,
+                       const bool is_main_window = false) noexcept {
     theme(window, is_dark_mode(is_main_window));
     EnumChildWindows(window, theme, is_dark_mode());
     menus();
@@ -579,7 +608,8 @@ struct Theme {
    * Apply theme to controls that needs external repainting, they don't using
    * theming and get global colors from system settings: EDIT, STATIC, DIALOG
    */
-  [[nodiscard]] INT_PTR apply(const HDC hdc) const noexcept {
+  [[nodiscard]] constexpr INT_PTR apply(const WPARAM wP) const noexcept {
+    const HDC hdc = reinterpret_cast<HDC>(wP);
     SetBkColor(hdc, GetSysColor(_background_index));
     SetTextColor(hdc, GetSysColor(_text_index));
     return reinterpret_cast<INT_PTR>(GetSysColorBrush(_background_index));
@@ -590,17 +620,21 @@ private:
   /**
    * Apply theme to window based on a global theme.
    */
-  static BOOL CALLBACK theme(const HWND window, const LPARAM dark) noexcept {
+  constexpr static BOOL CALLBACK theme(const HWND window,
+                                       const LPARAM dark) noexcept {
     SetWindowTheme(window, dark ? L"DarkMode_Explorer" : L"Explorer", nullptr);
     return TRUE;
   }
 
-  [[nodiscard]] bool is_dark_mode() const noexcept { return _dark_mode; }
+  [[nodiscard]] constexpr bool is_dark_mode() const noexcept {
+    return _dark_mode;
+  }
 
   /**
    * For main application window only: determine uses of the dark app theme.
    */
-  [[nodiscard]] bool is_dark_mode(const bool is_main_window) noexcept {
+  [[nodiscard]] constexpr bool
+  is_dark_mode(const bool is_main_window) noexcept {
     if (is_main_window) {
       // clang-format off
       const RegRead personalize(HKEY_CURRENT_USER,
@@ -618,7 +652,7 @@ private:
   /**
    * Apply theme to a application bar and frame. Windows 6+ with DWM.
    */
-  void title_bar_and_frame(const HWND hwnd) const noexcept {
+  constexpr void title_bar_and_frame(const HWND hwnd) const noexcept {
     BOOL value = is_dark_mode() ? TRUE : FALSE;
     DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value,
                           sizeof(value));
@@ -627,7 +661,7 @@ private:
   /**
    * Apply theme to menus. API for Windows 6+ with working DWM.
    */
-  void menus() const noexcept {
+  constexpr void menus() const noexcept {
     RefreshImmersiveColorPolicyState();
     FlushMenuThemes();
   }
@@ -635,9 +669,9 @@ private:
   /**
    * Used to reduce registry reads and colors calls.
    */
+  [[no_unique_address]] uint8_t _background_index [[indeterminate]];
+  [[no_unique_address]] uint8_t _text_index [[indeterminate]];
   [[no_unique_address]] bool _dark_mode [[indeterminate]];
-  [[no_unique_address]] int _background_index [[indeterminate]];
-  [[no_unique_address]] int _text_index [[indeterminate]];
 };
 #endif
 

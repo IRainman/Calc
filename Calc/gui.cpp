@@ -24,7 +24,7 @@ namespace GUI {
 /**
  * Calc GUI window also it's application itself.
  */
-class CalcGUI {
+class CalcApp {
   /**
    * Calc GUI configuration: matches RC and system internals for correct work.
    */
@@ -103,30 +103,34 @@ class CalcGUI {
           case WCHAR('\v'): // VT
           case WCHAR('\f'): // FF
           case WCHAR('\r'): // CR
-          case WCHAR(' '):  // SPACE
-          case u'\u00A0':   // NO-BREAK SPACE
-          case u'\u2000':   // EN QUAD
-          case u'\u2001':   // EM QUAD
-          case u'\u2002':   // EN SPACE
-          case u'\u2003':   // EM SPACE
-          case u'\u2004':   // THREE-PER-EM SPACE
-          case u'\u2005':   // FOUR-PER-EM SPACE
-          case u'\u2006':   // SIX-PER-EM SPACE
-          case u'\u2007':   // FIGURE SPACE
-          case u'\u2008':   // PUNCTUATION SPACE
-          case u'\u2009':   // THIN SPACE
-          case u'\u200A':   // HAIR SPACE
-          case u'\u200B':   // ZERO WIDTH SPACE
-          case u'\u200C':   // ZERO WIDTH NON-JOINER
-          case u'\u200D':   // ZERO WIDTH JOINER
-          case u'\u2060':   // WORD JOINER
-          case u'\u202F':   // NARROW NO-BREAK SPACE
-          case u'\u205F':   // MEDIUM MATHEMATICAL SPACE
-          case u'\u3000':   // IDEOGRAPHIC SPACE
-          case u'\u2028':   // LINE SEPARATOR
-          case u'\u2029':   // PARAGRAPH SEPARATOR
-          case u'\uFEFF':   // ZERO WIDTH NO-BREAK SPACE
+#ifdef CALC_ALLOW_UNICODE_IN_GUI
+          case WCHAR(' '): // SPACE
+#endif
+          case u'\u00A0': // NO-BREAK SPACE
+          case u'\u2000': // EN QUAD
+          case u'\u2001': // EM QUAD
+          case u'\u2002': // EN SPACE
+          case u'\u2003': // EM SPACE
+          case u'\u2004': // THREE-PER-EM SPACE
+          case u'\u2005': // FOUR-PER-EM SPACE
+          case u'\u2006': // SIX-PER-EM SPACE
+          case u'\u2007': // FIGURE SPACE
+          case u'\u2008': // PUNCTUATION SPACE
+          case u'\u2009': // THIN SPACE
+          case u'\u200A': // HAIR SPACE
+          case u'\u200B': // ZERO WIDTH SPACE
+          case u'\u200C': // ZERO WIDTH NON-JOINER
+          case u'\u200D': // ZERO WIDTH JOINER
+          case u'\u2060': // WORD JOINER
+          case u'\u202F': // NARROW NO-BREAK SPACE
+          case u'\u205F': // MEDIUM MATHEMATICAL SPACE
+          case u'\u3000': // IDEOGRAPHIC SPACE
+          case u'\u2028': // LINE SEPARATOR
+          case u'\u2029': // PARAGRAPH SEPARATOR
+          case u'\uFEFF': // ZERO WIDTH NO-BREAK SPACE
+#ifndef CALC_ALLOW_UNICODE_IN_GUI
             output.push_back(' ');
+#endif
             break;
 
           // Fullwidth, superscript, subscript digits.
@@ -239,15 +243,34 @@ class CalcGUI {
             output.push_back(',');
             break;
 
-          case u'\uFF05': // ％
-            output.push_back('%');
-            break;
-
 #ifdef CALC_ALLOW_UNICODE_IN_GUI
-          // Mathematical constants.
+          // Mathematical constants:
           case u'\u03C0': // π
           case u'\u03D6': // ϖ
             output.append("pi");
+            break;
+
+            /*
+             90° → 90 * pi / 180
+            | Unicode   | Calc               |
+            | --------- | ------------------ |
+            | `°`       | `deg`*             |
+            | `º`       | `deg`*             |
+            | `rad`     | `rad`              |
+            | `radian`  | `rad`              |
+            | `radians` | `rad`              |
+            | `deg`     | `deg`              |
+            | `degree`  | `deg`              |
+            | `degrees` | `deg`              |
+            | `grad`    | `grad_to_radians`* |
+            | `gon`     | `grad_to_radians`* |
+            | `turn`    | `turn_to_radians`* |
+            | `τ`       | `2*pi`*            |
+            */
+
+          case u'\u03C4': // τ
+            // output.append("tau");
+            output.append("2*pi");
             break;
 
           case u'\u03C6': // φ
@@ -257,6 +280,10 @@ class CalcGUI {
 
           case u'\u03B3': // γ
             output.append("e_gamma");
+            break;
+
+          case u'\u0393': // Γ
+            output.append("gamma");
             break;
 
           case u'\u03B1': // α
@@ -286,6 +313,8 @@ class CalcGUI {
 
           // Roots.
           case u'\u221A': // √
+          case u'\u23B7': // ⎷
+          case u'\u23E5': // ⏥
             output.append("sqrt");
             break;
 
@@ -293,515 +322,419 @@ class CalcGUI {
             output.append("cbrt");
             break;
 
+          case u'\u221C': // ∜
+            output.append("qbrt");
+            break;
+
+          case u'\u23B8': // ㏑
+            output.append("ln");
+            break;
+
+          case u'\u23B9': // ㏒
+            output.append("log");
+            break;
+
+            /* TODO
+            | Unicode | Calc  |
+            | ------- | ----- |
+            | `%`     | `mod` |
+            | `％`    | `mod` |
+            | `mod`   | `mod` |
+            */
+#if 0 
+           /* not implemented yet
+           | Unicode | Tempting mapping | Status            |
+           | ------- | ---------------- | ----------------- |
+           | `∑`     | `sum`            | **not supported** |
+           | `Σ`     | `sum`            | **not supported** |
+           | `∏`     | `prod`           | **not supported** |
+           | `Π`     | `prod`           | **not supported** |
+           | `∫`     | `integral`       | **not supported** |
+           | `∬`     | `integral`       | **not supported** |
+           | `∭`     | `integral`       | **not supported** |
+           | `∮`     | `integral`       | **not supported** |
+           | `∂`     | `partial`        | **not supported** |
+           | `∇`     | `nabla`          | **not supported** |
+           | `∆`     | `delta`          | **not supported** |
+           | `∀`     | `forall`         | **not supported** |
+           | `∃`     | `exists`         | **not supported** |
+           | `∈`     | `in`             | **not supported** |
+           | `∉`     | `notin`          | **not supported** |
+           | `⊂`     | `subset`         | **not supported** |
+           | `⊆`     | `subseteq`       | **not supported** |
+           | `∩`     | `intersection`   | **not supported** |
+           | `∪`     | `union`          | **not supported** |
+           */
+
+          case u'\u2211': // ∑
+            output.append("sum");
+            break;
+
+          case u'\u220F': // ∏
+            output.append("prod");
+            break;
+
+          case u'\u222B': // ∫
+            output.append("integral");
+            break;
+
+#endif
+
+            /* astronomical symbols
+            | Unicode | Calc        |
+            | ------- | ----------- |
+            | `a₀`    | `a0`        |
+            | `a.u.`  | `au`        |
+            | `AU`    | `au`        |
+            | `ly`    | `ly`        |
+            | `pc`    | `pc`        |
+            | `M☉`    | `m_sun`     |
+            | `M⊕`    | `m_earth`   |
+            | `M♃`    | `m_jupiter` |
+            | `R☉`    | `r_sun`     |
+            | `R⊕`    | `r_earth`   |
+            */
+
+          case u'\u2609': // ☉
+            output.append("_sun");
+            break;
+
+          case u'\u2295': // ⊕
+            output.append("_earth");
+            break;
+
+          case u'\u2643': // ♃
+            output.append("_jupiter");
+            break;
+
             /*
 
-                  TODO: mapping and converting functionality
-
-                  ∑ → sum
-                  ∏ → prod
-                  ∫ → integral
-
-                  | Unicode | Calc |
-                  | ------- | ---- |
-                  | `-`     | `-`  |
-                  | `−`     | `-`  |
-                  | `‐`     | `-`  |
-                  | `-`     | `-`  |
-                  | `‒`     | `-`  |
-                  | `–`     | `-`  |
-                  | `—`     | `-`  |
-                  | `﹣`     | `-`  |
-                  | `－`     | `-`  |
-
-
-
-                  | Unicode | Calc |
-                  | ------- | ---- |
-                  | `+`     | `+`  |
-                  | `＋`     | `+`  |
-
-
-                  × ⋅ · ∙ ∗ ⨯ → *
-
-        | Unicode | Calc | | ------- |
-        ------------------------------------------------------------ | | `∞` |
-        `inf`                                                        | | `π` |
-        `pi`                                                         | | `ϖ` |
-        `pi`                                                         | | `e` |
-        `e`                                                          | | `ℯ` |
-        `e`                                                          | | `φ` |
-        `phi`                                                        | | `ϕ` |
-        `phi`                                                        | | `γ` |
-        `e_gamma`                                                    | | `ℇ` |
-        `e`                                                          | Γ → gamma
-
-                  | Unicode | Calc |
-                  | ------- | ---- |
-                  | `/`     | `/`  |
-                  | `÷`     | `/`  |
-                  | `∕`     | `/`  |
-                  | `⁄`     | `/`  |
-                  | `／`     | `/`  |
-
-                  | Unicode | Calc  |
-                  | ------- | ----- |
-                  | `%`     | `%`   |
-                  | `％`     | `%`   |
-                  | `mod`   | `mod` |
-
-
-                  | Unicode | Calc |
-                  | ------- | ---- |
-                  | `(`     | `(`  |
-                  | `（`     | `(`  |
-                  | `﹙`     | `(`  |
-                  | `)`     | `)`  |
-                  | `）`     | `)`  |
-                  | `﹚`     | `)`  |
-                  | `,`     | `,`  |
-                  | `，`     | `,`  |
-                  | `﹐`     | `,`  |
-
-                  ⟮ → (
-                  ⟯ → )
-
-                  ∜x → pow(x, 1/4)
-                  | Unicode | Calc      |
-                  | ------- | --------- |
-                  | `√`     | `sqrt`    |
-                  | `√x`    | `sqrt(x)` |
-                  | `∛`     | `cbrt`    |
-                  | `∛x`    | `cbrt(x)` |
-                  | `∜`     | `pow`*    |
-                  | `√`     | `sqrt`    |
-                  | `⎷`     | `sqrt`    |
-                  | `⏥`     | `sqrt`*   |
-
-
-
-                  | Unicode  | Calc     |
-                  | -------- | -------- |
-                  | `arcsin` | `arcsin` |
-                  | `asin`   | `arcsin` |
-                  | `sin⁻¹`  | `arcsin` |
-                  | `cos⁻¹`  | `arccos` |
-                  | `acos`   | `arccos` |
-                  | `tan⁻¹`  | `arctan` |
-                  | `atan`   | `arctan` |
-
-
-                  asin(x)    → arcsin(x)
-                  acos(x)    → arccos(x)
-                  atan(x)    → arctan(x)
-
-                  |  notation | Calc    |
-                  | ------------------ | ------- |
-                  | `sinh`             | `sh`    |
-                  | `cosh`             | `ch`    |
-                  | `tanh`             | `tanh`  |
-                  | `arsinh`           | `asinh` |
-                  | `arcsinh`          | `asinh` |
-                  | `arsinh`           | `asinh` |
-                  | `arcosh`           | `acosh` |
-                  | `arctanh`          | `atanh` |
-
-
-
-                  | Unicode    | Calc       |
-                  | ---------- | ---------- |
-                  | `㏑`        | `ln`       |
-                  | `㏒`        | `log`      |
-                  | `log₁₀`    | `log10`    |
-                  | `log₁₀(x)` | `log10(x)` |
-                  | `log₂`     | `log2`     |
-                  | `log₂(x)`  | `log2(x)`  |
-
-                  | Unicode / notation | Calc       |
-                  | ------------------ | ---------- |
-                  | `eˣ`               | `exp`*     |
-                  | `exp`              | `exp`      |
-                  | `e^x`              | `e^x`      |
-                  | `eˣ`               | `exp(x)`*  |
-                  | `expm1`            | `expm1`    |
-                  | `2ˣ`               | `exp2(x)`* |
-
-
-                  | Unicode notation | Calc      |   |           |
-                  | ---------------- | --------- | - | --------- |
-                  | `                | x         | ` | `abs(x)`* |
-                  | `‖x‖`            | `abs(x)`* |   |           |
-                  | `abs(x)`         | `abs(x)`  |   |           |
-
-
-                  | Unicode / notation | Calc            |
-                  | ------------------ | --------------- |
-                  | `n!`               | `factorial(n)`* |
-                  | `n‼`               | `factorial(n)`* |
-                  | `P(n,r)`           | `P(n,r)`        |
-                  | `C(n,r)`           | `C(n,r)`        |
-                  | `nPr`              | `P(n,r)`*       |
-                  | `nCr`              | `C(n,r)`*       |
-                  | `nP r`             | `P(n,r)`*       |
-                  | `nC r`             | `C(n,r)`*       |
-
-
-                  | Unicode    | Calc       |
-                  | ---------- | ---------- |
-                  | `min`      | `min`      |
-                  | `minimum`  | `min`      |
-                  | `min(x,y)` | `min(x,y)` |
-                  | `max`      | `max`      |
-                  | `maximum`  | `max`      |
-                  | `max(x,y)` | `max(x,y)` |
-
-
-                  | Unicode / notation | Calc        |
-                  | ------------------ | ----------- |
-                  | `⌊x⌋`              | `floor(x)`* |
-                  | `⌈x⌉`              | `ceil(x)`*  |
-                  | `⌊x⌋`              | `floor(x)`* |
-                  | `⌈x⌉`              | `ceil(x)`*  |
-                  | `round(x)`         | `round(x)`  |
-                  | `trunc(x)`         | `trunc(x)`  |
-
-
-
-                  | Unicode    | Calc             |
-                  | ---------- | ---------------- |
-                  | `Γ(x)`     | `gamma(x)`       |
-                  | `Γ`        | `gamma`*         |
-                  | `ln Γ(x)`  | `log(gamma(x))`* |
-                  | `log Γ(x)` | `lgamma(x)`*     |
-
-                  γ → e_gamma
-                  Γ(x) → gamma(x)
-
-
-                  | Unicode / notation | Calc      |
-                  | ------------------ | --------- |
-                  | `erf`              | `erf`     |
-                  | `erfc`             | `erfc`    |
-                  | `erf(x)`           | `erf(x)`  |
-                  | `erfc(x)`          | `erfc(x)` |
-
-
-                  | Notation     | Calc                |
-                  | ------------ | ------------------- |
-                  | `√(x²+y²)`   | existing expression |
-                  | `‖(x,y)‖`    | `hypot(x,y)`*       |
-                  | `hypot(x,y)` | `hypot(x,y)`        |
-                  | `d(p,q)`     | `distance(...)`*    |
-
-
-                  90° → 90 * pi / 180
-                  | Unicode   | Calc               |
-                  | --------- | ------------------ |
-                  | `°`       | `deg`*             |
-                  | `º`       | `deg`*             |
-                  | `rad`     | `rad`              |
-                  | `radian`  | `rad`              |
-                  | `radians` | `rad`              |
-                  | `deg`     | `deg`              |
-                  | `degree`  | `deg`              |
-                  | `degrees` | `deg`              |
-                  | `grad`    | `grad_to_radians`* |
-                  | `gon`     | `grad_to_radians`* |
-                  | `turn`    | `turn_to_radians`* |
-                  | `τ`       | `2*pi`*            |
-
-
-                  | Unicode | Calc        |
-                  | ------- | ----------- |
-                  | `c`     | `c`         |
-                  | `ℏ`     | `hbar`      |
-                  | `ħ`     | `hbar`      |
-                  | `h`     | `h`         |
-                  | `e`     | `e_charge`* |
-                  | `e₀`    | `epsilon0`* |
-                  | `ε₀`    | `epsilon0`  |
-                  | `μ₀`    | `mu0`       |
-                  | `Z₀`    | `Z0`        |
-                  | `k_B`   | `kB`        |
-                  | `N_A`   | `NA`        |
-                  | `F`     | `F`         |
-                  | `R`     | `R`         |
-                  | `α`     | `alpha`     |
-                  | `G`     | `G`         |
-                  | `g₀`    | `g0`        |
-
-                  ℯ → e
-                  e → e
-                  qₑ → e_charge
-
-
-                  | Unicode | Calc        |
-                  | ------- | ----------- |
-                  | `a₀`    | `a0`        |
-                  | `a.u.`  | `au`        |
-                  | `AU`    | `au`        |
-                  | `ly`    | `ly`        |
-                  | `pc`    | `pc`        |
-                  | `M☉`    | `m_sun`     |
-                  | `M⊕`    | `m_earth`   |
-                  | `M♃`    | `m_jupiter` |
-                  | `R☉`    | `r_sun`     |
-                  | `R⊕`    | `r_earth`   |
-
-
-                  | Unicode | Calc     |
-                  | ------- | -------- |
-                  | `mₑ`    | `m_e`    |
-                  | `mₚ`    | `mp`     |
-                  | `mₙ`    | `mn`     |
-                  | `mᵤ`    | `mu`     |
-                  | `m_d`   | `md`     |
-                  | `m_α`   | `malpha` |
-                  | `μ_B`   | `muB`    |
-                  | `μ_N`   | `muN`    |
-                  | `μₑ`    | `mue`    |
-                  | `μₚ`    | `mup`    |
-                  | `μₙ`    | `mun`    |
-                  | `μ_d`   | `mud`    |
-                  | `rₑ`    | `re`     |
-
-
-                  | Unicode | Calc  |
-                  | ------- | ----- |
-                  | `ℓ_P`   | `l_P` |
-                  | `l_P`   | `l_P` |
-                  | `m_P`   | `m_P` |
-                  | `t_P`   | `t_P` |
-                  | `q_P`   | `q_P` |
-                  | `T_P`   | `T_P` |
-                  | `E_P`   | `E_P` |
-
-
-                  | Unicode / notation | Calc  |
-                  | ------------------ | ----- |
-                  | `a₀`               | `a0`  |
-                  | `mₑ`               | `m_e` |
-                  | `E_h`              | `Eh`  |
-                  | `𝜇_B`             | `muB` |
-                  | `𝜇_N`             | `muN` |
-
-
-
-                  | Unicode notation | Calc           |   |          |
-                  | ---------------- | -------------- | - | -------- |
-                  | `√x`             | `sqrt(x)`      |   |          |
-                  | `∛x`             | `cbrt(x)`      |   |          |
-                  | `                | x              | ` | `abs(x)` |
-                  | `⌊x⌋`            | `floor(x)`     |   |          |
-                  | `⌈x⌉`            | `ceil(x)`      |   |          |
-                  | `x!`             | `factorial(x)` |   |          |
-                  | `Γ(x)`           | `gamma(x)`     |   |          |
-                  | `sin⁻¹(x)`       | `arcsin(x)`    |   |          |
-                  | `cos⁻¹(x)`       | `arccos(x)`    |   |          |
-                  | `tan⁻¹(x)`       | `arctan(x)`    |   |          |
-                  | `log₁₀(x)`       | `log10(x)`     |   |          |
-                  | `log₂(x)`        | `log2(x)`      |   |          |
-                  | `eˣ`             | `exp(x)`       |   |          |
-                  | `2ˣ`             | `exp2(x)`*     |   |          |
-                  | `‖(x,y)‖`        | `hypot(x,y)`   |   |          |
-
-
-
-                  | Unicode | ASCII |
-                  | ------- | ----- |
-                  | `⁰`     | `0`   |
-                  | `¹`     | `1`   |
-                  | `²`     | `2`   |
-                  | `³`     | `3`   |
-                  | `⁴`     | `4`   |
-                  | `⁵`     | `5`   |
-                  | `⁶`     | `6`   |
-                  | `⁷`     | `7`   |
-                  | `⁸`     | `8`   |
-                  | `⁹`     | `9`   |
-                  | `⁺`     | `+`   |
-                  | `⁻`     | `-`   |
-                  | `⁽`     | `(`   |
-                  | `⁾`     | `)`   |
-
-
-
-                  | Unicode | ASCII |
-                  | ------- | ----- |
-                  | `₀`     | `0`   |
-                  | `₁`     | `1`   |
-                  | `₂`     | `2`   |
-                  | `₃`     | `3`   |
-                  | `₄`     | `4`   |
-                  | `₅`     | `5`   |
-                  | `₆`     | `6`   |
-                  | `₇`     | `7`   |
-                  | `₈`     | `8`   |
-                  | `₉`     | `9`   |
-                  | `₊`     | `+`   |
-                  | `₋`     | `-`   |
-                  | `₍`     | `(`   |
-                  | `₎`     | `)`   |
-
-
-                  | Unicode | Calc      |
-                  | ------- | --------- |
-                  | `π`     | `pi`      |
-                  | `φ`     | `phi`     |
-                  | `ϕ`     | `phi`     |
-                  | `γ`     | `e_gamma` |
-                  | `α`     | `alpha`   |
-
-
-
-                  | Unicode | Calc            |
-                  | ------- | --------------- |
-                  | `α`     | `alpha`         |
-                  | `μ`     | `mu`            |
-                  | `μ₀`    | `mu0`           |
-                  | `μ_B`   | `muB`           |
-                  | `μ_N`   | `muN`           |
-                  | `λₑ`    | `lambda_e`      |
-                  | `λ̄ₑ`   | `lambda_bar_e`  |
-                  | `σ`     | `sigma`         |
-                  | `σₑ`    | `sigmae`        |
-                  | `ε₀`    | `epsilon0`      |
-                  | `φ₀`    | `phi0`          |
-                  | `Γ`     | `gamma`*        |
-                  | `ζ`     | `riemann_zeta`* |
-
-
-                  | Unicode / notation | Calc           |
-                  | ------------------ | -------------- |
-                  | `√`                | `sqrt`         |
-                  | `∛`                | `cbrt`         |
-                  | `Γ`                | `gamma`        |
-                  | `ζ`                | `riemann_zeta` |
-                  | `η`                | `?`            |
-                  | `β`                | `beta`         |
-                  | `Hₙ`               | `hermite`*     |
-                  | `Lₙ`               | `laguerre`*    |
-                  | `Pₙ`               | `legendre`*    |
-
-
-
-                  | Unicode | Tempting mapping | Status            |
-                  | ------- | ---------------- | ----------------- |
-                  | `∑`     | `sum`            | **not supported** |
-                  | `Σ`     | `sum`            | **not supported** |
-                  | `∏`     | `prod`           | **not supported** |
-                  | `Π`     | `prod`           | **not supported** |
-                  | `∫`     | `integral`       | **not supported** |
-                  | `∬`     | `integral`       | **not supported** |
-                  | `∭`     | `integral`       | **not supported** |
-                  | `∮`     | `integral`       | **not supported** |
-                  | `∂`     | `partial`        | **not supported** |
-                  | `∇`     | `nabla`          | **not supported** |
-                  | `∆`     | `delta`          | **not supported** |
-                  | `∀`     | `forall`         | **not supported** |
-                  | `∃`     | `exists`         | **not supported** |
-                  | `∈`     | `in`             | **not supported** |
-                  | `∉`     | `notin`          | **not supported** |
-                  | `⊂`     | `subset`         | **not supported** |
-                  | `⊆`     | `subseteq`       | **not supported** |
-                  | `∩`     | `intersection`   | **not supported** |
-                  | `∪`     | `union`          | **not supported** |
-
-
-                  | Unicode | Potential ASCII |
-                  | ------- | --------------- |
-                  | `=`     | `=`             |
-                  | `≠`     | `!=`            |
-                  | `≤`     | `<=`            |
-                  | `≥`     | `>=`            |
-                  | `<`     | `<`             |
-                  | `>`     | `>`             |
-                  | `≡`     | `==`            |
-                  | `≈`     | `~=`            |
-                  | `≃`     | `~=`            |
-                  | `≅`     | `~=`            |
-
-
-
-                  First step:
-
-
-                  ∞  → inf
-
-                  π  → pi
-                  ϖ  → pi
-                  φ  → phi
-                  ϕ  → phi
-                  γ  → e_gamma
-                  α  → alpha
-
-                  √  → sqrt
-                  ∛  → cbrt
-
-                  ×  → *
-                  ⋅  → *
-                  ·  → *
-                  ∙  → *
-                  ∗  → *
-                  ⨯  → *
-
-                  ÷  → /
-                  ∕  → /
-                  ⁄  → /
-
-                  −  → -
-                  ‐  → -
-                  -  → -
-                  ‒  → -
-                  –  → -
-                  —  → -
-
-                  ＋  → +
-                  －  → -
-
-                  ％  → %
-
-                  （  → (
-                  ）  → )
-                  ，  → ,
-
-                  ℏ  → hbar
-                  ħ  → hbar
-                  ε₀ → epsilon0
-                  μ₀ → mu0
-                  Z₀ → Z0
-                  N_A → NA
-                  k_B → kB
-
-                  mₑ → m_e
-                  mₚ → mp
-                  mₙ → mn
-                  μ_B → muB
-                  μ_N → muN
-                  rₑ → re
-
-                  ℓ_P → l_P
-                  a₀ → a0
-
-                  M☉ → m_sun
-                  M⊕ → m_earth
-                  M♃ → m_jupiter
-                  R☉ → r_sun
-                  R⊕ → r_earth
-
-
-            */
+            TODO: mapping and converting functionality
+
+
+
+
+
+
+                   | Unicode  | Calc     |
+                   | -------- | -------- |
+                   | `arcsin` | `arcsin` |
+                   | `asin`   | `arcsin` |
+                   | `sin⁻¹`  | `arcsin` |
+                   | `cos⁻¹`  | `arccos` |
+                   | `acos`   | `arccos` |
+                   | `tan⁻¹`  | `arctan` |
+                   | `atan`   | `arctan` |
+
+
+                   asin(x)    → arcsin(x)
+                   acos(x)    → arccos(x)
+                   atan(x)    → arctan(x)
+
+                   |  notation | Calc    |
+                   | ------------------ | ------- |
+                   | `sinh`             | `sh`    |
+                   | `cosh`             | `ch`    |
+                   | `tanh`             | `tanh`  |
+                   | `arsinh`           | `asinh` |
+                   | `arcsinh`          | `asinh` |
+                   | `arsinh`           | `asinh` |
+                   | `arcosh`           | `acosh` |
+                   | `arctanh`          | `atanh` |
+
+
+
+
+
+                   | Unicode / notation | Calc       |
+                   | ------------------ | ---------- |
+                   | `eˣ`               | `exp`*     |
+                   | `exp`              | `exp`      |
+                   | `e^x`              | `e^x`      |
+                   | `eˣ`               | `exp(x)`*  |
+                   | `expm1`            | `expm1`    |
+                   | `2ˣ`               | `exp2(x)`* |
+
+
+                   | Unicode notation | Calc      |   |           |
+                   | ---------------- | --------- | - | --------- |
+                   | `                | x         | ` | `abs(x)`* |
+                   | `‖x‖`            | `abs(x)`* |   |           |
+                   | `abs(x)`         | `abs(x)`  |   |           |
+
+
+                   | Unicode / notation | Calc            |
+                   | ------------------ | --------------- |
+                   | `n!`               | `factorial(n)`* |
+                   | `n‼`               | `factorial(n)`* |
+                   | `P(n,r)`           | `P(n,r)`        |
+                   | `C(n,r)`           | `C(n,r)`        |
+                   | `nPr`              | `P(n,r)`*       |
+                   | `nCr`              | `C(n,r)`*       |
+                   | `nP r`             | `P(n,r)`*       |
+                   | `nC r`             | `C(n,r)`*       |
+
+
+                   | Unicode    | Calc       |
+                   | ---------- | ---------- |
+                   | `min`      | `min`      |
+                   | `minimum`  | `min`      |
+                   | `min(x,y)` | `min(x,y)` |
+                   | `max`      | `max`      |
+                   | `maximum`  | `max`      |
+                   | `max(x,y)` | `max(x,y)` |
+
+
+                   | Unicode / notation | Calc        |
+                   | ------------------ | ----------- |
+                   | `⌊x⌋`              | `floor(x)`* |
+                   | `⌈x⌉`              | `ceil(x)`*  |
+                   | `⌊x⌋`              | `floor(x)`* |
+                   | `⌈x⌉`              | `ceil(x)`*  |
+                   | `round(x)`         | `round(x)`  |
+                   | `trunc(x)`         | `trunc(x)`  |
+
+
+
+                   | Unicode    | Calc             |
+                   | ---------- | ---------------- |
+                   | `Γ(x)`     | `gamma(x)`       |
+                   | `Γ`        | `gamma`*         |
+                   | `ln Γ(x)`  | `log(gamma(x))`* |
+                   | `log Γ(x)` | `lgamma(x)`*     |
+
+                   γ → e_gamma
+                   Γ(x) → gamma(x)
+
+
+                   | Unicode / notation | Calc      |
+                   | ------------------ | --------- |
+                   | `erf`              | `erf`     |
+                   | `erfc`             | `erfc`    |
+                   | `erf(x)`           | `erf(x)`  |
+                   | `erfc(x)`          | `erfc(x)` |
+
+
+                   | Notation     | Calc                |
+                   | ------------ | ------------------- |
+                   | `√(x²+y²)`   | existing expression |
+                   | `‖(x,y)‖`    | `hypot(x,y)`*       |
+                   | `hypot(x,y)` | `hypot(x,y)`        |
+                   | `d(p,q)`     | `distance(...)`*    |
+
+
+
+
+
+                   | Unicode | Calc        |
+                   | ------- | ----------- |
+                   | `c`     | `c`         |
+                   | `ℏ`     | `hbar`      |
+                   | `ħ`     | `hbar`      |
+                   | `h`     | `h`         |
+                   | `e`     | `e_charge`* |
+                   | `e₀`    | `epsilon0`* |
+                   | `ε₀`    | `epsilon0`  |
+                   | `μ₀`    | `mu0`       |
+                   | `Z₀`    | `Z0`        |
+                   | `k_B`   | `kB`        |
+                   | `N_A`   | `NA`        |
+                   | `F`     | `F`         |
+                   | `R`     | `R`         |
+                   | `α`     | `alpha`     |
+                   | `G`     | `G`         |
+                   | `g₀`    | `g0`        |
+
+                   ℯ → e
+                   e → e
+                   qₑ → e_charge
+
+
+
+
+
+                   | Unicode | Calc     |
+                   | ------- | -------- |
+                   | `mₑ`    | `m_e`    |
+                   | `mₚ`    | `mp`     |
+                   | `mₙ`    | `mn`     |
+                   | `mᵤ`    | `mu`     |
+                   | `m_d`   | `md`     |
+                   | `m_α`   | `malpha` |
+                   | `μ_B`   | `muB`    |
+                   | `μ_N`   | `muN`    |
+                   | `μₑ`    | `mue`    |
+                   | `μₚ`    | `mup`    |
+                   | `μₙ`    | `mun`    |
+                   | `μ_d`   | `mud`    |
+                   | `rₑ`    | `re`     |
+
+
+                   | Unicode | Calc  |
+                   | ------- | ----- |
+                   | `ℓ_P`   | `l_P` |
+                   | `l_P`   | `l_P` |
+                   | `m_P`   | `m_P` |
+                   | `t_P`   | `t_P` |
+                   | `q_P`   | `q_P` |
+                   | `T_P`   | `T_P` |
+                   | `E_P`   | `E_P` |
+
+
+                   | Unicode / notation | Calc  |
+                   | ------------------ | ----- |
+                   | `a₀`               | `a0`  |
+                   | `mₑ`               | `m_e` |
+                   | `E_h`              | `Eh`  |
+                   | `𝜇_B`             | `muB` |
+                   | `𝜇_N`             | `muN` |
+
+
+
+                   | Unicode notation | Calc           |   |          |
+                   | ---------------- | -------------- | - | -------- |
+                   | `                | x              | ` | `abs(x)` |
+                   | `⌊x⌋`            | `floor(x)`     |   |          |
+                   | `⌈x⌉`            | `ceil(x)`      |   |          |
+                   | `x!`             | `factorial(x)` |   |          |
+                   | `Γ(x)`           | `gamma(x)`     |   |          |
+                   | `sin⁻¹(x)`       | `arcsin(x)`    |   |          |
+                   | `cos⁻¹(x)`       | `arccos(x)`    |   |          |
+                   | `tan⁻¹(x)`       | `arctan(x)`    |   |          |
+                   | `log₁₀(x)`       | `log10(x)`     |   |          |
+                   | `log₂(x)`        | `log2(x)`      |   |          |
+                   | `eˣ`             | `exp(x)`       |   |          |
+                   | `2ˣ`             | `exp2(x)`*     |   |          |
+                   | `‖(x,y)‖`        | `hypot(x,y)`   |   |          |
+
+
+
+
+
+
+                   | Unicode | Calc            |
+                   | ------- | --------------- |
+                   | `α`     | `alpha`         |
+                   | `μ`     | `mu`            |
+                   | `μ₀`    | `mu0`           |
+                   | `μ_B`   | `muB`           |
+                   | `μ_N`   | `muN`           |
+                   | `λₑ`    | `lambda_e`      |
+                   | `λ̄ₑ`   | `lambda_bar_e`  |
+                   | `σ`     | `sigma`         |
+                   | `σₑ`    | `sigmae`        |
+                   | `ε₀`    | `epsilon0`      |
+                   | `φ₀`    | `phi0`          |
+                   | `Γ`     | `gamma`*        |
+                   | `ζ`     | `riemann_zeta`* |
+
+
+                   | Unicode / notation | Calc           |
+                   | ------------------ | -------------- |
+                   | `√`                | `sqrt`         |
+                   | `∛`                | `cbrt`         |
+                   | `Γ`                | `gamma`        |
+                   | `ζ`                | `riemann_zeta` |
+                   | `η`                | `?`            |
+                   | `β`                | `beta`         |
+                   | `Hₙ`               | `hermite`*     |
+                   | `Lₙ`               | `laguerre`*    |
+                   | `Pₙ`               | `legendre`*    |
+
+
+
+
+
+
+                   | Unicode | Potential ASCII |
+                   | ------- | --------------- |
+                   | `=`     | `=`             |
+                   | `≠`     | `!=`            |
+                   | `≤`     | `<=`            |
+                   | `≥`     | `>=`            |
+                   | `<`     | `<`             |
+                   | `>`     | `>`             |
+                   | `≡`     | `==`            |
+                   | `≈`     | `~=`            |
+                   | `≃`     | `~=`            |
+                   | `≅`     | `~=`            |
+
+
+
+                   First step:
+
+
+                   ∞  → inf
+
+                   π  → pi
+                   ϖ  → pi
+                   φ  → phi
+                   ϕ  → phi
+                   γ  → e_gamma
+                   α  → alpha
+
+                   √  → sqrt
+                   ∛  → cbrt
+
+                   ×  → *
+                   ⋅  → *
+                   ·  → *
+                   ∙  → *
+                   ∗  → *
+                   ⨯  → *
+
+                   ÷  → /
+                   ∕  → /
+                   ⁄  → /
+
+                   −  → -
+                   ‐  → -
+                   -  → -
+                   ‒  → -
+                   –  → -
+                   —  → -
+
+                   ＋  → +
+                   －  → -
+
+                   ％  → %
+
+                   （  → (
+                   ）  → )
+                   ，  → ,
+
+                   ℏ  → hbar
+                   ħ  → hbar
+                   ε₀ → epsilon0
+                   μ₀ → mu0
+                   Z₀ → Z0
+                   N_A → NA
+                   k_B → kB
+
+                   mₑ → m_e
+                   mₚ → mp
+                   mₙ → mn
+                   μ_B → muB
+                   μ_N → muN
+                   rₑ → re
+
+                   ℓ_P → l_P
+                   a₀ → a0
+
+
+             */
 
 #endif
           default:
-            // All ASCII chars converted directly
             if (input[position] <= WCHAR(0x7F)) [[likely]] {
+              // All ASCII chars converted directly
               output.push_back(static_cast<char>(input[position]));
               break;
+            } else [[unlikely]] {
+              // Any other non-ASCII character is not part of the current Calc
+              // language and should be rejected here.
+              return position;
             }
-
-            // Any other non-ASCII character is not part of the current Calc
-            // language and should be rejected here.
-            [[unlikely]] return position;
           }
       }
       // All characters processed successfully.
@@ -811,41 +744,79 @@ class CalcGUI {
   };
 
 public:
-  constexpr CalcGUI() noexcept = default;
+  constexpr CalcApp() noexcept {
+#ifdef _DEBUG
+    _setup_crt_leak_check();
+#endif
+    _equasion.reserve(cfg::input_max_text_length);
+#ifdef CALC_SUPPORT_DARK_MODE
+    init_uxtheme_callers();
+#endif
+#ifdef CALC_SUPPORT_DPI_CHANGES
+#ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
+    // https://learn.microsoft.com/en-us/windows/win32/hidpi/dpi-awareness-context
+    //  Per monitor DPI aware. This window checks for the DPI when it is created
+    //  and adjusts the scale factor whenever the DPI changes. These processes
+    //  are not automatically scaled by the system.
+    SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+#else
+    // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setprocessdpiaware
+    // System DPI aware. This window does not scale for DPI changes. It will
+    // query for the DPI once and use that value for the lifetime of the
+    // process. If the DPI changes, the process will not adjust to the new DPI
+    // value. It will be automatically scaled up or down by the system when the
+    // DPI changes from the system value.
+    // SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
+    SetProcessDPIAware();
+#endif
+#endif
+#ifdef CALC_SUPPORT_AUTO_RESTART
+    RegisterApplicationRestart(nullptr, FALSE);
+#endif
+#ifdef CALC_DISABLE_IME
+    // Disable IME completely because Calc use only ANSI input in GUI
+    ImmDisableIME(FALSE);
+#endif
+  }
 
-  CalcGUI(const CalcGUI &) = delete;
-  CalcGUI(CalcGUI &&) = delete;
+  CalcApp(const CalcApp &) = delete;
+  CalcApp(CalcApp &&) = delete;
 
-  constexpr ~CalcGUI() noexcept = default;
+  constexpr ~CalcApp() noexcept = default;
 
   /**
    * Perform calculation from the GUI
    */
-  void calc() noexcept {
-    EditView input(_layout.handle(0));
-    EquasionHandler equasion(input, _equasion);
-    Lexer l(equasion.data());
-    Parser p(l);
-    const auto value = p.parse();
+  [[nodiscard]] constexpr BOOL calc(const WPARAM wP) noexcept {
+    if (LOWORD(wP) == IDC_BUTTON_CALC && HIWORD(wP) == BN_CLICKED) {
+      EditView input(_layout.handle(0));
+      EquasionHandler equasion(input, _equasion);
+      Lexer l(equasion.data());
+      Parser p(l);
+      const auto value = p.parse();
 #if defined(CALC_USE_ERROR_TOKEN)
-    if (value.type == Token::Type::RESULT) [[likely]] {
-      Formatter::Result result [[indeterminate]];
-      set_result(result.data(), Formatter::format(value, result));
-    } else if (value.type == Token::Type::ERROR) {
+      if (value.type == Token::Type::RESULT) [[likely]] {
+        Formatter::Result result [[indeterminate]];
+        set_result(result.data(), Formatter::format(value, result));
+      } else if (value.type == Token::Type::ERROR) {
         set_result(value.error_text, value.error_text + value.error_text_size));
-    } else [[unlikely]] {
-      constexpr std::string_view err = "parser internal error";
-      set_result(err.data(), err.data() + err.size());
-    }
+      } else [[unlikely]] {
+        constexpr std::string_view err = "parser internal error";
+        set_result(err.data(), err.data() + err.size());
+      }
 #else
-    if (IssueManager::has_errors()) [[unlikely]] {
-      Formatter::Summary summary [[indeterminate]];
-      set_result(summary.data(), Formatter::create_summary(summary));
-    } else [[likely]] {
-      Formatter::Result result [[indeterminate]];
-      set_result(result.data(), Formatter::format(value, result));
-    }
+      if (IssueManager::has_errors()) [[unlikely]] {
+        Formatter::Summary summary [[indeterminate]];
+        set_result(summary.data(), Formatter::create_summary(summary));
+      } else [[likely]] {
+        Formatter::Result result [[indeterminate]];
+        set_result(result.data(), Formatter::format(value, result));
+      }
 #endif
+      return TRUE;
+    } else {
+      return FALSE;
+    }
   }
 
   /**
@@ -858,14 +829,29 @@ public:
   /**
    * Close Calc GUI.
    */
-  constexpr void close(const HWND window) const noexcept {
-    EndDialog(window, FALSE);
+  [[nodiscard]] constexpr auto close(const HWND window) const noexcept {
+    return EndDialog(window, FALSE);
+  }
+
+  /**
+   * Create Calc GUI.
+   */
+  constexpr auto create(const HINSTANCE instance,
+                        DlgProc CalcDialogProc) const noexcept {
+    if (SUCCEEDED(DialogBoxParamA(instance, MAKEINTRESOURCEA(IDD_CALC_DIALOG),
+                                  nullptr, CalcDialogProc,
+                                  reinterpret_cast<LPARAM>(instance)))) {
+      return EXIT_SUCCESS;
+    }
+    return EXIT_FAILURE;
   }
 
   /**
    * Initialize Calc GUI and load user data into it.
    */
-  constexpr void init(const HWND window, const HINSTANCE instance) noexcept {
+  [[nodiscard]] constexpr BOOL init(const HWND window,
+                                    const LPARAM lP) noexcept {
+    const HINSTANCE instance = reinterpret_cast<HINSTANCE>(lP);
     set_icons(window, instance);
     add_about_menu_to_system_menu(window);
 #ifdef CALC_SUPPORT_DPI_CHANGES
@@ -889,28 +875,37 @@ public:
     set_extended_style(_layout.handle(0), ES_EX_ALLOWEOL_ALL);
 #endif
     goto_end_of_text(_layout.handle(0));
+    return TRUE;
   }
 
   /**
    * Resize Calc window.
    */
-  constexpr inline void resize(const WORD width, const WORD height) noexcept {
+  constexpr inline BOOL resize(const LPARAM lP) noexcept {
+    const WORD width = LOWORD(lP);
+    const WORD height = HIWORD(lP);
     _layout.resize(width, height);
+    return TRUE;
   }
 
   /**
    * Return to the system minimal sizes for Calc window.
    */
-  constexpr inline void minmaxinfo(const LPMINMAXINFO lpMMI) const noexcept {
+  [[nodiscard]] constexpr inline BOOL
+  minmaxinfo(const LPARAM lP) const noexcept {
+    const auto lpMMI = reinterpret_cast<LPMINMAXINFO>(lP);
     lpMMI->ptMinTrackSize.x = _layout.min_x();
     lpMMI->ptMinTrackSize.y = _layout.min_y();
+    return TRUE;
   }
 #ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
-  constexpr void set_dpi(const HWND window, const WORD dpi,
-                         Rect_ptr rect) noexcept {
-    _dpi = dpi;
+  constexpr void set_dpi(const HWND window, const WPARAM wP,
+                         const LPARAM lP) noexcept {
+    _dpi = HIWORD(wP);
     init_min_sizes(window, physical(cfg::min_width, _dpi),
                    physical(cfg::min_height, _dpi), _dpi);
+
+    const auto rect = reinterpret_cast<const Rect_ptr>(lP);
     SetWindowPos(window, nullptr, rect->x(), rect->y(), rect->width(),
                  rect->heigth(), SWP_NOZORDER | SWP_NOACTIVATE);
   }
@@ -930,8 +925,10 @@ public:
   }
 
 #ifdef CALC_SUPPORT_DARK_MODE
-  [[nodiscard]] constexpr auto &theme() { return _theme; }
+  [[nodiscard]] constexpr auto &theme() noexcept { return _theme; }
 #endif
+
+  [[nodiscard]] constexpr auto &about() noexcept { return _about; }
 
 private:
   /**
@@ -975,7 +972,7 @@ private:
     input.set_size(reg.read("input", input.bytes(), cfg::input_max_data_size));
 #else
     auto tests = calc_tests();
-    input.write(tests.data(), tests.size());
+    input.write(tests.data(), static_cast<int>(tests.size()));
 #endif
     const auto flags = reg.read("flags");
     const auto show = reg.read("showCmd");
@@ -1051,68 +1048,89 @@ private:
 #endif
   }
 
+  struct About {
+    [[nodiscard]] static constexpr BOOL create(const HWND parent, WPARAM wP,
+                                               DlgProc AboutDlgProc) noexcept {
+      if ((wP & 0xFFF0) == IDM_ABOUTBOX &&
+          SUCCEEDED(DialogBoxParamA(GetModuleHandleA(nullptr),
+                                    MAKEINTRESOURCEA(IDD_ABOUTBOX), parent,
+                                    AboutDlgProc, FALSE))) {
+        return TRUE;
+      } else {
+        return FALSE;
+      }
+    }
+
+    [[nodiscard]] static constexpr BOOL open_homepage(const HWND window,
+                                                      LPARAM lP) noexcept {
+      const auto nm = reinterpret_cast<LPNMHDR>(lP);
+      if (nm->idFrom == IDC_LINK_HOMEPAGE && nm->code == NM_CLICK) {
+        const auto l = reinterpret_cast<NMLINK *>(lP);
+        ShellExecuteW(window, L"open", l->item.szUrl, nullptr, nullptr,
+                      SW_SHOWNORMAL);
+        return TRUE;
+      } else {
+        return FALSE;
+      }
+    }
+
+    [[nodiscard]] static constexpr BOOL close(const HWND window,
+                                              const WPARAM wP) noexcept {
+      if (LOWORD(wP) == IDCANCEL) {
+        return EndDialog(window, FALSE);
+      } else {
+        return FALSE;
+      }
+    }
+  };
+
   [[no_unique_address]] std::string _equasion;
 
   [[no_unique_address]] Layout<cfg::elements> _layout [[indeterminate]];
-#ifdef CALC_SUPPORT_DARK_MODE
-  [[no_unique_address]] Theme _theme [[indeterminate]];
-#endif
 #ifdef CALC_SUPPORT_DPI_CHANGES
   [[no_unique_address]] UINT _dpi [[indeterminate]];
 #endif
+#ifdef CALC_SUPPORT_DARK_MODE
+  [[no_unique_address]] Theme _theme [[indeterminate]];
+#endif
+  [[no_unique_address]] About _about;
 };
 
-static CalcGUI gui;
+static CalcApp gui;
 
 /**
  * About dialog callback processing (resource-based).
  */
 constexpr static INT_PTR CALLBACK AboutDlgProc(const HWND window,
-                                               const UINT msg,
-                                               const WPARAM wParam,
+                                               const UINT msg, const WPARAM wP,
                                                const LPARAM
 #ifdef CALC_SUPPORT_LINK_WINDOW
-                                                   lParam
+                                                   lP
 #endif
                                                ) noexcept {
   switch (msg) {
-  case WM_COMMAND: {
-    if (LOWORD(wParam) == IDCANCEL) {
-      EndDialog(window, FALSE);
-      return TRUE;
-    }
-    break;
-  }
+  case WM_COMMAND:
+    return gui.about().close(window, wP);
 #ifdef CALC_SUPPORT_LINK_WINDOW
-  case WM_NOTIFY: {
-    const auto nm = reinterpret_cast<LPNMHDR>(lParam);
-    if (nm->idFrom == IDC_LINK_HOMEPAGE && nm->code == NM_CLICK) {
-      const auto link = reinterpret_cast<NMLINK *>(lParam);
-      ShellExecuteW(window, L"open", link->item.szUrl, nullptr, nullptr,
-                    SW_SHOWNORMAL);
-      return TRUE;
-    }
-    break;
-  }
+  case WM_NOTIFY:
+    return gui.about().open_homepage(window, lP);
 #endif
 #ifdef CALC_SUPPORT_DARK_MODE
-  case WM_INITDIALOG: {
+  case WM_INITDIALOG:
     gui.theme().apply(window);
     return TRUE;
-  }
 #ifdef CALC_SUPPORT_DARK_MODE_WITHOUT_WIN32_HELPER
   case WM_CTLCOLORDLG:
-  case WM_CTLCOLORSTATIC: {
-    return gui.theme().apply(reinterpret_cast<HDC>(wParam));
-  }
+  case WM_CTLCOLORSTATIC:
+    return gui.theme().apply(wP);
 #endif
-  case WM_SYSCOLORCHANGE: {
+  case WM_SYSCOLORCHANGE:
     gui.theme().apply(window, true);
     return TRUE;
-  }
 #endif
+  default:
+    return FALSE;
   }
-  return FALSE;
 }
 
 /**
@@ -1120,89 +1138,65 @@ constexpr static INT_PTR CALLBACK AboutDlgProc(const HWND window,
  */
 constexpr static INT_PTR CALLBACK CalcDialogProc(const HWND window,
                                                  const UINT msg,
-                                                 const WPARAM wParam,
-                                                 const LPARAM lParam) noexcept {
+                                                 const WPARAM wP,
+                                                 const LPARAM lP) noexcept {
 #ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
   static bool dpi_change_in_progress = false;
 #endif
   switch (msg) {
-  case WM_COMMAND: {
-    if (LOWORD(wParam) == IDC_BUTTON_CALC && HIWORD(wParam) == BN_CLICKED) {
-      gui.calc();
-      return TRUE;
-    }
-    break;
-  }
-  case WM_SYSCOMMAND: {
-    if ((wParam & 0xFFF0) == IDM_ABOUTBOX) {
-      DialogBoxParamA(GetModuleHandleA(nullptr), MAKEINTRESOURCEA(IDD_ABOUTBOX),
-                      window, AboutDlgProc, FALSE);
-      return TRUE;
-    }
-    break;
-  }
-  case WM_GETMINMAXINFO: {
-    gui.minmaxinfo(reinterpret_cast<LPMINMAXINFO>(lParam));
-    return TRUE;
-  }
-  case WM_SIZE: {
+  case WM_COMMAND:
+    return gui.calc(wP);
+  case WM_SYSCOMMAND:
+    return gui.about().create(window, wP, AboutDlgProc);
+  case WM_GETMINMAXINFO:
+    return gui.minmaxinfo(lP);
+  case WM_SIZE:
 #ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
     if (dpi_change_in_progress) {
       gui.layout_init(window);
-      break;
+      return FALSE;
     }
 #endif
-    gui.resize(LOWORD(lParam), HIWORD(lParam));
-    return TRUE;
-  }
+    return gui.resize(lP);
 #ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
-  case WM_GETDPISCALEDSIZE: {
+  case WM_GETDPISCALEDSIZE:
     // https://learn.microsoft.com/en-us/windows/win32/hidpi/wm-getdpiscaledsize
     dpi_change_in_progress = true;
-    break;
-  }
-  case WM_DPICHANGED: {
-    gui.set_dpi(window, HIWORD(wParam),
-                reinterpret_cast<const Rect_ptr>(lParam));
+    return FALSE;
+  case WM_DPICHANGED:
+    gui.set_dpi(window, wP, lP);
     dpi_change_in_progress = false;
     return TRUE;
-  }
 #endif
-  case WM_INITDIALOG: {
+  case WM_INITDIALOG:
 #ifdef CALC_SUPPORT_DARK_MODE
     gui.theme().init(window);
 #endif
-    gui.init(window, reinterpret_cast<HINSTANCE>(lParam));
-    return TRUE;
-  }
+    return gui.init(window, lP);
 #ifdef CALC_SUPPORT_AUTO_RESTART
-  case WM_ENDSESSION: {
-    if (wParam) {
+  case WM_ENDSESSION:
+    if (wP) {
       gui.save_user_data(window);
     }
     return TRUE;
-  }
 #endif
 #ifdef CALC_SUPPORT_DARK_MODE
 #ifdef CALC_SUPPORT_DARK_MODE_WITHOUT_WIN32_HELPER
   case WM_CTLCOLORSTATIC:
   case WM_CTLCOLOREDIT:
-  case WM_CTLCOLORDLG: {
-    return gui.theme().apply(reinterpret_cast<HDC>(wParam));
-  }
+  case WM_CTLCOLORDLG:
+    return gui.theme().apply(wP);
 #endif
-  case WM_SYSCOLORCHANGE: {
+  case WM_SYSCOLORCHANGE:
     gui.theme().apply(window, true, true);
     return TRUE;
-  }
 #endif
-  case WM_CLOSE: {
+  case WM_CLOSE:
     gui.save_user_data(window);
-    gui.close(window);
-    return TRUE;
+    return gui.close(window);
+  default:
+    return FALSE;
   }
-  }
-  return FALSE;
 }
 
 /**
@@ -1210,48 +1204,7 @@ constexpr static INT_PTR CALLBACK CalcDialogProc(const HWND window,
  */
 int WINAPI WinMain(const HINSTANCE instance, const HINSTANCE /*prev_instance*/,
                    const LPSTR /*cmd_line*/, const int /*cmd_show*/) {
-#ifdef _DEBUG
-  _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_CHECK_ALWAYS_DF |
-                 _CRTDBG_CHECK_CRT_DF | _CRTDBG_LEAK_CHECK_DF |
-                 _CRTDBG_CHECK_EVERY_1024_DF);
-#endif
-
-#ifdef CALC_SUPPORT_DARK_MODE
-  init_uxtheme_callers();
-#endif
-
-#ifdef CALC_SUPPORT_DPI_CHANGES
-#ifdef CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
-  // https://learn.microsoft.com/en-us/windows/win32/hidpi/dpi-awareness-context
-  //  Per monitor DPI aware. This window checks for the DPI when it is created
-  //  and adjusts the scale factor whenever the DPI changes. These processes are
-  //  not automatically scaled by the system.
-  SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
-#else
-  // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setprocessdpiaware
-  // System DPI aware. This window does not scale for DPI changes. It will query
-  // for the DPI once and use that value for the lifetime of the process. If the
-  // DPI changes, the process will not adjust to the new DPI value. It will be
-  // automatically scaled up or down by the system when the DPI changes from the
-  // system value.
-  // SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
-  SetProcessDPIAware();
-#endif
-#endif
-
-#ifdef CALC_SUPPORT_AUTO_RESTART
-  RegisterApplicationRestart(nullptr, FALSE);
-#endif
-
-#ifdef CALC_DISABLE_IME
-  // Disable IME completely because Calc use only ANSI input in GUI
-  ImmDisableIME(FALSE);
-#endif
-
-  DialogBoxParamA(instance, MAKEINTRESOURCEA(IDD_CALC_DIALOG), nullptr,
-                  CalcDialogProc, reinterpret_cast<LPARAM>(instance));
-
-  return EXIT_SUCCESS;
+  return gui.create(instance, CalcDialogProc);
 }
 
 #if defined _M_IX86

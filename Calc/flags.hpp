@@ -53,7 +53,7 @@ using ParamCount = char;
 #define CALC_SUPPORT_FRACTIONAL_OUTPUT // WIP
 
 // TODO: needs to be refactored because we loose error position.
-// #define CALC_ALLOW_UNICODE_IN_GUI // allow Unicode input in GUI
+#define CALC_ALLOW_UNICODE_IN_GUI // allow Unicode input in GUI
 #endif
 
 #endif
