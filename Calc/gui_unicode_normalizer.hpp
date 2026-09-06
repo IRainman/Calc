@@ -58,7 +58,9 @@ public:
   explicit constexpr Normalizer(const EditView &edit,
                                 std::string &equasion) noexcept
       : _equasion(equasion), _edit(edit) {
-    _normalized = normalize(_edit.text(), _edit.length(), _equasion);
+    _equasion.resize_and_overwrite(
+        _equasion.capacity(),
+        Operation{_normalized, _edit.text(), _edit.length()});
   }
 
   constexpr ~Normalizer() noexcept { _equasion.clear(); }
@@ -90,93 +92,146 @@ private:
   [[no_unique_address]] const EditView &_edit;
   [[no_unique_address]] UINT _normalized;
 
-  constexpr UINT normalize(const LPCWSTR input, const UINT length,
-                           std::string &output) noexcept {
-    for (UINT position = 0; position != length; ++position) [[likely]] {
-      switch (input[position])
-        [[likely]] {
+  struct Operation {
+    UINT &normalized;
+    const LPCWSTR input;
+    const UINT length;
+
+    template <UINT N>
+    [[nodiscard]] inline static constexpr char *
+    append(char *dst, const char (&str)[N]) noexcept {
+      std::memcpy(dst, str, N - 1);
+      return dst + N - 1;
+    }
+
+    [[nodiscard]] inline static constexpr char *append(char *dst,
+                                                       const char s) noexcept {
+      *dst = s;
+      return ++dst;
+    }
+
+    UINT operator()(char *buffer, UINT) const noexcept {
+      char *dst = buffer;
+
+      UINT position = 0;
+
+      while (position != length) [[likely]] {
+        const WCHAR c = input[position];
+
+        /*
+         * Fast path for ordinary ANSI-compatible characters.
+         * Avoid the large Unicode switch entirely.
+         */
+        if (c <= WCHAR(0xFF)) [[likely]] {
+          if (c == WCHAR('\t') /*TAB*/ || c == WCHAR('\n') /*LF*/ ||
+              c == WCHAR('\v') /*VT*/ || c == WCHAR('\f') /*FF*/ ||
+              c == WCHAR('\r') /*CR*/ || c == WCHAR(0xA0) /*NO-BREAK SPACE*/)
+              [[unlikely]] {
+            dst = append(dst, ' ');
+            ++position;
+            continue;
+          }
+
+          /*
+           * Copy a run of ordinary ANSI characters.
+           */
+          const UINT begin = position;
+
+          do
+            [[likely]] { ++position; }
+          while (position != length && input[position] <= WCHAR(0xFF));
+
+          const UINT count = position - begin;
+
+          for (UINT i = 0; i != count; ++i)
+            *dst++ = static_cast<char>(input[begin + i]);
+
+          continue;
+        }
+
+        // Unicode part:
+        switch (c) {
         // All string separation, formatting, and control characters:
-        case WCHAR('\t'): // TAB
-        case WCHAR('\n'): // LF
-        case WCHAR('\v'): // VT
-        case WCHAR('\f'): // FF
-        case WCHAR('\r'): // CR
-        case WCHAR(' '):  // SPACE
-        case u'\u00A0':   // NO-BREAK SPACE
-        case u'\u2000':   // EN QUAD
-        case u'\u2001':   // EM QUAD
-        case u'\u2002':   // EN SPACE
-        case u'\u2003':   // EM SPACE
-        case u'\u2004':   // THREE-PER-EM SPACE
-        case u'\u2005':   // FOUR-PER-EM SPACE
-        case u'\u2006':   // SIX-PER-EM SPACE
-        case u'\u2007':   // FIGURE SPACE
-        case u'\u2008':   // PUNCTUATION SPACE
-        case u'\u2009':   // THIN SPACE
-        case u'\u200A':   // HAIR SPACE
-        case u'\u200B':   // ZERO WIDTH SPACE
-        case u'\u200C':   // ZERO WIDTH NON-JOINER
-        case u'\u200D':   // ZERO WIDTH JOINER
-        case u'\u2060':   // WORD JOINER
-        case u'\u202F':   // NARROW NO-BREAK SPACE
-        case u'\u205F':   // MEDIUM MATHEMATICAL SPACE
-        case u'\u3000':   // IDEOGRAPHIC SPACE
-        case u'\u2028':   // LINE SEPARATOR
-        case u'\u2029':   // PARAGRAPH SEPARATOR
-        case u'\uFEFF':   // ZERO WIDTH NO-BREAK SPACE
-          output.push_back(' ');
+        case u'\u2000': // EN QUAD
+        case u'\u2001': // EM QUAD
+        case u'\u2002': // EN SPACE
+        case u'\u2003': // EM SPACE
+        case u'\u2004': // THREE-PER-EM SPACE
+        case u'\u2005': // FOUR-PER-EM SPACE
+        case u'\u2006': // SIX-PER-EM SPACE
+        case u'\u2007': // FIGURE SPACE
+        case u'\u2008': // PUNCTUATION SPACE
+        case u'\u2009': // THIN SPACE
+        case u'\u200A': // HAIR SPACE
+        case u'\u200B': // ZERO WIDTH SPACE
+        case u'\u200C': // ZERO WIDTH NON-JOINER
+        case u'\u200D': // ZERO WIDTH JOINER
+
+        case u'\u2028': // LINE SEPARATOR
+        case u'\u2029': // PARAGRAPH SEPARATOR
+
+        case u'\u202F': // NARROW NO-BREAK SPACE
+
+        case u'\u205F': // MEDIUM MATHEMATICAL SPACE
+
+        case u'\u2060': // WORD JOINER
+
+        case u'\u3000': // IDEOGRAPHIC SPACE
+
+        case u'\uFEFF': // ZERO WIDTH NO-BREAK SPACE
+          [[unlikely]] dst = append(dst, ' ');
           break;
 
         // Fullwidth, superscript, subscript digits.
         case u'\uFF10': // ０
         case u'\u2070': // ⁰
         case u'\u2080': // ₀
-          output.push_back('0');
+          dst = append(dst, '0');
           break;
         case u'\uFF11': // １
         case u'\u00B9': // ¹
         case u'\u2081': // ₁
-          output.push_back('1');
+          dst = append(dst, '1');
           break;
         case u'\uFF12': // ２
         case u'\u00B2': // ²
         case u'\u2082': // ₂
-          output.push_back('2');
+          dst = append(dst, '2');
           break;
         case u'\uFF13': // ３
         case u'\u00B3': // ³
         case u'\u2083': // ₃
-          output.push_back('3');
+          dst = append(dst, '3');
           break;
         case u'\uFF14': // ４
         case u'\u2074': // ⁴
         case u'\u2084': // ₄
-          output.push_back('4');
+          dst = append(dst, '4');
           break;
         case u'\uFF15': // ５
         case u'\u2075': // ⁵
         case u'\u2085': // ₅
-          output.push_back('5');
+          dst = append(dst, '5');
           break;
         case u'\uFF16': // ６
         case u'\u2076': // ⁶
         case u'\u2086': // ₆
-          output.push_back('6');
+          dst = append(dst, '6');
           break;
         case u'\uFF17': // ７
         case u'\u2077': // ⁷
         case u'\u2087': // ₇
-          output.push_back('7');
+          dst = append(dst, '7');
           break;
         case u'\uFF18': // ８
         case u'\u2078': // ⁸
         case u'\u2088': // ₈
-          output.push_back('8');
+          dst = append(dst, '8');
           break;
         case u'\uFF19': // 9
         case u'\u2079': // ⁹
         case u'\u2089': // ₉
-          output.push_back('9');
+          dst = append(dst, '9');
           break;
 
         // Fullwidth, superscript, subscript and alternative
@@ -184,7 +239,7 @@ private:
         case u'\uFF0B': // ＋
         case u'\u207A': // ⁺
         case u'\u208A': // ₊
-          output.push_back('+');
+          dst = append(dst, '+');
           break;
 
         case u'\uFF0D': // －
@@ -197,7 +252,7 @@ private:
         case u'\u2014': // —
         case u'\u2212': // −
         case u'\uFE63': // ﹣
-          output.push_back('-');
+          dst = append(dst, '-');
           break;
 
         case u'\uFF0A': // ＊
@@ -208,39 +263,39 @@ private:
         case u'\u22C5': // ⋅
         case u'\u204E': // ⁎
         case u'\u2A2F': // ⨯
-          output.push_back('*');
+          dst = append(dst, '*');
           break;
 
         case u'\u00F7': // ÷
         case u'\u2044': // ⁄
         case u'\u2215': // ∕
         case u'\uFF0F': // ／
-          output.push_back('/');
+          dst = append(dst, '/');
           break;
 
         case u'\uFF08': // （
         case u'\u207D': // ⁽
         case u'\u208D': // ₍
         case u'\uFE59': // ﹙
-          output.push_back('(');
+          dst = append(dst, '(');
           break;
 
         case u'\uFF09': // ）
         case u'\u207E': // ⁾
         case u'\u208E': // ₎
         case u'\uFE5A': // ﹚
-          output.push_back(')');
+          dst = append(dst, ')');
           break;
 
         case u'\uFF0C': // ，
         case u'\uFE50': // ﹐
-          output.push_back(',');
+          dst = append(dst, ',');
           break;
 
         // Mathematical constants:
         case u'\u03C0': // π
         case u'\u03D6': // ϖ
-          output.append("pi");
+          dst = append(dst, "pi");
           break;
 
           /*
@@ -262,69 +317,69 @@ private:
           */
 
         case u'\u03C4': // τ
-          // output.append("tau");
-          output.append("2*pi");
+          // dst = append(dst,"tau");
+          dst = append(dst, "2*pi");
           break;
 
         case u'\u03C6': // φ
         case u'\u03D5': // ϕ
-          output.append("phi");
+          dst = append(dst, "phi");
           break;
 
         case u'\u03B3': // γ
-          output.append("e_gamma");
+          dst = append(dst, "e_gamma");
           break;
 
         case u'\u0393': // Γ
-          output.append("gamma");
+          dst = append(dst, "gamma");
           break;
 
         case u'\u03B1': // α
-          output.append("alpha");
+          dst = append(dst, "alpha");
           break;
 
         case u'\u03C3': // σ
-          output.append("sigma");
+          dst = append(dst, "sigma");
           break;
 
         case u'\u03BC': // μ
-          output.append("mu");
+          dst = append(dst, "mu");
           break;
 
         case u'\u221E': // ∞
-          output.append("inf");
+          dst = append(dst, "inf");
           break;
 
         case u'\u212F': // ℯ
-          output.push_back('e');
+          dst = append(dst, 'e');
           break;
 
         // Physical constants.
         case u'\u210F': // ℏ
-          output.append("hbar");
+          dst = append(dst, "hbar");
           break;
 
         // Roots.
         case u'\u221A': // √
         case u'\u23B7': // ⎷
         case u'\u23E5': // ⏥
-          output.append("sqrt");
+          dst = append(dst, "sqrt");
           break;
 
         case u'\u221B': // ∛
-          output.append("cbrt");
+          dst = append(dst, "cbrt");
           break;
 
         case u'\u221C': // ∜
-          output.append("qbrt");
+          dst = append(dst, "qbrt");
           break;
 
         case u'\u23B8': // ㏑
-          output.append("ln");
+          dst = append(dst, "ln");
           break;
 
         case u'\u23B9': // ㏒
-          output.append("log");
+          dst = append(dst, "log");
           break;
 
           /* TODO
@@ -360,15 +415,15 @@ private:
            */
 
           case u'\u2211': // ∑
-            output.append("sum");
+            dst = append(dst,"sum");
             break;
 
           case u'\u220F': // ∏
-            output.append("prod");
+            dst = append(dst,"prod");
             break;
 
           case u'\u222B': // ∫
-            output.append("integral");
+            dst = append(dst,"integral");
             break;
 
 #endif
@@ -389,15 +444,15 @@ private:
           */
 
         case u'\u2609': // ☉
-          output.append("_sun");
+          dst = append(dst, "_sun");
           break;
 
         case u'\u2295': // ⊕
-          output.append("_earth");
+          dst = append(dst, "_earth");
           break;
 
         case u'\u2643': // ♃
-          output.append("_jupiter");
+          dst = append(dst, "_jupiter");
           break;
 
           /*
@@ -716,21 +771,17 @@ private:
 
 
            */
-
         default:
-          if (input[position] <= WCHAR(0xFF)) [[likely]] {
-            // All other ANSI chars converted directly
-            output.push_back(static_cast<char>(input[position]));
-            break;
-          } else [[unlikely]] {
-            // This Unicode character is not part of the Calc language.
-            return position;
-          }
+          goto normalization_end;
         }
+
+        ++position;
+      }
+    normalization_end:
+      normalized = position;
+      return dst - buffer;
     }
-    // All characters were processed successfully.
-    return length;
-  }
+  };
 };
 } // namespace GUI
 #endif
