@@ -45,8 +45,8 @@ struct Token {
     // If token is an error, there is a small helper that handle it.
     struct {
       [[no_unique_address]] const char *error_text [[indeterminate]];
-      [[no_unique_address]] EquationSize error_text_size [[indeterminate]];
-      [[no_unique_address]] EquationSize error_position [[indeterminate]];
+      [[no_unique_address]] unsigned int error_text_size [[indeterminate]];
+      [[no_unique_address]] unsigned int error_position [[indeterminate]];
     };
 #endif
   };
