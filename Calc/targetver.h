@@ -57,8 +57,8 @@
 // #define CALC_DISABLE_IME // Disable IME because Calc only use ASCII
 
 /*
-* Deprecated because overhead, only set in compile time
-*/
+ * Deprecated because overhead, only set in compile time
+ */
 // #define CALC_SUPPORT_WINDOWS_VERSION_CHECK
 
 #if (_WIN32_WINNT >= 0x0501)

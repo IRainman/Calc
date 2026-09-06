@@ -96,12 +96,10 @@ public:
         IssueManager::report_error(
 #endif
 #if defined(CALC_ALLOW_UNICODE_IN_GUI)
-            to_ansi.normalized(),
-            "this Unicode character is not part of the Calc language");
+            to_ansi.normalized(), "character is incorrect");
 #else
-            0, "Only ANSI symbols supported, Unicode isn't supported");
+            0, "Unicode not supported");
 #endif
-        return FALSE;
       }
 
       Lexer l(_equasion);
@@ -365,11 +363,11 @@ private:
   [[no_unique_address]] std::string _equasion;
 
   [[no_unique_address]] Layout<cfg::elements> _layout [[indeterminate]];
-#ifdef CALC_SUPPORT_DPI_CHANGES
-  [[no_unique_address]] UINT _dpi [[indeterminate]];
-#endif
 #ifdef CALC_SUPPORT_DARK_MODE
   [[no_unique_address]] Theme _theme [[indeterminate]];
+#endif
+#ifdef CALC_SUPPORT_DPI_CHANGES
+  [[no_unique_address]] UINT _dpi [[indeterminate]];
 #endif
   [[no_unique_address]] About _about;
 };

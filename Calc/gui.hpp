@@ -689,7 +689,7 @@ struct Theme {
    */
   [[nodiscard]] constexpr INT_PTR
   static_control(const WPARAM wPhdc) const noexcept {
-    auto hdc = reinterpret_cast<HDC>(Phdc);
+    auto hdc = reinterpret_cast<HDC>(wPhdc);
     if (is_dark_mode()) {
       SetTextColor(hdc, _dark_bakground_text_color);
       SetBkColor(hdc, _dark_bakground_window_color);
@@ -706,7 +706,7 @@ struct Theme {
    */
   [[nodiscard]] constexpr INT_PTR edit(const WPARAM wPhdc) const noexcept {
     if (is_dark_mode()) {
-      auto hdc = reinterpret_cast<HDC>(Phdc);
+      auto hdc = reinterpret_cast<HDC>(wPhdc);
       SetTextColor(hdc, _dark_bakground_text_color);
       SetBkColor(hdc, _dark_bakground_field_color);
       return reinterpret_cast<INT_PTR>(_dark_bakground_field_brush);
@@ -740,7 +740,7 @@ private:
       const RegRead personalize(HKEY_CURRENT_USER,
                   "Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize");
       const auto light = personalize.read("AppsUseLightTheme");
-      _dark_mode = light && light.value() == 0;
+      _dark_mode = light && *light == 0;
 
       _background_index = is_dark_mode() ? COLOR_WINDOWTEXT : COLOR_WINDOW;
       _text_index =       is_dark_mode() ? COLOR_WINDOW : COLOR_WINDOWTEXT;
