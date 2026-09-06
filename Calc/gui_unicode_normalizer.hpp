@@ -719,7 +719,7 @@ private:
 
         default:
           if (input[position] <= WCHAR(0xFF)) [[likely]] {
-            // All ANSI chars converted directly
+            // All other ANSI chars converted directly
             output.push_back(static_cast<char>(input[position]));
             break;
           } else [[unlikely]] {

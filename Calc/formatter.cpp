@@ -5,7 +5,11 @@
 #include "pch.hpp"
 
 #include "formatter.hpp"
+#ifdef CALC_USE_ERROR_TOKEN
+#include "token.hpp"
+#else
 #include "issue_manager.hpp"
+#endif
 
 #ifdef CALC_SUPPORT_FRACTIONAL_OUTPUT
 #include "identifiers.hpp"
@@ -47,12 +51,18 @@ constexpr static std::pair<Integer, Integer> decimalToFraction(Value number) {
 
 char *Formatter::format(Value value, Result &ret) noexcept {
   auto end = ret.data();
+#ifdef CALC_USE_ERROR_TOKEN
+  if (token.type == Token::Type::ERROR) {
+    end = fmt::format_to(end, FMT_COMPILE("{}: {} \r\n"), token.error_text,
+                         token.error_text);
+  }
+#endif
   // https://www.exploringbinary.com/decimal-precision-of-binary-floating-point-numbers/
   if (std::isnormal(value)) {
-    // end = fmt::format_to(end, FMT_COMPILE(L"{:.15g} "), value);
+    // end=fmt::format_to(end,FMT_COMPILE(L"{:.{}g}"),value,output_precision);
     end = zmij::detail::write_general(end, value, output_precision);
   } else {
-    // fmt::format_to(end, FMT_COMPILE(L"{}"), value);
+    // fmt::format_to(end,FMT_COMPILE(L"{}"),value);
     end = zmij::detail::write(end, value);
   }
   return end;

@@ -5,6 +5,11 @@
 #ifndef GUI_HPP
 #define GUI_HPP
 
+/**
+ * gui.hpp : Contains wrapers and other usable helpers to work with system for
+ * using GUI, process user input, work with system database, etc.
+ */
+
 namespace GUI {
 
 #ifdef _WIN32
@@ -30,32 +35,38 @@ namespace GUI {
 
 #if (_WIN32_WINNT < _WIN32_WINNT_WIN2K)
 #error                                                                         \
-    "Calc is the dialog based application. Windows 2000 is the minimal version."
+    "Calc is the dialog based application. Windows 2000 is the minimal posiible version to compile."
 #endif
 
 #if (_WIN32_WINNT < _WIN32_WINNT_WINXP)
-#warning "The homepage link in the about box working from XP."
+#warning                                                                       \
+    "The homepage link in the about box working from XP, before it's not working at all because system component isn't exist"
 #endif
 
 #if (_WIN32_WINNT < _WIN32_WINNT_WS03)
-#warning "From Server 2003 we can use increased input up to 64k symbols."
+#warning                                                                       \
+    "From Windows XP 64 bit and Server 2003 we can use increased user input, before only 32k symbols is possible."
 #endif
 
 #if (_WIN32_WINNT < _WIN32_WINNT_WIN6)
 #warning                                                                       \
-    "Restart manager and different DPI scaling supported from Vista or Server 2008."
+    "Restart manager and different DPI scaling supported from Vista and Server 2008."
 #endif
 
 #if (_WIN32_WINNT < _WIN32_WINNT_WIN10)
 #warning                                                                       \
-    "In Windows 10 or Server 2016 the HiDPI supported and Dialog based applications resized automatically when DPI changed. Also auto dark mode only available for Windows 10+."
+    "In Windows 10 and Server 2016 the HiDPI supported and Dialog based applications resized automatically when DPI changed."
+#endif
+
+#if (NTDDI_VERSION < NTDDI_WIN10_19H1)
+#warning "Dark mode available from Windows 10."
 #endif
 
 /**
  * Disable rarely-used stuff from Windows headers
  */
 
-// #define NOAPISET // MultiByteToWideChar
+// #define NOAPISET // MultiByteToWideChar, WideCharToMultiByte
 #define NODDEMLSPY
 #define NO_COMMCTRL_DA
 #define NOWINBASEINTERLOCK
@@ -320,17 +331,17 @@ public:
   /**
    * Set length in characters of the text in the edit control.
    */
-  constexpr void set_length(const UINT length) const noexcept {
-    assert(length <= _max_size / sizeof(WCHAR));
-    set_text_end(_data + length);
+  constexpr void set_length(const UINT len) const noexcept {
+    assert(len <= length());
+    set_text_end(_data + len);
   }
 
   /**
    * Write ANSI text to the edit control.
    */
-  void write(const char *text, const int length) noexcept {
-    assert(unsigned(length) <= _max_size / sizeof(WCHAR));
-    set_length(MultiByteToWideChar(CP_ACP, 0, text, length, _data, length));
+  void write(const char *text, const int len) noexcept {
+    assert(unsigned(len) <= length());
+    set_length(MultiByteToWideChar(CP_ACP, 0, text, len, _data, len));
   }
 
   /**
@@ -578,7 +589,7 @@ static FlushMenuThemesFn FlushMenuThemes [[indeterminate]];
  * Should be called before WinMain!
  */
 constexpr static void init_uxtheme_callers() noexcept {
-  HMODULE uxtheme = GetModuleHandleA("uxtheme.dll");
+  auto uxtheme = GetModuleHandleA("uxtheme.dll");
   // clang-format off
   __pragma(warning(push))
   __pragma(warning(disable : 4191)) // allow FARPROC -> function pointer casts here
@@ -596,12 +607,52 @@ constexpr static void init_uxtheme_callers() noexcept {
  * Application theme management.
  */
 struct Theme {
+  static constexpr DWORD _dark_bakground_window_color =
+      RGB(32, 32, 32); // Dark background
+  static constexpr DWORD _dark_bakground_field_color =
+      RGB(45, 45, 45); // Slightly lighter gray for fields
+  static constexpr DWORD _dark_bakground_text_color =
+      RGB(240, 240, 240); // Slightly darker text than pure light
+
+  [[no_unique_address]] const HBRUSH _dark_bakground_window_brush =
+      CreateSolidBrush(_dark_bakground_window_color);
+  [[no_unique_address]] const HBRUSH _dark_bakground_field_brush =
+      CreateSolidBrush(_dark_bakground_field_color);
+
   /**
    * Init application theme.
    *
    * Should be called before any window is initialized!
    */
   constexpr void init(const HWND application_main_window) noexcept {
+#ifdef CALC_SUPPORT_WINDOWS_VERSION_CHECK
+    auto ntdll = GetModuleHandleA("ntdll.dll");
+    // clang-format off
+    typedef void (WINAPI* pfnRtlGetNtVersionNumbers)(ULONG*, ULONG*, ULONG*) noexcept;
+    __pragma(warning(push))
+    __pragma(warning(disable : 4191)) // allow FARPROC -> function pointer casts here
+    auto RtlGetNtVersionNumbers = (pfnRtlGetNtVersionNumbers)GetProcAddress(ntdll, "RtlGetNtVersionNumbers");
+    __pragma(warning(pop))
+
+    ULONG major, minor, build;
+    // clang-format on
+    /**
+     * Note: Windows 11 and Windows 10 both return Major 10.
+     * Differentiate by build number (Windows 11 is Build >= 22000).
+     */
+    RtlGetNtVersionNumbers(&major, &minor, &build);
+
+    // Mask out the build number flags
+    build &= 0xFFFF;
+
+    if (major == 10 && build >= 22000) {
+      // Windows 11
+    }
+
+    if (major == 10 && build >= 18362) {
+      //  Windows 10 1903 and later supports dark mode
+    }
+#endif
     SetPreferredAppMode(PreferredAppMode::AllowDark);
     apply(application_main_window, false, true);
   }
@@ -624,18 +675,46 @@ struct Theme {
     }
   }
 
-#ifdef CALC_SUPPORT_DARK_MODE_WITHOUT_WIN32_HELPER
   /**
-   * Apply theme to controls that needs external repainting, they don't using
-   * theming and get global colors from system settings: EDIT, STATIC, DIALOG
+   * Apply theme to DIALOG background:
    */
-  [[nodiscard]] constexpr INT_PTR apply(const WPARAM wP) const noexcept {
-    const HDC hdc = reinterpret_cast<HDC>(wP);
-    SetBkColor(hdc, GetSysColor(_background_index));
-    SetTextColor(hdc, GetSysColor(_text_index));
-    return reinterpret_cast<INT_PTR>(GetSysColorBrush(_background_index));
+  [[nodiscard]] constexpr INT_PTR dialog_background() const noexcept {
+    return reinterpret_cast<INT_PTR>(is_dark_mode()
+                                         ? _dark_bakground_window_brush
+                                         : GetSysColorBrush(COLOR_WINDOW));
   }
-#endif
+
+  /**
+   * Apply theme to STATIC control.
+   */
+  [[nodiscard]] constexpr INT_PTR
+  static_control(const WPARAM wPhdc) const noexcept {
+    auto hdc = reinterpret_cast<HDC>(Phdc);
+    if (is_dark_mode()) {
+      SetTextColor(hdc, _dark_bakground_text_color);
+      SetBkColor(hdc, _dark_bakground_window_color);
+      return reinterpret_cast<INT_PTR>(_dark_bakground_window_brush);
+    } else {
+      SetTextColor(hdc, GetSysColor(COLOR_WINDOWTEXT));
+      SetBkColor(hdc, GetSysColor(COLOR_WINDOW));
+      return reinterpret_cast<INT_PTR>(GetSysColorBrush(COLOR_WINDOW));
+    }
+  }
+
+  /**
+   * Apply theme to EDIT controls.
+   */
+  [[nodiscard]] constexpr INT_PTR edit(const WPARAM wPhdc) const noexcept {
+    if (is_dark_mode()) {
+      auto hdc = reinterpret_cast<HDC>(Phdc);
+      SetTextColor(hdc, _dark_bakground_text_color);
+      SetBkColor(hdc, _dark_bakground_field_color);
+      return reinterpret_cast<INT_PTR>(_dark_bakground_field_brush);
+    } else {
+      // Fall back to default light behavior
+      return FALSE;
+    }
+  }
 
 private:
   /**
@@ -671,16 +750,16 @@ private:
   }
 
   /**
-   * Apply theme to a application bar and frame. Windows 6+ with DWM.
+   * Apply theme to a application bar and frame.
    */
-  constexpr void title_bar_and_frame(const HWND hwnd) const noexcept {
+  constexpr void title_bar_and_frame(const HWND window) const noexcept {
     BOOL value = is_dark_mode() ? TRUE : FALSE;
-    DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value,
+    DwmSetWindowAttribute(window, DWMWA_USE_IMMERSIVE_DARK_MODE, &value,
                           sizeof(value));
   }
 
   /**
-   * Apply theme to menus. API for Windows 6+ with working DWM.
+   * Apply theme to menus.
    */
   constexpr void menus() const noexcept {
     RefreshImmersiveColorPolicyState();

@@ -2,8 +2,9 @@
  * Copyright 2009-present Elle Solomina, a.rainman on gmail point com
  */
 
-// gui.cpp : Defines the user iteraction behaviors for the application.
-//
+/**
+ * gui.cpp : Defines the user iteraction behaviors for the Calc.
+ */
 
 #include "pch.hpp"
 
@@ -90,31 +91,26 @@ public:
 #endif
           [[unlikely]] {
 #if defined(CALC_USE_ERROR_TOKEN)
-        set_result("Only ANSI symbols supported, Unicode isn't supported");
-#elif defined(CALC_ALLOW_UNICODE_IN_GUI)
+        set_result(
+#else
         IssueManager::report_error(
+#endif
+#if defined(CALC_ALLOW_UNICODE_IN_GUI)
             to_ansi.normalized(),
             "this Unicode character is not part of the Calc language");
 #else
-        IssueManager::report_error(
             0, "Only ANSI symbols supported, Unicode isn't supported");
 #endif
+        return FALSE;
       }
+
       Lexer l(_equasion);
       Parser p(l);
       const auto value = p.parse();
 #if defined(CALC_USE_ERROR_TOKEN)
-      switch (value.type) {
-      case Token::Type::RESULT [[likely]]:
-        Formatter::Result result [[indeterminate]];
-        set_result(result.data(), Formatter::format(value, result));
-        return TRUE;
-      case Token::Type::ERROR:
-        set_result(value.error_text, value.error_text + value.error_text_size));
-        break;
-        default [[unlikely]] : set_result("parser internal error");
-        break;
-      }
+      Formatter::Result result [[indeterminate]];
+      set_result(result.data(), Formatter::format(value, result));
+      return TRUE;
 #else
       if (IssueManager::has_errors()) {
         Formatter::Summary summary [[indeterminate]];
@@ -147,9 +143,9 @@ public:
    * Create Calc GUI.
    */
   constexpr auto create(const HINSTANCE instance,
-                        DlgProc CalcDialogProc) const noexcept {
+                        DlgProc main_proc) const noexcept {
     if (SUCCEEDED(DialogBoxParamA(instance, MAKEINTRESOURCEA(IDD_CALC_DIALOG),
-                                  nullptr, CalcDialogProc,
+                                  nullptr, main_proc,
                                   reinterpret_cast<LPARAM>(instance)))) {
       return EXIT_SUCCESS;
     }
@@ -331,12 +327,12 @@ private:
   }
 
   struct About {
-    [[nodiscard]] static constexpr BOOL create(const HWND parent, WPARAM wP,
-                                               DlgProc AboutDlgProc) noexcept {
-      if ((wP & 0xFFF0) == IDM_ABOUTBOX &&
+    [[nodiscard]] static constexpr BOOL create(const HWND parent, WPARAM wParam,
+                                               DlgProc about_proc) noexcept {
+      if ((wParam & 0xFFF0) == IDM_ABOUTBOX &&
           SUCCEEDED(DialogBoxParamA(GetModuleHandleA(nullptr),
                                     MAKEINTRESOURCEA(IDD_ABOUTBOX), parent,
-                                    AboutDlgProc, FALSE))) {
+                                    about_proc, FALSE))) {
         return TRUE;
       } else {
         return FALSE;
@@ -344,10 +340,10 @@ private:
     }
 
     [[nodiscard]] static constexpr BOOL open_homepage(const HWND window,
-                                                      LPARAM lP) noexcept {
-      const auto nm = reinterpret_cast<LPNMHDR>(lP);
+                                                      LPARAM lParam) noexcept {
+      const auto nm = reinterpret_cast<LPNMHDR>(lParam);
       if (nm->idFrom == IDC_LINK_HOMEPAGE && nm->code == NM_CLICK) {
-        const auto l = reinterpret_cast<NMLINK *>(lP);
+        const auto l = reinterpret_cast<NMLINK *>(lParam);
         ShellExecuteW(window, L"open", l->item.szUrl, nullptr, nullptr,
                       SW_SHOWNORMAL);
         return TRUE;
@@ -357,8 +353,8 @@ private:
     }
 
     [[nodiscard]] static constexpr BOOL close(const HWND window,
-                                              const WPARAM wP) noexcept {
-      if (LOWORD(wP) == IDCANCEL) {
+                                              const WPARAM wParam) noexcept {
+      if (LOWORD(wParam) == IDCANCEL) {
         return EndDialog(window, FALSE);
       } else {
         return FALSE;
@@ -383,29 +379,25 @@ static CalcApp gui;
 /**
  * About dialog callback processing (resource-based).
  */
-constexpr static INT_PTR CALLBACK AboutDlgProc(const HWND window,
-                                               const UINT msg, const WPARAM wP,
-                                               const LPARAM
-#ifdef CALC_SUPPORT_LINK_WINDOW
-                                                   lP
-#endif
-                                               ) noexcept {
-  switch (msg) {
+constexpr static INT_PTR CALLBACK about_proc(const HWND window,
+                                             const UINT message,
+                                             const WPARAM wParam,
+                                             const LPARAM lParam) noexcept {
+  switch (message) {
   case WM_COMMAND:
-    return gui.about().close(window, wP);
+    return gui.about().close(window, wParam);
 #ifdef CALC_SUPPORT_LINK_WINDOW
   case WM_NOTIFY:
-    return gui.about().open_homepage(window, lP);
+    return gui.about().open_homepage(window, lParam);
 #endif
 #ifdef CALC_SUPPORT_DARK_MODE
   case WM_INITDIALOG:
     gui.theme().apply(window);
     return TRUE;
-#ifdef CALC_SUPPORT_DARK_MODE_WITHOUT_WIN32_HELPER
   case WM_CTLCOLORDLG:
+    return gui.theme().dialog_background();
   case WM_CTLCOLORSTATIC:
-    return gui.theme().apply(wP);
-#endif
+    return gui.theme().static_control(wParam);
   case WM_SYSCOLORCHANGE:
     gui.theme().apply(window, true);
     return TRUE;
@@ -418,38 +410,38 @@ constexpr static INT_PTR CALLBACK AboutDlgProc(const HWND window,
 /**
  * Calc dialog callback processing (resource-based).
  */
-constexpr static INT_PTR CALLBACK CalcDialogProc(const HWND window,
-                                                 const UINT msg,
-                                                 const WPARAM wP,
-                                                 const LPARAM lP) noexcept {
-  switch (msg) {
+constexpr static INT_PTR CALLBACK main_proc(const HWND window,
+                                            const UINT message,
+                                            const WPARAM wParam,
+                                            const LPARAM lParam) noexcept {
+  switch (message) {
   case WM_COMMAND:
-    return gui.calc(wP);
+    return gui.calc(wParam);
   case WM_SYSCOMMAND:
-    return gui.about().create(window, wP, AboutDlgProc);
+    return gui.about().create(window, wParam, about_proc);
   case WM_GETMINMAXINFO:
-    return gui.minmaxinfo(lP);
+    return gui.minmaxinfo(lParam);
   case WM_SIZE:
-    return gui.resize(lP);
+    return gui.resize(lParam);
   case WM_INITDIALOG:
 #ifdef CALC_SUPPORT_DARK_MODE
     gui.theme().init(window);
 #endif
-    return gui.init(window, lP);
+    return gui.init(window, lParam);
 #ifdef CALC_SUPPORT_AUTO_RESTART
   case WM_ENDSESSION:
-    if (wP) {
+    if (wParam) {
       gui.save_user_data(window);
     }
     return TRUE;
 #endif
 #ifdef CALC_SUPPORT_DARK_MODE
-#ifdef CALC_SUPPORT_DARK_MODE_WITHOUT_WIN32_HELPER
-  case WM_CTLCOLORSTATIC:
-  case WM_CTLCOLOREDIT:
   case WM_CTLCOLORDLG:
-    return gui.theme().apply(wP);
-#endif
+    return gui.theme().dialog_background();
+  case WM_CTLCOLOREDIT:
+    return gui.theme().edit(wParam);
+  case WM_CTLCOLORSTATIC:
+    return gui.theme().static_control(wParam);
   case WM_SYSCOLORCHANGE:
     gui.theme().apply(window, true, true);
     return TRUE;
@@ -467,7 +459,7 @@ constexpr static INT_PTR CALLBACK CalcDialogProc(const HWND window,
  */
 int WINAPI WinMain(const HINSTANCE instance, const HINSTANCE /*prev_instance*/,
                    const LPSTR /*cmd_line*/, const int /*cmd_show*/) {
-  return gui.create(instance, CalcDialogProc);
+  return gui.create(instance, main_proc);
 }
 
 #if defined _M_IX86
