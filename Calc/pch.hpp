@@ -13,9 +13,10 @@
 #ifndef PCH_HPP
 #define PCH_HPP
 
+//---------------------------------------------------------------------------
 // Don't needs to check _MSVC_LANG it's should be set by the compiler options
 static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
-
+//---------------------------------------------------------------------------
 // My fast-float fork and Zmij uses those instructions:
 #if defined(_M_IX86) || defined(__i686__) || defined(__i386__) ||              \
     defined(__i386) || defined(__X86__) || defined(_M_X64) ||                  \
@@ -29,20 +30,7 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 #define __SSE4_2__ 1 // explicitely enable SSE4.2 for 64 bit builds
 #endif
 #endif
-
-// add headers that you want to pre-compile here:
-#include <array>         // Calc ang Win32 GUI
-#include <limits>        // Calc
-#include <new>           // Formatter
-#include <numbers>       // Calc
-#include <optional>      // Win32 GUI RegRead helper
-#include <ranges>        // Calc
-#include <span>          // Calc
-#include <stdfloat>      // Calc
-#include <string>        // Win32 GUI EquasionHandler
-#include <string_view>   // Calc
-#include <unordered_map> // Calc
-
+//---------------------------------------------------------------------------
 // Calc compile options:
 // clang-format off
 __pragma(warning(disable : 4365)); // signed/unsigned mismatch
@@ -52,18 +40,30 @@ __pragma(warning(disable : 4623)); // default constructor was implicitly defined
 __pragma(warning(disable : 4625)); // copy constructor was implicitly defined as deleted
 __pragma(warning(disable : 4626)); // assignment operator was implicitly defined as deleted
 __pragma(warning(disable : 4668)); // is not defined as a preprocessor macro, replacing with '0' for 'directives'
+__pragma(warning(disable : 4710)); // ' ': function not inlined
+__pragma(warning(disable : 4711)); // function ' ' selected for automatic inline expansion
 __pragma(warning(disable : 5027)); // move assignment operator was implicitly defined as deleted
 __pragma(warning(disable : 5030)); // attribute ' ' is not recognized
 __pragma(warning(disable : 5045)); // warning for unsafe buffer usage
 __pragma(warning(disable : 5222)); // all unscoped attribute names are reserved for future standardization
 // clang-format on
-
+//---------------------------------------------------------------------------
 #include "flags.hpp"
-
+// add headers that you want to pre-compile here:
+#include <array>         // Calc and Win32 GUI
+#include <limits>        // Calc
+#include <numbers>       // Calc
+#include <optional>      // Win32 GUI RegRead helper
+#include <ranges>        // Calc
+#include <span>          // Calc
+#include <stdfloat>      // Calc
+#include <string>        // Win32 GUI
+#include <string_view>   // Calc
+#include <unordered_map> // Calc
 #ifdef CALC_TEST_EQUATION_SOLVER
 #include <complex>
 #endif
-
+//---------------------------------------------------------------------------
 // Zmij compile options:
 // clang-format off
 //  Tests time is : 81207ms. Without Tests time is : 118164ms.
@@ -84,9 +84,9 @@ __pragma(warning(pop));
 #warning                                                                       \
     "128-bit float type isn't supported by zmij. The library convert any output values to 64-bit double."
 #endif
-
+//---------------------------------------------------------------------------
 #if !defined(CALC_USE_ERROR_TOKEN) || defined(CALC_TESTS_DEV_ENABLED)
-
+#include <new> // Formatter
 // fmt compile options:
 #define FMT_HEADER_ONLY 1
 #define FMT_USE_FLOAT 0
@@ -118,7 +118,7 @@ __pragma(warning(pop));
 #define FMT_ENFORCE_COMPILE_STRING
 #include "../../fmt/include/fmt/compile.h"
 #endif
-
+//---------------------------------------------------------------------------
 // fast_float compile options:
 #if CALC_USE_128_BIT_FLOAT
 #warning                                                                       \
@@ -131,5 +131,36 @@ __pragma(warning(pop));
 #define FASTFLOAT_ISNOT_CHECKED_BOUNDS
 // Wo options Tests time is: 53278ms. Original Tests time is: 56140ms.
 #include "../../fast_float/include/fast_float/fast_float.h"
+//---------------------------------------------------------------------------
+/**
+ * Types using for calculation.
+ */
+using EquationSize = size_t;
+using ParamCount = char;
+
+#if _DEBUG && __STDCPP_FLOAT128_T__ == 1
+using Value = std::float128_t;
+#warning "WIP: Calc is using 64-bit double implementation in many places."
+using Integer = std::int128_t;
+using UInteger = std::uint128_t;
+
+#define CALC_USE_128_BIT_FLOAT 1
+constexpr auto huge_value_precision = 1e33;
+constexpr auto small_value_precision = 1e-33;
+#else
+#if __STDCPP_FLOAT64_T__ == 1
+using Value = std::float64_t;
+#else
+using Value = double;
+#endif
+using Integer = std::int64_t;
+using UInteger = std::uint64_t;
+
+#define CALC_USE_128_BIT_FLOAT 0
+constexpr auto huge_value_precision = 1e15;
+constexpr auto small_value_precision = 1e-15;
+#endif
+constexpr auto output_precision = std::numeric_limits<Value>::digits10;
+//---------------------------------------------------------------------------
 
 #endif
