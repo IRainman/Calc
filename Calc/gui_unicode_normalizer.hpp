@@ -9,6 +9,7 @@
 
 namespace GUI {
 
+#ifdef CALC_TESTS_ENABLED
 /**
  * Test cases for GUI
  */
@@ -38,6 +39,7 @@ static constexpr auto gui_tests = std::to_array<std::pair<std::wstring_view, Val
 	-1.00000000000001e-300 },
 });
 // clang-format on
+#endif
 
 /**
  * The normalization needed for preprocessing and converting mathematical
@@ -97,6 +99,9 @@ private:
     const LPCWSTR input;
     const UINT length;
 
+    /**
+     * Append replacement C string
+     */
     template <UINT N>
     [[nodiscard]] inline static constexpr char *
     append(char *dst, const char (&str)[N]) noexcept {
@@ -104,54 +109,47 @@ private:
       return dst + N - 1;
     }
 
-    [[nodiscard]] inline static constexpr char *append(char *dst,
-                                                       const char s) noexcept {
-      *dst = s;
-      return ++dst;
-    }
-
-    UINT operator()(char *buffer, UINT) const noexcept {
+    /**
+     * Normalize whole string and stop on the end or on unsupported character.
+     * The output buffer must have enough capacity for the normalized result.
+     * Normalized output may be longer than the UTF-16 input.
+     */
+    [[nodiscard]] inline constexpr UINT operator()(char *buffer,
+                                                   UINT) const noexcept {
       char *dst = buffer;
+      normalized = 0;
 
-      UINT position = 0;
+      while (normalized != length) [[likely]] {
+        const WCHAR c = input[normalized];
 
-      while (position != length) [[likely]] {
-        const WCHAR c = input[position];
+        // Fast path for ordinary printable ASCII characters.
+        // Should be autovectorized by compiler.
+        if (c >= WCHAR(32) && c <= WCHAR(126)) [[likely]] {
+          const UINT begin = normalized;
 
-        /*
-         * Fast path for ordinary ANSI-compatible characters.
-         * Avoid the large Unicode switch entirely.
-         */
-        if (c <= WCHAR(0xFF)) [[likely]] {
-          if (c == WCHAR('\t') /*TAB*/ || c == WCHAR('\n') /*LF*/ ||
-              c == WCHAR('\v') /*VT*/ || c == WCHAR('\f') /*FF*/ ||
-              c == WCHAR('\r') /*CR*/ || c == WCHAR(0xA0) /*NO-BREAK SPACE*/)
-              [[unlikely]] {
-            dst = append(dst, ' ');
-            ++position;
-            continue;
-          }
+          // clang-format off
+          // Batch marking of printable ASCII characters.
+          do [[likely]] {
+            ++normalized;
+          } while (normalized != length &&
+                   input[normalized] >= WCHAR(32) &&
+                   input[normalized] <= WCHAR(126));
+          // clang-format on
 
-          /*
-           * Copy a run of ordinary ANSI characters.
-           */
-          const UINT begin = position;
-
-          do
-            [[likely]] { ++position; }
-          while (position != length && input[position] <= WCHAR(0xFF));
-
-          const UINT count = position - begin;
-
-          for (UINT i = 0; i != count; ++i)
+          const UINT count = normalized - begin;
+          // Batch converting wide chars to single bytes:
+          for (UINT i = 0; i != count; ++i) [[likely]] {
             *dst++ = static_cast<char>(input[begin + i]);
-
+          }
           continue;
         }
 
-        // Unicode part:
         switch (c) {
-        // All string separation, formatting, and control characters:
+
+          // ---------------------------------------------------------------------
+          // Unicode whitespace.
+          // ---------------------------------------------------------------------
+
         case u'\u2000': // EN QUAD
         case u'\u2001': // EM QUAD
         case u'\u2002': // EN SPACE
@@ -171,153 +169,166 @@ private:
         case u'\u2029': // PARAGRAPH SEPARATOR
 
         case u'\u202F': // NARROW NO-BREAK SPACE
-
         case u'\u205F': // MEDIUM MATHEMATICAL SPACE
-
         case u'\u2060': // WORD JOINER
-
         case u'\u3000': // IDEOGRAPHIC SPACE
-
         case u'\uFEFF': // ZERO WIDTH NO-BREAK SPACE
-          [[unlikely]] dst = append(dst, ' ');
-          break;
 
-        // Fullwidth, superscript, subscript digits.
+        case u'\u0009': // TAB
+        case u'\u0010': // LF
+        case u'\u0011': // VT
+        case u'\u0012': // FF
+        case u'\u0013': // CR
+
+        case u'\u00A0': // NO-BREAK SPACE
+                        // clang-format off
+          [[unlikely]]
+          *dst++ = ' '; // Token::Type::SEPARATOR
+          break;
+          // clang-format on
+
+          // ---------------------------------------------------------------------
+          // Digits.
+          // ---------------------------------------------------------------------
+
         case u'\uFF10': // ０
         case u'\u2070': // ⁰
         case u'\u2080': // ₀
-          dst = append(dst, '0');
+          *dst++ = '0';
           break;
+
         case u'\uFF11': // １
         case u'\u00B9': // ¹
         case u'\u2081': // ₁
-          dst = append(dst, '1');
+          *dst++ = '1';
           break;
+
         case u'\uFF12': // ２
         case u'\u00B2': // ²
         case u'\u2082': // ₂
-          dst = append(dst, '2');
+          *dst++ = '2';
           break;
+
         case u'\uFF13': // ３
         case u'\u00B3': // ³
         case u'\u2083': // ₃
-          dst = append(dst, '3');
+          *dst++ = '3';
           break;
+
         case u'\uFF14': // ４
         case u'\u2074': // ⁴
         case u'\u2084': // ₄
-          dst = append(dst, '4');
+          *dst++ = '4';
           break;
+
         case u'\uFF15': // ５
         case u'\u2075': // ⁵
         case u'\u2085': // ₅
-          dst = append(dst, '5');
+          *dst++ = '5';
           break;
+
         case u'\uFF16': // ６
         case u'\u2076': // ⁶
         case u'\u2086': // ₆
-          dst = append(dst, '6');
+          *dst++ = '6';
           break;
+
         case u'\uFF17': // ７
         case u'\u2077': // ⁷
         case u'\u2087': // ₇
-          dst = append(dst, '7');
+          *dst++ = '7';
           break;
+
         case u'\uFF18': // ８
         case u'\u2078': // ⁸
         case u'\u2088': // ₈
-          dst = append(dst, '8');
-          break;
-        case u'\uFF19': // 9
-        case u'\u2079': // ⁹
-        case u'\u2089': // ₉
-          dst = append(dst, '9');
+          *dst++ = '8';
           break;
 
-        // Fullwidth, superscript, subscript and alternative
-        // operators/punctuation.
+        case u'\uFF19': // ９
+        case u'\u2079': // ⁹
+        case u'\u2089': // ₉
+          *dst++ = '9';
+          break;
+
+          // ---------------------------------------------------------------------
+          // Operators.
+          // ---------------------------------------------------------------------
+
         case u'\uFF0B': // ＋
         case u'\u207A': // ⁺
         case u'\u208A': // ₊
-          dst = append(dst, '+');
+          *dst++ = '+';
           break;
 
         case u'\uFF0D': // －
         case u'\u207B': // ⁻
         case u'\u208B': // ₋
-        case u'\u2010': // ‐
-        case u'\u2011': // -
-        case u'\u2012': // ‒
-        case u'\u2013': // –
-        case u'\u2014': // —
-        case u'\u2212': // −
-        case u'\uFE63': // ﹣
-          dst = append(dst, '-');
+        case u'\u2010': // ‐ HYPHEN
+        case u'\u2011': // - NON-BREAKING HYPHEN
+        case u'\u2012': // ‒ FIGURE DASH
+        case u'\u2013': // – EN DASH
+        case u'\u2014': // — EM DASH
+        case u'\u2212': // − MINUS SIGN
+        case u'\uFE63': // ﹣ SMALL HYPHEN-MINUS
+          *dst++ = '-';
           break;
 
         case u'\uFF0A': // ＊
-        case u'\u00B7': // ·
-        case u'\u00D7': // ×
-        case u'\u2217': // ∗
-        case u'\u2219': // ∙
-        case u'\u22C5': // ⋅
-        case u'\u204E': // ⁎
-        case u'\u2A2F': // ⨯
-          dst = append(dst, '*');
+        case u'\u00B7': // · MIDDLE DOT
+        case u'\u00D7': // × MULTIPLICATION SIGN
+        case u'\u2217': // ∗ ASTERISK OPERATOR
+        case u'\u2219': // ∙ BULLET OPERATOR
+        case u'\u22C5': // ⋅ DOT OPERATOR
+        case u'\u204E': // ⁎ LOW ASTERISK
+        case u'\u2A2F': // ⨯ VECTOR OR CROSS PRODUCT
+          *dst++ = '*';
           break;
 
         case u'\u00F7': // ÷
         case u'\u2044': // ⁄
         case u'\u2215': // ∕
         case u'\uFF0F': // ／
-          dst = append(dst, '/');
+          *dst++ = '/';
           break;
+
+          // ---------------------------------------------------------------------
+          // Parentheses.
+          // ---------------------------------------------------------------------
 
         case u'\uFF08': // （
         case u'\u207D': // ⁽
         case u'\u208D': // ₍
         case u'\uFE59': // ﹙
-          dst = append(dst, '(');
+          *dst++ = '(';
           break;
 
         case u'\uFF09': // ）
         case u'\u207E': // ⁾
         case u'\u208E': // ₎
         case u'\uFE5A': // ﹚
-          dst = append(dst, ')');
+          *dst++ = ')';
           break;
+
+          // ---------------------------------------------------------------------
+          // Comma.
+          // ---------------------------------------------------------------------
 
         case u'\uFF0C': // ，
         case u'\uFE50': // ﹐
-          dst = append(dst, ',');
+          *dst++ = ',';
           break;
 
-        // Mathematical constants:
+          // ---------------------------------------------------------------------
+          // Mathematical constants.
+          // ---------------------------------------------------------------------
+
         case u'\u03C0': // π
         case u'\u03D6': // ϖ
           dst = append(dst, "pi");
           break;
 
-          /*
-           90° → 90 * pi / 180
-          | Unicode   | Calc               |
-          | --------- | ------------------ |
-          | `°`       | `deg`*             |
-          | `º`       | `deg`*             |
-          | `rad`     | `rad`              |
-          | `radian`  | `rad`              |
-          | `radians` | `rad`              |
-          | `deg`     | `deg`              |
-          | `degree`  | `deg`              |
-          | `degrees` | `deg`              |
-          | `grad`    | `grad_to_radians`* |
-          | `gon`     | `grad_to_radians`* |
-          | `turn`    | `turn_to_radians`* |
-          | `τ`       | `2*pi`*            |
-          */
-
         case u'\u03C4': // τ
-          // dst = append(dst,"tau");
           dst = append(dst, "2*pi");
           break;
 
@@ -351,18 +362,27 @@ private:
           break;
 
         case u'\u212F': // ℯ
-          dst = append(dst, 'e');
+          *dst++ = 'e';
           break;
 
-        // Physical constants.
+          // ---------------------------------------------------------------------
+          // Physical constants.
+          // ---------------------------------------------------------------------
+
         case u'\u210F': // ℏ
           dst = append(dst, "hbar");
           break;
 
-        // Roots.
+        case u'\u0395': // ε for ε₀
+          dst = append(dst, "epsilon");
+          break;
+
+          // ---------------------------------------------------------------------
+          // Roots.
+          // ---------------------------------------------------------------------
+
         case u'\u221A': // √
         case u'\u23B7': // ⎷
-        case u'\u23E5': // ⏥
           dst = append(dst, "sqrt");
           break;
 
@@ -374,21 +394,28 @@ private:
           dst = append(dst, "qbrt");
           break;
 
-        case u'\u23B8': // ㏑
+          // Radical symbol fragment used in mathematical typography.
+          //
+          // U+23B7 is specifically RADICAL SYMBOL BOTTOM. It is a
+          // terminal/math typesetting fragment, not a normal standalone
+          // radical operator. Keep this mapping only if Calc intentionally
+          // accepts it as a sqrt-like input.
+          // case u'\u23B7': // ⎷
+          //   dst = append(dst, "sqrt");
+          //   break;
+
+          // ---------------------------------------------------------------------
+          // CJK compatibility logarithms.
+          // ---------------------------------------------------------------------
+
+        case u'\u33D1': // ㏑ SQUARE LN
           dst = append(dst, "ln");
           break;
 
-        case u'\u23B9': // ㏒
+        case u'\u33D2': // ㏒ SQUARE LOG
           dst = append(dst, "log");
           break;
 
-          /* TODO
-          | Unicode | Calc  |
-          | ------- | ----- |
-          | `%`     | `mod` |
-          | `％`    | `mod` |
-          | `mod`   | `mod` |
-          */
 #if 0 
            /* not implemented yet
            | Unicode | Tempting mapping | Status            |
@@ -428,7 +455,11 @@ private:
 
 #endif
 
-          /* astronomical symbols
+          // ---------------------------------------------------------------------
+          // Astronomical symbols.
+          // ---------------------------------------------------------------------
+
+          /*
           | Unicode | Calc        |
           | ------- | ----------- |
           | `a₀`    | `a0`        |
@@ -461,6 +492,20 @@ private:
 
 
 
+           90° → 90 * pi / 180
+          | Unicode   | Calc               |
+          | --------- | ------------------ |
+          | `°`       | `deg`*             |
+          | `º`       | `deg`*             |
+          | `rad`     | `rad`              |
+          | `radian`  | `rad`              |
+          | `radians` | `rad`              |
+          | `deg`     | `deg`              |
+          | `degree`  | `deg`              |
+          | `degrees` | `deg`              |
+          | `grad`    | `grad_to_radians`* |
+          | `gon`     | `grad_to_radians`* |
+          | `turn`    | `turn_to_radians`* |
 
 
 
@@ -520,7 +565,7 @@ private:
                  | `nPr`              | `P(n,r)`*       |
                  | `nCr`              | `C(n,r)`*       |
                  | `nP r`             | `P(n,r)`*       |
-                 | `nC r`             | `C(n,r)`*       |
+                   | `nC r` | `C(n, r)`* |
 
 
                  | Unicode    | Calc       |
@@ -540,7 +585,7 @@ private:
                  | `⌊x⌋`              | `floor(x)`* |
                  | `⌈x⌉`              | `ceil(x)`*  |
                  | `round(x)`         | `round(x)`  |
-                 | `trunc(x)`         | `trunc(x)`  |
+                   | `trunc(x)` | `trunc(x)` |
 
 
 
@@ -712,35 +757,35 @@ private:
                  First step:
 
 
-                 ∞  → inf
+                                                        ∞ → inf
 
-                 π  → pi
-                 ϖ  → pi
-                 φ  → phi
-                 ϕ  → phi
-                 γ  → e_gamma
-                 α  → alpha
+                                                     π → pi
+                                                     ϖ → pi
+                                                     φ → phi
+                                                     ϕ → phi
+                                                     γ → e_gamma
+                                                     α → alpha
 
-                 √  → sqrt
-                 ∛  → cbrt
+                                                               √ → sqrt
+                                                     ∛ → cbrt
 
-                 ×  → *
-                 ⋅  → *
-                 ·  → *
-                 ∙  → *
-                 ∗  → *
-                 ⨯  → *
+                                                     × → *
+                                                     ⋅ → *
+                 · → *
+                 ∙ → *
+                                                     ∗ → *
+                                                     ⨯ → *
 
-                 ÷  → /
-                 ∕  → /
-                 ⁄  → /
+                                                     ÷ → /
+                                                     ∕ → /
+                                                     ⁄ → /
 
-                 −  → -
+                                                     − → -
                  ‐  → -
                  -  → -
-                 ‒  → -
-                 –  → -
-                 —  → -
+                                                     ‒ → -
+                 – → -
+                 — → -
 
                  ＋  → +
                  －  → -
@@ -753,7 +798,7 @@ private:
 
                  ℏ  → hbar
                  ħ  → hbar
-                 ε₀ → epsilon0
+                    ε ₀ → epsilon0
                  μ₀ → mu0
                  Z₀ → Z0
                  N_A → NA
@@ -762,7 +807,7 @@ private:
                  mₑ → m_e
                  mₚ → mp
                  mₙ → mn
-                 μ_B → muB
+                    μ _B → muB
                  μ_N → muN
                  rₑ → re
 
@@ -770,16 +815,16 @@ private:
                  a₀ → a0
 
 
-           */
+                                           */
         default:
           goto normalization_end;
         }
 
-        ++position;
+        ++normalized;
       }
+
     normalization_end:
-      normalized = position;
-      return dst - buffer;
+      return static_cast<UINT>(dst - buffer);
     }
   };
 };

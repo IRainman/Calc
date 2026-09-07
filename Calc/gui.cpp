@@ -78,6 +78,23 @@ public:
 
   /**
    * Perform calculation from the GUI
+   *      System UTF-16 input
+   *              ↓
+   *      Unicode normalizer
+   *              ↓
+   *       ASCII expression
+   *              ↓
+   *            Lexer
+   *              ↓
+   *            Tokens
+   *              ↓
+   *            Parser
+   *              ↓
+   *            Result
+   *              ↓
+   *    ASCII to system UTF-16
+   *              ↓
+   *     System UTF-16 Result
    */
   [[nodiscard]] constexpr BOOL calc(const WPARAM wP) noexcept {
     if (LOWORD(wP) == IDC_BUTTON_CALC && HIWORD(wP) == BN_CLICKED) {
