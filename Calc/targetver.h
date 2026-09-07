@@ -49,7 +49,7 @@
 /**
  * TODO: needs to be refactored because code is very complicated:
  */
-#define CALC_ALLOW_UNICODE_IN_GUI // allow Unicode input in GUI
+ #define CALC_ALLOW_UNICODE_IN_GUI // allow Unicode input in GUI
 
 /*
  * Deprecated because now Unicode is converted by EditView and Normalizer:

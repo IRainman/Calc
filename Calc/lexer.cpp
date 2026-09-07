@@ -114,8 +114,9 @@ inline void Lexer::return_result(Token &token) const noexcept {
 
 void Lexer::next(Token &token) noexcept {
   while (!_view.empty()) [[likely]] {
-    // https://en.cppreference.com/w/cpp/language/ascii
     const auto &cur = _view.front();
+    // https://en.cppreference.com/w/cpp/language/ascii
+    [[assume(cur >= 32 && cur <= 126)]];
     if (cur == '(' || cur == ')' || cur == '*' || cur == '+' || cur == ',' ||
         cur == '-' || cur == '/' || cur == '^') {
       advance(read_operator(token));

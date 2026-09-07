@@ -6,6 +6,12 @@
 
 #include "lexer.hpp"
 
+#ifdef CALC_USE_ERROR_TOKEN
+typedef Token Result;
+#else
+typedef Value Result;
+#endif
+
 class Parser {
   /*
    * This is a recursive descent parser with the following grammar:
@@ -48,13 +54,7 @@ public:
   /**
    * Parse and evaluate an expression.
    */
-  [[nodiscard]]
-#ifdef CALC_USE_ERROR_TOKEN
-  Token
-#else
-  Value
-#endif
-  parse() noexcept;
+  [[nodiscard]] Result parse() noexcept;
 
 private:
   /**
@@ -74,53 +74,17 @@ private:
   }
 #endif
 
-  [[nodiscard]]
-#ifdef CALC_USE_ERROR_TOKEN
-  Token
-#else
-  Value
-#endif
-  parse_expr_4() noexcept;
+  [[nodiscard]] Result parse_expr_4() noexcept;
 
-  [[nodiscard]]
-#ifdef CALC_USE_ERROR_TOKEN
-  Token
-#else
-  Value
-#endif
-  parse_expr_3() noexcept;
+  [[nodiscard]] Result parse_expr_3() noexcept;
 
-  [[nodiscard]]
-#ifdef CALC_USE_ERROR_TOKEN
-  Token
-#else
-  Value
-#endif
-  parse_expr_2() noexcept;
+  [[nodiscard]] Result parse_expr_2() noexcept;
 
-  [[nodiscard]]
-#ifdef CALC_USE_ERROR_TOKEN
-  Token
-#else
-  Value
-#endif
-  parse_expr_1() noexcept;
+  [[nodiscard]] Result parse_expr_1() noexcept;
 
-  [[nodiscard]]
-#ifdef CALC_USE_ERROR_TOKEN
-  Token
-#else
-  Value
-#endif
-  parse_expr_0() noexcept;
+  [[nodiscard]] Result parse_expr_0() noexcept;
 
-  [[nodiscard]]
-#ifdef CALC_USE_ERROR_TOKEN
-  Token
-#else
-  Value
-#endif
-  parse_function() noexcept;
+  [[nodiscard]] Result parse_function() noexcept;
 
   [[no_unique_address]] Lexer &_lex;
   [[no_unique_address]] Token _current [[indeterminate]];
