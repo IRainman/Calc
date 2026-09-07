@@ -84,12 +84,12 @@ static constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>(
 
 	// check additional constants:
 	// Gelfond's and Ramanujan's constants https://en.wikipedia.org/wiki/Gelfond%27s_constant :
-	{ "e ^ pi", 23.14069263277926900572 },
-	{ "pi ^ e", 22.45915771836104547342 },
+	{ "e^pi", 23.14069263277926900572 },
+	{ "pi^e", 22.45915771836104547342 },
 
 	// Heegner number (163 is the largest one) https://en.wikipedia.org/wiki/Heegner_number :
 #if CALC_USE_128_BIT_FLOAT
-	{ "e ^ ( pi * sqrt(163) )",							262537412640768743.99999999999925007259 },
+	{ "e^( pi * sqrt(163) )",							262537412640768743.99999999999925007259 },
 #endif
 	{ "      640320^3     + 744 - 0.00000000000075",	262537412640768743.99999999999925007259 },
 	{ "12^3*(231^2 - 1)^3 + 744 - 0.00000000000075",	262537412640768743.99999999999925007259 },

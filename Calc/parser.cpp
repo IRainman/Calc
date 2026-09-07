@@ -98,7 +98,39 @@ Parser::parse_expr_3() noexcept {
       advance();
       result /= parse_expr_2();
       break;
+#ifdef CALC_USE_SEPARATORS
+    case Token::Type::SEPARATOR:
+      /*
+       * Whitespace is a real separator.
+       *
+       * It must never be silently ignored between adjacent expressions.
+       *
+       * Therefore:
+       *
+       *   2pi  -> implicit multiplication
+       *   2 pi  -> syntax error
+       *
+       * We return here and let the top-level parser detect the
+       * unconsumed SEPARATOR token.
+       */
+      return result;
+#endif
     default:
+#ifdef CALC_USE_SEPARATORS
+      /*
+       * No whitespace exists between the already parsed expression and
+       * the next token, therefore adjacent primaries imply multiplication.
+       *
+       *   2pi      -> 2 * pi
+       *   2sqrt(x) -> 2 * sqrt(x)
+       *   2(x)     -> 2 * (x)
+       *   (2)(3)   -> (2) * (3)
+       */
+      if (is_implicit_multiplication()) [[unlikely]] {
+        result *= parse_expr_2();
+        break;
+      }
+#endif
       return result;
     }
   }

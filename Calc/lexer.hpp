@@ -33,6 +33,11 @@ private:
   void advance(EquationSize n) noexcept;
 
   /**
+   * Read an separator at the beginning of the input view and return size of it.
+   */
+  [[nodiscard]] inline EquationSize read_separator(Token &token) const noexcept;
+
+  /**
    * Read an operator at the beginning of the input view and return size of it.
    */
   [[nodiscard]] EquationSize read_operator(Token &token) const noexcept;

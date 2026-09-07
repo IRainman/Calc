@@ -39,6 +39,20 @@ Lexer::read_operator(Token &token) const noexcept {
 }
 
 [[nodiscard]] inline EquationSize
+Lexer::read_separator(Token &token) const noexcept {
+  [[assume((_view.size() >= 1))]];
+  EquationSize n = 1;
+
+  while (n != _view.size() && _view[n] == ' ') {
+    ++n;
+  }
+#ifdef CALC_USE_SEPARATORS
+  token.type = static_cast<Token::Type>(_view.front());
+#endif
+  return n;
+}
+
+[[nodiscard]] inline EquationSize
 Lexer::read_number(Token &token) const noexcept {
   [[assume((_view.size() >= 1))]];
   const auto begin = _view.data();
@@ -113,14 +127,17 @@ void Lexer::next(Token &token) noexcept {
       advance(read_ident(token));
       return;
     } else if (cur == ' ') {
-      advance(1);
+      advance(read_separator(token));
+#ifdef CALC_USE_SEPARATORS
+      return;
+#else
       continue;
-    } else {
-      [[unlikely]] return_unparsable(token);
+#endif
+    } else [[unlikely]] {
+      return_unparsable(token);
       return;
     }
   }
 
   [[likely]] return_result(token);
-  return;
 }
