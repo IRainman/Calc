@@ -174,11 +174,11 @@ private:
         case u'\u3000': // IDEOGRAPHIC SPACE
         case u'\uFEFF': // ZERO WIDTH NO-BREAK SPACE
 
-        case u'\u0009': // TAB
-        case u'\u0010': // LF
-        case u'\u0011': // VT
-        case u'\u0012': // FF
-        case u'\u0013': // CR
+        case WCHAR('\t'): // TAB
+        case WCHAR('\n'): // LF
+        case WCHAR('\v'): // VT
+        case WCHAR('\f'): // FF
+        case WCHAR('\r'): // CR
 
         case u'\u00A0': // NO-BREAK SPACE
                         // clang-format off
@@ -292,6 +292,18 @@ private:
           *dst++ = '/';
           break;
 
+        case WCHAR(0xBC): // ¼
+          dst = append(dst, "1/4");
+          break;
+
+        case WCHAR(0xBD): // ½
+          dst = append(dst, "1/2");
+          break;
+
+        case WCHAR(0xBE): // ¾
+          dst = append(dst, "1/4");
+          break;
+
           // ---------------------------------------------------------------------
           // Parentheses.
           // ---------------------------------------------------------------------
@@ -353,7 +365,8 @@ private:
           dst = append(dst, "sigma");
           break;
 
-        case u'\u03BC': // μ
+        case u'\u03BC':   // μ
+        case WCHAR(0xB5): // µ
           dst = append(dst, "mu");
           break;
 
