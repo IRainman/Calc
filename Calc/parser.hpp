@@ -75,6 +75,13 @@ private:
            _current.type == Token::Type::LPAREN;
   }
 
+  /**
+   * Consume whitespace separator tokens.
+   *
+   * Separators are syntactically transparent around explicit operators and
+   * delimiters, but they are deliberately NOT consumed by parse_expr_3()
+   * when checking for implicit multiplication.
+   */
   constexpr void skip_separators() noexcept {
     if (_current.type == Token::Type::SEPARATOR) {
       advance();

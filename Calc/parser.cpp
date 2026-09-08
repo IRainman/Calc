@@ -54,15 +54,36 @@ inline void Parser::advance() noexcept { _lex.next(_current); }
   auto result = parse_expr_3();
   while (true) {
 #ifdef CALC_USE_SEPARATORS
-    skip_separators();
+    if (_current.type == Token::Type::SEPARATOR) {
+      advance();
+
+      /*
+       * A separator followed by an operator is legal.
+       * A separator followed by an atom is not.
+       */
+      if (_current.type != Token::Type::ADD &&
+          _current.type != Token::Type::SUB) [[likely]] {
+        /*
+         * parse_expr_3() normally catches separated atoms, but this also
+         * prevents a separator from being silently swallowed at this level.
+         */
+        return result;
+      }
+    }
 #endif
     switch (_current.type) {
     case Token::Type::ADD:
       advance();
+#ifdef CALC_USE_SEPARATORS
+      skip_separators();
+#endif
       result += parse_expr_3();
       break;
     case Token::Type::SUB:
       advance();
+#ifdef CALC_USE_SEPARATORS
+      skip_separators();
+#endif
       result -= parse_expr_3();
       break;
     default:
@@ -77,10 +98,16 @@ inline void Parser::advance() noexcept { _lex.next(_current); }
     switch (_current.type) {
     case Token::Type::MUL:
       advance();
+#ifdef CALC_USE_SEPARATORS
+      skip_separators();
+#endif
       result *= parse_expr_2();
       break;
     case Token::Type::DIV:
       advance();
+#ifdef CALC_USE_SEPARATORS
+      skip_separators();
+#endif
       result /= parse_expr_2();
       break;
 #ifdef CALC_USE_SEPARATORS
@@ -111,7 +138,17 @@ inline void Parser::advance() noexcept { _lex.next(_current); }
        * Leave the token there. parse() will report it as extraneous input.
        */
       if (starts_implicit_multiplication()) [[unlikely]] {
+#ifdef CALC_USE_ERROR_TOKEN
+        constexpr static std::string_view err = "unexpected";
+        _current.type = Token::Type::ERROR;
+        _current.error_text = err.data();
+        _current.error_text_size = err.size();
+        _current.error_position = _lex.position();
+        return _current;
+#else
+        IssueManager::report_error(_lex.position(), "unexpected");
         return result;
+#endif
       }
 
       /*
@@ -145,6 +182,11 @@ inline void Parser::advance() noexcept { _lex.next(_current); }
       [[indeterminate]];
 
   ParamCount count = 0;
+
+#ifdef CALC_USE_SEPARATORS
+  skip_separators();
+#endif
+
   do {
     values[count] = parse_expr_1();
 
@@ -154,6 +196,10 @@ inline void Parser::advance() noexcept { _lex.next(_current); }
 
     if (_current.type == Token::Type::POW) {
       advance();
+
+#ifdef CALC_USE_SEPARATORS
+      skip_separators();
+#endif
     } else {
       break;
     }
