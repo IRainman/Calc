@@ -51,6 +51,10 @@ const auto &ids = Identifiers::get();
 inline void Parser::advance() noexcept { _lex.next(_current); }
 
 [[nodiscard]] Result Parser::parse_expr_4() noexcept {
+#ifdef CALC_USE_SEPARATORS
+  skip_separators();
+#endif
+
   auto result = parse_expr_3();
   while (true) {
 #ifdef CALC_USE_SEPARATORS
@@ -58,16 +62,30 @@ inline void Parser::advance() noexcept { _lex.next(_current); }
       advance();
 
       /*
-       * A separator followed by an operator is legal.
-       * A separator followed by an atom is not.
+       * Whitespace before an operator or delimiter is valid.
+       *
+       * Whitespace before another primary is NOT implicit multiplication.
+       *
+       *     1+1 1  -> ERROR
+       *     2 + 2  -> valid
        */
-      if (_current.type != Token::Type::ADD &&
-          _current.type != Token::Type::SUB) [[likely]] {
-        /*
-         * parse_expr_3() normally catches separated atoms, but this also
-         * prevents a separator from being silently swallowed at this level.
-         */
-        return result;
+      if (_current.type == Token::Type::NUM ||
+          _current.type == Token::Type::FUNCT ||
+          _current.type == Token::Type::LPAREN) [[unlikely]] {
+
+#ifdef CALC_USE_ERROR_TOKEN
+        constexpr static std::string_view err = "unexpected";
+
+        _current.type = Token::Type::ERROR;
+        _current.error_text = err.data();
+        _current.error_text_size = err.size();
+        _current.error_position = _lex.position();
+
+        return _current;
+#else
+        IssueManager::report_error(_lex.position(), "unexpected");
+        return std::numeric_limits<Value>::quiet_NaN();
+#endif
       }
     }
 #endif
@@ -93,12 +111,17 @@ inline void Parser::advance() noexcept { _lex.next(_current); }
 }
 
 [[nodiscard]] Result Parser::parse_expr_3() noexcept {
+#ifdef CALC_USE_SEPARATORS
+  // Whitespace before the first operand is harmless.
+  skip_separators();
+#endif
   auto result = parse_expr_2();
   while (true) {
     switch (_current.type) {
     case Token::Type::MUL:
       advance();
 #ifdef CALC_USE_SEPARATORS
+      // Whitespace after an explicit operator is harmless.
       skip_separators();
 #endif
       result *= parse_expr_2();
@@ -106,70 +129,45 @@ inline void Parser::advance() noexcept { _lex.next(_current); }
     case Token::Type::DIV:
       advance();
 #ifdef CALC_USE_SEPARATORS
+      // Whitespace after an explicit operator is harmless.
       skip_separators();
 #endif
       result /= parse_expr_2();
       break;
-#ifdef CALC_USE_SEPARATORS
-    case Token::Type::SEPARATOR:
-      /*
-       * Whitespace is syntactically transparent around operators, but it
-       * terminates implicit-multiplication adjacency.
-       *
-       *     2pi       -> 2 * pi
-       *     2 pi      -> invalid
-       *
-       * However:
-       *
-       *     2 + pi
-       *     2 * pi
-       *     2 ^ pi
-       *
-       * remain valid.
-       */
-      advance();
-
-      /*
-       * Multiple spaces are already collapsed by Lexer::read_separator().
-       *
-       * If another atom starts immediately after the separator, this is
-       * separated juxtaposition, not implicit multiplication.
-       *
-       * Leave the token there. parse() will report it as extraneous input.
-       */
-      if (starts_implicit_multiplication()) [[unlikely]] {
-#ifdef CALC_USE_ERROR_TOKEN
-        constexpr static std::string_view err = "unexpected";
-        _current.type = Token::Type::ERROR;
-        _current.error_text = err.data();
-        _current.error_text_size = err.size();
-        _current.error_position = _lex.position();
-        return _current;
-#else
-        IssueManager::report_error(_lex.position(), "unexpected");
-        return result;
-#endif
-      }
-
-      /*
-       * Otherwise the separator was merely whitespace between grammar
-       * elements. Continue parsing.
-       */
-      break;
-#endif
     default:
 #ifdef CALC_USE_SEPARATORS
       /*
-       * No separator exists, therefore adjacent atoms imply multiplication.
+       * IMPORTANT:
        *
-       *   2pi       -> 2 * pi
-       *   2sqrt(x)  -> 2 * sqrt(x)
-       *   2(x)      -> 2 * (x)
-       *   (2)(3)    -> (2) * (3)
+       * Do NOT consume SEPARATOR here.
+       *
+       * A separator after a complete expr_2 belongs to the enclosing
+       * grammar level. This is what allows us to distinguish:
+       *
+       *   2 + 2    -> valid
+       *   1+1 1    -> invalid
+       *
+       * from:
+       *
+       *   2pi      -> implicit multiplication
        */
-      if (starts_implicit_multiplication()) [[unlikely]] {
-        result *= parse_expr_2();
-        break;
+      if (_current.type != Token::Type::SEPARATOR &&
+          _current.type != Token::Type::RESULT &&
+          _current.type != Token::Type::ADD &&
+          _current.type != Token::Type::SUB &&
+          _current.type != Token::Type::RPAREN &&
+          _current.type != Token::Type::COMA) {
+
+        /*
+         * No separator exists, so adjacent primary expressions imply
+         * multiplication.
+         */
+        if (_current.type == Token::Type::NUM ||
+            _current.type == Token::Type::FUNCT ||
+            _current.type == Token::Type::LPAREN) [[unlikely]] {
+          result *= parse_expr_2();
+          break;
+        }
       }
 #endif
       return result;
