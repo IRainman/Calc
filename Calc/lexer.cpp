@@ -38,8 +38,11 @@ Lexer::read_operator(Token &token) const noexcept {
   return 1;
 }
 
-[[nodiscard]] inline EquationSize
-Lexer::read_separator(Token &token) const noexcept {
+[[nodiscard]] inline EquationSize Lexer::read_separator(
+#ifdef CALC_USE_SEPARATORS
+    Token &token
+#endif
+) const noexcept {
   [[assume((_view.size() >= 1))]];
   EquationSize n = 1;
 
@@ -128,7 +131,11 @@ void Lexer::next(Token &token) noexcept {
       advance(read_ident(token));
       return;
     } else if (cur == ' ') {
-      advance(read_separator(token));
+      advance(read_separator(
+#ifdef CALC_USE_SEPARATORS
+          token
+#endif
+          ));
 #ifdef CALC_USE_SEPARATORS
       return;
 #else

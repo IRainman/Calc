@@ -16,7 +16,11 @@ static constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>(
 	{ "2 + )",												std::numeric_limits<Value>::quiet_NaN() },
 	{ "2 + (",												std::numeric_limits<Value>::quiet_NaN() },
 	{ "e(",													std::numeric_limits<Value>::quiet_NaN() },
+	#ifdef CALC_USE_SEPARATORS
+	{ "pi(e)",												std::numbers::pi_v<Value> * std::numbers::e_v<Value> },
+	#else
 	{ "pi(e)",												std::numeric_limits<Value>::quiet_NaN() },
+	#endif
 	{ "pi(sin)",											std::numeric_limits<Value>::quiet_NaN() },
 	{ "sin + 12",											std::numeric_limits<Value>::quiet_NaN() },
 	{ "sin(1, 2, 3)",										std::numeric_limits<Value>::quiet_NaN() },

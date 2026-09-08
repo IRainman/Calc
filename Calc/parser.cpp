@@ -19,13 +19,6 @@ const auto &ids = Identifiers::get();
 
 [[nodiscard]] Result Parser::parse() noexcept {
   const auto result = parse_expr_4();
-
-#ifdef CALC_USE_SEPARATORS
-  if (_current.type == Token::Type::NUM) {
-    IssueManager::report_error(_lex.position(), "DEBUG: final NUM");
-  }
-#endif
-
 #ifdef CALC_USE_ERROR_TOKEN
   switch (_current.type) {
   case Token::Type::RESULT:
