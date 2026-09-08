@@ -289,7 +289,7 @@ parabola(std::span<Value> params) noexcept {
   return std::pow(x, y);
 }
 
-[[nodiscard]] static Value qbrt(Value x) noexcept { return std::pow(x, 0.25); }
+[[nodiscard]] static Value qdrt(Value x) noexcept { return std::pow(x, 0.25); }
 
 // for better precision
 [[nodiscard]] static Value normalize_sine(Value value) noexcept {
@@ -774,7 +774,7 @@ static const map ids = {
 
     {"sqrt", function_pointer<1, std::sqrt>()},
     {"cbrt", function_pointer<1, std::cbrt>()},
-    {"qbrt", function_pointer<1, qbrt>()},
+    {"qdrt", function_pointer<1, qdrt>()},
     {"pow", function_pointer<2, pow>()},
     {"exp", function_pointer<1, std::exp>()},
     {"expm1", function_pointer<1, std::expm1>()},

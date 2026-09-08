@@ -403,7 +403,7 @@ private:
           break;
 
         case u'\u221C': // ∜
-          dst = append(dst, "qbrt");
+          dst = append(dst, "qdrt");
           break;
 
           // Radical symbol fragment used in mathematical typography.
