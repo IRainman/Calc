@@ -124,6 +124,7 @@ private:
 
         // Fast path for ordinary printable ASCII characters.
         // Should be autovectorized by compiler.
+        // https://en.cppreference.com/w/cpp/language/ascii
         if (c >= WCHAR(32) && c <= WCHAR(126)) [[likely]] {
           const UINT begin = normalized;
 
@@ -147,7 +148,7 @@ private:
         switch (c) {
 
           // ---------------------------------------------------------------------
-          // Unicode whitespace.
+          // Separators.
           // ---------------------------------------------------------------------
 
         case u'\u2000': // EN QUAD
@@ -168,22 +169,20 @@ private:
         case u'\u2028': // LINE SEPARATOR
         case u'\u2029': // PARAGRAPH SEPARATOR
 
-        case u'\u202F': // NARROW NO-BREAK SPACE
-        case u'\u205F': // MEDIUM MATHEMATICAL SPACE
-        case u'\u2060': // WORD JOINER
-        case u'\u3000': // IDEOGRAPHIC SPACE
-        case u'\uFEFF': // ZERO WIDTH NO-BREAK SPACE
-
+        case u'\u202F':   // NARROW NO-BREAK SPACE
+        case u'\u205F':   // MEDIUM MATHEMATICAL SPACE
+        case u'\u2060':   // WORD JOINER
+        case u'\u3000':   // IDEOGRAPHIC SPACE
+        case u'\uFEFF':   // ZERO WIDTH NO-BREAK SPACE
         case WCHAR('\t'): // TAB
         case WCHAR('\n'): // LF
         case WCHAR('\v'): // VT
         case WCHAR('\f'): // FF
         case WCHAR('\r'): // CR
-
-        case u'\u00A0': // NO-BREAK SPACE
-                        // clang-format off
+        case WCHAR(0xA0): // NO-BREAK SPACE
+                          // clang-format off
           [[unlikely]]
-          *dst++ = ' '; // Token::Type::SEPARATOR
+          *dst++ = ' ';
           break;
           // clang-format on
 
@@ -197,21 +196,21 @@ private:
           *dst++ = '0';
           break;
 
-        case u'\uFF11': // １
-        case u'\u00B9': // ¹
-        case u'\u2081': // ₁
+        case u'\uFF11':   // １
+        case WCHAR(0xB9): // ¹
+        case u'\u2081':   // ₁
           *dst++ = '1';
           break;
 
-        case u'\uFF12': // ２
-        case u'\u00B2': // ²
-        case u'\u2082': // ₂
+        case u'\uFF12':   // ２
+        case WCHAR(0xB2): // ²
+        case u'\u2082':   // ₂
           *dst++ = '2';
           break;
 
-        case u'\uFF13': // ３
-        case u'\u00B3': // ³
-        case u'\u2083': // ₃
+        case u'\uFF13':   // ３
+        case WCHAR(0xB3): // ³
+        case u'\u2083':   // ₃
           *dst++ = '3';
           break;
 
@@ -274,21 +273,21 @@ private:
           *dst++ = '-';
           break;
 
-        case u'\uFF0A': // ＊
-        case u'\u00B7': // · MIDDLE DOT
-        case u'\u00D7': // × MULTIPLICATION SIGN
-        case u'\u2217': // ∗ ASTERISK OPERATOR
-        case u'\u2219': // ∙ BULLET OPERATOR
-        case u'\u22C5': // ⋅ DOT OPERATOR
-        case u'\u204E': // ⁎ LOW ASTERISK
-        case u'\u2A2F': // ⨯ VECTOR OR CROSS PRODUCT
+        case u'\uFF0A':   // ＊
+        case WCHAR(0xB7): // · MIDDLE DOT
+        case WCHAR(0xD7): // × MULTIPLICATION SIGN
+        case u'\u2217':   // ∗ ASTERISK OPERATOR
+        case u'\u2219':   // ∙ BULLET OPERATOR
+        case u'\u22C5':   // ⋅ DOT OPERATOR
+        case u'\u204E':   // ⁎ LOW ASTERISK
+        case u'\u2A2F':   // ⨯ VECTOR OR CROSS PRODUCT
           *dst++ = '*';
           break;
 
-        case u'\u00F7': // ÷
-        case u'\u2044': // ⁄
-        case u'\u2215': // ∕
-        case u'\uFF0F': // ／
+        case WCHAR(0xF7): // ÷
+        case u'\u2044':   // ⁄
+        case u'\u2215':   // ∕
+        case u'\uFF0F':   // ／
           *dst++ = '/';
           break;
 
@@ -301,7 +300,7 @@ private:
           break;
 
         case WCHAR(0xBE): // ¾
-          dst = append(dst, "1/4");
+          dst = append(dst, "3/4");
           break;
 
           // ---------------------------------------------------------------------
