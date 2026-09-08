@@ -14,16 +14,16 @@
 class Issue {
 public:
   Issue(const EquationSize _pos, const char *_text) noexcept
-      : pos(_pos), text(_text) {};
+      : text(_text), pos(_pos) {};
   Issue(const Issue &) = delete;
   Issue(Issue &&) = default;
 
 private:
-  // Position within the context at which the issue has occurred.
-  const EquationSize pos;
-
   // Issue describing of the message.
   const char *text;
+
+  // Position within the context at which the issue has occurred.
+  const EquationSize pos;
 
   friend class Formatter;
 };
