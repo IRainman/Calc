@@ -140,13 +140,13 @@ void Lexer::next(Token &token) noexcept {
     if (cur == '(' || cur == ')' || cur == '*' || cur == '+' || cur == ',' ||
         cur == '-' || cur == '/' || cur == '^') {
       advance(read_operator(token));
-      return;
+      goto token_read;
     } else if (cur >= '0' && cur <= '9') {
       advance(read_number(token));
-      return;
+      goto token_read;
     } else if ((cur >= 'A' && cur <= 'Z') || (cur >= 'a' && cur <= 'z')) {
       advance(read_ident(token));
-      return;
+      goto token_read;
     } else if (cur == ' ') {
       advance(read_separator());
 #ifdef CALC_ALLOW_IMPLICIT_MULTIPLICATION
@@ -157,6 +157,7 @@ void Lexer::next(Token &token) noexcept {
       return_unparsable(token);
       return;
     }
+  token_read:
 #ifdef CALC_ALLOW_IMPLICIT_MULTIPLICATION
     if (!separator &&
         // Check previous
