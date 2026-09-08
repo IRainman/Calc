@@ -69,8 +69,16 @@ private:
    *
    * The previous expression has already been parsed by parse_expr_2().
    */
-  [[nodiscard]] constexpr bool is_implicit_multiplication() const noexcept {
-    return _current.begins_implicit_multiplication();
+  [[nodiscard]] constexpr bool starts_implicit_multiplication() const noexcept {
+    return _current.type == Token::Type::NUM ||
+           _current.type == Token::Type::FUNCT ||
+           _current.type == Token::Type::LPAREN;
+  }
+
+  constexpr void skip_separators() noexcept {
+    if (_current.type == Token::Type::SEPARATOR) {
+      advance();
+    }
   }
 #endif
 

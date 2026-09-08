@@ -53,6 +53,9 @@ inline void Parser::advance() noexcept { _lex.next(_current); }
 [[nodiscard]] Result Parser::parse_expr_4() noexcept {
   auto result = parse_expr_3();
   while (true) {
+#ifdef CALC_USE_SEPARATORS
+    skip_separators();
+#endif
     switch (_current.type) {
     case Token::Type::ADD:
       advance();
@@ -83,32 +86,51 @@ inline void Parser::advance() noexcept { _lex.next(_current); }
 #ifdef CALC_USE_SEPARATORS
     case Token::Type::SEPARATOR:
       /*
-       * Whitespace is a real separator.
+       * Whitespace is syntactically transparent around operators, but it
+       * terminates implicit-multiplication adjacency.
        *
-       * It must never be silently ignored between adjacent expressions.
+       *     2pi       -> 2 * pi
+       *     2 pi      -> invalid
        *
-       * Therefore:
+       * However:
        *
-       *   2pi  -> implicit multiplication
-       *   2 pi  -> syntax error
+       *     2 + pi
+       *     2 * pi
+       *     2 ^ pi
        *
-       * We return here and let the top-level parser detect the
-       * unconsumed SEPARATOR token.
+       * remain valid.
        */
-      return result;
+      advance();
+
+      /*
+       * Multiple spaces are already collapsed by Lexer::read_separator().
+       *
+       * If another atom starts immediately after the separator, this is
+       * separated juxtaposition, not implicit multiplication.
+       *
+       * Leave the token there. parse() will report it as extraneous input.
+       */
+      if (starts_implicit_multiplication()) [[unlikely]] {
+        return result;
+      }
+
+      /*
+       * Otherwise the separator was merely whitespace between grammar
+       * elements. Continue parsing.
+       */
+      break;
 #endif
     default:
 #ifdef CALC_USE_SEPARATORS
       /*
-       * No whitespace exists between the already parsed expression and
-       * the next token, therefore adjacent primaries imply multiplication.
+       * No separator exists, therefore adjacent atoms imply multiplication.
        *
-       *   2pi      -> 2 * pi
-       *   2sqrt(x) -> 2 * sqrt(x)
-       *   2(x)     -> 2 * (x)
-       *   (2)(3)   -> (2) * (3)
+       *   2pi       -> 2 * pi
+       *   2sqrt(x)  -> 2 * sqrt(x)
+       *   2(x)      -> 2 * (x)
+       *   (2)(3)    -> (2) * (3)
        */
-      if (is_implicit_multiplication()) [[unlikely]] {
+      if (starts_implicit_multiplication()) [[unlikely]] {
         result *= parse_expr_2();
         break;
       }
@@ -125,6 +147,10 @@ inline void Parser::advance() noexcept { _lex.next(_current); }
   ParamCount count = 0;
   do {
     values[count] = parse_expr_1();
+
+#ifdef CALC_USE_SEPARATORS
+    skip_separators();
+#endif
 
     if (_current.type == Token::Type::POW) {
       advance();
@@ -183,7 +209,13 @@ inline void Parser::advance() noexcept { _lex.next(_current); }
   case Token::Type::LPAREN:
     [[likely]] {
       advance();
+#ifdef CALC_USE_SEPARATORS
+      skip_separators();
+#endif
       const auto result = parse_expr_4();
+#ifdef CALC_USE_SEPARATORS
+      skip_separators();
+#endif
       if (_current.type == Token::Type::RPAREN) [[likely]] {
         advance();
         return result;
@@ -241,8 +273,14 @@ inline void Parser::advance() noexcept { _lex.next(_current); }
     ParamCount count = 0;
 
     do {
+#ifdef CALC_USE_SEPARATORS
+      skip_separators();
+#endif
       parameters[count] = parse_expr_4();
       ++count;
+#ifdef CALC_USE_SEPARATORS
+      skip_separators();
+#endif
 
       switch (_current.type) {
       case Token::Type::RPAREN:

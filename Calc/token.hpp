@@ -57,37 +57,6 @@ struct Token {
 
   // Type of this token.
   [[no_unique_address]] Type type [[indeterminate]];
-
-#ifdef CALC_USE_SEPARATORS
-  /**
-   * Test whether this token can end a primary expression and therefore
-   * participate in implicit multiplication.
-   *
-   * Examples:
-   *
-   *   2      -> true
-   *   pi     -> true   (constant is represented as NUM)
-   *   sqrt() -> true   (function result is represented as NUM)
-   *   (...)  -> true
-   */
-  [[nodiscard]] constexpr bool ends_implicit_multiplication() const noexcept {
-    return type == Type::NUM || type == Type::FUNCT || type == Type::RPAREN;
-  }
-
-  /**
-   * Test whether this token can begin a primary expression and therefore
-   * participate in implicit multiplication.
-   *
-   * Examples:
-   *
-   *   2pi      -> NUM NUM
-   *   2sqrt(x) -> NUM FUNCT
-   *   2(x)     -> NUM LPAREN
-   */
-  [[nodiscard]] constexpr bool begins_implicit_multiplication() const noexcept {
-    return type == Type::NUM || type == Type::FUNCT || type == Type::LPAREN;
-  }
-#endif
 };
 
 #endif
