@@ -59,7 +59,9 @@ struct Token {
   [[no_unique_address]] Type type [[indeterminate]];
 
 #ifdef CALC_ALLOW_IMPLICIT_MULTIPLICATION
-  Token(Type t) noexcept { type = t; }
+  Token() noexcept {};
+
+  constexpr explicit Token(const Type t) noexcept : type(t) {}
 #endif
 };
 

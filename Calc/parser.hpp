@@ -37,18 +37,16 @@ public:
    *
    * parameters = expr_4 ( ',' expr_4 )* ')'
    */
-  explicit  Parser(Lexer &lexer) noexcept : _lexer(lexer) {
-    advance();
-  }
+  explicit Parser(Lexer &lexer) noexcept : _lexer(lexer) { advance(); }
 
   Parser() = delete;
   Parser(const Parser &) = delete;
-   Parser(Parser &&) = default;
+  Parser(Parser &&) = default;
 
   /**
    * Parse and evaluate an expression.
    */
-  [[nodiscard]]  Result parse() noexcept;
+  [[nodiscard]] Result parse() noexcept;
 
 private:
   /**
@@ -56,17 +54,17 @@ private:
    */
   void advance() noexcept;
 
-  [[nodiscard]]  Result parse_expr_4() noexcept;
+  [[nodiscard]] Result parse_expr_4() noexcept;
 
-  [[nodiscard]]  Result parse_expr_3() noexcept;
+  [[nodiscard]] Result parse_expr_3() noexcept;
 
-  [[nodiscard]]  Result parse_expr_2() noexcept;
+  [[nodiscard]] Result parse_expr_2() noexcept;
 
-  [[nodiscard]]  Result parse_expr_1() noexcept;
+  [[nodiscard]] Result parse_expr_1() noexcept;
 
-  [[nodiscard]]  Result parse_expr_0() noexcept;
+  [[nodiscard]] Result parse_expr_0() noexcept;
 
-  [[nodiscard]]  Result parse_function() noexcept;
+  [[nodiscard]] Result parse_function() noexcept;
 
   [[no_unique_address]] Lexer &_lexer;
   [[no_unique_address]] Token _current [[indeterminate]];
