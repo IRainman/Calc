@@ -113,9 +113,9 @@ public:
         IssueManager::report_error(
 #endif
 #if defined(CALC_ALLOW_UNICODE_IN_GUI)
-            to_ansi.normalized(), "character is incorrect");
+            to_ansi.normalized(), "unparsable");
 #else
-            0, "Unicode not supported");
+            0, "unparsable");
 #endif
       }
 
