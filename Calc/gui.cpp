@@ -113,10 +113,12 @@ public:
         IssueManager::report_error(
 #endif
 #if defined(CALC_ALLOW_UNICODE_IN_GUI)
-            to_ansi.normalized(), "unparsable");
+            to_ansi.normalized()
 #else
-            0, "unparsable");
+            0
 #endif
+                ,
+            unparsable);
       }
 
       Lexer l(_equasion);

@@ -7,14 +7,26 @@
 
 #include "identifiers.hpp"
 
+// clang-format off
+constexpr static const char *unparsable = "unparsable";
+
+constexpr static const char *extraneous_input = "extraneous input";
+
+constexpr static const char *to_many_in_expression = "too many ^ in expression";
+
+constexpr static const char *expected_parenthesis = "expected parenthesis";
+
+constexpr static const char *incorrect_parameters_count = "incorrect parameters count";
+
+constexpr static const char *too_many_parameters = "too many parameters";
+
+constexpr static const char *unexpected = "unexpected";
+// clang-format on
+
 struct Token {
   enum class Type : ParamCount {
     // https://en.cppreference.com/w/cpp/language/ascii
     RESULT = 0x00,
-
-#ifdef CALC_ALLOW_IMPLICIT_MULTIPLICATION
-    SEPARATOR = ' ',
-#endif
 
     ADD = '+',
     SUB = '-',
@@ -49,8 +61,8 @@ struct Token {
     // If token is an error, there is a small helper that handle it.
     struct {
       [[no_unique_address]] const char *error_text [[indeterminate]];
-      [[no_unique_address]] unsigned int error_text_size [[indeterminate]];
       [[no_unique_address]] unsigned int error_position [[indeterminate]];
+      [[no_unique_address]] unsigned char error_text_size [[indeterminate]];
     };
 #endif
   };
@@ -58,11 +70,9 @@ struct Token {
   // Type of this token.
   [[no_unique_address]] Type type [[indeterminate]];
 
-#ifdef CALC_ALLOW_IMPLICIT_MULTIPLICATION
-  Token() noexcept {};
-
   constexpr explicit Token(const Type t) noexcept : type(t) {}
-#endif
+
+  Token() noexcept { /*no init here!*/ };
 };
 
 #endif

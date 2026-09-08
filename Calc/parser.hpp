@@ -41,7 +41,7 @@ public:
 
   Parser() = delete;
   Parser(const Parser &) = delete;
-  Parser(Parser &&) = default;
+  Parser(Parser &&) = delete;
 
   /**
    * Parse and evaluate an expression.

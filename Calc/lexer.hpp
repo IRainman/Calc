@@ -13,7 +13,7 @@ public:
 
   Lexer() = delete;
   Lexer(const Lexer &) = delete;
-  Lexer(Lexer &&) = default;
+  Lexer(Lexer &&) = delete;
 
 private:
   /**
@@ -66,8 +66,8 @@ private:
   std::string_view _view;
   const std::string_view::const_pointer _begin;
 #ifdef CALC_ALLOW_IMPLICIT_MULTIPLICATION
-  Token _pending{Token::Type::RESULT};
-  Token::Type _previous = Token::Type::RESULT;
+  Token _pending{Token::Type::ERROR};
+  Token::Type _previous = Token::Type::ERROR;
 #endif
   friend class Parser;
 };

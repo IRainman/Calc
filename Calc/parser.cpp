@@ -41,7 +41,7 @@ const auto &ids = Identifiers::get();
   [[unlikely]]
   default:
     [[unlikely]] IssueManager::report_error(_lexer.position(),
-                                            "extraneous input");
+                                            extraneous_input);
     break;
   }
   return std::numeric_limits<Value>::quiet_NaN();
@@ -89,7 +89,9 @@ void Parser::advance() noexcept { _lexer.next(_current); }
 [[nodiscard]] Result Parser::parse_expr_2() noexcept {
   std::array<Result, std::numeric_limits<ParamCount>::max()> values
       [[indeterminate]];
+
   ParamCount count = 0;
+
   do {
     values[count] = parse_expr_1();
     if (_current.type == Token::Type::POW) {
@@ -101,13 +103,12 @@ void Parser::advance() noexcept { _lexer.next(_current); }
 
   if (count == static_cast<ParamCount>(values.size())) [[unlikely]] {
 #ifdef CALC_USE_ERROR_TOKEN
-    constexpr std::string_view err = "too many ^ in expression";
-    _current.error_text = err.data();
-    _current.error_text_size = err.size();
+    _current.error_text = to_many_in_expression;
+    _current.error_text_size = 25;
     _current.error_position = _lexer.position();
     return _current;
 #else
-    IssueManager::report_error(_lexer.position(), "too many ^ in expression");
+    IssueManager::report_error(_lexer.position(), to_many_in_expression);
     return _current.number;
 #endif
   }
@@ -146,46 +147,41 @@ void Parser::advance() noexcept { _lexer.next(_current); }
 
 [[nodiscard]] Result Parser::parse_expr_0() noexcept {
   switch (_current.type) {
-  case Token::Type::LPAREN:
-    [[likely]] {
+  case Token::Type::LPAREN: {
+    advance();
+    const auto result = parse_expr_4();
+    if (_current.type == Token::Type::RPAREN) {
       advance();
-      const auto result = parse_expr_4();
-      if (_current.type == Token::Type::RPAREN) [[likely]] {
-        advance();
-        return result;
-      } else [[unlikely]] {
+      return result;
+    } else [[unlikely]] {
 #ifdef CALC_USE_ERROR_TOKEN
-        constexpr static std::string_view err = "expected parenthesis";
-        _current.error_text = err.data();
-        _current.error_text_size = err.size();
-        _current.error_position = _lexer.position();
-        return _current;
-        ? needs to form nan with adress of an error.
+      _current.error_text = expected_parenthesis;
+      _current.error_text_size = 21;
+      _current.error_position = _lexer.position();
+      return _current;
 #else
-        IssueManager::report_error(_lexer.position(), "expected parenthesis");
-        return _current.number;
+      IssueManager::report_error(_lexer.position(), expected_parenthesis);
+      return _current.number;
 #endif
-      }
     }
-  case Token::Type::NUM:
-    [[likely]] {
-      const auto num = _current.number;
-      advance();
-      return num;
-    }
-  case Token::Type::FUNCT:
-    [[likely]] { return parse_function(); }
+  }
+  case Token::Type::NUM: {
+    const auto num = _current.number;
+    advance();
+    return num;
+  }
+  case Token::Type::FUNCT: {
+    return parse_function();
+  }
   default:
     [[unlikely]] {
 #ifdef CALC_USE_ERROR_TOKEN
-      constexpr static std::string_view err = "unexpected";
-      _current.error_text = err.data();
-      _current.error_text_size = err.size();
+      _current.error_text = unexpected;
+      _current.error_text_size = 11;
       _current.error_position = _lexer.position();
       return _current;
-      ? needs to form nan with adress of an error.
 #else
-      IssueManager::report_error(_lexer.position(), "unexpected");
+      IssueManager::report_error(_lexer.position(), unexpected);
       return _current.number;
 #endif
     }
@@ -226,16 +222,13 @@ void Parser::advance() noexcept { _lexer.next(_current); }
           } else [[unlikely]] {
             function_start_pos -= i->first.size();
 #ifdef CALC_USE_ERROR_TOKEN
-            constexpr static std::string_view err =
-                "incorrect parameters count";
-            _current.error_text = err.data();
-            _current.error_text_size = err.size();
+            _current.error_text = incorrect_parameters_count;
+            _current.error_text_size = 27;
             _current.error_position = function_start_pos;
             return _current;
-            ? needs to form nan with adress of an error.
 #else
             IssueManager::report_error(function_start_pos,
-                                       "incorrect parameters count");
+                                       incorrect_parameters_count);
             return _current.number;
 #endif
           }
@@ -248,14 +241,12 @@ void Parser::advance() noexcept { _lexer.next(_current); }
       default:
         [[unlikely]] {
 #ifdef CALC_USE_ERROR_TOKEN
-          constexpr static std::string_view err = "expected parenthesis";
-          _current.error_text = err.data();
-          _current.error_text_size = err.size();
+          _current.error_text = expected_parenthesis;
+          _current.error_text_size = 21;
           _current.error_position = _lexer.position();
           return _current;
-          ? needs to form nan with adress of an error.
 #else
-          IssueManager::report_error(_lexer.position(), "expected parenthesis");
+          IssueManager::report_error(_lexer.position(), expected_parenthesis);
           return _current.number;
 #endif
         }
@@ -264,26 +255,22 @@ void Parser::advance() noexcept { _lexer.next(_current); }
     [[likely]]
 
 #ifdef CALC_USE_ERROR_TOKEN
-    constexpr static std::string_view err = "too many parameters";
-    _current.error_text = err.data();
-    _current.error_text_size = err.size();
+    _current.error_text = too_many_parameters;
+    _current.error_text_size = 20;
     _current.error_position = _lexer.position();
     return _current;
-    ? needs to form nan with adress of an error.
 #else
-    IssueManager::report_error(_lexer.position(), "too many parameters");
+    IssueManager::report_error(_lexer.position(), too_many_parameters);
     return _current.number;
 #endif
   } else [[unlikely]] {
 #ifdef CALC_USE_ERROR_TOKEN
-    constexpr static std::string_view err = "expected parenthesis";
-    _current.error_text = err.data();
-    _current.error_text_size = err.size();
+    _current.error_text = expected_parenthesis;
+    _current.error_text_size = 21;
     _current.error_position = _lexer.position();
     return _current;
-    ? needs to form nan with adress of an error.
 #else
-    IssueManager::report_error(_lexer.position(), "expected parenthesis");
+    IssueManager::report_error(_lexer.position(), expected_parenthesis);
     return _current.number;
 #endif
   }
