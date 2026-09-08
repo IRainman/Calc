@@ -201,8 +201,9 @@ static void __cdecl _setup_crt_leak_check() {}
 
 // Disable warnings for GUI code:
 // clang-format off
-__pragma(warning(disable : 5039)); // potentially throwing function passed to extern C
+__pragma(warning(disable : 4267)); // 'argument': conversion from 'size_t' to 'int', possible loss of data
 __pragma(warning(disable : 4865)); // vector<bool> is never constructed with a non-constant size
+__pragma(warning(disable : 5039)); // potentially throwing function passed to extern C
 // clang-format on
 #include <windows.h>
 #ifdef CALC_SUPPORT_LINK_WINDOW
