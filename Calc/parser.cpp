@@ -40,7 +40,7 @@ const auto &ids = Identifiers::get();
     break;
   [[unlikely]]
   default:
-    [[unlikely]] IssueManager::report_error(_lex.position(),
+    [[unlikely]] IssueManager::report_error(_lexer.position(),
                                             "extraneous input");
     break;
   }
@@ -48,60 +48,18 @@ const auto &ids = Identifiers::get();
 #endif
 }
 
-inline void Parser::advance() noexcept { _lex.next(_current); }
+void Parser::advance() noexcept { _lexer.next(_current); }
 
 [[nodiscard]] Result Parser::parse_expr_4() noexcept {
-#ifdef CALC_USE_SEPARATORS
-  skip_separators();
-#endif
-
   auto result = parse_expr_3();
   while (true) {
-#ifdef CALC_USE_SEPARATORS
-    if (_current.type == Token::Type::SEPARATOR) {
-      advance();
-
-      /*
-       * Whitespace before an operator or delimiter is valid.
-       *
-       * Whitespace before another primary is NOT implicit multiplication.
-       *
-       *     1+1 1  -> ERROR
-       *     2 + 2  -> valid
-       */
-      if (_current.type == Token::Type::NUM ||
-          _current.type == Token::Type::FUNCT ||
-          _current.type == Token::Type::LPAREN) [[unlikely]] {
-
-#ifdef CALC_USE_ERROR_TOKEN
-        constexpr static std::string_view err = "unexpected";
-
-        _current.type = Token::Type::ERROR;
-        _current.error_text = err.data();
-        _current.error_text_size = err.size();
-        _current.error_position = _lex.position();
-
-        return _current;
-#else
-        IssueManager::report_error(_lex.position(), "unexpected");
-        return std::numeric_limits<Value>::quiet_NaN();
-#endif
-      }
-    }
-#endif
     switch (_current.type) {
     case Token::Type::ADD:
       advance();
-#ifdef CALC_USE_SEPARATORS
-      skip_separators();
-#endif
       result += parse_expr_3();
       break;
     case Token::Type::SUB:
       advance();
-#ifdef CALC_USE_SEPARATORS
-      skip_separators();
-#endif
       result -= parse_expr_3();
       break;
     default:
@@ -111,65 +69,18 @@ inline void Parser::advance() noexcept { _lex.next(_current); }
 }
 
 [[nodiscard]] Result Parser::parse_expr_3() noexcept {
-#ifdef CALC_USE_SEPARATORS
-  // Whitespace before the first operand is harmless.
-  skip_separators();
-#endif
   auto result = parse_expr_2();
   while (true) {
     switch (_current.type) {
     case Token::Type::MUL:
       advance();
-#ifdef CALC_USE_SEPARATORS
-      // Whitespace after an explicit operator is harmless.
-      skip_separators();
-#endif
       result *= parse_expr_2();
       break;
     case Token::Type::DIV:
       advance();
-#ifdef CALC_USE_SEPARATORS
-      // Whitespace after an explicit operator is harmless.
-      skip_separators();
-#endif
       result /= parse_expr_2();
       break;
     default:
-#ifdef CALC_USE_SEPARATORS
-      /*
-       * IMPORTANT:
-       *
-       * Do NOT consume SEPARATOR here.
-       *
-       * A separator after a complete expr_2 belongs to the enclosing
-       * grammar level. This is what allows us to distinguish:
-       *
-       *   2 + 2    -> valid
-       *   1+1 1    -> invalid
-       *
-       * from:
-       *
-       *   2pi      -> implicit multiplication
-       */
-      if (_current.type != Token::Type::SEPARATOR &&
-          _current.type != Token::Type::RESULT &&
-          _current.type != Token::Type::ADD &&
-          _current.type != Token::Type::SUB &&
-          _current.type != Token::Type::RPAREN &&
-          _current.type != Token::Type::COMA) {
-
-        /*
-         * No separator exists, so adjacent primary expressions imply
-         * multiplication.
-         */
-        if (_current.type == Token::Type::NUM ||
-            _current.type == Token::Type::FUNCT ||
-            _current.type == Token::Type::LPAREN) [[unlikely]] {
-          result *= parse_expr_2();
-          break;
-        }
-      }
-#endif
       return result;
     }
   }
@@ -178,26 +89,11 @@ inline void Parser::advance() noexcept { _lex.next(_current); }
 [[nodiscard]] Result Parser::parse_expr_2() noexcept {
   std::array<Result, std::numeric_limits<ParamCount>::max()> values
       [[indeterminate]];
-
   ParamCount count = 0;
-
-#ifdef CALC_USE_SEPARATORS
-  skip_separators();
-#endif
-
   do {
     values[count] = parse_expr_1();
-
-#ifdef CALC_USE_SEPARATORS
-    skip_separators();
-#endif
-
     if (_current.type == Token::Type::POW) {
       advance();
-
-#ifdef CALC_USE_SEPARATORS
-      skip_separators();
-#endif
     } else {
       break;
     }
@@ -208,10 +104,10 @@ inline void Parser::advance() noexcept { _lex.next(_current); }
     constexpr std::string_view err = "too many ^ in expression";
     _current.error_text = err.data();
     _current.error_text_size = err.size();
-    _current.error_position = _lex.position();
+    _current.error_position = _lexer.position();
     return _current;
 #else
-    IssueManager::report_error(_lex.position(), "too many ^ in expression");
+    IssueManager::report_error(_lexer.position(), "too many ^ in expression");
     return _current.number;
 #endif
   }
@@ -253,13 +149,7 @@ inline void Parser::advance() noexcept { _lex.next(_current); }
   case Token::Type::LPAREN:
     [[likely]] {
       advance();
-#ifdef CALC_USE_SEPARATORS
-      skip_separators();
-#endif
       const auto result = parse_expr_4();
-#ifdef CALC_USE_SEPARATORS
-      skip_separators();
-#endif
       if (_current.type == Token::Type::RPAREN) [[likely]] {
         advance();
         return result;
@@ -268,11 +158,11 @@ inline void Parser::advance() noexcept { _lex.next(_current); }
         constexpr static std::string_view err = "expected parenthesis";
         _current.error_text = err.data();
         _current.error_text_size = err.size();
-        _current.error_position = _lex.position();
+        _current.error_position = _lexer.position();
         return _current;
         ? needs to form nan with adress of an error.
 #else
-        IssueManager::report_error(_lex.position(), "expected parenthesis");
+        IssueManager::report_error(_lexer.position(), "expected parenthesis");
         return _current.number;
 #endif
       }
@@ -291,11 +181,11 @@ inline void Parser::advance() noexcept { _lex.next(_current); }
       constexpr static std::string_view err = "unexpected";
       _current.error_text = err.data();
       _current.error_text_size = err.size();
-      _current.error_position = _lex.position();
+      _current.error_position = _lexer.position();
       return _current;
       ? needs to form nan with adress of an error.
 #else
-      IssueManager::report_error(_lex.position(), "unexpected");
+      IssueManager::report_error(_lexer.position(), "unexpected");
       return _current.number;
 #endif
     }
@@ -303,7 +193,7 @@ inline void Parser::advance() noexcept { _lex.next(_current); }
 }
 
 [[nodiscard]] Result Parser::parse_function() noexcept {
-  auto function_start_pos = _lex.position();
+  auto function_start_pos = _lexer.position();
   const auto i = _current.function;
 
   advance();
@@ -317,15 +207,8 @@ inline void Parser::advance() noexcept { _lex.next(_current); }
     ParamCount count = 0;
 
     do {
-#ifdef CALC_USE_SEPARATORS
-      skip_separators();
-#endif
       parameters[count] = parse_expr_4();
       ++count;
-#ifdef CALC_USE_SEPARATORS
-      skip_separators();
-#endif
-
       switch (_current.type) {
       case Token::Type::RPAREN:
         [[likely]] {
@@ -368,11 +251,11 @@ inline void Parser::advance() noexcept { _lex.next(_current); }
           constexpr static std::string_view err = "expected parenthesis";
           _current.error_text = err.data();
           _current.error_text_size = err.size();
-          _current.error_position = _lex.position();
+          _current.error_position = _lexer.position();
           return _current;
           ? needs to form nan with adress of an error.
 #else
-          IssueManager::report_error(_lex.position(), "expected parenthesis");
+          IssueManager::report_error(_lexer.position(), "expected parenthesis");
           return _current.number;
 #endif
         }
@@ -384,11 +267,11 @@ inline void Parser::advance() noexcept { _lex.next(_current); }
     constexpr static std::string_view err = "too many parameters";
     _current.error_text = err.data();
     _current.error_text_size = err.size();
-    _current.error_position = _lex.position();
+    _current.error_position = _lexer.position();
     return _current;
     ? needs to form nan with adress of an error.
 #else
-    IssueManager::report_error(_lex.position(), "too many parameters");
+    IssueManager::report_error(_lexer.position(), "too many parameters");
     return _current.number;
 #endif
   } else [[unlikely]] {
@@ -396,11 +279,11 @@ inline void Parser::advance() noexcept { _lex.next(_current); }
     constexpr static std::string_view err = "expected parenthesis";
     _current.error_text = err.data();
     _current.error_text_size = err.size();
-    _current.error_position = _lex.position();
+    _current.error_position = _lexer.position();
     return _current;
     ? needs to form nan with adress of an error.
 #else
-    IssueManager::report_error(_lex.position(), "expected parenthesis");
+    IssueManager::report_error(_lexer.position(), "expected parenthesis");
     return _current.number;
 #endif
   }
