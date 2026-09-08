@@ -45,8 +45,7 @@ private:
   /**
    * Return whether a token can terminate a primary expression.
    */
-  [[nodiscard]] static bool
-  can_end_primary(const Token::Type type) noexcept {
+  [[nodiscard]] static bool can_end_primary(const Token::Type type) noexcept {
     return type == Token::Type::NUM || type == Token::Type::FUNCT ||
            type == Token::Type::RPAREN;
   }
@@ -54,8 +53,7 @@ private:
   /**
    * Return whether a token can start a primary expression.
    */
-  [[nodiscard]] static bool
-  can_start_primary(const Token::Type type) noexcept {
+  [[nodiscard]] static bool can_start_primary(const Token::Type type) noexcept {
     return type == Token::Type::NUM || type == Token::Type::FUNCT ||
            type == Token::Type::LPAREN;
   }
@@ -74,17 +72,12 @@ private:
   /**
    * Read a separator at the beginning of the input view and return its size.
    */
-  [[nodiscard]] EquationSize read_separator(
-#ifdef CALC_USE_SEPARATORS
-      Token &token
-#endif
-  ) const noexcept;
+  [[nodiscard]] EquationSize read_separator() const noexcept;
 
   /**
    * Read an operator at the beginning of the input view and return its size.
    */
-  [[nodiscard]] EquationSize
-  read_operator(Token &token) const noexcept;
+  [[nodiscard]] EquationSize read_operator(Token &token) const noexcept;
 
   /**
    * Read a number at the beginning of the input view and return its size.

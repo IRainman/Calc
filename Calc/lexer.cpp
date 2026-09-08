@@ -37,11 +37,7 @@ EquationSize Lexer::return_unparsable(Token &token) const noexcept {
   return 1;
 }
 
-[[nodiscard]] EquationSize Lexer::read_separator(
-#ifdef CALC_USE_SEPARATORS
-    Token &token
-#endif
-) const noexcept {
+[[nodiscard]] EquationSize Lexer::read_separator() const noexcept {
   [[assume((_view.size() >= 1))]];
 
   EquationSize n = 1;
@@ -49,10 +45,6 @@ EquationSize Lexer::return_unparsable(Token &token) const noexcept {
   while (n != _view.size() && _view[n] == ' ') {
     ++n;
   }
-
-#ifdef CALC_USE_SEPARATORS
-  token.type = static_cast<Token::Type>(_view.front());
-#endif
 
   return n;
 }
@@ -156,11 +148,7 @@ void Lexer::next_raw(Token &token) noexcept {
 
     } else if (cur == ' ') {
 
-      advance(read_separator(
-#ifdef CALC_USE_SEPARATORS
-          token
-#endif
-          ));
+      advance(read_separator());
 #ifdef CALC_USE_SEPARATORS
       return;
 #else
