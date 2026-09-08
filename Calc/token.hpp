@@ -12,7 +12,7 @@ struct Token {
     // https://en.cppreference.com/w/cpp/language/ascii
     RESULT = 0x00,
 
-#ifdef CALC_USE_SEPARATORS
+#ifdef CALC_ALLOW_IMPLICIT_MULTIPLICATION
     SEPARATOR = ' ',
 #endif
 
@@ -57,6 +57,10 @@ struct Token {
 
   // Type of this token.
   [[no_unique_address]] Type type [[indeterminate]];
+
+#ifdef CALC_ALLOW_IMPLICIT_MULTIPLICATION
+  Token(Type t) noexcept { type = t; }
+#endif
 };
 
 #endif

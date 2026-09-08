@@ -16,7 +16,7 @@ static constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>(
 	{ "2 + )",												std::numeric_limits<Value>::quiet_NaN() },
 	{ "2 + (",												std::numeric_limits<Value>::quiet_NaN() },
 	{ "e(",													std::numeric_limits<Value>::quiet_NaN() },
-	#ifdef CALC_USE_SEPARATORS
+	#ifdef CALC_ALLOW_IMPLICIT_MULTIPLICATION
 	{ "pi(e)",												std::numbers::pi_v<Value> * std::numbers::e_v<Value> },
 	#else
 	{ "pi(e)",												std::numeric_limits<Value>::quiet_NaN() },

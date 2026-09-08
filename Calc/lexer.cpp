@@ -11,14 +11,14 @@ namespace {
 const auto &ids = Identifiers::get();
 };
 
-[[nodiscard]] EquationSize Lexer::position() const noexcept {
+[[nodiscard]] inline EquationSize Lexer::position() const noexcept {
   [[assume(_view.data() - _begin >= 0)]];
   return static_cast<EquationSize>(_view.data() - _begin);
 }
 
-void Lexer::advance(EquationSize n) noexcept { _view.remove_prefix(n); }
+inline void Lexer::advance(EquationSize n) noexcept { _view.remove_prefix(n); }
 
-EquationSize Lexer::return_unparsable(Token &token) const noexcept {
+inline EquationSize Lexer::return_unparsable(Token &token) const noexcept {
 #ifdef CALC_USE_ERROR_TOKEN
   constexpr std::string_view err = "unparsable";
   token.error_text = err.data();
@@ -31,13 +31,14 @@ EquationSize Lexer::return_unparsable(Token &token) const noexcept {
   return 0;
 }
 
-[[nodiscard]] EquationSize Lexer::read_operator(Token &token) const noexcept {
+[[nodiscard]] inline EquationSize
+Lexer::read_operator(Token &token) const noexcept {
   [[assume((_view.size() >= 1))]];
   token.type = static_cast<Token::Type>(_view.front());
   return 1;
 }
 
-[[nodiscard]] EquationSize Lexer::read_separator() const noexcept {
+[[nodiscard]] inline EquationSize Lexer::read_separator() const noexcept {
   [[assume((_view.size() >= 1))]];
 
   EquationSize n = 1;
@@ -49,7 +50,8 @@ EquationSize Lexer::return_unparsable(Token &token) const noexcept {
   return n;
 }
 
-[[nodiscard]] EquationSize Lexer::read_number(Token &token) const noexcept {
+[[nodiscard]] inline EquationSize
+Lexer::read_number(Token &token) const noexcept {
   [[assume((_view.size() >= 1))]];
 
   const auto begin = _view.data();
@@ -83,7 +85,8 @@ EquationSize Lexer::return_unparsable(Token &token) const noexcept {
   }
 }
 
-[[nodiscard]] EquationSize Lexer::read_ident(Token &token) const noexcept {
+[[nodiscard]] inline EquationSize
+Lexer::read_ident(Token &token) const noexcept {
   [[assume((_view.size() >= 1))]];
 
   EquationSize n = 1;
@@ -113,17 +116,21 @@ EquationSize Lexer::return_unparsable(Token &token) const noexcept {
   }
 }
 
-void Lexer::return_result(Token &token) const noexcept {
+inline void Lexer::return_result(Token &token) const noexcept {
   token.type = Token::Type::RESULT;
 }
 
-/**
- * Lex one token without performing any implicit-multiplication processing.
- *
- * This function deliberately contains the original lexical rules. Keeping
- * it separate makes the implicit-multiplication layer small and predictable.
- */
-void Lexer::next_raw(Token &token) noexcept {
+void Lexer::next(Token &token) noexcept {
+#ifdef CALC_ALLOW_IMPLICIT_MULTIPLICATION
+  if (_pending.type != Token::Type::RESULT) [[unlikely]] {
+    token = _pending;
+    _pending.type = Token::Type::RESULT;
+    _previous = token.type;
+    return;
+  }
+  bool separator = false;
+#endif
+
   while (!_view.empty()) [[likely]] {
     const auto &cur = _view.front();
 
@@ -132,124 +139,43 @@ void Lexer::next_raw(Token &token) noexcept {
 
     if (cur == '(' || cur == ')' || cur == '*' || cur == '+' || cur == ',' ||
         cur == '-' || cur == '/' || cur == '^') {
-
       advance(read_operator(token));
       return;
-
     } else if (cur >= '0' && cur <= '9') {
-
       advance(read_number(token));
       return;
-
     } else if ((cur >= 'A' && cur <= 'Z') || (cur >= 'a' && cur <= 'z')) {
-
       advance(read_ident(token));
       return;
-
     } else if (cur == ' ') {
-
       advance(read_separator());
-#ifdef CALC_USE_SEPARATORS
-      return;
-#else
-      continue;
+#ifdef CALC_ALLOW_IMPLICIT_MULTIPLICATION
+      separator = true;
 #endif
-
+      continue;
     } else [[unlikely]] {
-
       return_unparsable(token);
       return;
     }
+#ifdef CALC_ALLOW_IMPLICIT_MULTIPLICATION
+    if (!separator &&
+        // Check previous
+        (_previous == Token::Type::NUM || _previous == Token::Type::FUNCT ||
+         _previous == Token::Type::RPAREN) &&
+        // Check current
+        (token.type == Token::Type::NUM || token.type == Token::Type::FUNCT ||
+         token.type == Token::Type::LPAREN) &&
+        // Check that isn' a function call
+        !(_previous == Token::Type::FUNCT && token.type == Token::Type::LPAREN))
+        [[unlikely]] {
+
+      _pending = token;
+      token.type = Token::Type::MUL;
+    }
+    _previous = token.type;
+#endif
+    return;
   }
 
   [[likely]] return_result(token);
-}
-
-void Lexer::next(Token &token) noexcept {
-#ifndef CALC_USE_SEPARATORS
-
-  /*
-   * Without separator tokens we cannot distinguish:
-   *
-   *     2pi
-   *
-   * from:
-   *
-   *     2 pi
-   *
-   * Therefore implicit multiplication must not be generated in this mode.
-   */
-  next_raw(token);
-  return;
-
-#else
-
-  /*
-   * Return a token which was lexed during the previous call.
-   */
-  if (_has_pending) [[unlikely]] {
-    token = _pending;
-    _has_pending = false;
-
-    _previous = token.type;
-    _has_previous = true;
-    return;
-  }
-
-  Token current [[indeterminate]];
-  next_raw(current);
-
-  /*
-   * The first token can never require implicit multiplication.
-   */
-  if (!_has_previous) [[likely]] {
-    token = current;
-    _previous = token.type;
-    _has_previous = true;
-    return;
-  }
-
-  /*
-   * Whitespace is itself a token. Since _previous is SEPARATOR after a
-   * whitespace run, implicit multiplication is automatically suppressed.
-   */
-  if (_previous == Token::Type::SEPARATOR) [[unlikely]] {
-    token = current;
-    _previous = token.type;
-    return;
-  }
-
-  /*
-   * Insert an explicit multiplication operator between adjacent primary
-   * expressions:
-   *
-   *     2pi       -> 2 * pi
-   *     2(3)      -> 2 * (3)
-   *     (2)(3)    -> (2) * (3)
-   *
-   * A function followed by '(' is deliberately excluded:
-   *
-   *     sqrt(4)   -> sqrt(4)
-   */
-  if (can_end_primary(_previous) && can_start_primary(current.type) &&
-      !is_function_call(_previous, current.type)) [[unlikely]] {
-
-    _pending = current;
-    _has_pending = true;
-
-    token.type = Token::Type::MUL;
-
-    /*
-     * MUL becomes the previous token so that the pending operand does not
-     * cause another implicit MUL on the next call.
-     */
-    _previous = Token::Type::MUL;
-
-    return;
-  }
-
-  token = current;
-  _previous = token.type;
-
-#endif
 }

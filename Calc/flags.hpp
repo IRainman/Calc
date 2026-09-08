@@ -7,7 +7,7 @@
 
 //---------------------------------------------------------------------------
 // TODO
-// #define CALC_USE_SEPARATORS // WIP
+#define CALC_ALLOW_IMPLICIT_MULTIPLICATION // WIP
 // #define CALC_USE_ERROR_TOKEN // WIP
 //---------------------------------------------------------------------------
 #ifdef _DEBUG
