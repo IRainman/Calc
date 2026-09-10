@@ -137,12 +137,12 @@ __pragma(warning(pop));
  */
 using EquationSize = size_t;
 using ParamCount = char;
+using Integer = std::int32_t;
+using UInteger = std::uint32_t;
 
 #if _DEBUG && __STDCPP_FLOAT128_T__ == 1
 using Value = std::float128_t;
 #warning "WIP: Calc is using 64-bit double implementation in many places."
-using Integer = std::int128_t;
-using UInteger = std::uint128_t;
 
 #define CALC_USE_128_BIT_FLOAT 1
 constexpr auto huge_value_precision = 1e33;
@@ -153,8 +153,6 @@ using Value = std::float64_t;
 #else
 using Value = double;
 #endif
-using Integer = std::int64_t;
-using UInteger = std::uint64_t;
 
 #define CALC_USE_128_BIT_FLOAT 0
 constexpr auto huge_value_precision = 1e15;

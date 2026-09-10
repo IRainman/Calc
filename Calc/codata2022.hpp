@@ -5,8 +5,9 @@
  * Copyright 2025-present Elle Solomina, a.rainman on gmail point com
  */
 
-// CODATA 2022 – Fundamental Physical Constants --- Complete Listing
-// From: https://physics.nist.gov/constants NIST SP 961 (May 2024)
+/** CODATA 2022 – Fundamental Physical Constants-- - Complete Listing
+ * From: https://physics.nist.gov/constants NIST SP 961 (May 2024)
+ * */
 
 // -------------------------------------------------------------
 // PHYSICAL CONSTANTS (SI)
@@ -240,19 +241,22 @@ constexpr Value ly = 9.4607304725808e15; // m
 constexpr Value pc = 3.08567758149137e16; // m
 
 // Solar mass
-constexpr Value m_sun = 1.98847e30; // kg
+constexpr Value M_sun = 1.98847e30; // kg
 
 // Earth mass
-constexpr Value m_earth = 5.9722e24; // kg
+constexpr Value M_earth = 5.9722e24; // kg
 
 // Jupiter mass
-constexpr Value m_jupiter = 1.89813e27; // kg
+constexpr Value M_jupiter = 1.89813e27; // kg
 
 // Sun radius
-constexpr Value r_sun = 6.96342e8; // m
+constexpr Value R_sun = 6.96342e8; // m
 
 // Earth radius
-constexpr Value r_earth = 6.3781e6; // m
+constexpr Value R_earth = 6.3781e6; // m
+
+// Jupiter radius
+constexpr Value R_jupiter = 69911000; // m
 
 // Gravitational constant
 // https://physics.nist.gov/cgi-bin/cuu/Value?bg
@@ -328,7 +332,7 @@ constexpr Value u = atomic_mass_unit; // kg
 
 // Electron mass
 constexpr Value me = electron_mass;                // kg
-constexpr Value me_u = 5.485799090441e-4;          // atomic mass unit
+constexpr Value me_u = 5.485799090441e-4;          // u
 constexpr Value me_MeV = electron_mass_energy_MeV; // MeV
 
 // Proton mass

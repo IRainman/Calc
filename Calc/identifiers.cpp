@@ -67,10 +67,6 @@ template <const Value value> [[nodiscard]] consteval Fn constant() noexcept {
 }
 
 [[nodiscard]] static constexpr Integer lcm(Integer a, Integer b) noexcept {
-  if (a == 0 || b == 0) {
-    return 0;
-  }
-
   auto const g = gcd(a, b);
   return (a / g) * b;
 }
@@ -187,7 +183,67 @@ template <const Value value> [[nodiscard]] consteval Fn constant() noexcept {
 
 [[nodiscard]] static /*constexpr*/ Value SAR(const Value n) noexcept {
   if (is_integer(n)) {
-    return static_cast<Value>(static_cast<std::int64_t>(std::llrint(n)) >> 1);
+    return static_cast<Value>(static_cast<UInteger>(std::llrint(n)) >> 1);
+  } else {
+    return std::numeric_limits<Value>::quiet_NaN();
+  }
+}
+
+[[nodiscard]] static constexpr Value rotl(const Value n,
+                                          const Value r) noexcept {
+  if (is_unsigned_integer(n) && is_integer(r)) {
+    return static_cast<Value>(
+        std::rotl(static_cast<UInteger>(n), static_cast<int>(r)));
+  } else {
+    return std::numeric_limits<Value>::quiet_NaN();
+  }
+}
+
+[[nodiscard]] static constexpr Value rotr(const Value n,
+                                          const Value r) noexcept {
+  if (is_unsigned_integer(n) && is_integer(r)) {
+    return static_cast<Value>(
+        std::rotr(static_cast<UInteger>(n), static_cast<int>(r)));
+  } else {
+    return std::numeric_limits<Value>::quiet_NaN();
+  }
+}
+
+[[nodiscard]] static constexpr Value countl_zero(const Value n) noexcept {
+  if (is_integer(n)) {
+    return static_cast<Value>(std::countl_zero(static_cast<UInteger>(n)));
+  } else {
+    return std::numeric_limits<Value>::quiet_NaN();
+  }
+}
+
+[[nodiscard]] static constexpr Value countl_one(const Value n) noexcept {
+  if (is_integer(n)) {
+    return static_cast<Value>(std::countl_one(static_cast<UInteger>(n)));
+  } else {
+    return std::numeric_limits<Value>::quiet_NaN();
+  }
+}
+
+[[nodiscard]] static constexpr Value countr_zero(const Value n) noexcept {
+  if (is_integer(n)) {
+    return static_cast<Value>(std::countr_zero(static_cast<UInteger>(n)));
+  } else {
+    return std::numeric_limits<Value>::quiet_NaN();
+  }
+}
+
+[[nodiscard]] static constexpr Value countr_one(const Value n) noexcept {
+  if (is_integer(n)) {
+    return static_cast<Value>(std::countr_one(static_cast<UInteger>(n)));
+  } else {
+    return std::numeric_limits<Value>::quiet_NaN();
+  }
+}
+
+[[nodiscard]] static constexpr Value popcount(const Value n) noexcept {
+  if (is_integer(n)) {
+    return static_cast<Value>(std::popcount(static_cast<UInteger>(n)));
   } else {
     return std::numeric_limits<Value>::quiet_NaN();
   }
@@ -230,8 +286,8 @@ template <const Value value> [[nodiscard]] consteval Fn constant() noexcept {
   return std::numeric_limits<Value>::quiet_NaN();
 }
 
-[[nodiscard]] static /*constexpr*/ Value combination(const Value n,
-                                                     const Value r) noexcept {
+[[nodiscard]] static constexpr Value combination(const Value n,
+                                                 const Value r) noexcept {
   if (is_integer(n) && is_integer(r)) {
     auto num = std::lrint(n);
     auto den = std::lrint(r);
@@ -276,9 +332,8 @@ accumulate(std::span<Value> params) noexcept {
   };
 }
 
-[[nodiscard]] static constexpr Value
-parabola(std::span<Value> params) noexcept {
-  return params[0] * params[0] + 1.0;
+[[nodiscard]] static constexpr Value parabola(Value value) noexcept {
+  return value * value + 1.0;
 }
 
 // for better precision
@@ -289,7 +344,7 @@ parabola(std::span<Value> params) noexcept {
   return std::pow(x, y);
 }
 
-[[nodiscard]] static Value qdrt(Value x) noexcept { return std::pow(x, 0.25); }
+[[nodiscard]] static Value qdrt(Value x) noexcept { return pow(x, 0.25); }
 
 // for better precision
 [[nodiscard]] static Value normalize_sine(Value value) noexcept {
@@ -355,46 +410,78 @@ parabola(std::span<Value> params) noexcept {
 }
 
 [[nodiscard]] static /*constexpr*/ Value
-assoc_legendre(std::span<Value> params) noexcept {
-  return std::assoc_legendre(static_cast<unsigned int>(params[0]),
-                             static_cast<unsigned int>(params[1]), params[2]);
+assoc_legendre(Value degree, Value order, Value value) noexcept {
+  if (is_unsigned_integer(degree) && is_unsigned_integer(order)) {
+    return std::assoc_legendre(static_cast<unsigned int>(degree),
+                               static_cast<unsigned int>(order), value);
+  } else {
+    return std::numeric_limits<Value>::quiet_NaN();
+  }
 }
 
 [[nodiscard]] /*constexpr*/ static Value
-assoc_laguerre(std::span<Value> params) noexcept {
-  return std::assoc_laguerre(static_cast<unsigned int>(params[0]),
-                             static_cast<unsigned int>(params[1]), params[2]);
+assoc_laguerre(Value degree, Value order, Value value) noexcept {
+  if (is_unsigned_integer(degree) && is_unsigned_integer(order)) {
+    return std::assoc_laguerre(static_cast<unsigned int>(degree),
+                               static_cast<unsigned int>(order), value);
+  } else {
+    return std::numeric_limits<Value>::quiet_NaN();
+  }
 }
 
-[[nodiscard]] /*constexpr*/ static Value
-hermite(std::span<Value> params) noexcept {
-  return std::hermite(static_cast<unsigned int>(params[0]), params[1]);
+[[nodiscard]] /*constexpr*/ static Value hermite(Value degree,
+                                                 Value value) noexcept {
+  if (is_unsigned_integer(degree)) {
+    return std::hermite(static_cast<unsigned int>(degree), value);
+  } else {
+    return std::numeric_limits<Value>::quiet_NaN();
+  }
 }
 
-[[nodiscard]] /*constexpr*/ static Value
-legendre(std::span<Value> params) noexcept {
-  return std::legendre(static_cast<unsigned int>(params[0]), params[1]);
+[[nodiscard]] /*constexpr*/ static Value legendre(Value degree,
+                                                  Value value) noexcept {
+  if (is_unsigned_integer(degree)) {
+    return std::legendre(static_cast<unsigned int>(degree), value);
+  } else {
+    return std::numeric_limits<Value>::quiet_NaN();
+  }
 }
 
-[[nodiscard]] /*constexpr*/ static Value
-laguerre(std::span<Value> params) noexcept {
-  return std::laguerre(static_cast<unsigned int>(params[0]), params[1]);
+[[nodiscard]] /*constexpr*/ static Value laguerre(Value degree,
+                                                  Value value) noexcept {
+  if (is_unsigned_integer(degree)) {
+    return std::laguerre(static_cast<unsigned int>(degree), value);
+  } else {
+    return std::numeric_limits<Value>::quiet_NaN();
+  }
 }
 
-[[nodiscard]] /*constexpr*/ static Value
-sph_bessel(std::span<Value> params) noexcept {
-  return std::sph_bessel(static_cast<unsigned int>(params[0]), params[1]);
+[[nodiscard]] /*constexpr*/ static Value sph_bessel(Value degree,
+                                                    Value value) noexcept {
+  if (is_unsigned_integer(degree)) {
+    return std::sph_bessel(static_cast<unsigned int>(degree), value);
+  } else {
+    return std::numeric_limits<Value>::quiet_NaN();
+  }
 }
 
-[[nodiscard]] /*constexpr*/ static Value
-sph_legendre(std::span<Value> params) noexcept {
-  return std::sph_legendre(static_cast<unsigned int>(params[0]),
-                           static_cast<unsigned int>(params[1]), params[2]);
+[[nodiscard]] /*constexpr*/ static Value sph_legendre(Value arg1, Value arg2,
+                                                      Value theta) noexcept {
+  if (is_unsigned_integer(arg1) && is_unsigned_integer(arg2)) {
+    return std::sph_legendre(static_cast<unsigned int>(arg1),
+                             static_cast<unsigned int>(arg2), theta);
+  } else {
+    return std::numeric_limits<Value>::quiet_NaN();
+  }
 }
 
-[[nodiscard]] /*constexpr*/ static Value
-sph_neumann(std::span<Value> params) noexcept {
-  return std::sph_neumann(static_cast<unsigned int>(params[0]), params[1]);
+[[nodiscard]] /*constexpr*/ static Value sph_neumann(Value degree,
+                                                     Value value) noexcept {
+  if (is_unsigned_integer(degree)) {
+    return std::sph_neumann(static_cast<unsigned int>(degree), value);
+  } else {
+    return std::numeric_limits<Value>::quiet_NaN();
+  }
 }
 
 [[nodiscard]] /*constexpr*/ static Value
@@ -637,7 +724,6 @@ static const map ids = {
     {"alpha_magnetic_moment", constant<alpha_magnetic_moment>()},
     {"alpha_compton_wavelength", constant<alpha_compton_wavelength>()},
 
-    {"m_e", constant<m_e>()},
     {"a0", constant<a0>()},
     {"t_a", constant<t_a>()},
     {"Eh", constant<Eh>()},
@@ -660,11 +746,12 @@ static const map ids = {
     {"au", constant<au>()},
     {"ly", constant<ly>()},
     {"pc", constant<pc>()},
-    {"m_sun", constant<m_sun>()},
-    {"m_earth", constant<m_earth>()},
-    {"m_jupiter", constant<m_jupiter>()},
-    {"r_sun", constant<r_sun>()},
-    {"r_earth", constant<r_earth>()},
+    {"M_sun", constant<M_sun>()},
+    {"M_earth", constant<M_earth>()},
+    {"M_jupiter", constant<M_jupiter>()},
+    {"R_sun", constant<R_sun>()},
+    {"R_earth", constant<R_earth>()},
+    {"R_jupiter", constant<R_jupiter>()},
     {"G", constant<G>()},
     {"g0", constant<g0>()},
 
@@ -746,13 +833,14 @@ static const map ids = {
     {"combination", function_pointer<2, combination>()},
     {"C", function_pointer<2, combination>()},
 #if 0
-    {"accumulate",
-     {accumulate, {true, 2, std::numeric_limits<ParamCount>::max()}}},
-    {"reduce", {reduce, {true, 2, std::numeric_limits<ParamCount>::max()}}},
+// clang-format off
+    {"accumulate", {accumulate, {true, 2, std::numeric_limits<ParamCount>::max()}}},
+    {"reduce",     {reduce,     {true, 2, std::numeric_limits<ParamCount>::max()}}},
+// clang-format on
 #endif
     {"atan2", function_pointer<2, std::atan2>()},
     {"hypot", {hypot, {true, 2, 3}}},
-    {"parabola", {parabola, {true, 1, 1}}},
+    {"parabola", function_pointer<1, parabola>()},
     {"distance", {distance, {true, 2, std::numeric_limits<ParamCount>::max()}}},
 
     {"sh", function_pointer<1, std::sinh>()},
@@ -817,10 +905,12 @@ static const map ids = {
 
     {"mod", function_pointer<2, std::fmod>()},
 
-#if 0 // def CALC_TESTS_ENABLED
-    {"clamp", function_pointer<3, std::clamp>()},
+#ifdef CALC_TESTS_ENABLED
+#if 0
     {"midpoint", function_pointer<2, std::midpoint>()},
-    {"lerp", function_pointer<3, std::std::lerp>()},
+    {"clamp", function_pointer<3, std::clamp>()},
+#endif
+    {"lerp", function_pointer<3, std::lerp>()},
 #endif
 
     {"not", function_pointer<1, NOT>()},
@@ -830,25 +920,23 @@ static const map ids = {
     {"shl", function_pointer<1, SHL>()},
     {"shr", function_pointer<1, SHR>()},
     {"sar", function_pointer<1, SAR>()},
-#if 0 // def CALC_TESTS_ENABLED
-    {"rotl", function_pointer<2, std::rotl>()},
-    {"rotr", function_pointer<2, std::rotr>()},
-    {"countl_zero", function_pointer<1, std::countl_zero>()},
-    {"countl_one", function_pointer<1, std::countl_one>()},
-    {"countr_zero", function_pointer<1, std::countr_zero>()},
-    {"countr_one", function_pointer<1, std::countr_one>()},
-    {"popcount", function_pointer<1, std::popcount>()},
-#endif
+    {"rotl", function_pointer<2, rotl>()},
+    {"rotr", function_pointer<2, rotr>()},
+    {"countl_zero", function_pointer<1, countl_zero>()},
+    {"countl_one", function_pointer<1, countl_one>()},
+    {"countr_zero", function_pointer<1, countr_zero>()},
+    {"countr_one", function_pointer<1, countr_one>()},
+    {"popcount", function_pointer<1, popcount>()},
     //---------------------------------------------------------------------------
     // C++17 https://en.cppreference.com/w/cpp/numeric/special_math
 
     {"beta", function_pointer<2, std::beta>()},
 
-    {"assoc_legendre", {assoc_legendre, {true, 3, 3}}},
-    {"assoc_laguerre", {assoc_laguerre, {true, 3, 3}}},
+    {"assoc_legendre", function_pointer<3, assoc_legendre>()},
+    {"assoc_laguerre", function_pointer<3, assoc_laguerre>()},
 
-    {"legendre", {legendre, {true, 2, 2}}},
-    {"laguerre", {laguerre, {true, 2, 2}}},
+    {"legendre", function_pointer<2, legendre>()},
+    {"laguerre", function_pointer<2, laguerre>()},
 
     {"comp_ellint_1", function_pointer<1, std::comp_ellint_1>()},
     {"comp_ellint_2", function_pointer<1, std::comp_ellint_2>()},
@@ -860,9 +948,9 @@ static const map ids = {
 
     {"cyl_neumann", function_pointer<2, std::cyl_neumann>()},
 
-    {"sph_bessel", {sph_bessel, {true, 2, 2}}},
-    {"sph_legendre", {sph_legendre, {true, 3, 3}}},
-    {"sph_neumann", {sph_neumann, {true, 2, 2}}},
+    {"sph_bessel", function_pointer<2, sph_bessel>()},
+    {"sph_legendre", function_pointer<3, sph_legendre>()},
+    {"sph_neumann", function_pointer<2, sph_neumann>()},
 
     {"ellint_1", function_pointer<2, std::ellint_1>()},
     {"ellint_2", function_pointer<2, std::ellint_2>()},
@@ -870,7 +958,7 @@ static const map ids = {
 
     {"expint", function_pointer<1, std::expint>()},
 
-    {"hermite", {hermite, {true, 2, 2}}},
+    {"hermite", function_pointer<2, hermite>()},
 
     {"riemann_zeta", function_pointer<1, std::riemann_zeta>()},
 
