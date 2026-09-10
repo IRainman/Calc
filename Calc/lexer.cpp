@@ -123,7 +123,7 @@ inline void Lexer::return_result(Token &current) const noexcept {
 }
 
 [[nodiscard]] inline constexpr static bool
-operand_for_implicit_multiplication(const Token::Type previous) noexcept {
+implicit_mult_first(const Token::Type previous) noexcept {
   // clang-format off
   return previous == Token::Type::NUM ||
          previous == Token::Type::RPAREN;
@@ -131,7 +131,7 @@ operand_for_implicit_multiplication(const Token::Type previous) noexcept {
 }
 
 [[nodiscard]] inline constexpr static bool
-operand_for_implicit_multiplication(const Token &current) noexcept {
+implicit_mult_second(const Token &current) noexcept {
   // clang-format off
   return current.type == Token::Type::NUM ||
          current.type == Token::Type::FUNCT ||
@@ -139,23 +139,15 @@ operand_for_implicit_multiplication(const Token &current) noexcept {
   // clang-format on
 }
 
-[[nodiscard]] inline constexpr static bool
-function_call(const Token::Type previous, const Token &current) noexcept {
-  // clang-format off
-  return previous == Token::Type::FUNCT &&
-     current.type == Token::Type::LPAREN;
-  // clang-format on
-}
-
 void Lexer::next(Token &current) noexcept {
 #ifdef CALC_ALLOW_IMPLICIT_MULTIPLICATION
-  if (_pending.type != Token::Type::ERROR) [[unlikely]] {
-    current = _pending;
-    _pending.type = Token::Type::ERROR;
+  if (_delayed.type != Token::Type::ERROR) [[unlikely]] {
+    current = _delayed;
+    _delayed.type = Token::Type::ERROR;
     _previous = current.type;
     return;
   }
-  bool separator = false;
+  bool is_separator = false;
 #endif
 
   while (!_view.empty()) [[likely]] {
@@ -177,7 +169,7 @@ void Lexer::next(Token &current) noexcept {
     } else if (cur == ' ') {
       advance(read_separator());
 #ifdef CALC_ALLOW_IMPLICIT_MULTIPLICATION
-      separator = true;
+      is_separator = true;
 #endif
       continue;
     } else [[unlikely]] {
@@ -187,14 +179,9 @@ void Lexer::next(Token &current) noexcept {
     }
   valid_token_return:
 #ifdef CALC_ALLOW_IMPLICIT_MULTIPLICATION
-    // clang-format off
-    if (!separator && 
-        !function_call(_previous, current) &&
-        operand_for_implicit_multiplication(_previous) &&
-        operand_for_implicit_multiplication(current))
-      [[unlikely]] {
-      // clang-format on
-      _pending = current;
+    if (!is_separator && implicit_mult_first(_previous) &&
+        implicit_mult_second(current)) {
+      _delayed = current;
       current.type = Token::Type::MUL;
     }
     _previous = current.type;

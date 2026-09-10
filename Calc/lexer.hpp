@@ -66,7 +66,7 @@ private:
   std::string_view _view;
   const std::string_view::const_pointer _begin;
 #ifdef CALC_ALLOW_IMPLICIT_MULTIPLICATION
-  Token _pending{Token::Type::ERROR};
+  Token _delayed{Token::Type::ERROR};
   Token::Type _previous = Token::Type::ERROR;
 #endif
   friend class Parser;
