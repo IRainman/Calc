@@ -237,8 +237,8 @@ public:
       : _length(static_cast<UINT>(SendMessageA(edit, WM_GETTEXTLENGTH, 0, 0))) {
     assert(_length);
     _handle = reinterpret_cast<HLOCAL>(SendMessageA(edit, EM_GETHANDLE, 0, 0));
-    _data = static_cast<LPCWSTR>(LocalLock(_handle));
-    assert(_handle && _data);
+    _text = static_cast<LPCWSTR>(LocalLock(_handle));
+    assert(_handle && _text);
   }
 
   ~EditView() noexcept { LocalUnlock(_handle); }
@@ -251,7 +251,7 @@ public:
     return _length;
   }
 
-  [[nodiscard]] constexpr auto text() const noexcept { return _data; }
+  [[nodiscard]] constexpr auto text() const noexcept { return _text; }
 
   /**
    * Return ANSI text from the edit control to the ouput paramether.
@@ -259,7 +259,7 @@ public:
   constexpr void ansi(std::string &output) const noexcept {
     assert(_length <= output.capacity());
     output.resize(output.capacity());
-    output.resize(WideCharToMultiByte(CP_ACP, 0, _data, _length, output.data(),
+    output.resize(WideCharToMultiByte(CP_ACP, 0, _text, _length, output.data(),
                                       output.capacity(), NULL, NULL));
   }
 
@@ -272,7 +272,7 @@ public:
   }
 
   [[nodiscard]] constexpr auto data() const noexcept {
-    return reinterpret_cast<const BYTE *>(_data);
+    return reinterpret_cast<const BYTE *>(_text);
   }
 
   [[nodiscard]]
@@ -282,7 +282,7 @@ public:
 
 private:
   [[no_unique_address]] HLOCAL _handle [[indeterminate]];
-  [[no_unique_address]] LPCWSTR _data [[indeterminate]];
+  [[no_unique_address]] LPCWSTR _text [[indeterminate]];
   [[no_unique_address]] const UINT _length;
 };
 
@@ -304,8 +304,8 @@ public:
       _handle = LocalReAlloc(_handle, _max_size, LMEM_MOVEABLE);
       assert(_handle);
     }
-    _data = static_cast<LPWSTR>(LocalLock(_handle));
-    assert(_data);
+    _text = static_cast<LPWSTR>(LocalLock(_handle));
+    assert(_text);
   }
 
   ~Edit() noexcept {
@@ -322,10 +322,10 @@ public:
     return _max_size / sizeof(WCHAR);
   }
 
-  [[nodiscard]] constexpr auto text() const noexcept { return _data; }
+  [[nodiscard]] constexpr auto text() const noexcept { return _text; }
 
   constexpr void set_text_end(LPWSTR end) const noexcept {
-    assert(end >= _data && UINT(end - _data) <= length());
+    assert(end >= _text && UINT(end - _text) <= length());
     *end = L'\0'; // because of C string
   }
 
@@ -334,7 +334,7 @@ public:
    */
   constexpr void set_length(const UINT len) const noexcept {
     assert(len <= length());
-    set_text_end(_data + len);
+    set_text_end(_text + len);
   }
 
   /**
@@ -342,7 +342,7 @@ public:
    */
   void write(const char *text, const int len) noexcept {
     assert(unsigned(len) <= length());
-    set_length(MultiByteToWideChar(CP_ACP, 0, text, len, _data, len));
+    set_length(MultiByteToWideChar(CP_ACP, 0, text, len, _text, len));
   }
 
   /**
@@ -356,7 +356,7 @@ public:
    * Size in bytes of the data in the edit control.
    */
   [[nodiscard]] constexpr auto data() noexcept {
-    return reinterpret_cast<BYTE *>(_data);
+    return reinterpret_cast<BYTE *>(_text);
   }
 
   /**
@@ -369,7 +369,7 @@ public:
 private:
   [[no_unique_address]] const HWND _edit;
   [[no_unique_address]] HLOCAL _handle [[indeterminate]];
-  [[no_unique_address]] LPWSTR _data [[indeterminate]];
+  [[no_unique_address]] LPWSTR _text [[indeterminate]];
   [[no_unique_address]] const UINT _max_size;
 };
 
@@ -820,7 +820,7 @@ using Rect_ptr = Rect *;
 /**
  * Utility: helper for resize Layout
  */
-enum class Anchor : uint8_t {
+enum class Anchor : BYTE {
   None = 0,
   HorizontalStretch = 1 << 0,
   Left = 1 << 1,
@@ -856,28 +856,31 @@ public:
   Layout(const Layout &) = delete;
   Layout(Layout &&) = delete;
 
-  struct Constraint {
-    constexpr void init(const Layout *layout, const HWND handle,
-                        const Rect &client, const Anchor anchor) noexcept {
-      _handle = handle;
+  template <typename UINT elements> struct Constraints {
+    constexpr void init(const Layout *layout, const BYTE index,
+                        const HWND handle, const Rect &client,
+                        const Anchor anchor) noexcept {
+      handles[index] = handle;
 
-      _relative_margins.left = client.left;
-      _relative_margins.right = layout->width() - client.right;
+      relative_margins[index].left = client.left;
+      relative_margins[index].right = layout->width() - client.right;
 
-      _relative_margins.top = client.top;
-      _relative_margins.bottom = layout->height() - client.bottom;
+      relative_margins[index].top = client.top;
+      relative_margins[index].bottom = layout->height() - client.bottom;
 
-      _width = client.width();
-      _height = client.height();
+      widths[index] = client.width();
+      heights[index] = client.height();
 
-      _anchor = anchor;
+      anchors[index] = anchor;
     }
 
-    [[no_unique_address]] HWND _handle [[indeterminate]];
-    [[no_unique_address]] LONG _width [[indeterminate]];
-    [[no_unique_address]] LONG _height [[indeterminate]];
-    [[no_unique_address]] Rect _relative_margins [[indeterminate]];
-    [[no_unique_address]] Anchor _anchor [[indeterminate]];
+    [[no_unique_address]] std::array<HWND, elements> handles [[indeterminate]];
+    [[no_unique_address]] std::array<LONG, elements> widths [[indeterminate]];
+    [[no_unique_address]] std::array<LONG, elements> heights [[indeterminate]];
+    [[no_unique_address]] std::array<Rect, elements> relative_margins
+        [[indeterminate]];
+    [[no_unique_address]] std::array<Anchor, elements> anchors
+        [[indeterminate]];
   };
 
   constexpr void init_window(const HWND window) noexcept {
@@ -902,10 +905,10 @@ public:
 
     Point client_point(window.x(), window.y());
     ScreenToClient(parent, &client_point);
-    const Rect client(client_point.x, client_point.y, window.width(),
-                      window.height());
+    const Rect client_area(client_point.x, client_point.y, window.width(),
+                           window.height());
 
-    _constraints[index].init(this, handle, client, anchor);
+    _constraints.init(this, index, handle, client_area, anchor);
   }
 
   constexpr void resize(const LONG width, const LONG height) noexcept {
@@ -915,56 +918,67 @@ public:
     _width = width;
     _height = height;
 
-    HDWP hdwp = BeginDeferWindowPos(static_cast<int>(_constraints.size()));
-    for (const auto &c : _constraints) {
+    // clang-format off
+    auto hdwp = BeginDeferWindowPos(static_cast<int>(_constraints.handles.size()));
+    for (BYTE i = 0; i != _constraints.handles.size(); ++i) {
       Rect rect [[indeterminate]];
 
-      if (has_flag(c._anchor, Anchor::Left)) {
-        rect.right = c._relative_margins.left + c._width;
-        rect.left = c._relative_margins.left;
-      } else if (has_flag(c._anchor, Anchor::Right)) {
-        rect.right = width - c._relative_margins.right;
-        rect.left = rect.right - c._width;
-      } else if (has_flag(c._anchor, Anchor::HorizontalStretch)) {
-        rect.right = width - c._relative_margins.right;
-        rect.left = c._relative_margins.left;
+      if (has_flag(_constraints.anchors[i], Anchor::Left)) {
+        rect.right = _constraints.relative_margins[i].left + _constraints.widths[i];
+
+        rect.left = _constraints.relative_margins[i].left;
+
+      } else if (has_flag(_constraints.anchors[i], Anchor::Right)) {
+        rect.right = width - _constraints.relative_margins[i].right;
+
+        rect.left = rect.right - _constraints.widths[i];
+
+      } else if (has_flag(_constraints.anchors[i], Anchor::HorizontalStretch)) {
+        rect.right = width - _constraints.relative_margins[i].right;
+
+        rect.left = _constraints.relative_margins[i].left;
+
       }
 
-      if (has_flag(c._anchor, Anchor::Top)) {
-        rect.bottom = c._relative_margins.top + c._height;
-        rect.top = c._relative_margins.top;
-      } else if (has_flag(c._anchor, Anchor::Bottom)) {
-        rect.bottom = height - c._relative_margins.bottom;
-        rect.top = rect.bottom - c._height;
-      } else if (has_flag(c._anchor, Anchor::VerticalStretch)) {
-        rect.bottom = height - c._relative_margins.bottom;
-        rect.top = c._relative_margins.top;
+      if (has_flag(_constraints.anchors[i], Anchor::Top)) {
+        rect.bottom = _constraints.relative_margins[i].top + _constraints.heights[i];
+
+        rect.top = _constraints.relative_margins[i].top;
+
+      } else if (has_flag(_constraints.anchors[i], Anchor::Bottom)) {
+        rect.bottom = height - _constraints.relative_margins[i].bottom;
+
+        rect.top = rect.bottom - _constraints.heights[i];
+
+      } else if (has_flag(_constraints.anchors[i], Anchor::VerticalStretch)) {
+        rect.bottom = height - _constraints.relative_margins[i].bottom;
+
+        rect.top = _constraints.relative_margins[i].top;
+
       }
 
-      hdwp = DeferWindowPos(hdwp, c._handle, nullptr, rect.left, rect.top,
-                            rect.width(), rect.height(),
-                            SWP_NOZORDER | SWP_NOACTIVATE);
+      hdwp = DeferWindowPos(hdwp, _constraints.handles[i], nullptr, rect.left, rect.top, rect.width(), rect.height(), SWP_NOZORDER | SWP_NOACTIVATE);
     }
     EndDeferWindowPos(hdwp);
+    // clang-format on
   }
 
-  [[nodiscard]] constexpr auto width() const noexcept { return _width; }
+  // clang-format off
+  [[nodiscard]] constexpr auto width() const noexcept  { return _width; }
 
   [[nodiscard]] constexpr auto height() const noexcept { return _height; }
 
   [[nodiscard]] constexpr auto min_width() const noexcept { return _min_width; }
 
-  [[nodiscard]] constexpr auto min_x() const noexcept { return _min_width; }
+  [[nodiscard]] constexpr auto min_x() const noexcept     { return _min_width; }
 
-  [[nodiscard]] constexpr auto min_height() const noexcept {
-    return _min_height;
-  }
+  [[nodiscard]] constexpr auto min_height() const noexcept { return _min_height; }
 
-  [[nodiscard]] constexpr auto min_y() const noexcept { return _min_height; }
+  [[nodiscard]] constexpr auto min_y() const noexcept      { return _min_height; }
 
-  [[nodiscard]] constexpr auto handle(const BYTE index) const noexcept {
-    return _constraints[index]._handle;
-  }
+  [[nodiscard]] constexpr auto handle(const BYTE index) const noexcept { return _constraints.handles[index]; }
+
+  // clang-format on
 
 private:
   [[no_unique_address]] LONG _width [[indeterminate]];
@@ -972,8 +986,7 @@ private:
 
   [[no_unique_address]] LONG _min_width [[indeterminate]];
   [[no_unique_address]] LONG _min_height [[indeterminate]];
-  [[no_unique_address]] std::array<Constraint, elements> _constraints
-      [[indeterminate]];
+  [[no_unique_address]] Constraints<elements> _constraints [[indeterminate]];
 };
 
 #ifdef CALC_SUPPORT_DARK_MODE_TEST_WIN32_HELPER_REALIZATION
@@ -1047,8 +1060,7 @@ public:
   /**
    * Get a mutable system color by its COLOR_* index.
    */
-  [[nodiscard]]
-  COLORREF &operator[](const INT index) noexcept {
+  [[nodiscard]] COLORREF &operator[](const INT index) noexcept {
     return _values[index];
   }
 
@@ -1061,8 +1073,7 @@ public:
  * system provides GetSysColor() only as a scalar API, so the complete
  * system-color table is collected with one GetSysColor() call per entry.
  */
-[[nodiscard]]
-constexpr static Colors colors() noexcept {
+[[nodiscard]] constexpr static Colors colors() noexcept {
   Colors result [[indeterminate]];
 
   for (const auto i : indexes) {
@@ -1168,7 +1179,7 @@ constexpr static DWMColors dwm_colors(const HWND window) noexcept {
 }
 
 /**
- * Convert a DWM 0xAARRGGBB color to a Win32 COLORREF.
+ * Convert a DWM 0xAARRGGBB color to a COLORREF.
  *
  * DWM uses:
  *
