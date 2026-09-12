@@ -2,6 +2,207 @@
  * Copyright 2023-present Elle Solomina, a.rainman on gmail point com
  */
 
+/* TODO: mapping and converting functionality
+
+//  0xB0  ° DEGREE SIGN
+//  0xB1 ± PLUS-MINUS SIGN
+
+90° → 90 * pi / 180
+| Unicode   | Calc               |
+| --------- | ------------------ |
+| `°`       | `deg`*             |
+| `º`       | `deg`*             |
+
+| alternative | Calc               |
+| ----------- | ------------------ |
+| `rad`       | `rad`              |
+| `radian`    | `rad`              |
+| `radians`   | `rad`              |
+| `deg`       | `deg`              |
+| `degree`    | `deg`              |
+| `degrees`   | `deg`              |
+| `grad`      | `grad_to_radians`* |
+| `gon`       | `grad_to_radians`* |
+| `turn`      | `turn_to_radians`* |
+
+| alternative | Calc     |
+| ----------- | -------- |
+| `arcsin`    | `arcsin` |
+| `asin`      | `arcsin` |
+| `sin⁻¹`     | `arcsin` |
+| `cos⁻¹`     | `arccos` |
+| `acos`      | `arccos` |
+| `tan⁻¹`     | `arctan` |
+| `atan`      | `arctan` |
+
+|  alternative       | Calc    |
+| ------------------ | ------- |
+| `sinh`             | `sh`    |
+| `cosh`             | `ch`    |
+| `tanh`             | `tanh`  |
+| `arsinh`           | `asinh` |
+| `arcsinh`          | `asinh` |
+| `arsinh`           | `asinh` |
+| `arcosh`           | `acosh` |
+| `arctanh`          | `atanh` |
+
+| Unicode / notation | Calc       |
+| ------------------ | ---------- |
+| `eˣ`               | `e^x`      |
+| `exp`              | `exp`      |
+| `e^x`              | `e^x`      |
+| `eˣ`               | `e^x`     |
+| `expm1`            | `expm1`    |
+| `2ˣ`               | `2^x`      |
+
+| Unicode notation | Calc      |   |           |
+| ---------------- | --------- | - | --------- |
+| `                | x         | ` | `abs(x)`* |
+| `‖x‖`            | `abs(x)`* |   |           |
+| `abs(x)`         | `abs(x)`  |   |           |
+
+| Unicode / notation | Calc            |
+| ------------------ | --------------- |
+| `n!`               | `factorial(n)`* |
+| `n‼`               | `factorial(n)`* |
+| `P(n,r)`           | `P(n,r)`        |
+| `C(n,r)`           | `C(n,r)`        |
+| `nPr`              | `P(n,r)`*       |
+| `nCr`              | `C(n,r)`*       |
+| `nP r`             | `P(n,r)`*       |
+| `nC r`             | `C(n, r)`*      |
+
+| Unicode    | Calc       |
+| ---------- | ---------- |
+| `min`      | `min`      |
+| `minimum`  | `min`      |
+| `min(x,y)` | `min(x,y)` |
+| `max`      | `max`      |
+| `maximum`  | `max`      |
+| `max(x,y)` | `max(x,y)` |
+
+| Unicode / notation | Calc        |
+| ------------------ | ----------- |
+| `⌊x⌋`              | `floor(x)`* |
+| `⌈x⌉`              | `ceil(x)`*  |
+| `round(x)`         | `round(x)`  |
+| `trunc(x)`         | `trunc(x)`  |
+
+| Unicode / notation | Calc      |
+| ------------------ | --------- |
+| `erf`              | `erf`     |
+| `erfc`             | `erfc`    |
+| `erf(x)`           | `erf(x)`  |
+| `erfc(x)`          | `erfc(x)` |
+
+| Notation     | Calc               |
+| ------------ | -------------------|
+| `√(x²+y²)`   | `sqrt(x^2+y^2)`    |
+| `‖(x,y)‖`    | `hypot(x,y)`*      |
+| `hypot(x,y)` | `hypot(x,y)`       |
+| `d(p,q)`     | `distance(...)`*   |
+
+| Unicode | Calc        |
+| ------- | ----------- |
+| `c`     | `c`         |
+| `ℯ`     | `e`         |
+| `ℏ`     | `hbar`      |
+| `ħ`     | `hbar`      |
+| `h`     | `h`         |
+| `qₑ`    | `e_charge`* |
+| `ε₀`    | `epsilon0`  |
+| `μ₀`    | `mu0`       |
+| `Z₀`    | `Z0`        |
+| `kB`    | `kB`        |
+| `NA`    | `NA`        |
+| `F`     | `F`         |
+| `R`     | `R`         |
+| `α`     | `alpha`     |
+| `G`     | `G`         |
+| `g₀`    | `g0`        |
+
+| Unicode | Calc     |
+| ------- | -------- |
+| `mₑ`    | `me`    |
+| `mₚ`    | `mp`     |
+| `mₙ`    | `mn`     |
+| `mᵤ`    | `mu`     |
+| `md`    | `md`     |
+| `mα`    | `malpha` |
+| `μB`    | `muB`    |
+| `μN`    | `muN`    |
+| `μₑ`    | `mue`    |
+| `μₚ`    | `mup`    |
+| `μₙ`    | `mun`    |
+| `μd`    | `mud`    |
+| `rₑ`    | `re`     |
+
+| Unicode | Calc  |
+| ------- | ----- |
+| `ℓ_P`   | `l_P` |
+| `l_P`   | `l_P` |
+| `m_P`   | `m_P` |
+| `t_P`   | `t_P` |
+| `q_P`   | `q_P` |
+| `T_P`   | `T_P` |
+| `E_P`   | `E_P` |
+
+| Unicode / notation | Calc  |
+| ------------------ | ----- |
+| `a₀`               | `a0`  |
+| `mₑ`               | `me` |
+| `Eh`               | `Eh`  |
+| `𝜇B`              | `muB` |
+| `𝜇N`              | `muN` |
+
+| Unicode | Calc            |
+| ------- | --------------- |
+| `α`     | `alpha`         |
+| `μ`     | `mu`            |
+| `μ₀`    | `mu0`           |
+| `μB`   | `muB`           |
+| `μN`   | `muN`           |
+| `λₑ`    | `lambda_e`      |
+| `λ̄ₑ`   | `lambda_bar_e`  |
+| `σ`     | `sigma`         |
+| `σₑ`    | `sigmae`        |
+| `ε₀`    | `epsilon0`      |
+| `φ₀`    | `phi0`          |
+| `Γ`     | `gamma`*        |
+| `ζ`     | `riemann_zeta`* |
+
+| Unicode / notation | Calc           |
+| ------------------ | -------------- |
+| `η`                | `?`            |
+| `Hₙ`               | `hermite`*     |
+| `Lₙ`               | `laguerre`*    |
+| `Pₙ`               | `legendre`*    |
+
+
+not implemented yet
+| Unicode | Tempting mapping | Status            |
+| ------- | ---------------- | ----------------- |
+| `∑`     | `sum`            | **not supported** |
+| `Σ`     | `sum`            | **not supported** |
+| `∏`     | `prod`           | **not supported** |
+| `Π`     | `prod`           | **not supported** |
+| `∫`     | `integral`       | **not supported** |
+| `∬`     | `integral`       | **not supported** |
+| `∭`     | `integral`       | **not supported** |
+| `∮`     | `integral`       | **not supported** |
+| `∂`     | `partial`        | **not supported** |
+| `∇`     | `nabla`          | **not supported** |
+| `∆`     | `delta`          | **not supported** |
+| `∀`     | `forall`         | **not supported** |
+| `∃`     | `exists`         | **not supported** |
+| `∈`     | `in`             | **not supported** |
+| `∉`     | `notin`          | **not supported** |
+| `⊂`     | `subset`         | **not supported** |
+| `⊆`     | `subseteq`       | **not supported** |
+| `∩`     | `intersection`   | **not supported** |
+| `∪`     | `union`          | **not supported** |
+*/
+
 #include "pch.hpp"
 
 #include "codata2022.hpp"
@@ -127,8 +328,8 @@ template <const Value value> [[nodiscard]] consteval Fn constant() noexcept {
   return x / (2.0 * std::numbers::pi_v<Value>);
 }
 
-[[nodiscard]] static /*constexpr*/ Value OR(const Value n,
-                                            const Value m) noexcept {
+[[nodiscard]] static /*constexpr*/ Value v_or(const Value n,
+                                              const Value m) noexcept {
   if (is_integer(n) && is_integer(m)) {
     return static_cast<Value>(static_cast<UInteger>(std::llrint(n)) |
                               static_cast<UInteger>(std::llrint(m)));
@@ -137,8 +338,8 @@ template <const Value value> [[nodiscard]] consteval Fn constant() noexcept {
   }
 }
 
-[[nodiscard]] static /*constexpr*/ Value XOR(const Value n,
-                                             const Value m) noexcept {
+[[nodiscard]] static /*constexpr*/ Value v_xor(const Value n,
+                                               const Value m) noexcept {
   if (is_integer(n) && is_integer(m)) {
     return static_cast<Value>(static_cast<UInteger>(std::llrint(n)) ^
                               static_cast<UInteger>(std::llrint(m)));
@@ -147,8 +348,8 @@ template <const Value value> [[nodiscard]] consteval Fn constant() noexcept {
   }
 }
 
-[[nodiscard]] static /*constexpr*/ Value AND(const Value n,
-                                             const Value m) noexcept {
+[[nodiscard]] static /*constexpr*/ Value v_and(const Value n,
+                                               const Value m) noexcept {
   if (is_integer(n) && is_integer(m)) {
     return static_cast<Value>(static_cast<UInteger>(std::llrint(n)) &
                               static_cast<UInteger>(std::llrint(m)));
@@ -157,15 +358,15 @@ template <const Value value> [[nodiscard]] consteval Fn constant() noexcept {
   }
 }
 
-[[nodiscard]] static /*constexpr*/ Value NOT(const Value n) noexcept {
+[[nodiscard]] static /*constexpr*/ Value v_not(const Value n) noexcept {
   if (is_integer(n)) {
-    return static_cast<Value>(~(static_cast<UInteger>(std::llrint(n))));
+    return static_cast<Value>((~static_cast<UInteger>(std::llrint(n))));
   } else {
     return std::numeric_limits<Value>::quiet_NaN();
   }
 }
 
-[[nodiscard]] static /*constexpr*/ Value SHL(const Value n) noexcept {
+[[nodiscard]] static /*constexpr*/ Value shl(const Value n) noexcept {
   if (is_integer(n)) {
     return static_cast<Value>(static_cast<UInteger>(std::llrint(n)) << 1);
   } else {
@@ -173,15 +374,7 @@ template <const Value value> [[nodiscard]] consteval Fn constant() noexcept {
   }
 }
 
-[[nodiscard]] static /*constexpr*/ Value SHR(const Value n) noexcept {
-  if (is_integer(n)) {
-    return static_cast<Value>(static_cast<UInteger>(std::llrint(n)) >> 1);
-  } else {
-    return std::numeric_limits<Value>::quiet_NaN();
-  }
-}
-
-[[nodiscard]] static /*constexpr*/ Value SAR(const Value n) noexcept {
+[[nodiscard]] static /*constexpr*/ Value shr(const Value n) noexcept {
   if (is_integer(n)) {
     return static_cast<Value>(static_cast<UInteger>(std::llrint(n)) >> 1);
   } else {
@@ -604,16 +797,16 @@ static const map ids = {
     /// https://en.wikipedia.org/wiki/Golden_ratio
     {"phi", constant<std::numbers::phi_v<Value>>()},
     /// https://en.wikipedia.org/wiki/Euler%27s_constant
+    {"E", constant<std::numbers::egamma_v<Value>>()},
     {"e_gamma", constant<std::numbers::egamma_v<Value>>()},
 
-    // for unicode parsing
+#ifdef CALC_TESTS_ENABLED
     {"log2e", constant<std::numbers::log2e_v<Value>>()},
     {"log10e", constant<std::numbers::log10e_v<Value>>()},
     {"ln2", constant<std::numbers::ln2_v<Value>>()},
     {"ln10", constant<std::numbers::ln10_v<Value>>()},
     {"sqrt2", constant<std::numbers::sqrt2_v<Value>>()},
     {"sqrt3", constant<std::numbers::sqrt3_v<Value>>()},
-#ifdef CALC_TESTS_ENABLED
     {"inv_pi", constant<std::numbers::inv_pi_v<Value>>()},
     {"inv_sqrtpi", constant<std::numbers::inv_sqrtpi_v<Value>>()},
     {"inv_sqrt3", constant<std::numbers::inv_sqrt3_v<Value>>()},
@@ -747,11 +940,27 @@ static const map ids = {
     {"ly", constant<ly>()},
     {"pc", constant<pc>()},
     {"M_sun", constant<M_sun>()},
+    {"M_mercury", constant<M_mercury>()},
+    {"M_venus", constant<M_venus>()},
     {"M_earth", constant<M_earth>()},
+    {"M_moon", constant<M_moon>()},
+    {"M_mars", constant<M_mars>()},
     {"M_jupiter", constant<M_jupiter>()},
+    {"M_saturn", constant<M_saturn>()},
+    {"M_uranus", constant<M_uranus>()},
+    {"M_neptune", constant<M_neptune>()},
+    {"M_pluto", constant<M_pluto>()},
     {"R_sun", constant<R_sun>()},
+    {"R_mercury", constant<R_mercury>()},
+    {"R_venus", constant<R_venus>()},
     {"R_earth", constant<R_earth>()},
+    {"R_moon", constant<R_moon>()},
+    {"R_mars", constant<R_mars>()},
     {"R_jupiter", constant<R_jupiter>()},
+    {"R_saturn", constant<R_saturn>()},
+    {"R_uranus", constant<R_uranus>()},
+    {"R_neptune", constant<R_neptune>()},
+    {"R_pluto", constant<R_pluto>()},
     {"G", constant<G>()},
     {"g0", constant<g0>()},
 
@@ -913,13 +1122,12 @@ static const map ids = {
     {"lerp", function_pointer<3, std::lerp>()},
 #endif
 
-    {"not", function_pointer<1, NOT>()},
-    {"and", function_pointer<2, AND>()},
-    {"or", function_pointer<2, OR>()},
-    {"xor", function_pointer<2, XOR>()},
-    {"shl", function_pointer<1, SHL>()},
-    {"shr", function_pointer<1, SHR>()},
-    {"sar", function_pointer<1, SAR>()},
+    {"not", function_pointer<1, v_not>()},
+    {"and", function_pointer<2, v_and>()},
+    {"or", function_pointer<2, v_or>()},
+    {"xor", function_pointer<2, v_xor>()},
+    {"shl", function_pointer<1, shl>()},
+    {"shr", function_pointer<1, shr>()},
     {"rotl", function_pointer<2, rotl>()},
     {"rotr", function_pointer<2, rotr>()},
     {"countl_zero", function_pointer<1, countl_zero>()},

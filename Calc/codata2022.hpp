@@ -240,23 +240,49 @@ constexpr Value ly = 9.4607304725808e15; // m
 // Parsec
 constexpr Value pc = 3.08567758149137e16; // m
 
-// Solar mass
+// Solar (Sun)
 constexpr Value M_sun = 1.98847e30; // kg
+constexpr Value R_sun = 6.96342e8;  // m
 
-// Earth mass
+// Mercury
+constexpr Value M_mercury = 3.3011e23; // kg
+constexpr Value R_mercury = 2.4397e6;  // m
+
+// Venus
+constexpr Value M_venus = 4.8675e24; // kg
+constexpr Value R_venus = 6.0518e6;  // m
+
+// Earth (Terra)
 constexpr Value M_earth = 5.9722e24; // kg
+constexpr Value R_earth = 6.3781e6;  // m
 
-// Jupiter mass
+// Moon (Luna) Earth moon
+constexpr Value M_moon = 7.342e22; // kg
+constexpr Value R_moon = 1.7374e6; // m
+
+// Mars
+constexpr Value M_mars = 6.4171e23; // kg
+constexpr Value R_mars = 3.3895e6;  // m
+
+// Jupiter
 constexpr Value M_jupiter = 1.89813e27; // kg
+constexpr Value R_jupiter = 69911000;   // m
 
-// Sun radius
-constexpr Value R_sun = 6.96342e8; // m
+// Saturn
+constexpr Value M_saturn = 5.6834e26; // kg
+constexpr Value R_saturn = 5.8232e7;  // m
 
-// Earth radius
-constexpr Value R_earth = 6.3781e6; // m
+// Uranus
+constexpr Value M_uranus = 8.6810e25; // kg
+constexpr Value R_uranus = 2.5362e7;  // m
 
-// Jupiter radius
-constexpr Value R_jupiter = 69911000; // m
+// Neptune
+constexpr Value M_neptune = 1.0241e26; // kg
+constexpr Value R_neptune = 2.4622e7;  // m
+
+// Pluto (Dwarf Planet)
+constexpr Value M_pluto = 1.303e22; // kg
+constexpr Value R_pluto = 1.1883e6; // m
 
 // Gravitational constant
 // https://physics.nist.gov/cgi-bin/cuu/Value?bg
