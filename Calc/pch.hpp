@@ -137,8 +137,8 @@ __pragma(warning(pop));
  */
 using EquationSize = size_t;
 using ParamCount = char;
-using Integer = std::int32_t;
-using UInteger = std::uint32_t;
+using Integer = std::int64_t;
+using UInteger = std::uint64_t;
 
 #if _DEBUG && __STDCPP_FLOAT128_T__ == 1
 using Value = std::float128_t;
