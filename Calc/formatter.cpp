@@ -53,7 +53,7 @@ char *Formatter::format(Value value, Result &ret) noexcept {
   auto end = ret.data();
 #ifdef CALC_USE_ERROR_TOKEN
   if (token.type == Token::Type::ERROR) {
-    end = fmt::format_to(end, FMT_COMPILE("{}: {} \r\n"), token.error_text,
+    end = fmt::format_to(end, FMT_COMPILE("{}:{}\n"), token.error_text,
                          token.error_text);
   }
 #endif
@@ -72,8 +72,7 @@ char *Formatter::format(Value value, Result &ret) noexcept {
 char *Formatter::create_summary(Summary &ret) noexcept {
   auto end = ret.data();
   for (const auto &error : IssueManager::_errors) {
-    end =
-        fmt::format_to(end, FMT_COMPILE("{}: {} \r\n"), error.pos, error.text);
+    end = fmt::format_to(end, FMT_COMPILE("{}:{}\n"), error.pos, error.text);
   }
   IssueManager::clear();
   return end;
