@@ -70,9 +70,9 @@ struct Token {
   // Type of this token.
   [[no_unique_address]] Type type [[indeterminate]];
 
-  constexpr explicit Token(const Type t) noexcept : type(t) {}
+  constexpr Token(const Type t) noexcept : type(t) {}
 
-  Token() noexcept { /*no init here!*/ };
+  constexpr Token() noexcept { /*no init here!*/ };
 };
 
 #endif
