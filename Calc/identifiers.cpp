@@ -798,7 +798,6 @@ static const map ids = {
     {"phi", constant<std::numbers::phi_v<Value>>()},
     /// https://en.wikipedia.org/wiki/Euler%27s_constant
     {"E", constant<std::numbers::egamma_v<Value>>()},
-    {"e_gamma", constant<std::numbers::egamma_v<Value>>()},
 
 #ifdef CALC_TESTS_ENABLED
     {"log2e", constant<std::numbers::log2e_v<Value>>()},
