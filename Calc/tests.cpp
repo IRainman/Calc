@@ -36,11 +36,11 @@
 constexpr static auto binary_and_hex_parsing(char *ret) {
   {
     constexpr std::string_view data = "10101011110011011110111101101001";
-    ret = fmt::format_to(ret, FMT_COMPILE("bin {} -> {}\r\n"), data, bin(data));
+    ret = fmt::format_to(ret, FMT_COMPILE("bin {} -> {}\n"), data, bin(data));
   }
   {
     constexpr std::string_view data = "ABCDEF69";
-    ret = fmt::format_to(ret, FMT_COMPILE("hex {} -> {}\r\n"), data, hex(data));
+    ret = fmt::format_to(ret, FMT_COMPILE("hex {} -> {}\n"), data, hex(data));
   }
   return ret;
 }
@@ -143,17 +143,17 @@ std::string calc_tests() {
 #endif
 
       // clang-format off
-      output_end = fmt::format_to(output_end, FMT_COMPILE("Test {}: {}\r\n"
-                                                          "is error = {}\r\n"
-                                                          "is nan = {}\r\n"
-                                                          "is equal = {}\r\n"
-                                                          "is less than epsilon = {}\r\n"
-                                                          "is normal = {}\r\n"
-                                                          "is identical output = {}\r\n"
-                                                          "return = {}\r\n"
-                                                          "expect = {}\r\n"
-                                                          "output = {}\r\n"
-                                                          "{}\r\n"),
+      output_end = fmt::format_to(output_end, FMT_COMPILE("Test {}: {}\n"
+                                                          "is error = {}\n"
+                                                          "is nan = {}\n"
+                                                          "is equal = {}\n"
+                                                          "is less than epsilon = {}\n"
+                                                          "is normal = {}\n"
+                                                          "is identical output = {}\n"
+                                                          "return = {}\n"
+                                                          "expect = {}\n"
+                                                          "output = {}\n"
+                                                          "{}\n"),
 
                                                  passed ? "OK" : "FAILED", t.first,
                                                           is_error,
@@ -195,8 +195,8 @@ std::string calc_tests() {
 #ifdef CALC_TESTS_DEV_ENABLED
   output_end =
       fmt::format_to(output_end,
-                     FMT_COMPILE("Tests:\r\n passed: {},\r\n failed: {}\r\n"
-                                 " fegetround() == {}\r\n"
+                     FMT_COMPILE("Tests:\n passed: {},\n failed: {}\n"
+                                 " fegetround() == {}\n"
                                  " time is: {}ns per case."),
                      tests.size() - static_cast<size_t>(failed), failed,
                      round_name(std::fegetround()),
