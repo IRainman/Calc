@@ -190,16 +190,15 @@ std::string calc_tests() {
 
 #ifdef CALC_TESTS_DEV_ENABLED
   output_end = binary_and_hex_parsing(output_end);
-#endif
 
-#ifdef CALC_TESTS_DEV_ENABLED
   output_end =
       fmt::format_to(output_end,
-                     FMT_COMPILE("Tests:\n passed: {},\n failed: {}\n"
+                     FMT_COMPILE("Tests:\n"
                                  " fegetround() == {}\n"
+                                 " passed: {},\n failed: {}\n"
                                  " time is: {}ns per case."),
-                     tests.size() - static_cast<size_t>(failed), failed,
                      round_name(std::fegetround()),
+                     tests.size() - static_cast<size_t>(failed), failed,
                      std::chrono::duration_cast<std::chrono::nanoseconds>(
                          (end - start) / tests.size())
                          .count());
