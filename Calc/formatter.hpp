@@ -26,7 +26,7 @@ public:
   /**
    * Create report from IssueManager. Return the end of formated text.
    */
-  static char *create_summary(Summary &ret) noexcept;
+  static char *create_summary(Summary &ret, uint32_t pos = 0) noexcept;
 #endif
 };
 #endif

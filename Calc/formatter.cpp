@@ -5,11 +5,8 @@
 #include "pch.hpp"
 
 #include "formatter.hpp"
-#ifdef CALC_USE_ERROR_TOKEN
-#include "token.hpp"
-#else
 #include "issue_manager.hpp"
-#endif
+#include "token.hpp"
 
 #ifdef CALC_SUPPORT_FRACTIONAL_OUTPUT
 #include "identifiers.hpp"
@@ -52,10 +49,11 @@ constexpr static std::pair<Integer, Integer> decimalToFraction(Value number) {
 char *Formatter::format(Value value, Result &ret) noexcept {
   auto end = ret.data();
 #ifdef CALC_USE_ERROR_TOKEN
-  if (value.type == Token::Type::ERROR) {
+  if (token.type == Token::Type::ERROR) {
     end = fmt::format_to(end, FMT_COMPILE("{}: {}\n"), token.error_text,
                          token.error_text);
-  } else
+  } else {
+    auto &value = token.value;
 #endif
     // https://www.exploringbinary.com/decimal-precision-of-binary-floating-point-numbers/
     if (std::isnormal(value)) {
@@ -65,12 +63,18 @@ char *Formatter::format(Value value, Result &ret) noexcept {
       // fmt::format_to(end,FMT_COMPILE(L"{}"),value);
       end = zmij::detail::write(end, value);
     }
+#ifdef CALC_USE_ERROR_TOKEN
+  }
+#endif
   return end;
 }
 
 #ifndef CALC_USE_ERROR_TOKEN
-char *Formatter::create_summary(Summary &ret) noexcept {
+char *Formatter::create_summary(Summary &ret, uint32_t pos) noexcept {
   auto end = ret.data();
+  if (pos) {
+    end = fmt::format_to(end, FMT_COMPILE("{}: {}\n"), pos, unparsable);
+  }
   for (const auto &error : IssueManager::_errors) {
     end = fmt::format_to(end, FMT_COMPILE("{}: {}\n"), error.pos, error.text);
   }
