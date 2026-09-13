@@ -23,8 +23,13 @@ namespace GUI {
 
 #ifdef _WIN32
 
+#include "resource.h" // GUI symbols
+
 /**
- * Calc GUI window also it's application itself.
+ * @brief Calc GUI window also it's application itself.
+ *
+ * @warning [[indeterminate]] is used because before init window isn't usable.
+ *          That is the system API requirements.
  */
 class CalcApp {
   /**
@@ -32,13 +37,16 @@ class CalcApp {
    */
   struct CalcConfiguration {
     static constexpr const char *reg_key = "Software\\HedgehogInTheCPP\\Calc";
-    static constexpr LONG min_width = 232;  // matches RC
-    static constexpr LONG min_height = 158; // matches RC
-    static constexpr BYTE elements = 3;     // matches RC
+
+    static constexpr LONG min_width = 338;
+
+    static constexpr LONG min_height = 166;
+
+    static constexpr BYTE elements = 3;
 
     static constexpr BYTE default_shift_px = 100;
 
-    // https://learn.microsoft.com/windows/win32/controls/em-limittext
+    /// @see https://learn.microsoft.com/windows/win32/controls/em-limittext
     static constexpr UINT input_max_text_length =
 #ifdef CALC_SUPPORT_SET_LIMIT_TEXT
         128 * 1024;
@@ -53,93 +61,94 @@ class CalcApp {
   using cfg = CalcConfiguration;
 
 public:
-  constexpr CalcApp() noexcept {
+  /*
+   * This is the basic initialization of the application.
+   *
+   * @warning Should be called before WinMain!
+   * @see create(), init()
+   */
+  constexpr explicit CalcApp() noexcept {
+#ifdef _DEBUG
     _setup_crt_leak_check();
+#endif
+#ifdef CALC_SUPPORT_DARK_MODE
     init_uxtheme_callers();
+#endif
 #ifdef CALC_SUPPORT_DPI_CHANGES
-    // This application is system DPI aware. It for the DPI value once at start.
-    // If the DPI changes application will be automatically scaled up or down by
-    // the system. #ifdef CALC_SUPPORT_DPI_FOR_WINDOW
-    // SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
+    /**
+     * Calc is system DPI aware. It for the DPI value once at start. If the DPI
+     * changes application will be automatically scaled up or down by the
+     * system. #ifdef CALC_SUPPORT_DPI_FOR_WINDOW
+     * SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
+     */
     SetProcessDPIAware();
 #endif
 #ifdef CALC_SUPPORT_AUTO_RESTART
+    /**
+     * Calc automatically restarted after a crash, system shutdown or reboot or
+     * user session end.
+     */
     RegisterApplicationRestart(nullptr, FALSE);
-#endif
-#ifdef CALC_DISABLE_IME
-    ImmDisableIME(FALSE);
 #endif
   }
 
-  CalcApp(const CalcApp &) = delete;
+  CalcApp(CalcApp const &) = delete;
+  CalcApp &operator=(CalcApp const &) = delete;
   CalcApp(CalcApp &&) = delete;
 
   constexpr ~CalcApp() noexcept = default;
 
   /**
    * Perform calculation from the GUI
-   *      System UTF-16 input
+   *      System UTF-16 input (EditView)
    *              ↓
-   *      Unicode normalizer
+   *      Unicode normalizer (Normalizer)
    *              ↓
-   *       ASCII expression
+   *       ASCII expression (_equasion)
    *              ↓
-   *            Lexer
-   *              ↓
-   *            Tokens
+   *            Lexer (Token)
    *              ↓
    *            Parser
    *              ↓
-   *            Result
+   *            Result (Formatter)
    *              ↓
-   *    ASCII to system UTF-16
+   *    ASCII to system UTF-16 (set_result)
    *              ↓
    *     System UTF-16 Result
    */
   [[nodiscard]] constexpr BOOL calc(const WPARAM wP) noexcept {
     if (LOWORD(wP) == IDC_BUTTON_CALC && HIWORD(wP) == BN_CLICKED) {
-      EditView input(_layout.handle(0));
-#ifdef CALC_ALLOW_UNICODE_IN_GUI
-      Normalizer to_ansi(input, _equasion);
-      if (to_ansi.failed())
-#else
-      input.ansi(_equasion);
-      if (_equasion.length() != input.length())
-#endif
-          [[unlikely]] {
+      const EditView input(_layout.handle(0));
+      Normalizer to_ascii(input, _equasion);
+      if (to_ascii.failed()) {
 #if defined(CALC_USE_ERROR_TOKEN)
-        set_result(
+        Formatter::Result result [[indeterminate]];
+        set_result(result.data(),
+                   Formatter::format(, result, to_ascii.normalized()));
 #else
-        IssueManager::report_error(
-#endif
-#if defined(CALC_ALLOW_UNICODE_IN_GUI)
-            to_ansi.normalized()
-#else
-            0
-#endif
-                ,
-            unparsable);
-      }
-
-      Lexer l(_equasion);
-      Parser p(l);
-      const auto value = p.parse();
-#if defined(CALC_USE_ERROR_TOKEN)
-      Formatter::Result result [[indeterminate]];
-      set_result(result.data(), Formatter::format(value, result));
-      return TRUE;
-#else
-      if (IssueManager::has_errors()) {
         Formatter::Summary summary [[indeterminate]];
-        set_result(summary.data(), Formatter::create_summary(summary));
-      } else [[likely]] {
+        set_result(summary.data(),
+                   Formatter::create_summary(summary, to_ascii.normalized()));
+#endif
+      } else {
+        Lexer l(_equasion);
+        Parser p(l);
+        const auto value = p.parse();
+#if defined(CALC_USE_ERROR_TOKEN)
         Formatter::Result result [[indeterminate]];
         set_result(result.data(), Formatter::format(value, result));
-        return TRUE;
-      }
+#else
+        if (IssueManager::has_errors()) {
+          Formatter::Summary summary [[indeterminate]];
+          set_result(summary.data(), Formatter::create_summary(summary));
+        } else [[likely]] {
+          Formatter::Result result [[indeterminate]];
+          set_result(result.data(), Formatter::format(value, result));
+        }
 #endif
+      }
     }
-    return FALSE;
+    return TRUE;
   }
 
   /**
@@ -152,57 +161,63 @@ public:
   /**
    * Close Calc GUI.
    */
-  [[nodiscard]] constexpr auto close(const HWND window) const noexcept {
+  [[nodiscard]] constexpr static auto close(const HWND window) noexcept {
     return EndDialog(window, FALSE);
   }
 
   /**
    * Create Calc GUI.
+   *
+   * @warning call init befor any usage of any functionality!
+   * @see init()
    */
-  constexpr auto create(const HINSTANCE instance,
-                        DlgProc main_proc) const noexcept {
+  [[nodiscard]] constexpr static auto create(const HINSTANCE instance,
+                                             DlgProc main_proc) noexcept {
     if (SUCCEEDED(DialogBoxParamA(instance, MAKEINTRESOURCEA(IDD_CALC_DIALOG),
                                   nullptr, main_proc,
                                   reinterpret_cast<LPARAM>(instance)))) {
       return EXIT_SUCCESS;
+    } else {
+      return EXIT_FAILURE;
     }
-    return EXIT_FAILURE;
   }
 
   /**
    * Initialize Calc GUI and load user data into it.
+   *
+   * @warning call create first!
+   * @see create()
    */
-  [[nodiscard]] constexpr BOOL init(const HWND window,
-                                    const LPARAM lP) noexcept {
-    const HINSTANCE instance = reinterpret_cast<HINSTANCE>(lP);
-    set_icons(window, instance);
-    add_about_menu_to_system_menu(window);
-#ifdef CALC_SUPPORT_DPI_CHANGES
-    _dpi = dpi(window);
-    init_min_sizes(window, physical(cfg::min_width, _dpi),
-                   physical(cfg::min_height, _dpi));
-#else
-    init_min_sizes(window, cfg::min_width, cfg::min_height);
-#endif
+  [[nodiscard]] constexpr BOOL init(const HWND window, const LPARAM lP) {
+    set_icons(window, reinterpret_cast<HINSTANCE>(lP));
+
+    About::add_menu_to_system_menu(window);
+
     layout_init(window);
-    load_window_data(window);
+#ifdef CALC_SUPPORT_EXTENDENT_STYLES
+    set_extended_style(_layout.handle(1), ES_EX_ALLOWEOL_ALL);
+    set_extended_style(_layout.handle(0), ES_EX_ALLOWEOL_ALL);
+#endif
 #ifdef CALC_SUPPORT_SET_LIMIT_TEXT
     set_text_limit(_layout.handle(0), cfg::input_max_text_length);
 #endif
-#ifdef CALC_SUPPORT_EXTENDENT_STYLES
-    set_extended_style(_layout.handle(0), ES_EX_ALLOWEOL_ALL);
+    // Allocate user input memory nearby
+    _equasion.reserve(cfg::input_max_text_length * 4);
+#ifdef CALC_TESTS_ENABLED
+    gui_tests();
 #endif
+    load_window_data(window);
+
     goto_end_of_text(_layout.handle(0));
+
     return TRUE;
   }
 
   /**
    * Resize Calc window.
    */
-  [[nodiscard]] constexpr inline BOOL resize(const LPARAM lP) noexcept {
-    const WORD width = LOWORD(lP);
-    const WORD height = HIWORD(lP);
-    _layout.resize(width, height);
+  [[nodiscard]] constexpr BOOL resize(const LPARAM lP) noexcept {
+    _layout.resize(LOWORD(lP), HIWORD(lP));
     return TRUE;
   }
 
@@ -221,53 +236,88 @@ public:
    * Initialize layout helper for resizing.
    */
   constexpr inline void layout_init(const HWND window) noexcept {
-    _layout.init_window(window);
-    _layout.init_anchor(window, 0, IDC_EDIT_INPUT,
-                        Anchor::HorizontalStretch | Anchor::VerticalStretch);
-    _layout.init_anchor(window, 1, IDC_EDIT_RESULT,
-                        Anchor::Right | Anchor::Bottom);
-    _layout.init_anchor(window, 2, IDC_BUTTON_CALC,
-                        Anchor::Right | Anchor::Bottom);
-    static_assert(3 == cfg::elements);
-  }
+    // clang-format off
+#ifdef CALC_SUPPORT_DPI_CHANGES
+    _dpi = dpi(window);
 
+    _layout.init_min_sizes(window, physical(cfg::min_width, _dpi), physical(cfg::min_height, _dpi));
+#else
+    _layout.init_min_sizes(window, cfg::min_width, cfg::min_height);
+#endif
+    _layout.init_window(window);
+    _layout.init_anchor(window, 0, IDC_EDIT_INPUT,  Anchor::HorizontalStretch | Anchor::VerticalStretch);
+    _layout.init_anchor(window, 1, IDC_EDIT_RESULT, Anchor::Right | Anchor::Bottom);
+    _layout.init_anchor(window, 2, IDC_BUTTON_CALC, Anchor::Right | Anchor::Bottom);
+                  static_assert(3 == cfg::elements);
+    // clang-format on
+  }
 #ifdef CALC_SUPPORT_DARK_MODE
   [[nodiscard]] constexpr inline auto &theme() noexcept { return _theme; }
 #endif
-
   [[nodiscard]] constexpr inline auto &about() noexcept { return _about; }
 
 private:
+#ifdef CALC_TESTS_ENABLED
+  /**
+   * @see normalizer_tests, Normalizer, Edit, EditView
+   */
+  constexpr void gui_tests() {
+    for (const auto &test : normalizer_tests) {
+      {
+        const auto &text = test.first;
+
+        // Write UTF-8 text to the input Edit
+        Edit input(_layout.handle(0), text.length());
+        input.write(text.data(), text.data() + text.size());
+      }
+
+      {
+        // Read UTF-16 text from the input EditView
+        const EditView input(_layout.handle(0));
+
+        // Convert UTF-16 text to ASCII representation
+        Normalizer normalizer(input, _equasion);
+
+        const auto &[failed, equasion] = test.second;
+
+        // If result unexpected:
+        if (failed != normalizer.failed() || equasion != _equasion) {
+          set_result(_equasion.data());
+          return;
+        }
+      }
+    }
+
+    // If all tests passed:
+    set_result("GUI tests OK.");
+  }
+#endif
+  /**
+   *
+   */
   constexpr inline void set_result(const char *text,
                                    char *text_end) const noexcept {
     set_text(_layout.handle(1), text, text_end);
   }
 
+  /**
+   *
+   */
   constexpr inline void set_result(const char *text) const noexcept {
     set_text(_layout.handle(1), text);
   }
 
-  constexpr void init_min_sizes(const HWND window, const LONG min_width,
-                                const LONG min_height) noexcept {
-    Rect client(0, 0, min_width, min_height);
-    const auto style = static_cast<DWORD>(GetWindowLongPtrA(window, GWL_STYLE));
-    const auto exStyle =
-        static_cast<DWORD>(GetWindowLongPtrA(window, GWL_EXSTYLE));
-    AdjustWindowRectEx(&client, style, FALSE, exStyle);
-    _layout.init_min_sizes(client.width(), client.height());
-  }
-
-  constexpr inline void load_window_data(const HWND window) noexcept {
-    _equasion.reserve(cfg::input_max_text_length);
+  /**
+   * Load Calc data from the system database
+   */
+  constexpr inline void load_window_data(const HWND window) {
     Edit input(_layout.handle(0), cfg::input_max_text_length);
     const RegRead reg(HKEY_CURRENT_USER, cfg::reg_key);
 #ifndef CALC_TESTS_ENABLED
-    input.set_size(reg.read("input", input.data(), cfg::input_max_data_size));
+    input.set_size(reg.read("input", input.data(), input.size()));
 #else
-    {
-      const auto tests = calc_tests();
-      input.write(tests.data(), static_cast<int>(tests.size()));
-    }
+    const auto tests = calc_tests();
+    input.write(tests.data(), static_cast<int>(tests.size()));
 #endif
     const auto flags = reg.read("flags");
     const auto show = reg.read("showCmd");
@@ -277,7 +327,7 @@ private:
     const auto right = reg.read("right");
     const auto bottom = reg.read("bottom");
 #ifdef CALC_SUPPORT_DPI_CHANGES
-    const auto dpi = reg.read("savedDpi");
+    const auto saved_dpi = reg.read("savedDpi");
 #endif
     WINDOWPLACEMENT wp [[indeterminate]];
     wp.length = sizeof(wp);
@@ -287,13 +337,13 @@ private:
     if (left && top && right && bottom) {
       // -> use saved position
 #ifdef CALC_SUPPORT_DPI_CHANGES
-      if (dpi) {
+      if (saved_dpi) {
         // -> use with saved dpi
-        const auto saved_dpi = *dpi;
-        wp.rcNormalPosition.left = physical(*left, saved_dpi);
-        wp.rcNormalPosition.top = physical(*top, saved_dpi);
-        wp.rcNormalPosition.right = physical(*right, saved_dpi);
-        wp.rcNormalPosition.bottom = physical(*bottom, saved_dpi);
+        const auto dpi = *saved_dpi;
+        wp.rcNormalPosition.left = physical(*left, dpi);
+        wp.rcNormalPosition.top = physical(*top, dpi);
+        wp.rcNormalPosition.right = physical(*right, dpi);
+        wp.rcNormalPosition.bottom = physical(*bottom, dpi);
       }
 #else
       // -> use as is
@@ -317,13 +367,15 @@ private:
     SetWindowPlacement(window, &wp);
   }
 
-  constexpr void save_window_data(const HWND hWnd) noexcept {
+  /**
+   * Save Calc data to the system database
+   */
+  constexpr void save_window_data(const HWND hWnd) const noexcept {
     const RegWrite reg(HKEY_CURRENT_USER, cfg::reg_key);
 #ifndef CALC_TESTS_ENABLED
-    EditView input(_layout.handle(0));
+    const EditView input(_layout.handle(0));
     reg.write("input", input.data(), input.size());
 #endif
-
     WINDOWPLACEMENT wp [[indeterminate]];
     wp.length = sizeof(wp);
     GetWindowPlacement(hWnd, &wp);
@@ -343,7 +395,26 @@ private:
 #endif
   }
 
+  /**
+   * About window helpers
+   */
   struct About {
+    /**
+     * Add "About..." menu item to system menu for window.
+     */
+    static constexpr void add_menu_to_system_menu(const HWND window) noexcept {
+      // IDM_ABOUTBOX must be in the system command range.
+      static_assert((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
+      static_assert(IDM_ABOUTBOX < 0xF000);
+
+      const auto system_menu = GetSystemMenu(window, FALSE);
+      AppendMenuA(system_menu, MF_SEPARATOR, FALSE, nullptr);
+      AppendMenuA(system_menu, MF_STRING, IDM_ABOUTBOX, "&About...");
+    }
+
+    /**
+     * Create about window
+     */
     [[nodiscard]] static constexpr BOOL create(const HWND parent, WPARAM wParam,
                                                DlgProc about_proc) noexcept {
       if ((wParam & 0xFFF0) == IDM_ABOUTBOX &&
@@ -355,9 +426,12 @@ private:
         return FALSE;
       }
     }
-
-    [[nodiscard]] static constexpr BOOL open_homepage(const HWND window,
-                                                      LPARAM lParam) noexcept {
+#ifdef CALC_SUPPORT_LINK_WINDOW
+    /**
+     * Helper to open homepage of the Calc
+     */
+    [[nodiscard]] static constexpr BOOL
+    open_homepage(const HWND window, const LPARAM lParam) noexcept {
       const auto nm = reinterpret_cast<LPNMHDR>(lParam);
       if (nm->idFrom == IDC_LINK_HOMEPAGE && nm->code == NM_CLICK) {
         const auto l = reinterpret_cast<NMLINK *>(lParam);
@@ -368,7 +442,10 @@ private:
         return FALSE;
       }
     }
-
+#endif
+    /**
+     * Close about window
+     */
     [[nodiscard]] static constexpr BOOL close(const HWND window,
                                               const WPARAM wParam) noexcept {
       if (LOWORD(wParam) == IDCANCEL) {
@@ -379,7 +456,18 @@ private:
     }
   };
 
-  [[no_unique_address]] std::string _equasion;
+  /**
+   * Set window icons (small and big).
+   */
+  static constexpr void set_icons(const HWND window,
+                                  const HINSTANCE app) noexcept {
+    // clang-format off
+    PostMessageA(window, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(LoadIconA(app, MAKEINTRESOURCEA(IDR_MAINFRAME_SMALL))));
+    PostMessageA(window, WM_SETICON, ICON_BIG,   reinterpret_cast<LPARAM>(LoadIconA(app, MAKEINTRESOURCEA(IDR_MAINFRAME_BIG))));
+    // clang-format on
+  }
+
+  [[no_unique_address]] std::string _equasion [[indeterminate]];
 
   [[no_unique_address]] Layout<cfg::elements> _layout [[indeterminate]];
 #ifdef CALC_SUPPORT_DARK_MODE
@@ -388,7 +476,7 @@ private:
 #ifdef CALC_SUPPORT_DPI_CHANGES
   [[no_unique_address]] UINT _dpi [[indeterminate]];
 #endif
-  [[no_unique_address]] About _about;
+  [[no_unique_address]] About _about [[indeterminate]];
 };
 
 static CalcApp gui;
@@ -495,10 +583,6 @@ int WINAPI WinMain(const HINSTANCE instance, const HINSTANCE /*prev_instance*/,
 
 #ifdef CALC_SUPPORT_LINK_WINDOW
 #pragma comment(lib, "comctl32.lib")
-#endif
-
-#ifdef CALC_DISABLE_IME
-#pragma comment(lib, "imm32.lib")
 #endif
 
 #pragma comment(lib, "user32.lib")

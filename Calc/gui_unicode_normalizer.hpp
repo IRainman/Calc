@@ -5,8 +5,6 @@
 #ifndef EQUASION_NORMALIZATON_HPP
 #define EQUASION_NORMALIZATON_HPP
 
-#ifdef CALC_ALLOW_UNICODE_IN_GUI
-
 namespace GUI {
 
 #ifdef CALC_TESTS_ENABLED
@@ -370,7 +368,8 @@ public:
    *       resize_and_overwrite.
    * @warning Behavior is undefined if the output buffer is too small.
    */
-  explicit constexpr Normalizer(const EditView &edit, std::string &equasion) noexcept
+  constexpr explicit Normalizer(const EditView &edit,
+                                std::string &equasion) noexcept
       : _equasion(equasion), _edit(edit) {
     assert(_equasion.capacity() > _edit.length() * 4);
     _equasion.resize_and_overwrite(
@@ -735,20 +734,20 @@ private:
           break;
 
         // Division sign variants
+        case 0xF7:   // ÷ ANSI DIVISION SIGN
         case 0x2044: // ⁄ FRACTION SLASH
         case 0x2215: // ∕ DIVISION SLASH
         case 0x29F8: // ⧸ BIG SOLIDUS
-        case 0xF7:   // ÷ ANSI DIVISION SIGN
           *output++ = '/';
           break;
 
         // Multiplication sign variants
+        case 0xB7:   // · ANSI MIDDLE DOT
+        case 0xD7:   // × ANSI MULTIPLICATION SIGN
         case 0x204E: // ⁎ LOW ASTERISK
         case 0x2217: // ∗ ASTERISK OPERATOR
         case 0x22C5: // ⋅ DOT OPERATOR
         case 0xFE61: // ﹡ SMALL ASTERISK
-        case 0xB7:   // · ANSI MIDDLE DOT
-        case 0xD7:   // × ANSI MULTIPLICATION SIGN
           *output++ = '*';
           break;
 
@@ -779,7 +778,7 @@ private:
         // case PLUS-MINUS SIGN' (U+00B1) ±
         // case MINUS-OR-PLUS SIGN' (U+2213) ∓
 
-        // Fractions - ANSI (¼, ½, ¾)
+        // Fractions - ANSI
         case 0xBC: // ¼
           output = append(output, "1/4");
           break;
@@ -792,7 +791,7 @@ private:
           output = append(output, "3/4");
           break;
 
-        // Fractions - Unicode (comprehensive coverage)
+        // Fractions - Unicode
         case 0x2150: // ⅐ VULGAR FRACTION ONE SEVENTH
           output = append(output, "1/7");
           break;
@@ -913,9 +912,8 @@ private:
           output = append(output, "riemann_zeta");
           break;
 
-        // Mu - Unicode and ANSI
-        case 0x03BC: // μ GREEK SMALL LETTER MU
         case 0xB5:   // µ ANSI MICRO SIGN
+        case 0x03BC: // μ GREEK SMALL LETTER MU
           output = append(output, "mu");
           break;
 
@@ -923,9 +921,9 @@ private:
           output = append(output, "sigma");
           break;
 
-        case 0xA7B5: // β LATIN SMALL LETTER BETA
         case 0x03D0: // ϐ GREEK BETA SYMBOL
         case 0x03B2: // β GREEK SMALL LETTER BETA
+        case 0xA7B5: // β LATIN SMALL LETTER BETA
           output = append(output, "beta");
           break;
 
@@ -937,7 +935,7 @@ private:
           *output++ = 'e';
           break;
 
-        // Physical constants - Unicode
+        // Physical constants
         case 0x0190: // Ɛ LATIN CAPITAL LETTER OPEN E
         case 0x2107: // ℇ EULER CONSTANT
           output = append(output, "E");
@@ -1072,7 +1070,7 @@ private:
     }                                                                          \
   }
 
-        // Superscript ANSI digits (², ³, ¹)
+        // Superscript ANSI digits
         case 0xB2: // ² SUPERSCRIPT TWO
           START_SUPERSCRIPT
           *output++ = '2';
@@ -1088,7 +1086,7 @@ private:
           *output++ = '1';
           break;
 
-        // Superscript Unicode letter
+        // Superscript Unicode letters
         case 0x2071: // ⁱ SUPERSCRIPT LATIN SMALL LETTER I
           START_SUPERSCRIPT
           *output++ = 'i';
@@ -1097,7 +1095,7 @@ private:
         // case 0x2072: // not assigened.
         // case 0x2073: // not assigened.
 
-        // Superscript Unicode digits (⁰, ⁴-⁹)
+        // Superscript Unicode digits
         case 0x2070: // ⁰ SUPERSCRIPT ZERO
         case 0x2074: // ⁴ SUPERSCRIPT FOUR
         case 0x2075: // ⁵ SUPERSCRIPT FIVE
@@ -1109,7 +1107,7 @@ private:
           *output++ = '0' + static_cast<char>(c - 0x2070);
           break;
 
-        // Superscript Unicode arithmetic operators (⁺, ⁻, ⁼)
+        // Superscript Unicode arithmetic operators
         case 0x207A: // ⁺ SUPERSCRIPT PLUS SIGN
           START_SUPERSCRIPT
           *output++ = '+';
@@ -1125,7 +1123,7 @@ private:
           *output++ = '=';
           break;
 
-        // Superscript Unicode parentheses (⁽, ⁾). Should be in pairs
+        // Superscript Unicode parentheses. Should be in pairs
         case 0x207D: // ⁽ SUPERSCRIPT LEFT PARENTHESIS
           START_SUPERSCRIPT
           *output++ = '(';
@@ -1136,7 +1134,7 @@ private:
           *output++ = ')';
           break;
 
-        // Superscript Unicode letter (ⁿ)
+        // Superscript Unicode letters
         case 0x207F: // ⁿ SUPERSCRIPT LATIN SMALL LETTER N
           START_SUPERSCRIPT
           *output++ = 'n';
@@ -1168,6 +1166,7 @@ private:
     }
   };
 };
+
 } // namespace GUI
-#endif
+
 #endif

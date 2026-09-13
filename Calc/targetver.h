@@ -8,8 +8,9 @@
 #include <winsdkver.h>
 
 /**
- * To set minimal version of OS supported by Calc
- * please uncomment one of four line below:
+ * To set minimal version of OS supported by Calc please uncomment one of four
+ * line below. If all lines are commented the minimal supported version is
+ * Windows 10.
  */
 // #define CALC_SUPPORT_WINDOWS_7
 #ifndef CALC_SUPPORT_WINDOWS_7
@@ -20,13 +21,6 @@
 // #define CALC_SUPPORT_WINDOWS_2000
 #endif
 #endif
-#endif
-// If all lines above are commented:
-// the minimal supported version is Windows 10.
-
-#if defined(CALC_SUPPORT_WINDOWS_2000) || defined(CALC_SUPPORT_WINDOWS_XP) ||  \
-    defined(CALC_SUPPORT_WINDOWS_VISTA) || defined(CALC_SUPPORT_WINDOWS_7)
-#define DECLSPEC_DEPRECATED_DDK
 #endif
 
 #if defined(CALC_SUPPORT_WINDOWS_2000)
@@ -41,39 +35,45 @@
 #define _WIN32_WINNT _WIN32_WINNT_WIN10
 #endif
 
+#if (_WIN32_WINNT < _WIN32_WINNT_WIN10)
+#define DECLSPEC_DEPRECATED_DDK
+#endif
+
 /**
  * Including sdkddkver.h defines the highest available Windows platform.
  */
 #include <sdkddkver.h>
 
 /**
- * TODO: needs to be refactored because code is very complicated:
+ * Removed because now Unicode is converted by Edit, EditView and Normalizer:
+ * CALC_DISABLE_IME
  */
-#define CALC_ALLOW_UNICODE_IN_GUI // allow Unicode input in GUI
-
-/*
- * Deprecated because now Unicode is converted by EditView and Normalizer:
- */
-// #define CALC_DISABLE_IME // Disable IME because Calc only use ASCII
-
 /*
  * Deprecated because overhead, only set in compile time
  */
 // #define CALC_SUPPORT_WINDOWS_VERSION_CHECK
 
 #if (_WIN32_WINNT >= 0x0501)
-#define CALC_SUPPORT_LINK_WINDOW // LinkWindow, NMLINK
+
+#define CALC_SUPPORT_LINK_WINDOW // LinkWindow, NMLINK, ShellExecuteW
+
 #if (_WIN32_WINNT >= 0x0502)
+
 #define CALC_SUPPORT_SET_LIMIT_TEXT // EM_LIMITTEXT message
+
 #if (_WIN32_WINNT >= 0x0600)
-// #define CALC_SUPPORT_DWM          // ...
-#define CALC_SUPPORT_DPI_CHANGES  // SetProcessDPIAware
+
+#define CALC_SUPPORT_DPI_CHANGES // SetProcessDPIAware
+
 #define CALC_SUPPORT_AUTO_RESTART // RegisterApplicationRestart
+
 #if (_WIN32_WINNT >= 0x0605)
+
 #define CALC_SUPPORT_DPI_FOR_WINDOW // GetDpiForWindow
 /**
- * Removed because very hard to implement and for Calc it's completely
- * overingineering and overhead: CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
+ * Removed because it's very difficult to implement, and for Calc it's
+ * completely over-engineering and overhead:
+ * CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
  * WM_DPICHANGED signal,
  * AdjustWindowRectExForDpi,
  * SetProcessDpiAwarenessContext,
@@ -83,14 +83,14 @@
 #if (_WIN32_WINNT >= 0x0A00)
 #if (NTDDI_VERSION >= NTDDI_WIN10_RS5)
 /**
- * Allow any EOL for input because the normalizer converts it to a space.
+ * Allow any EOL for input because the Normalizer converts it to a space, this
+ * also speedup and cleanup formatting.
  */
 #define CALC_SUPPORT_EXTENDENT_STYLES // ES_EX_ALLOWEOL_ALL
-#endif
 
 #if (NTDDI_VERSION >= NTDDI_WIN10_19H1)
 /**
- * Support dark mode, needs refactoring because now it's complicated:
+ * Support dark mode for Windows 10 1903+.
  */
 #define CALC_SUPPORT_DARK_MODE
 
@@ -100,6 +100,7 @@
  */
 // #define CALC_SUPPORT_DARK_MODE_TEST_WIN32_HELPER_REALIZATION
 
+#endif
 #endif
 #endif
 #endif
