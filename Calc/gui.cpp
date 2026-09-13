@@ -38,9 +38,9 @@ class CalcApp {
   struct CalcConfiguration {
     static constexpr const char *reg_key = "Software\\HedgehogInTheCPP\\Calc";
 
-    static constexpr LONG min_width = 338;
+    static constexpr LONG min_width = 345;
 
-    static constexpr LONG min_height = 166;
+    static constexpr LONG min_height = 170;
 
     static constexpr BYTE elements = 3;
 
