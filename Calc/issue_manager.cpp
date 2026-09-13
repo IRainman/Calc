@@ -11,7 +11,8 @@ IssueManager::Issues IssueManager::_errors;
 /**
  * Report a new error.
  */
-void IssueManager::report_error(const uint32_t pos, const char *text) noexcept {
+void IssueManager::report_error(const EquationSize pos,
+                                const char *text) noexcept {
   _errors.emplace_back(pos, text);
 }
 

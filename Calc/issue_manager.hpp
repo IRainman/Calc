@@ -13,17 +13,17 @@
  */
 class Issue {
 public:
-  constexpr explicit Issue(const uint32_t _pos, const char *_text) noexcept
+  constexpr explicit Issue(const EquationSize _pos, const char *_text) noexcept
       : text(_text), pos(_pos) {};
   Issue(const Issue &) = delete;
-  Issue(Issue &&) = default;
+  constexpr Issue(Issue &&) = default;
 
 private:
   // Issue describing of the message.
   [[no_unique_address]] const char *text;
 
   // Position within the context at which the issue has occurred.
-  [[no_unique_address]] const uint32_t pos;
+  [[no_unique_address]] const EquationSize pos;
 
   friend class Formatter;
 };
@@ -38,7 +38,7 @@ public:
   /**
    * Report a new error.
    */
-  static void report_error(const uint32_t pos, const char *text) noexcept;
+  static void report_error(const EquationSize pos, const char *text) noexcept;
 
   /**
    * Indicate whether any messages have been reported so far.
