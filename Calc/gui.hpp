@@ -528,7 +528,7 @@ private:
 
 #ifdef CALC_SUPPORT_DPI_CHANGES
 /**
- * Get dpi for window
+ * @return dpi for window
  */
 [[nodiscard]] constexpr static UINT dpi(const HWND window) noexcept {
 #ifdef CALC_SUPPORT_DPI_FOR_WINDOW
