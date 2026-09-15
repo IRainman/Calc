@@ -52,6 +52,7 @@ __pragma(warning(disable : 5222)); // all unscoped attribute names are reserved 
 // add headers that you want to pre-compile here:
 #include <array>         // Calc and Win32 GUI
 #include <limits>        // Calc
+#include <new>           // GUI (Normalizer), Formatter
 #include <numbers>       // Calc
 #include <optional>      // Win32 GUI RegRead helper
 #include <ranges>        // Calc
@@ -60,13 +61,17 @@ __pragma(warning(disable : 5222)); // all unscoped attribute names are reserved 
 #include <string>        // Win32 GUI
 #include <string_view>   // Calc
 #include <unordered_map> // Calc
+#include <vector>        // Calc issues
 #ifdef CALC_TEST_EQUATION_SOLVER
 #include <complex>
+#endif
+#ifdef CALC_TESTS_ENABLED
+#include <chrono>
 #endif
 //---------------------------------------------------------------------------
 // Zmij compile options:
 // clang-format off
-//  Tests time is : 81207ms. Without Tests time is : 118164ms.
+// Tests time is : 81207ms. Without Tests time is : 118164ms.
 __pragma(warning(push));
 __pragma(warning(disable : 4100)); // unreferenced formal parameter
 __pragma(warning(disable : 4189)); // local variable is initialized but not referenced
@@ -85,8 +90,6 @@ __pragma(warning(pop));
     "128-bit float type isn't supported by zmij. The library convert any output values to 64-bit double."
 #endif
 //---------------------------------------------------------------------------
-#if !defined(CALC_USE_ERROR_TOKEN) || defined(CALC_TESTS_DEV_ENABLED)
-#include <new> // Formatter
 // fmt compile options:
 #define FMT_HEADER_ONLY 1
 #define FMT_USE_FLOAT 0
@@ -117,7 +120,6 @@ __pragma(warning(pop));
 // used because otherwise fmt produces much larger code:
 #define FMT_ENFORCE_COMPILE_STRING
 #include "../../fmt/include/fmt/compile.h"
-#endif
 //---------------------------------------------------------------------------
 // fast_float compile options:
 #if CALC_USE_128_BIT_FLOAT
@@ -136,7 +138,7 @@ __pragma(warning(pop));
  * Types using for calculation.
  */
 using EquationSize = size_t;
-using ParamCount = char;
+using ParamCount = uint8_t;
 using Integer = std::int64_t;
 using UInteger = std::uint64_t;
 
@@ -160,5 +162,15 @@ constexpr auto small_value_precision = 1e-15;
 #endif
 constexpr auto output_precision = std::numeric_limits<Value>::digits10;
 //---------------------------------------------------------------------------
-
+/**
+ * Stack type for result formatting
+ */
+using Result = std::array<char,
+#ifdef CALC_TESTS_ENABLED
+                          1024
+#else
+                          std::hardware_destructive_interference_size
+#endif
+                          >;
+//---------------------------------------------------------------------------
 #endif

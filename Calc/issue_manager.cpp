@@ -3,28 +3,35 @@
  */
 
 #include "pch.hpp"
-#ifndef CALC_USE_ERROR_TOKEN
+
+#include "formatter.hpp"
 #include "issue_manager.hpp"
 
-IssueManager::Issues IssueManager::_errors;
+using Issues = std::vector<Token>;
+
+Issues static issues;
 
 /**
- * Report a new error.
+ * Report a new issue.
  */
-void IssueManager::report_error(const EquationSize pos,
-                                const char *text) noexcept {
-  _errors.emplace_back(pos, text);
+Token &issue(Token &current, const EquationSize position,
+             const Issue index) noexcept {
+  current.type = Token::Type::ISSUE;
+  current.issue.position = position;
+  current.issue.index = index;
+  return issues.emplace_back(current);
 }
 
 /**
- * Indicate whether any messages have been reported so far.
+ * @return the end of formated text.
  */
-[[nodiscard]] bool IssueManager::has_errors() noexcept {
-  return !_errors.empty();
+char *report(Result &ret) noexcept {
+  auto end = ret.data();
+  for (const auto &i : issues) {
+    const auto &issue = i.issue;
+    end = fmt::format_to(end, FMT_COMPILE("{}: {}\n"), issue.position,
+                         issue_text[static_cast<ParamCount>(issue.index)]);
+  }
+  issues.clear();
+  return end;
 }
-
-/**
- * Clear the manager.
- */
-void IssueManager::clear() noexcept { _errors.clear(); }
-#endif

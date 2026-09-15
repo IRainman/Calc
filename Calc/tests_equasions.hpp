@@ -7,26 +7,27 @@
 
 #ifdef CALC_TESTS_ENABLED
 
-#define IMPLICIT_MULT_RESULT(result)                                           \
-  ((CALC_ALLOW_IMPLICIT_MULTIPLICATION)                                        \
-       ? (result)                                                              \
-       : std::numeric_limits<Value>::quiet_NaN())
-
 /**
  * Test cases for Calc
  */
 // clang-format off
 static constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>({
 	// syntax errors should produce error:
+	{ "()",												std::numeric_limits<Value>::quiet_NaN() },
 	{ "2 + )",												std::numeric_limits<Value>::quiet_NaN() },
+	{ "2+)",												std::numeric_limits<Value>::quiet_NaN() },
+	{ "1(",													std::numeric_limits<Value>::quiet_NaN() },
+	{ "1-",													std::numeric_limits<Value>::quiet_NaN() },
+	{ "1/",													std::numeric_limits<Value>::quiet_NaN() },
+	{ "1+",													std::numeric_limits<Value>::quiet_NaN() },
+	{ "1*",													std::numeric_limits<Value>::quiet_NaN() },
+	{ "1^",													std::numeric_limits<Value>::quiet_NaN() },
 	{ "2 + (",												std::numeric_limits<Value>::quiet_NaN() },
 	{ "e (",												std::numeric_limits<Value>::quiet_NaN() },
 	{ "e ()",												std::numeric_limits<Value>::quiet_NaN() },
 	{ "e ()3",												std::numeric_limits<Value>::quiet_NaN() },
 	{ "e )3",												std::numeric_limits<Value>::quiet_NaN() },
 	{ "pi (3)",												std::numeric_limits<Value>::quiet_NaN() },
-	{ "pi(e)",												IMPLICIT_MULT_RESULT(std::numbers::pi_v<Value> * std::numbers::e_v<Value>) },
-	{ "2e",													IMPLICIT_MULT_RESULT(2 * std::numbers::e_v<Value>) },
 	{ "pi(sin)",											std::numeric_limits<Value>::quiet_NaN() },
 	{ "sin + 12",											std::numeric_limits<Value>::quiet_NaN() },
 	{ "sin(1, 2, 3)",										std::numeric_limits<Value>::quiet_NaN() },
@@ -67,7 +68,7 @@ static constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>(
 
 	{ "E",			0.57721566490153286060651209008240243104215933593992 }, // https://en.wikipedia.org/wiki/Euler%27s_constant
 
-	{ "2*pi",		6.283185307179586476925286766559005768394338798750211641949889184615632812572417997256069650684234234135964296172173026564613294187689219121101165663456256256962234900568205403877043211119289289245897909860763928857621951331866892256950129491296467573566330542403818291297133846920696820908652966426786214520498282547449174013212631176349763761041841925658508547430728735784771720022661061097640933042768292903883023179189142764356050365519183906184372234763865223586210237096148924148148376248436926703770150488564849756876 }, // tau
+	{ "2pi",		6.283185307179586476925286766559005768394338798750211641949889184615632812572417997256069650684234234135964296172173026564613294187689219121101165663456256256962234900568205403877043211119289289245897909860763928857621951331866892256950129491296467573566330542403818291297133846920696820908652966426786214520498282547449174013212631176349763761041841925658508547430728735784771720022661061097640933042768292903883023179189142764356050365519183906184372234763865223586210237096148924148148376248436926703770150488564849756876 }, // tau
 
 	// check precission of other constants, including technical constants that exists in the std:
 	{ "pi/2",		std::numbers::pi_v<Value> / 2.0 },
@@ -140,7 +141,7 @@ static constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>(
 	{ "Z0",				376.730313412 }, // characteristic impedance of vacuum (Ohm)
 
 	// scientific notation:
-	{ "1.4e-3", 0.0014 },
+	{ "1.4e-3",  0.0014 },
 	{ "-1.4e+3", -1400.0 },
 	{ "1e-3", 0.001 },
 	{ "1e+0", 1.0 },
@@ -165,7 +166,7 @@ static constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>(
 	{ "2 * 2", 4.0 },
 	{ "2 + 2 * 2", 6.0 },
 	{ "(2 + 2) * 2", 8.0 },
-	{ "(2 + 2)2", IMPLICIT_MULT_RESULT(8.0) },
+	{ "(2 + 2)2",    8.0 },
 
 	// parentheses and complex expressions:
 	{ "(1+2)*3", 9.0 },
@@ -173,7 +174,7 @@ static constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>(
 	{ "(2 + 2) * 2", 8.0 },
 	{ "2 + (2 * 2)", 6.0 },
 	{ "(2 + 3) * (4 - 1)", 15.0 },
-	{ "(2 + 3)(4 - 1)", IMPLICIT_MULT_RESULT(15.0) },
+	{ "(2 + 3)(4 - 1)", 15.0 },
 	{ "pow( sin( pi / 2 ) / 0.001 + 24, 2 )", 1048576.0 },
 	{ "pow(exp2(32), 1/4)", 256.0 },
 	{ "sqrt(cos(rad(30))^2+sin(rad(30))^2)", 1.0 },
@@ -277,7 +278,7 @@ static constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>(
 	{ "179769313486231570814527423731704356798070567525844996598917476803157260780028538760589558632766878171540458953514382464234321326889464182768467546703537516986049910576551282076245490090389328944075868508455133942304583236903222948165808559332123348274797826204144723168738177180919299881250404026184124858368",
 	   0x1.fffffffffffffp+1023 },
 	// smallest number that overflows to infinity:
-	{ " (2 - 0.5*2^-52)2^1023 ",IMPLICIT_MULT_RESULT(std::numeric_limits<Value>::infinity()) }, // equasion should return infinity
+	{ " (2 - 0.5*2^-52)2^1023 ", std::numeric_limits<Value>::infinity() }, // equasion should return infinity
 	{ " (2 - 0.5*2^-52) * 2^1023 ", std::numeric_limits<Value>::infinity() }, // equasion should return infinity
 	{ "179769313486231580793728971405303415079934132710037826936173778980444968292764750946649017977587207096330286416692887910946555547851940402630657488671505820681908902000708383676273854845817711531764475730270069855571366959622842914819860834936475292719074168444365510704342711559699508093042880177904174497792",
 	   std::numeric_limits<Value>::quiet_NaN() }, // and full value should show unparsable error
@@ -451,17 +452,17 @@ static constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>(
 	{ "sin(pi)", 0.0 },
 	{ "cos(pi)", -1.0 },
 	{ "sin(3*pi/2)", -1.0 },
-	{ "sin(3pi/2)", IMPLICIT_MULT_RESULT(-1.0) },
+	{ "sin(3pi/2)", -1.0 },
 	{ "cos(3*pi/2)", 0.0 },
-	{ "cos(3pi/2)", IMPLICIT_MULT_RESULT(0.0) },
+	{ "cos(3pi/2)", 0.0 },
 	{ "sin(inf)", std::numeric_limits<Value>::quiet_NaN() },
 	{ "cos(inf)", std::numeric_limits<Value>::quiet_NaN() },
 	{ "tan(3*pi/2)", std::numeric_limits<Value>::infinity() },
-	{ "tan(3pi/2)", IMPLICIT_MULT_RESULT(std::numeric_limits<Value>::infinity()) },
+	{ "tan(3pi/2)", std::numeric_limits<Value>::infinity() },
 	{ "tan(-pi)", 0.0 },
 	{ "tan(pi)", 0.0 },
 	{ "87 * tan(pi) - 7", -7.0 },
-	{ "87tan(pi) - 7", IMPLICIT_MULT_RESULT(-7.0) },
+	{ "87tan(pi) - 7", -7.0 },
 	{ "tan(pi/2)", std::numeric_limits<Value>::infinity() },
 	{ "tan(-pi/2)", -std::numeric_limits<Value>::infinity() },
 	{ "tan(pi/4)", 1.0 },
@@ -596,8 +597,6 @@ static constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>(
 	{ "distance(1, 1, 2, 3)", 6.0 },
 });
 // clang-format on
-
-#undef IMPLICIT_MULT_RESULT
 
 #endif
 #endif

@@ -106,11 +106,13 @@ public:
    *              ↓
    *       ASCII expression (_equasion)
    *              ↓
-   *            Lexer (Token)
+   *            Lexer
    *              ↓
    *            Parser
    *              ↓
-   *            Result (Formatter)
+   *            Token
+   *              ↓
+   *
    *              ↓
    *    ASCII to system UTF-16 (set_result)
    *              ↓
@@ -120,33 +122,16 @@ public:
     if (LOWORD(wP) == IDC_BUTTON_CALC && HIWORD(wP) == BN_CLICKED) {
       const EditView input(_layout.handle(0));
       Normalizer to_ascii(input, _equasion);
-      if (to_ascii.failed()) {
-#if defined(CALC_USE_ERROR_TOKEN)
-        Formatter::Result result [[indeterminate]];
-        set_result(result.data(),
-                   Formatter::format(, result, to_ascii.normalized()));
-#else
-        Formatter::Summary summary [[indeterminate]];
-        set_result(summary.data(),
-                   Formatter::create_summary(summary, to_ascii.normalized()));
-#endif
-      } else {
-        Lexer l(_equasion);
-        Parser p(l);
-        const auto value = p.parse();
-#if defined(CALC_USE_ERROR_TOKEN)
-        Formatter::Result result [[indeterminate]];
-        set_result(result.data(), Formatter::format(value, result));
-#else
-        if (IssueManager::has_errors()) {
-          Formatter::Summary summary [[indeterminate]];
-          set_result(summary.data(), Formatter::create_summary(summary));
-        } else [[likely]] {
-          Formatter::Result result [[indeterminate]];
-          set_result(result.data(), Formatter::format(value, result));
-        }
-#endif
+      Token token [[indeterminate]];
+      if (to_ascii.failed()) [[unlikely]] {
+        token = issue(token, to_ascii.normalized(), Issue::unparsable);
+      } else [[likely]] {
+        Lexer lexer(_equasion);
+        Parser parser(lexer);
+        token = parser.result();
       }
+      Result text [[indeterminate]];
+      set_result(text.data(), result(token, text));
     }
     return TRUE;
   }
@@ -262,6 +247,24 @@ private:
    * @see normalizer_tests, Normalizer, Edit, EditView
    */
   constexpr void gui_tests() {
+    std::string output;
+    output.resize(
+#ifdef CALC_TESTS_DEV_ENABLED
+        128 * 1024
+#else
+        std::hardware_destructive_interference_size
+#endif
+    );
+
+    auto output_end = output.data();
+
+    const auto start = std::chrono::steady_clock::now();
+#ifdef CALC_TESTS_DEV_ENABLED
+    unsigned int failed = 0;
+#else
+    constexpr unsigned int count = 100;
+    for (unsigned int i = count; --i != 0;)
+#endif
     for (const auto &test : normalizer_tests) {
       {
         const auto &text = test.first;
@@ -278,33 +281,54 @@ private:
         // Convert UTF-16 text to ASCII representation
         Normalizer normalizer(input, _equasion);
 
-        const auto &[failed, equasion] = test.second;
+        const auto &[test_failed, test_equasion] = test.second;
 
         // If result unexpected:
-        if (failed != normalizer.failed() || equasion != _equasion) {
-          set_result(_equasion.data());
-          return;
+        if (test_failed != normalizer.failed() || test_equasion != _equasion) {
+          set_result(_equasion.data(), _equasion.size());
+#ifdef CALC_TESTS_DEV_ENABLED
+          ++failed;
+#endif
         }
       }
     }
 
-    // If all tests passed:
-    set_result("GUI tests OK.");
+    const auto end = std::chrono::steady_clock::now();
+
+#ifdef CALC_TESTS_DEV_ENABLED
+    output_end = fmt::format_to(
+        output_end,
+        FMT_COMPILE("Tests:\n"
+                    " passed: {},\n failed: {}\n"
+                    " time is {}µs per case."),
+        normalizer_tests.size() - static_cast<size_t>(failed), failed,
+        std::chrono::duration_cast<std::chrono::microseconds>(
+            (end - start) / normalizer_tests.size())
+            .count());
+#else
+    output_end =
+        fmt::format_to(output_end, FMT_COMPILE("Time is {}µs per case."),
+                       std::chrono::duration_cast<std::chrono::microseconds>(
+                           (end - start) / (normalizer_tests.size() * count))
+                           .count());
+#endif
+
+    set_result(output.data(), output_end);
   }
 #endif
   /**
    *
    */
-  constexpr inline void set_result(const char *text,
-                                   char *text_end) const noexcept {
-    set_text(_layout.handle(1), text, text_end);
+  constexpr void set_result(const char *text,
+                            const char *text_end) const noexcept {
+    set_text(_layout.handle(1), text, const_cast<char *>(text_end));
   }
 
   /**
    *
    */
-  constexpr inline void set_result(const char *text) const noexcept {
-    set_text(_layout.handle(1), text);
+  constexpr void set_result(const char *text, size_t size) const noexcept {
+    set_result(text, text + size);
   }
 
   /**

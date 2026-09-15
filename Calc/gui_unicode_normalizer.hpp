@@ -47,6 +47,7 @@ namespace GUI {
  *
  * Keep the cases deterministic and focused: each test should verify one
  * normalization rule or a small, intentional combination of rules.
+ * @see gui_tests()
  */
 static auto normalizer_tests = std::to_array< std::pair< std::string_view, 
     std::pair< bool, std::string_view > > >({
@@ -686,7 +687,7 @@ private:
         }
 
         // Pass through printable ASCII characters unchanged
-        if (is_printable_ascii(c)) {
+        if (is_printable_ascii(c)) [[likely]] {
           *output++ = static_cast<char>(c);
           goto normalization_of_current_end;
         }
@@ -1144,7 +1145,7 @@ private:
 
         // Unknown or unsupported character - abort processing
         default:
-          goto processing_end;
+          [[unlikely]] goto processing_end;
         }
 
       normalization_of_current_end:

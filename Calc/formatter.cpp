@@ -6,7 +6,6 @@
 
 #include "formatter.hpp"
 #include "issue_manager.hpp"
-#include "token.hpp"
 
 #ifdef CALC_SUPPORT_FRACTIONAL_OUTPUT
 #include "identifiers.hpp"
@@ -46,39 +45,31 @@ constexpr static std::pair<Integer, Integer> decimalToFraction(Value number) {
 }
 #endif
 
-char *Formatter::format(Value value, Result &ret) noexcept {
+/**
+ * Format Value.
+ * @return the end of the formated text.
+ */
+char *value(Value value, Result &ret) noexcept {
   auto end = ret.data();
-#ifdef CALC_USE_ERROR_TOKEN
-  if (token.type == Token::Type::ERROR) {
-    end = fmt::format_to(end, FMT_COMPILE("{}: {}\n"), token.error_text,
-                         token.error_text);
+  // https://www.exploringbinary.com/decimal-precision-of-binary-floating-point-numbers/
+  if (std::isnormal(value)) {
+    end = zmij::detail::write_general(end, value, output_precision);
   } else {
-    auto &value = token.value;
-#endif
-    // https://www.exploringbinary.com/decimal-precision-of-binary-floating-point-numbers/
-    if (std::isnormal(value)) {
-      // end=fmt::format_to(end,FMT_COMPILE(L"{:.{}g}"),value,output_precision);
-      end = zmij::detail::write_general(end, value, output_precision);
-    } else {
-      // fmt::format_to(end,FMT_COMPILE(L"{}"),value);
-      end = zmij::detail::write(end, value);
-    }
-#ifdef CALC_USE_ERROR_TOKEN
+    end = zmij::detail::write(end, value);
   }
-#endif
   return end;
 }
 
-#ifndef CALC_USE_ERROR_TOKEN
-char *Formatter::create_summary(Summary &ret, uint32_t pos) noexcept {
+/**
+ * Format Token.
+ * @return the end of the formated text.
+ */
+char *result(Token token, Result &ret) noexcept {
   auto end = ret.data();
-  if (pos) {
-    end = fmt::format_to(end, FMT_COMPILE("{}: {}\n"), pos, unparsable);
+  if (token.type == Token::Type::ISSUE) [[unlikely]] {
+    end = report(ret);
+  } else [[likely]] {
+    end = value(token.number, ret);
   }
-  for (const auto &error : IssueManager::_errors) {
-    end = fmt::format_to(end, FMT_COMPILE("{}: {}\n"), error.pos, error.text);
-  }
-  IssueManager::clear();
   return end;
 }
-#endif

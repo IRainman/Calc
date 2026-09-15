@@ -7,21 +7,25 @@
 
 #include "identifiers.hpp"
 
-// clang-format off
-constexpr static const char *unparsable = "unparsable";
-
-constexpr static const char *extraneous_input = "extraneous input";
-
-constexpr static const char *to_many_in_expression = "too many ^ in expression";
-
-constexpr static const char *expected_parenthesis = "expected parenthesis";
-
-constexpr static const char *incorrect_parameters_count = "incorrect parameters count";
-
-constexpr static const char *too_many_parameters = "too many parameters";
-
-constexpr static const char *unexpected = "unexpected";
-// clang-format on
+enum class Issue : ParamCount {
+  unparsable = 0,
+  extraneous_input = 1,
+  too_many_in_expression,
+  expected_left_parenthesis,
+  expected_right_parenthesis,
+  expected_right_parenthesis_or_comma,
+  incorrect_parameters_count,
+  too_many_parameters,
+  unexpected,
+  expected_number,
+  _count
+};
+constexpr static const auto issue_text = std::to_array<std::string_view>(
+    {"unparsable", "extraneous input", "too many ^ in expression",
+     "expected left parenthesis", "expected right parenthesis",
+     "expected right parenthesis or comma", "incorrect parameters count",
+     "too many parameters", "unexpected", "expected number"});
+static_assert(static_cast<uint8_t>(Issue::_count) == issue_text.size());
 
 struct Token {
   enum class Type : ParamCount {
@@ -45,7 +49,9 @@ struct Token {
 
     FUNCT = 'A',
 
-    ERROR = 0x7F,
+    CONST = '_',
+
+    ISSUE = 0x7F,
   };
 
   union {
@@ -53,18 +59,15 @@ struct Token {
     // of it.
     [[no_unique_address]] Value number [[indeterminate]];
 
-    // If token is a function, there is a pointer to it.
-    [[no_unique_address]] Identifiers::map::const_pointer function
+    // If token is a identifier or a constant, there is a pointer to it.
+    [[no_unique_address]] Identifiers::map::const_pointer identifier
         [[indeterminate]];
 
-#ifdef CALC_USE_ERROR_TOKEN
     // If token is an error, there is a small helper that handle it.
     struct {
-      [[no_unique_address]] const char *error_text [[indeterminate]];
-      [[no_unique_address]] unsigned int error_position [[indeterminate]];
-      [[no_unique_address]] unsigned char error_text_size [[indeterminate]];
-    };
-#endif
+      [[no_unique_address]] EquationSize position [[indeterminate]];
+      [[no_unique_address]] Issue index [[indeterminate]];
+    } issue;
   };
 
   // Type of this token.

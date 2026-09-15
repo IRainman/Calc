@@ -5,28 +5,10 @@
 #ifndef FORMATTER_HPP
 #define FORMATTER_HPP
 
-class Formatter {
-public:
-  /**
-   * Stack type for result formatting
-   */
-  using Result = std::array<char, zmij::double_buffer_size>;
+#include "token.hpp"
 
-  /**
-   * Format value. Return the end of the formated text.
-   */
-  static char *format(Value value, Result &ret) noexcept;
+char *result(Token value, Result &ret) noexcept;
 
-#ifndef CALC_USE_ERROR_TOKEN
-  /**
-   * Stack type for summary of issues formatting
-   */
-  using Summary = std::array<char, std::hardware_destructive_interference_size>;
+char *value(Value value, Result &ret) noexcept;
 
-  /**
-   * Create report from IssueManager. Return the end of formated text.
-   */
-  static char *create_summary(Summary &ret, uint32_t pos = 0) noexcept;
-#endif
-};
 #endif

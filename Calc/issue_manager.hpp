@@ -5,55 +5,13 @@
 #ifndef ISSUE_MANAGER_HPP
 #define ISSUE_MANAGER_HPP
 
-#ifndef CALC_USE_ERROR_TOKEN
-#include <vector>
+#include "token.hpp"
 
-/**
- * Represents a message from the compiler.
- */
-class Issue {
-public:
-  constexpr explicit Issue(const EquationSize _pos, const char *_text) noexcept
-      : text(_text), pos(_pos) {};
-  Issue(const Issue &) = delete;
-  constexpr Issue(Issue &&) = default;
+Token &issue(Token &current, const EquationSize position,
+             const Issue index) noexcept;
 
-private:
-  // Issue describing of the message.
-  [[no_unique_address]] const char *text;
+Token &make_issue(const EquationSize position, const Issue index) noexcept;
 
-  // Position within the context at which the issue has occurred.
-  [[no_unique_address]] const EquationSize pos;
+char *report(Result &ret) noexcept;
 
-  friend class Formatter;
-};
-
-/**
- * Reports and prints issues.
- */
-class IssueManager {
-  using Issues = std::vector<Issue>;
-
-public:
-  /**
-   * Report a new error.
-   */
-  static void report_error(const EquationSize pos, const char *text) noexcept;
-
-  /**
-   * Indicate whether any messages have been reported so far.
-   */
-  [[nodiscard]] static bool has_errors() noexcept;
-
-  /**
-   * Clear the manager.
-   */
-  static void clear() noexcept;
-
-private:
-  static Issues _errors; // Errors that do stop processing.
-  friend class Formatter;
-};
-
-#endif
 #endif

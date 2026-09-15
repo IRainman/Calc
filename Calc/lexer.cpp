@@ -20,15 +20,7 @@ const auto &ids = Identifiers::get();
 inline void Lexer::advance(EquationSize n) noexcept { _view.remove_prefix(n); }
 
 inline EquationSize Lexer::return_unparsable(Token &current) const noexcept {
-#ifdef CALC_USE_ERROR_TOKEN
-  current.error_text = unparsable;
-  current.error_text_size = 11;
-  current.error_position = position();
-#else
-  IssueManager::report_error(position(), unparsable);
-#endif
-  current.type = Token::Type::ERROR;
-
+  current = issue(current, position(), Issue::unparsable);
   return 0;
 }
 
@@ -99,17 +91,14 @@ Lexer::read_ident(Token &current) const noexcept {
     ++n;
   }
 
-  if (const auto i = ids.find(_view.substr(0, n)); i != ids.end()) [[likely]] {
+  if (const auto identifier = ids.find(_view.substr(0, n));
+      identifier != ids.end()) [[likely]] {
 
-    const auto &[caller, check] = i->second;
+    const auto &[_, check] = identifier->second;
 
-    if (check.is_constant()) {
-      current.number = caller({});
-      current.type = Token::Type::NUM;
-    } else {
-      current.function = &(*i);
-      current.type = Token::Type::FUNCT;
-    }
+    current.type =
+        check.is_function() ? Token::Type::FUNCT : Token::Type::CONST;
+    current.identifier = &(*identifier);
 
     return n;
 
@@ -126,6 +115,7 @@ inline void Lexer::return_result(Token &current) const noexcept {
 implicit_mult_first(const Token::Type previous) noexcept {
   // clang-format off
   return previous == Token::Type::NUM ||
+         previous == Token::Type::CONST ||
          previous == Token::Type::RPAREN;
   // clang-format on
 }
@@ -135,20 +125,19 @@ implicit_mult_second(const Token &current) noexcept {
   // clang-format off
   return current.type == Token::Type::NUM ||
          current.type == Token::Type::FUNCT ||
+         current.type == Token::Type::CONST ||
          current.type == Token::Type::LPAREN;
   // clang-format on
 }
 
 void Lexer::next(Token &current) noexcept {
-#ifdef CALC_ALLOW_IMPLICIT_MULTIPLICATION
-  if (_delayed.type != Token::Type::ERROR) [[unlikely]] {
+  if (_delayed.type != Token::Type::ISSUE) [[unlikely]] {
     current = _delayed;
-    _delayed.type = Token::Type::ERROR;
+    _delayed.type = Token::Type::ISSUE;
     _previous = current.type;
     return;
   }
   bool is_separator = false;
-#endif
 
   while (!_view.empty()) [[likely]] {
 
@@ -160,32 +149,32 @@ void Lexer::next(Token &current) noexcept {
         cur == '-' || cur == '/' || cur == '^') {
       advance(read_operator(current));
       goto valid_token_return;
+
     } else if (cur >= '0' && cur <= '9') {
       advance(read_number(current));
       goto valid_token_return;
+
     } else if ((cur >= 'A' && cur <= 'Z') || (cur >= 'a' && cur <= 'z')) {
       advance(read_ident(current));
       goto valid_token_return;
+
     } else if (cur == ' ') {
       advance(read_separator());
-#ifdef CALC_ALLOW_IMPLICIT_MULTIPLICATION
       is_separator = true;
-#endif
       continue;
+
     } else [[unlikely]] {
       // invalid_token_return
       return_unparsable(current);
       return;
     }
   valid_token_return:
-#ifdef CALC_ALLOW_IMPLICIT_MULTIPLICATION
     if (!is_separator && implicit_mult_first(_previous) &&
         implicit_mult_second(current)) {
       _delayed = current;
       current.type = Token::Type::MUL;
     }
     _previous = current.type;
-#endif
     return;
   }
 

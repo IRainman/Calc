@@ -6,10 +6,6 @@
 #define FLAGS_HPP
 
 //---------------------------------------------------------------------------
-#define CALC_ALLOW_IMPLICIT_MULTIPLICATION 1
-// TODO
-// #define CALC_USE_ERROR_TOKEN // WIP
-//---------------------------------------------------------------------------
 #ifdef _DEBUG
 #define CALC_TESTS_ENABLED
 #ifndef NDEBUG

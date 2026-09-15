@@ -7,12 +7,6 @@
 
 #include "lexer.hpp"
 
-#ifdef CALC_USE_ERROR_TOKEN
-typedef Token Result;
-#else
-typedef Value Result;
-#endif
-
 class Parser {
 public:
   /**
@@ -30,14 +24,15 @@ public:
    *
    * expr_0 = '(' expr_4 ')'
    *        | NUM
+   *        | CONST
    *        | FUNCT
    *        ;
    *
-   * parse_function = FUNCT '(' parameters ')'
+   * function = FUNCT '(' parameters ')'
    *
    * parameters = expr_4 ( ',' expr_4 )* ')'
    */
-  explicit Parser(Lexer &lexer) noexcept : _lexer(lexer) { advance(); }
+  explicit Parser(Lexer &lexer) noexcept : _lexer(lexer) {}
 
   Parser() = delete;
   Parser(const Parser &) = delete;
@@ -46,7 +41,7 @@ public:
   /**
    * Parse and evaluate an expression.
    */
-  [[nodiscard]] Result parse() noexcept;
+  [[nodiscard]] Token result() noexcept;
 
 private:
   /**
@@ -54,17 +49,23 @@ private:
    */
   void advance() noexcept;
 
-  [[nodiscard]] Result parse_expr_4() noexcept;
+  [[nodiscard]] Token expr_4() noexcept;
 
-  [[nodiscard]] Result parse_expr_3() noexcept;
+  [[nodiscard]] Token expr_3() noexcept;
 
-  [[nodiscard]] Result parse_expr_2() noexcept;
+  [[nodiscard]] Token expr_2() noexcept;
 
-  [[nodiscard]] Result parse_expr_1() noexcept;
+  [[nodiscard]] Token expr_1() noexcept;
 
-  [[nodiscard]] Result parse_expr_0() noexcept;
+  [[nodiscard]] Token expr_0() noexcept;
 
-  [[nodiscard]] Result parse_function() noexcept;
+  [[nodiscard]] Token number() noexcept;
+
+  [[nodiscard]] Token function() noexcept;
+
+  [[nodiscard]] Token constant() noexcept;
+
+  [[nodiscard]] Token subexpression() noexcept;
 
   [[no_unique_address]] Lexer &_lexer;
   [[no_unique_address]] Token _current [[indeterminate]];

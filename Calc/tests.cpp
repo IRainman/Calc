@@ -11,7 +11,6 @@
 #include "tests.hpp"
 #include "tests_equasions.hpp"
 #include <cfenv>
-#include <chrono>
 
 [[nodiscard]] constexpr static Value bin(const std::string_view x) noexcept {
   UInteger bin_val;
@@ -85,49 +84,31 @@ std::string calc_tests() {
 #ifdef CALC_TESTS_DEV_ENABLED
   unsigned int failed = 0;
 #else
-  constexpr unsigned int count = 1'000'000;
+  constexpr unsigned int count = 100'000;
   for (unsigned int i = count; --i != 0;)
 #endif
   {
     for (const auto &t : tests) {
       Lexer l(t.first);
       Parser p(l);
-      [[maybe_unused]] const auto value = p.parse();
-      const auto has_errors =
-#ifdef CALC_USE_ERROR_TOKEN
-          value.type == Token::Type::ERROR;
-#else
-          IssueManager::has_errors();
-#endif
+      const auto token = p.result();
+      const auto is_issue = token.type == Token::Type::ISSUE;
 
 #ifdef CALC_TESTS_DEV_ENABLED // Development
-      Formatter::Result buffer_value [[indeterminate]];
-      Formatter::Result buffer_test [[indeterminate]];
+      Result buffer_value [[indeterminate]];
+      Result buffer_test [[indeterminate]];
 
       const std::string_view formated_value(buffer_value.data(),
-                                            Formatter::format(value
-#ifdef CALC_USE_ERROR_TOKEN
-                                                                  .number
-#endif
-                                                              ,
-                                                              buffer_value));
-      const std::string_view formated_test(
-          buffer_test.data(), Formatter::format(t.second, buffer_test));
+                                            value(token.number, buffer_value));
+      const std::string_view formated_test(buffer_test.data(),
+                                           value(t.second, buffer_test));
 
-      const auto is_error = std::isnan(t.second) && has_errors;
-      const auto is_nan = std::isnan(t.second) && std::isnan(value);
-      const auto is_equal = t.second == value
-#ifdef CALC_USE_ERROR_TOKEN
-                                            .number
-#endif
-          ;
+      const auto is_error = std::isnan(t.second) && is_issue;
+      const auto is_nan = std::isnan(t.second) && std::isnan(token.number);
+      const auto is_equal = t.second == token.number;
       const auto is_less_than_epsilon =
-          Identifiers::compare(t.second, value
-#ifdef CALC_USE_ERROR_TOKEN
-                                             .number
-#endif
-          );
-      const auto is_normal = std::isnormal(value);
+          Identifiers::compare(t.second, token.number);
+      const auto is_normal = std::isnormal(token.number);
       const auto is_identical_output = formated_value == formated_test;
 
       const auto passed = is_error || is_nan || is_identical_output;
@@ -136,11 +117,8 @@ std::string calc_tests() {
         ++failed;
       }
 
-#ifndef CALC_USE_ERROR_TOKEN
-      Formatter::Summary buffer_summary [[indeterminate]];
-      const std::string_view formated_summary(
-          buffer_summary.data(), Formatter::create_summary(buffer_summary));
-#endif
+      Result buffer [[indeterminate]];
+      const std::string_view formated_report(buffer.data(), report(buffer));
 
       // clang-format off
       output_end = fmt::format_to(output_end, FMT_COMPILE("Test {}: {}\n"
@@ -162,27 +140,16 @@ std::string calc_tests() {
                                                           is_less_than_epsilon,
                                                           is_normal,
                                                           is_identical_output,
-                                                          value,
+                                                          token.number,
                                                           t.second,
-                                             has_errors ? "" : formated_value,
-                                            !has_errors ? "" : 
-#ifdef CALC_USE_ERROR_TOKEN
-                                                          value.error_text
-#else
-                                                          formated_summary
-#endif
+                                               is_issue ? "" : formated_value,
+                                              !is_issue ? "" : formated_report
 );
       // clang-format on
 #else // Performance
-      if (has_errors) {
-        Formatter::Summary buffer_summary [[indeterminate]];
-        [[maybe_unused]] const std::string_view formated_summary(
-            buffer_summary.data(), Formatter::create_summary(buffer_summary));
-      } else {
-        Formatter::Result buffer_value [[indeterminate]];
-        [[maybe_unused]] const std::string_view formated_value(
-            buffer_value.data(), Formatter::format(value, buffer_value));
-      }
+      Result buffer [[indeterminate]];
+      [[maybe_unused]] const std::string_view formated(buffer.data(),
+                                                       result(token, buffer));
 #endif
     }
   }
