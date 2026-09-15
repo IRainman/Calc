@@ -11,9 +11,7 @@ enum class Issue : ParamCount {
   unparsable = 0,
   extraneous_input = 1,
   too_many_in_expression,
-  expected_left_parenthesis,
-  expected_right_parenthesis,
-  expected_right_parenthesis_or_comma,
+  expected_parenthesis,
   incorrect_parameters_count,
   too_many_parameters,
   expected_number,
@@ -21,8 +19,7 @@ enum class Issue : ParamCount {
 };
 constexpr static const auto issue_text = std::to_array<std::string_view>(
     {"unparsable", "extraneous input", "too many ^ in expression",
-     "expected left parenthesis", "expected right parenthesis",
-     "expected right parenthesis or comma", "incorrect parameters count",
+     "expected parenthesis", "incorrect parameters count",
      "too many parameters", "expected number"});
 static_assert(static_cast<uint8_t>(Issue::_count) == issue_text.size());
 

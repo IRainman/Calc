@@ -16,6 +16,12 @@ Issues static issues;
  */
 Token &issue(Token &current, const EquationSize position,
              const Issue index) noexcept {
+  if (!issues.empty()) {
+    auto i = issues.back().issue;
+    if (i.index == index && i.position == position) {
+      return issues.back();
+    }
+  }
   current.type = Token::Type::ISSUE;
   current.issue.position = position;
   current.issue.index = index;

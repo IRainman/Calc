@@ -190,8 +190,7 @@ void Parser::advance() noexcept { _lexer.next(_current); }
     advance();
     return result;
   } else {
-    return issue(_current, _lexer.position(),
-                 Issue::expected_right_parenthesis);
+    return issue(_current, _lexer.position(),Issue::expected_parenthesis);
   }
 }
 
@@ -259,7 +258,7 @@ void Parser::advance() noexcept { _lexer.next(_current); }
       default:
         [[unlikely]] {
           return issue(_current, _lexer.position(),
-                       Issue::expected_right_parenthesis_or_comma);
+                       Issue::expected_parenthesis);
         }
       }
     } while (count != static_cast<ParamCount>(parameters.size()));
@@ -267,7 +266,7 @@ void Parser::advance() noexcept { _lexer.next(_current); }
     [[unlikely]] return issue(_current, _lexer.position(),
                               Issue::too_many_parameters);
   } else [[unlikely]] {
-    return issue(_current, _lexer.position(), Issue::expected_left_parenthesis);
+    return issue(_current, _lexer.position(), Issue::expected_parenthesis);
   }
 }
 

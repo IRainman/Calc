@@ -10,8 +10,6 @@
 Token &issue(Token &current, const EquationSize position,
              const Issue index) noexcept;
 
-Token &make_issue(const EquationSize position, const Issue index) noexcept;
-
 char *report(Result &ret) noexcept;
 
 #endif

@@ -13,6 +13,7 @@
 // clang-format off
 static constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>({
 	// syntax errors should produce error:
+	{ "(((((((((((((((((((((((((((((((((((((((((((((((((",	std::numeric_limits<Value>::quiet_NaN() },
 	{ "()",													std::numeric_limits<Value>::quiet_NaN() },
 	{ "2 + )",												std::numeric_limits<Value>::quiet_NaN() },
 	{ "1-",													std::numeric_limits<Value>::quiet_NaN() },
