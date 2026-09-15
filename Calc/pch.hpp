@@ -138,7 +138,7 @@ __pragma(warning(pop));
  * Types using for calculation.
  */
 using EquationSize = size_t;
-using ParamCount = int8_t;
+using ParamCount = uint8_t;
 using Integer = std::int64_t;
 using UInteger = std::uint64_t;
 
