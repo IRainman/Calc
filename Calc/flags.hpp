@@ -11,21 +11,22 @@
 #ifndef NDEBUG
 #define CALC_TESTS_DEV_ENABLED // if commented test is measurement performance
 #endif
-
+//---------------------------------------------------------------------------
 #ifdef CALC_TESTS_DEV_ENABLED
 // TODO
 // #define CALC_TEST_EQUATION_SOLVER // WIP
-
-// TODO
+//---------------------------------------------------------------------------
+// TODO?
 #define CALC_SUPPORT_FRACTIONAL_OUTPUT // WIP
-#endif
-
+//---------------------------------------------------------------------------
+// TODO?
+// CALC_USED_CONDITIONS
+#ifdef CALC_USED_CONDITIONS
+// CALC_USED_EQUALS_OPERATORS
+// CALC_USED_CYCLES
 #endif
 //---------------------------------------------------------------------------
-// std::map<std::string_view, const Fn> // Tests: time is: 37931ms.
-// std::unordered_map<std::string_view, const Fn> // Tests: time is: 31515ms.
-// flat_map<std::string_view, const Fn>  // TODO: std not available, boost no
-// properly compiled.
-//---------------------------------------------------------------------------
+#endif
+#endif
 
 #endif

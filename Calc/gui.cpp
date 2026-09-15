@@ -249,9 +249,9 @@ private:
   constexpr void gui_tests() {
     std::string output;
     output.resize(
-#ifdef CALC_TESTS_DEV_ENABLED
+#ifdef CALC_TESTS_DEV_ENABLED // Development
         128 * 1024
-#else
+#else // Performance
         std::hardware_destructive_interference_size
 #endif
     );
@@ -259,9 +259,9 @@ private:
     auto output_end = output.data();
 
     const auto start = std::chrono::steady_clock::now();
-#ifdef CALC_TESTS_DEV_ENABLED
+#ifdef CALC_TESTS_DEV_ENABLED // Development
     unsigned int failed = 0;
-#else
+#else // Performance
     constexpr unsigned int count = 100;
     for (unsigned int i = count; --i != 0;)
 #endif
@@ -284,9 +284,10 @@ private:
         const auto &[test_failed, test_equasion] = test.second;
 
         // If result unexpected:
-        if (test_failed != normalizer.failed() || test_equasion != _equasion) {
+        if (test_failed != normalizer.failed() || test_equasion != _equasion)
+            [[unlikely]] {
           set_result(_equasion.data(), _equasion.size());
-#ifdef CALC_TESTS_DEV_ENABLED
+#ifdef CALC_TESTS_DEV_ENABLED // Development
           ++failed;
 #endif
         }
@@ -295,7 +296,7 @@ private:
 
     const auto end = std::chrono::steady_clock::now();
 
-#ifdef CALC_TESTS_DEV_ENABLED
+#ifdef CALC_TESTS_DEV_ENABLED // Development
     output_end = fmt::format_to(
         output_end,
         FMT_COMPILE("Tests:\n"
@@ -305,7 +306,7 @@ private:
         std::chrono::duration_cast<std::chrono::microseconds>(
             (end - start) / normalizer_tests.size())
             .count());
-#else
+#else // Performance
     output_end =
         fmt::format_to(output_end, FMT_COMPILE("Time is {}µs per case."),
                        std::chrono::duration_cast<std::chrono::microseconds>(

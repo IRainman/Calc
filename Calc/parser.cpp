@@ -117,9 +117,9 @@ void Parser::advance() noexcept { _lexer.next(_current); }
       [[indeterminate]];
   do {
     tokens[count] = expr_1();
-    if (_current.type == Token::Type::POW) {
+    if (_current.type == Token::Type::POW) [[unlikely]] {
       advance();
-    } else {
+    } else [[likely]] {
       break;
     }
   } while (++count != static_cast<ParamCount>(tokens.size()));
@@ -129,7 +129,7 @@ void Parser::advance() noexcept { _lexer.next(_current); }
   }
 
   auto &result = tokens[count];
-  if (--count != static_cast<ParamCount>(-1)) {
+  if (--count != static_cast<ParamCount>(-1)) [[unlikely]] {
     if (result.type == Token::Type::NUM) [[likely]] {
       do {
         if (tokens[count].type == Token::Type::NUM) [[likely]] {
@@ -189,8 +189,8 @@ void Parser::advance() noexcept { _lexer.next(_current); }
   if (_current.type == Token::Type::RPAREN) [[likely]] {
     advance();
     return result;
-  } else {
-    return issue(_current, _lexer.position(),Issue::expected_parenthesis);
+  } else [[unlikely]] {
+    return issue(_current, _lexer.position(), Issue::expected_parenthesis);
   }
 }
 
@@ -226,35 +226,33 @@ void Parser::advance() noexcept { _lexer.next(_current); }
       parameters[count] = expr_4();
       ++count;
       switch (_current.type) {
-      case Token::Type::RPAREN:
-        [[likely]] {
-          advance();
-          if (check.is_function() && check.params_count_is_valid(count))
-              [[likely]] {
-            std::array<Value, std::numeric_limits<ParamCount>::max()> values
-                [[indeterminate]];
-            for (ParamCount i = 0; i != count; ++i) {
-              if (parameters[i].type == Token::Type::NUM) [[likely]] {
-                values[i] = parameters[i].number;
-              } else [[unlikely]] {
-                return issue(_current, function_start_pos,
-                             Issue::expected_number);
-              }
+      case Token::Type::RPAREN: {
+        advance();
+        if (check.is_function() && check.params_count_is_valid(count))
+            [[likely]] {
+          std::array<Value, std::numeric_limits<ParamCount>::max()> values
+              [[indeterminate]];
+          for (ParamCount i = 0; i != count; ++i) {
+            if (parameters[i].type == Token::Type::NUM) [[likely]] {
+              values[i] = parameters[i].number;
+            } else [[unlikely]] {
+              return issue(_current, function_start_pos,
+                           Issue::expected_number);
             }
-            result.type = Token::Type::NUM;
-            result.number = caller({values.begin(), values.begin() + count});
-            return result;
-          } else [[unlikely]] {
-            function_start_pos -= result.identifier->first.size();
-            return issue(_current, function_start_pos,
-                         Issue::incorrect_parameters_count);
           }
+          result.type = Token::Type::NUM;
+          result.number = caller({values.begin(), values.begin() + count});
+          return result;
+        } else [[unlikely]] {
+          function_start_pos -= result.identifier->first.size();
+          return issue(_current, function_start_pos,
+                       Issue::incorrect_parameters_count);
         }
-      case Token::Type::COMA:
-        [[likely]] {
-          advance();
-          continue;
-        }
+      }
+      case Token::Type::COMA: {
+        advance();
+        continue;
+      }
       default:
         [[unlikely]] {
           return issue(_current, _lexer.position(),

@@ -496,9 +496,9 @@ private:
      * @brief Classifies whitespace and separator characters.
      *
      * Normalized to single ASCII space (0x20). Includes:
-     *   - ASCII control: tab, newline, vertical tab, form feed, carriage
-     * return
      *   - ASCII space (0x20)
+     *   - ASCII control: tab, newline, vertical tab, form feed, carriage
+     *                    return
      *   - ANSI non-breaking space (0xA0)
      *   - Unicode spaces: general punctuation (0x2000-0x202F), fullwidth
      * (0x3000)
@@ -507,8 +507,8 @@ private:
      * @return true if c is a separator/whitespace character
      */
     [[nodiscard]] inline static constexpr bool is_separator(WCHAR c) noexcept {
-      return (c >= L'\t' && c <= L'\r' ||   // ASCII control characters
-              c == L' ' ||                  // ASCII space
+      return (c == L' ' ||                  // ASCII space
+              c >= L'\t' && c <= L'\r' ||   // ASCII control characters
               c == 0xA0 ||                  // ANSI NO-BREAK SPACE
               c >= 0x2000 && c <= 0x202F || // Unicode general punctuation
               c == 0x3000                   // Unicode fullwidth space
@@ -558,14 +558,14 @@ private:
     /**
      * @brief Classifies printable ASCII characters.
      *
-     * ASCII range 0x21-0x7E (! through ~) that can pass through unchanged.
+     * ASCII range 0x20-0x7E (' ' through '~') that can pass through unchanged.
      *
      * @param c Character to test
      * @return true if c is in the printable ASCII range
      */
     [[nodiscard]] inline static constexpr bool
     is_printable_ascii(WCHAR c) noexcept {
-      return c >= 0x21 && c <= 0x7E; // ASCII ! to ~
+      return c >= 0x20 && c <= 0x7E; // ASCII ' ' to '~'
     }
 
     /**
@@ -672,16 +672,16 @@ private:
         const auto c = *input;
 
         // Exit superscript mode if encountering a non-superscript character
-        if (!is_superscript(c)) {
+        if (!is_superscript(c)) [[likely]] {
           only_superscript = false;
-          if (in_superscript) {
+          if (in_superscript) [[unlikely]] {
             in_superscript = false;
             *output++ = ')';
           }
         }
 
         // Exit function mode when encountering function argument boundary
-        if (in_function && is_function_end(c)) {
+        if (in_function && is_function_end(c)) [[unlikely]] {
           --in_function;
           *output++ = ')';
         }
@@ -751,7 +751,7 @@ private:
         case 0xFE61: // ﹡ SMALL ASTERISK
           *output++ = '*';
           break;
-
+#ifdef CALC_USED_EQUALS_OPERATORS
         // TODO https://www.fileformat.info/info/unicode/category/Sm/list.htm
         // Relational Operators
         case 0x2260: // ≠
@@ -776,9 +776,9 @@ private:
           output = append(output, "~=");
           break;
 
-        // case PLUS-MINUS SIGN' (U+00B1) ±
-        // case MINUS-OR-PLUS SIGN' (U+2213) ∓
-
+          // case PLUS-MINUS SIGN' (U+00B1) ±
+          // case MINUS-OR-PLUS SIGN' (U+2213) ∓
+#endif
         // Fractions - ANSI
         case 0xBC: // ¼
           output = append(output, "1/4");

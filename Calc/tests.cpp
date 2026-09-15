@@ -70,9 +70,9 @@ static_assert(std::is_standard_layout_v<CalcWindowState>);
 std::string calc_tests() {
   std::string output;
   output.resize(
-#ifdef CALC_TESTS_DEV_ENABLED
+#ifdef CALC_TESTS_DEV_ENABLED // Development
       128 * 1024
-#else
+#else // Performance
       std::hardware_destructive_interference_size
 #endif
   );
@@ -81,9 +81,9 @@ std::string calc_tests() {
 
   const auto start = std::chrono::steady_clock::now();
 
-#ifdef CALC_TESTS_DEV_ENABLED
+#ifdef CALC_TESTS_DEV_ENABLED // Development
   unsigned int failed = 0;
-#else
+#else // Performance
   constexpr unsigned int count = 100'000;
   for (unsigned int i = count; --i != 0;)
 #endif
@@ -155,7 +155,7 @@ std::string calc_tests() {
   }
   const auto end = std::chrono::steady_clock::now();
 
-#ifdef CALC_TESTS_DEV_ENABLED
+#ifdef CALC_TESTS_DEV_ENABLED // Development
   output_end = binary_and_hex_parsing(output_end);
 
   output_end =
@@ -169,9 +169,9 @@ std::string calc_tests() {
                      std::chrono::duration_cast<std::chrono::nanoseconds>(
                          (end - start) / tests.size())
                          .count());
-#else
+#else // Performance
   output_end =
-      fmt::format_to(output_end, FMT_COMPILE("Tests time is: {}ns per case."),
+      fmt::format_to(output_end, FMT_COMPILE("Performance tests time is: {}ns per case."),
                      std::chrono::duration_cast<std::chrono::nanoseconds>(
                          (end - start) / (tests.size() * count))
                          .count());
