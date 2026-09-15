@@ -112,11 +112,11 @@ public:
    *              ↓
    *            Token
    *              ↓
-   *
+   *            Result
    *              ↓
    *    ASCII to system UTF-16 (set_result)
    *              ↓
-   *     System UTF-16 Result
+   *     System UTF-16 result
    */
   [[nodiscard]] constexpr BOOL calc(const WPARAM wP) noexcept {
     if (LOWORD(wP) == IDC_BUTTON_CALC && HIWORD(wP) == BN_CLICKED) {
