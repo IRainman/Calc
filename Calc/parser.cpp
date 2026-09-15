@@ -31,8 +31,10 @@ const auto &ids = Identifiers::get();
     }
   case Token::Type::ISSUE:
     [[unlikely]] return _current;
+  default:
+    [[unlikely]] return issue(_current, _lexer.position(),
+                              Issue::extraneous_input);
   }
-  return issue(_current, _lexer.position(), Issue::unexpected);
 }
 
 void Parser::advance() noexcept { _lexer.next(_current); }
