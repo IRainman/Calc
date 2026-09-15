@@ -243,7 +243,7 @@ void Parser::advance() noexcept { _lexer.next(_current); }
               }
             }
             result.type = Token::Type::NUM;
-            result.number = caller({values.begin(), count});
+            result.number = caller({values.begin(), values.begin() + count});
             return result;
           } else [[unlikely]] {
             function_start_pos -= result.identifier->first.size();
