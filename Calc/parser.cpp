@@ -15,6 +15,7 @@ const auto &ids = Identifiers::get();
 #ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4061) // enumerator in switch of enum not explicitly handled
+#pragma warning(disable : 4062) // enumerator in switch of enum not handled
 #endif
 // clang-format on
 
@@ -187,7 +188,8 @@ void Parser::advance() noexcept { _lexer.next(_current); }
     advance();
     return result;
   } else {
-    return issue(_current, _lexer.position(), Issue::expected_right_parenthesis);
+    return issue(_current, _lexer.position(),
+                 Issue::expected_right_parenthesis);
   }
 }
 
@@ -234,7 +236,7 @@ void Parser::advance() noexcept { _lexer.next(_current); }
               if (parameters[i].type == Token::Type::NUM) [[likely]] {
                 values[i] = parameters[i].number;
               } else [[unlikely]] {
-                return issue(result, function_start_pos,
+                return issue(_current, function_start_pos,
                              Issue::expected_number);
               }
             }
@@ -243,7 +245,7 @@ void Parser::advance() noexcept { _lexer.next(_current); }
             return result;
           } else [[unlikely]] {
             function_start_pos -= result.identifier->first.size();
-            return issue(result, function_start_pos,
+            return issue(_current, function_start_pos,
                          Issue::incorrect_parameters_count);
           }
         }
