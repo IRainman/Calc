@@ -414,7 +414,7 @@ private:
   /// Reference to input view
   [[no_unique_address]] const EditView &_edit;
   /// Count of normalized input chars
-  [[no_unique_address]] uint32_t _normalized;
+  [[no_unique_address]] UINT _normalized;
 
   /**
    * @struct Operation
@@ -442,7 +442,7 @@ private:
    */
   struct Operation {
     /// Reference to counter tracking processed input chars
-    uint32_t &normalized;
+    UINT &normalized;
     /// UTF-16 input string pointer
     LPCWSTR begin;
     /// Length of input string in characters
@@ -1163,7 +1163,7 @@ private:
         *output++ = ')';
       }
 
-      return static_cast<uint32_t>(output - buffer);
+      return static_cast<UINT>(output - buffer);
     }
   };
 };

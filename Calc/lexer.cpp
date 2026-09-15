@@ -158,7 +158,7 @@ void Lexer::next(Token &current) noexcept {
       advance(read_ident(current));
       goto valid_token_return;
 
-    } else if (cur == ' ') {
+    } else if (cur == ' ') [[unlikely]] {
       advance(read_separator());
       is_separator = true;
       continue;
@@ -170,7 +170,7 @@ void Lexer::next(Token &current) noexcept {
     }
   valid_token_return:
     if (!is_separator && implicit_mult_first(_previous) &&
-        implicit_mult_second(current)) {
+        implicit_mult_second(current)) [[unlikely]] {
       _delayed = current;
       current.type = Token::Type::MUL;
     }
