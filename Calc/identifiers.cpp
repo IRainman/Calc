@@ -541,10 +541,6 @@ accumulate(std::span<Value> params) noexcept {
 
 // for better precision
 [[nodiscard]] static Value normalize_sine(Value value) noexcept {
-  if (std::isnan(value)) {
-    // remove -nan
-    return std::numeric_limits<Value>::quiet_NaN();
-  }
   if (std::isnormal(value)) {
     // upgrade to significant nearest values
     constexpr Value sqrt2_over_2 =
@@ -565,10 +561,6 @@ accumulate(std::span<Value> params) noexcept {
 
 // for better precision
 [[nodiscard]] static Value normalize_tan(Value value) noexcept {
-  if (std::isnan(value)) {
-    // remove -nan
-    return std::numeric_limits<Value>::quiet_NaN();
-  }
   // upgrade to infinity
   constexpr Value huge = static_cast<Value>(huge_value_precision);
   if (value >= huge) {
