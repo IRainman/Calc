@@ -61,7 +61,7 @@ struct Token {
 
     // If token is an error, there is a small helper that handle it.
     struct {
-      [[no_unique_address]] EquationSize position [[indeterminate]];
+      [[no_unique_address]] uint32_t position [[indeterminate]];
       [[no_unique_address]] Issue index [[indeterminate]];
     } issue;
   };

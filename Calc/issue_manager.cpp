@@ -23,7 +23,7 @@ Token &issue(Token &current, const EquationSize position,
     }
   }
   current.type = Token::Type::ISSUE;
-  current.issue.position = position;
+  current.issue.position = static_cast<uint32_t>(position);
   current.issue.index = index;
   return issues.emplace_back(current);
 }
