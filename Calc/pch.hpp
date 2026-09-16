@@ -33,19 +33,20 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 //---------------------------------------------------------------------------
 // Calc compile options:
 // clang-format off
-__pragma(warning(disable : 4365)); // signed/unsigned mismatch
-__pragma(warning(disable : 4464)); // relative include path contains '..'
-__pragma(warning(disable : 4514)); // unreferenced inline function has been removed
-__pragma(warning(disable : 4623)); // default constructor was implicitly defined as deleted
-__pragma(warning(disable : 4625)); // copy constructor was implicitly defined as deleted
-__pragma(warning(disable : 4626)); // assignment operator was implicitly defined as deleted
-__pragma(warning(disable : 4668)); // is not defined as a preprocessor macro, replacing with '0' for 'directives'
-__pragma(warning(disable : 4710)); // ' ': function not inlined
-__pragma(warning(disable : 4711)); // function ' ' selected for automatic inline expansion
-__pragma(warning(disable : 5027)); // move assignment operator was implicitly defined as deleted
-__pragma(warning(disable : 5030)); // attribute ' ' is not recognized
-__pragma(warning(disable : 5045)); // warning for unsafe buffer usage
-__pragma(warning(disable : 5222)); // all unscoped attribute names are reserved for future standardization
+#pragma warning(disable : 4365) // signed/unsigned mismatch
+#pragma warning(disable : 4464) // relative include path contains '..'
+#pragma warning(disable : 4514) // unreferenced inline function has been removed
+#pragma warning(disable : 4623) // default constructor was implicitly defined as deleted
+#pragma warning(disable : 4625) // copy constructor was implicitly defined as deleted
+#pragma warning(disable : 4626) // assignment operator was implicitly defined as deleted
+#pragma warning(disable : 4668) // is not defined as a preprocessor macro, replacing with '0' for 'directives'
+#pragma warning(disable : 4710) // ' ': function not inlined
+#pragma warning(disable : 4711) // function ' ' selected for automatic inline expansion
+#pragma warning(disable : 5026) // 'x': move constructor was implicitly defined as deleted
+#pragma warning(disable : 5027) // move assignment operator was implicitly defined as deleted
+#pragma warning(disable : 5030) // attribute ' ' is not recognized
+#pragma warning(disable : 5045) // warning for unsafe buffer usage
+#pragma warning(disable : 5222) // all unscoped attribute names are reserved for future standardization
 // clang-format on
 //---------------------------------------------------------------------------
 #include "flags.hpp"
@@ -71,25 +72,34 @@ __pragma(warning(disable : 5222)); // all unscoped attribute names are reserved 
 //---------------------------------------------------------------------------
 // Zmij compile options:
 // clang-format off
+#if CALC_USE_128_BIT_FLOAT
+#warning "128-bit float type isn't supported by zmij. The library convert any output values to 64-bit double."
+#endif
 // Tests time is : 81207ms. Without Tests time is : 118164ms.
-__pragma(warning(push));
-__pragma(warning(disable : 4100)); // unreferenced formal parameter
-__pragma(warning(disable : 4189)); // local variable is initialized but not referenced
-__pragma(warning(disable : 4324)); // structure was padded due to alignment specifier
-__pragma(warning(disable : 4244)); // conversion from 'double' to 'float', possible loss of data
-__pragma(warning(disable : 4554)); // '<<' : check operator precedence for possible error; use parentheses to...
-__pragma(warning(disable : 4390)); // empty control statement has no effect
-__pragma(warning(disable : 4456)); // declaration of 'x' hides previous local declaration
-__pragma(warning(disable : 4459)); // declaration of 'x' hides global declaration
-__pragma(warning(disable : 4804)); // '!=' : unsafe use of type 'bool' in operation
+#pragma warning(push)
+#pragma warning(disable : 4100) // unreferenced formal parameter
+#pragma warning(disable : 4189) // local variable is initialized but not referenced
+#pragma warning(disable : 4324) // structure was padded due to alignment specifier
+#pragma warning(disable : 4388) // 'operator': signed/unsigned mismatch
+#pragma warning(disable : 4242) // 'operator': conversion from 'type_x' to 'type_y', possible loss of data
+#pragma warning(disable : 4244) // conversion from 'type_x' to 'type_y', possible loss of data
+#pragma warning(disable : 4554) // 'operator' : check operator precedence for possible error; use parentheses to...
+#pragma warning(disable : 4390) // empty control statement has no effect
+#pragma warning(disable : 4456) // declaration of 'x' hides previous local declaration
+#pragma warning(disable : 4459) // declaration of 'x' hides global declaration
+#pragma warning(disable : 4804) // 'operator' : unsafe use of type 'type_x' in operation
+#pragma warning(disable : 4820) // 'x': 'n' bytes padding added after data member 'y'
+#pragma warning(disable : 5245) // '`anonymous-namespace'x': unreferenced function with internal linkage has been removed
 // clang-format on
 #include "../../zmij/zmij.cc"
-__pragma(warning(pop));
-#if CALC_USE_128_BIT_FLOAT
-#warning                                                                       \
-    "128-bit float type isn't supported by zmij. The library convert any output values to 64-bit double."
-#endif
+#pragma warning(pop)
 //---------------------------------------------------------------------------
+// clang-format off
+#pragma warning(push)
+#pragma warning(disable : 4061) // enumerator 'x' in switch of enum 'y' is not explicitly handled by a case label
+#pragma warning(disable : 4574) // 'x' is defined to be 'n': did you mean to use '#if x'?
+#pragma warning(disable : 4582) // constructor is not implicitly called
+#pragma warning(disable : 4820) // suppress "padding added after data member" for this struct
 // fmt compile options:
 #define FMT_HEADER_ONLY 1
 #define FMT_USE_FLOAT 0
@@ -119,12 +129,16 @@ __pragma(warning(pop));
 #define FMT_STATIC_THOUSANDS_SEPARATOR '\''
 // used because otherwise fmt produces much larger code:
 #define FMT_ENFORCE_COMPILE_STRING
+// clang-format on
 #include "../../fmt/include/fmt/compile.h"
+#pragma warning(pop)
 //---------------------------------------------------------------------------
 // fast_float compile options:
+// clang-format off
+#pragma warning(push)
+#pragma warning(disable : 4820) // suppress "padding added after data member" for this struct
 #if CALC_USE_128_BIT_FLOAT
-#warning                                                                       \
-    "128-bit float type isn't supported by fast_float. The library convert any user input values to 64-bit double."
+#warning "128-bit float type isn't supported by fast_float. The library convert any user input values to 64-bit double."
 #endif
 // https://github.com/fastfloat/fast_float/pull/307
 // Tests time is: 48459ms.
@@ -132,7 +146,9 @@ __pragma(warning(pop));
 #define FASTFLOAT_ONLY_ROUNDS_TO_NEAREST_SUPPORTED
 #define FASTFLOAT_ISNOT_CHECKED_BOUNDS
 // Wo options Tests time is: 53278ms. Original Tests time is: 56140ms.
+// clang-format on
 #include "../../fast_float/include/fast_float/fast_float.h"
+#pragma warning(pop)
 //---------------------------------------------------------------------------
 /**
  * Types using for calculation.
