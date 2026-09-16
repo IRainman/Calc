@@ -61,7 +61,7 @@ Lexer::read_number(Token &current) const noexcept {
   const auto res =
       fast_float::from_chars_advanced(begin, end, current.number, options);
 
-  if (res.ec == std::errc{}) [[likely]] {
+  if (res.ec == std::errc{}) {
     [[assume(current.number >= 0 &&
              current.number <= std::numeric_limits<Value>::max())]];
 
@@ -70,11 +70,8 @@ Lexer::read_number(Token &current) const noexcept {
     [[assume(res.ptr - begin >= 1)]];
     return static_cast<EquationSize>(res.ptr - begin);
 
-  } else [[unlikely]] {
-    /*
-     * Handles a value which is either too small or too large to parse
-     * correctly.
-     */
+  } else {
+    // Handles a value which is either too small or too large to parse.
     return return_unparsable(current);
   }
 }
@@ -92,17 +89,15 @@ Lexer::read_ident(Token &current) const noexcept {
   }
 
   if (const auto identifier = ids.find(_view.substr(0, n));
-      identifier != ids.end()) [[likely]] {
+      identifier != ids.end()) {
+    const auto &[_, c] = identifier->second;
 
-    const auto &[_, check] = identifier->second;
-
-    current.type =
-        check.is_function() ? Token::Type::FUNCT : Token::Type::CONST;
+    current.type = c.is_function() ? Token::Type::FUNCT : Token::Type::CONST;
     current.identifier = &(*identifier);
 
     return n;
 
-  } else [[unlikely]] {
+  } else {
     return return_unparsable(current);
   }
 }
@@ -131,17 +126,18 @@ implicit_mult_second(const Token &current) noexcept {
 }
 
 void Lexer::next(Token &current) noexcept {
-  if (_delayed.type != Token::Type::ISSUE) [[unlikely]] {
+  if (_delayed.type != Token::Type::ISSUE) {
     current = _delayed;
     _delayed.type = Token::Type::ISSUE;
     _previous = current.type;
     return;
   }
+
   bool is_separator = false;
 
-  while (!_view.empty()) [[likely]] {
-
+  while (!_view.empty()) {
     const auto &cur = _view.front();
+
     // https://en.cppreference.com/w/cpp/language/ascii
     [[assume(cur >= 32 && cur <= 126)]];
 
@@ -158,19 +154,19 @@ void Lexer::next(Token &current) noexcept {
       advance(read_ident(current));
       goto valid_token_return;
 
-    } else if (cur == ' ') [[unlikely]] {
+    } else if (cur == ' ') {
       advance(read_separator());
       is_separator = true;
       continue;
 
-    } else [[unlikely]] {
+    } else {
       // invalid_token_return
       return_unparsable(current);
       return;
     }
   valid_token_return:
     if (!is_separator && implicit_mult_first(_previous) &&
-        implicit_mult_second(current)) [[unlikely]] {
+        implicit_mult_second(current)) {
       _delayed = current;
       current.type = Token::Type::MUL;
     }
@@ -178,5 +174,5 @@ void Lexer::next(Token &current) noexcept {
     return;
   }
 
-  [[likely]] return_result(current);
+  return_result(current);
 }

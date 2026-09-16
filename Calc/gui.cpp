@@ -121,13 +121,17 @@ public:
   [[nodiscard]] constexpr BOOL calc(const WPARAM wP) noexcept {
     if (LOWORD(wP) == IDC_BUTTON_CALC && HIWORD(wP) == BN_CLICKED) {
       const EditView input(_layout.handle(0));
+
       Normalizer to_ascii(input, _equasion);
+
       Token token [[indeterminate]];
-      if (to_ascii.failed()) [[unlikely]] {
+      if (to_ascii.failed()) {
         token = issue(token, to_ascii.normalized(), Issue::unparsable);
-      } else [[likely]] {
+      } else {
         Lexer lexer(_equasion);
+
         Parser parser(lexer);
+
         token = parser.result();
       }
       Result text [[indeterminate]];
@@ -247,14 +251,7 @@ private:
    * @see normalizer_tests, Normalizer, Edit, EditView
    */
   constexpr void gui_tests() {
-    std::string output;
-    output.resize(
-#ifdef CALC_TESTS_DEV_ENABLED // Development
-        128 * 1024
-#else // Performance
-        std::hardware_destructive_interference_size
-#endif
-    );
+    std::string &output = _equasion;
 
     auto output_end = output.data();
 
@@ -266,12 +263,12 @@ private:
     for (unsigned int i = count; --i != 0;)
 #endif
     for (const auto &test : normalizer_tests) {
-      {
+      { // Write UTF-8 text to the input Edit
         const auto &text = test.first;
 
-        // Write UTF-8 text to the input Edit
         Edit input(_layout.handle(0), text.length());
-        input.write(text.data(), text.data() + text.size());
+
+        input.write(text.data(), text.size());
       }
 
       {
@@ -284,8 +281,7 @@ private:
         const auto &[test_failed, test_equasion] = test.second;
 
         // If result unexpected:
-        if (test_failed != normalizer.failed() || test_equasion != _equasion)
-            [[unlikely]] {
+        if (test_failed != normalizer.failed() || test_equasion != _equasion) {
           set_result(_equasion.data(), _equasion.size());
 #ifdef CALC_TESTS_DEV_ENABLED // Development
           ++failed;
@@ -295,7 +291,6 @@ private:
     }
 
     const auto end = std::chrono::steady_clock::now();
-
 #ifdef CALC_TESTS_DEV_ENABLED // Development
     output_end = fmt::format_to(
         output_end,
@@ -308,12 +303,11 @@ private:
             .count());
 #else // Performance
     output_end =
-        fmt::format_to(output_end, FMT_COMPILE("Time is {}µs per case."),
+        fmt::format_to(output_end, FMT_COMPILE("GUI is {}µs per case."),
                        std::chrono::duration_cast<std::chrono::microseconds>(
                            (end - start) / (normalizer_tests.size() * count))
                            .count());
 #endif
-
     set_result(output.data(), output_end);
   }
 #endif

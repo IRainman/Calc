@@ -66,9 +66,9 @@ char *value(Value value, Result &ret) noexcept {
  */
 char *result(Token token, Result &ret) noexcept {
   auto end = ret.data();
-  if (token.type == Token::Type::ISSUE) [[unlikely]] {
+  if (token.type == Token::Type::ISSUE) {
     end = report(ret);
-  } else [[likely]] {
+  } else {
     end = value(token.number, ret);
   }
   return end;

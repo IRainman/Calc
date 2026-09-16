@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resource>
+
+ <!-- ================================================================
+      Main Calc window
+      ================================================================ -->
+
+ <object class="wxFrame" name="CalcMainWindow">
+
+  <title>Calc</title>
+
+  <size>320,190</size>
+  <minsize>240,140</minsize>
+
+  <icon>
+   <bitmap>res/Calc_big.ico</bitmap>
+  </icon>
+
+
+  <object class="wxBoxSizer">
+
+   <orient>wxVERTICAL</orient>
+
+
+   <!--
+       Main input.
+
+       Original Win32 behavior:
+
+           horizontal = Stretch
+           vertical   = Stretch
+
+       This item receives all remaining space.
+   -->
+   <object class="sizeritem">
+
+    <object class="wxTextCtrl" name="IDC_EDIT_INPUT">
+
+     <style>wxTE_MULTILINE|wxTE_AUTO_SCROLL|wxVSCROLL</style>
+
+    </object>
+
+    <option>1</option>
+    <flag>wxEXPAND|wxALL</flag>
+    <border>2</border>
+
+   </object>
+
+
+   <!--
+       Bottom row:
+
+           [ expanding spacer ][ Enter ][ Result ]
+
+       Enter and Result have option=0, so they retain their natural
+       dimensions rather than being stretched horizontally.
+   -->
+   <object class="sizeritem">
+
+    <object class="wxBoxSizer">
+
+     <orient>wxHORIZONTAL</orient>
+
+
+     <!-- Expanding horizontal spacer -->
+     <object class="spacer">
+
+      <size>0,0</size>
+      <option>1</option>
+      <flag>wxEXPAND</flag>
+
+     </object>
+
+
+     <!-- Enter -->
+     <object class="sizeritem">
+
+      <object class="wxButton" name="IDC_BUTTON_CALC">
+
+       <label>Enter</label>
+       <default>1</default>
+
+      </object>
+
+      <option>0</option>
+      <flag>wxALIGN_CENTER_VERTICAL|wxRIGHT</flag>
+      <border>4</border>
+
+     </object>
+
+
+     <!-- Result -->
+     <object class="sizeritem">
+
+      <object class="wxTextCtrl" name="IDC_EDIT_RESULT">
+
+       <style>wxTE_RIGHT|wxTE_READONLY</style>
+
+      </object>
+
+      <option>0</option>
+      <flag>wxALIGN_CENTER_VERTICAL</flag>
+
+     </object>
+
+
+    </object>
+
+    <option>0</option>
+    <flag>wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM</flag>
+    <border>2</border>
+
+   </object>
+
+
+  </object>
+
+ </object>
+
+
+ <!-- ================================================================
+      About window
+      ================================================================ -->
+
+ <object class="wxFrame" name="AboutWindow">
+
+  <title>About Calc</title>
+
+  <size>260,150</size>
+
+  <icon>
+   <bitmap>res/Calc_small.ico</bitmap>
+  </icon>
+
+
+  <object class="wxBoxSizer">
+
+   <orient>wxVERTICAL</orient>
+
+
+   <!-- Version -->
+   <object class="sizeritem">
+
+    <object class="wxStaticText" name="IDC_STATIC_VERSION">
+
+     <label>Calc 2.12.0 2026</label>
+
+    </object>
+
+    <option>0</option>
+    <flag>wxALIGN_CENTER_HORIZONTAL|wxTOP|wxLEFT|wxRIGHT</flag>
+    <border>8</border>
+
+   </object>
+
+
+   <!-- Author -->
+   <object class="sizeritem">
+
+    <object class="wxStaticText" name="IDC_STATIC_AUTHOR">
+
+     <label>HedgehogInTheCPP</label>
+
+    </object>
+
+    <option>0</option>
+    <flag>wxALIGN_CENTER_HORIZONTAL|wxTOP|wxLEFT|wxRIGHT</flag>
+    <border>4</border>
+
+   </object>
+
+
+   <!-- Homepage -->
+   <object class="sizeritem">
+
+    <object class="wxHyperlinkCtrl" name="IDC_LINK_HOMEPAGE">
+
+     <label>Homepage</label>
+     <url>https://github.com/IRainman/Calc</url>
+
+    </object>
+
+    <option>0</option>
+    <flag>wxALIGN_CENTER_HORIZONTAL|wxTOP|wxLEFT|wxRIGHT</flag>
+    <border>8</border>
+
+   </object>
+
+
+   <!-- Close -->
+   <object class="sizeritem">
+
+    <object class="wxButton" name="IDCANCEL">
+
+     <label>Close</label>
+     <default>1</default>
+
+    </object>
+
+    <option>0</option>
+    <flag>wxALIGN_CENTER_HORIZONTAL|wxTOP|wxBOTTOM</flag>
+    <border>12</border>
+
+   </object>
+
+
+  </object>
+
+ </object>
+
+</resource>
+

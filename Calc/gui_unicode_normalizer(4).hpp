@@ -5,14 +5,16 @@
 #ifndef EQUASION_NORMALIZATON_HPP
 #define EQUASION_NORMALIZATON_HPP
 
+#ifdef CALC_ALLOW_UNICODE_IN_GUI
+
 namespace GUI {
 
 #ifdef CALC_TESTS_ENABLED
-// clang-format off
+
 /**
  * Test cases for GUI Unicode normalization.
  *
- * Each test case contains:
+ * Each test case contains: 
  *   - input: UTF-8 encoded source text as std::string_view.
  *   - failed: expected Normalizer::failed() result.
  *   - output: expected normalized ASCII text.
@@ -47,23 +49,16 @@ namespace GUI {
  *
  * Keep the cases deterministic and focused: each test should verify one
  * normalization rule or a small, intentional combination of rules.
- * @see gui_tests()
  */
+// clang-format off
 static auto normalizer_tests = std::to_array< std::pair< std::string_view, 
     std::pair< bool, std::string_view > > >({
-    // Separators
+    // Separators.
     { "\t\n\v\f\r ",  { false, "      " }}, // ASCII
-
-    // Separators
-    { "\xC2\xA0",     { false, " " } }, // ANSI 0xA0, U+00A0 NO-BREAK SPACE
-
-    // Separators
-    { "\xE3\x80\x80", { false, " " } }, // U+3000 IDEOGRAPHIC SPACE
-
-    // Separators from 0x2000 to 0x202F
-    { "\xE2\x80\x80", { false, " " } }, // U+2000 EN QUAD
-    { "\xE2\x80\x81", { false, " " } }, // U+2001 EM QUAD
-    { "\xE2\x80\x82", { false, " " } }, // U+2002 EN SPACE
+    { "\xC2\xA0",     { false, " " }},      // U+00A0 NO-BREAK SPACE
+    { "\xE2\x80\x80", { false, " " }},      // U+2000 EN QUAD
+    { "\xE2\x80\x81", { false, " " }},      // U+2001 EM QUAD
+    { "\xE2\x80\x82", { false, " " }},      // U+2002 EN SPACE
     { "\xE2\x80\x83", { false, " " } }, // U+2003 EM SPACE
     { "\xE2\x80\x84", { false, " " } }, // U+2004 THREE-PER-EM SPACE
     { "\xE2\x80\x85", { false, " " } }, // U+2005 FOUR-PER-EM SPACE
@@ -109,6 +104,7 @@ static auto normalizer_tests = std::to_array< std::pair< std::string_view,
     { "\xE2\x80\xAD", { false, " " } }, // U+202D LEFT-TO-RIGHT OVERRIDE
     { "\xE2\x80\xAE", { false, " " } }, // U+202E RIGHT-TO-LEFT OVERRIDE
     { "\xE2\x80\xAF", { false, " " } }, // U+202F NARROW NO-BREAK SPACE
+    { "\xE3\x80\x80", { false, " " }}, // U+3000 IDEOGRAPHIC SPACE
     
     // Fullwidth forms.
     {          "ＡＢＣＸＹＺａｂｃｘｙｚ０１２３４５６７８９＋－＊／（）＝＜＞＠＃％＆",
@@ -166,7 +162,7 @@ static auto normalizer_tests = std::to_array< std::pair< std::string_view,
     { "∜x×2", { false, "qdrt(x)*2" }},
     { "√x y", { false, "sqrt(x) y" }},
     { "√x,y", { false, "sqrt(x),y" }},
-    { "⎷x",   { false, "sqrt(x)" }},
+    { "⎷x",     { false, "sqrt(x)" }},
     { "√√x",  { false, "sqrt(sqrt(x))" }},
     { "√∛x",  { false, "sqrt(cbrt(x))" }},
     { "∛∜x",  { false, "cbrt(qdrt(x))" }},
@@ -317,8 +313,9 @@ static auto normalizer_tests = std::to_array< std::pair< std::string_view,
  *   - Physical constants/symbols: ℏ → "hbar", ℎ → "h", Ɛ/ℇ → "E"
  *
  * Normalization is a single-pass runtime operation used through
- * std::string::resize_and_overwrite(). References are stored with
- * [[no_unique_address]].
+ * std::string::resize_and_overwrite(). The helper functions are declared
+ * constexpr where practical, but append() uses std::memcpy, so it is not a
+ * constant-evaluation path. References are stored with [[no_unique_address]].
  *
  * @note Non-copyable and non-default-constructible utility class.
  * @note The current mappings have a maximum expansion of 12 ASCII bytes per
@@ -326,16 +323,6 @@ static auto normalizer_tests = std::to_array< std::pair< std::string_view,
  *       input.length() * 12 is therefore sufficient for the currently supported
  *       mappings, although the constructor assertion currently checks only
  *       input.length() * 4.
- *
- * Usage:
- * ```cpp
- * std::string equation(input_text.length() * 4);
- * auto normalizer = Normalizer(edit_view, equation);
- * if (normalizer.failed()) {
- *     // Handle unsupported character
- * }
- * // equation now contains normalized ASCII representation
- * ```
  *
  * @see EditView
  */
@@ -363,14 +350,13 @@ public:
    *      sufficient worst-case bound. The implementation currently asserts
    *      only capacity() > edit.length() * 4.
    * @post equasion contains the normalized ASCII representation up to the
-   * failed character or end of input if successful
+   *       failed character or end of input if successful
    *
    * @note The constructor performs the actual normalization work through
    *       resize_and_overwrite.
    * @warning Behavior is undefined if the output buffer is too small.
    */
-  constexpr explicit Normalizer(const EditView &edit,
-                                std::string &equasion) noexcept
+  explicit constexpr Normalizer(EditView &edit, std::string &equasion) noexcept
       : _equasion(equasion), _edit(edit) {
     assert(_equasion.capacity() > _edit.length() * 4);
     _equasion.resize_and_overwrite(
@@ -412,9 +398,9 @@ private:
   /// Reference to output buffer
   [[no_unique_address]] std::string &_equasion;
   /// Reference to input view
-  [[no_unique_address]] const EditView &_edit;
+  [[no_unique_address]] EditView &_edit;
   /// Count of normalized input chars
-  [[no_unique_address]] UINT _normalized;
+  [[no_unique_address]] uint32_t _normalized;
 
   /**
    * @struct Operation
@@ -442,7 +428,7 @@ private:
    */
   struct Operation {
     /// Reference to counter tracking processed input chars
-    UINT &normalized;
+    uint32_t &normalized;
     /// UTF-16 input string pointer
     LPCWSTR begin;
     /// Length of input string in characters
@@ -470,8 +456,8 @@ private:
     }
 
     /**
-     * @brief Classifies whether a character belongs to the supported
-     *        superscript code-point set.
+     * @brief Classifies whether a character belongs to the supported superscript
+     *        code-point set.
      *
      * Used by the superscript state machine to determine if the current
      * character should continue the superscript sequence or trigger its
@@ -497,7 +483,7 @@ private:
      *
      * Normalized to single ASCII space (0x20). Includes:
      *   - ASCII control: tab, newline, vertical tab, form feed, carriage
-     *                    return
+     * return
      *   - ASCII space (0x20)
      *   - ANSI non-breaking space (0xA0)
      *   - Unicode spaces: general punctuation (0x2000-0x202F), fullwidth
@@ -516,8 +502,7 @@ private:
     }
 
     /**
-     * @brief Classifies characters that terminate an implicit function
-     *        argument.
+     * @brief Classifies characters that terminate an implicit function argument.
      *
      * Includes ASCII arithmetic operators and comma, legacy single-byte
      * mathematical operator values, and broad Unicode mathematical-operator
@@ -668,7 +653,7 @@ private:
       uint8_t in_function = 0;
 
       // Main processing loop - processes all input characters
-      while (input != end) {
+      while (input != end) [[likely]] {
         const auto c = *input;
 
         // Exit superscript mode if encountering a non-superscript character
@@ -718,6 +703,7 @@ private:
 
         // Dispatch to appropriate handler for special characters
         switch (c) {
+
         // Operators - ANSI and Unicode (Small and Subscripts)
 
         // Plus sign variants
@@ -734,51 +720,54 @@ private:
           break;
 
         // Division sign variants
-        case 0xF7:   // ÷ ANSI DIVISION SIGN
         case 0x2044: // ⁄ FRACTION SLASH
         case 0x2215: // ∕ DIVISION SLASH
         case 0x29F8: // ⧸ BIG SOLIDUS
+        case 0xF7:   // ÷ ANSI DIVISION SIGN
           *output++ = '/';
           break;
 
         // Multiplication sign variants
-        case 0xB7:   // · ANSI MIDDLE DOT
-        case 0xD7:   // × ANSI MULTIPLICATION SIGN
         case 0x204E: // ⁎ LOW ASTERISK
         case 0x2217: // ∗ ASTERISK OPERATOR
         case 0x22C5: // ⋅ DOT OPERATOR
         case 0xFE61: // ﹡ SMALL ASTERISK
+        case 0xB7:   // · ANSI MIDDLE DOT
+        case 0xD7:   // × ANSI MULTIPLICATION SIGN
           *output++ = '*';
           break;
-#ifdef CALC_USED_EQUALS_OPERATORS
-        // TODO https://www.fileformat.info/info/unicode/category/Sm/list.htm
-        // Relational Operators
-        case 0x2260: // ≠
-          output = append(output, "!=");
-          break;
 
-        case 0x2264: // ≤
-          output = append(output, "<=");
-          break;
+#if 0
+              // TODO https://www.fileformat.info/info/unicode/category/Sm/list.htm
 
-        case 0x2265: // ≥
-          output = append(output, ">=");
-          break;
+            // Relational Operators
+            case 0x2260: // ≠
+              output = append(output, "!=");
+              break;
 
-        case 0x2261: // ≡
-          output = append(output, "==");
-          break;
+            case 0x2264: // ≤
+              output = append(output, "<=");
+              break;
 
-        case 0x2248: // ≈
-        case 0x2243: // ≃
-        case 0x2245: // ≅
-          output = append(output, "~=");
-          break;
+            case 0x2265: // ≥
+              output = append(output, ">=");
+              break;
 
-          // case PLUS-MINUS SIGN' (U+00B1) ±
-          // case MINUS-OR-PLUS SIGN' (U+2213) ∓
+            case 0x2261: // ≡
+              output = append(output, "==");
+              break;
+
+            case 0x2248: // ≈
+            case 0x2243: // ≃
+            case 0x2245: // ≅
+              output = append(output, "~=");
+              break;
+
+              // PLUS-MINUS SIGN' (U+00B1) ±
+              // MINUS-OR-PLUS SIGN' (U+2213) ∓
 #endif
-        // Fractions - ANSI
+
+        // Fractions - ANSI (¼, ½, ¾)
         case 0xBC: // ¼
           output = append(output, "1/4");
           break;
@@ -791,7 +780,7 @@ private:
           output = append(output, "3/4");
           break;
 
-        // Fractions - Unicode
+        // Fractions - Unicode (comprehensive coverage)
         case 0x2150: // ⅐ VULGAR FRACTION ONE SEVENTH
           output = append(output, "1/7");
           break;
@@ -912,8 +901,9 @@ private:
           output = append(output, "riemann_zeta");
           break;
 
-        case 0xB5:   // µ ANSI MICRO SIGN
+        // Mu - Unicode and ANSI
         case 0x03BC: // μ GREEK SMALL LETTER MU
+        case 0xB5:   // µ ANSI MICRO SIGN
           output = append(output, "mu");
           break;
 
@@ -921,9 +911,9 @@ private:
           output = append(output, "sigma");
           break;
 
+        case 0xA7B5: // β LATIN SMALL LETTER BETA
         case 0x03D0: // ϐ GREEK BETA SYMBOL
         case 0x03B2: // β GREEK SMALL LETTER BETA
-        case 0xA7B5: // β LATIN SMALL LETTER BETA
           output = append(output, "beta");
           break;
 
@@ -935,7 +925,7 @@ private:
           *output++ = 'e';
           break;
 
-        // Physical constants
+        // Physical constants - Unicode
         case 0x0190: // Ɛ LATIN CAPITAL LETTER OPEN E
         case 0x2107: // ℇ EULER CONSTANT
           output = append(output, "E");
@@ -1070,7 +1060,7 @@ private:
     }                                                                          \
   }
 
-        // Superscript ANSI digits
+        // Superscript ANSI digits (², ³, ¹)
         case 0xB2: // ² SUPERSCRIPT TWO
           START_SUPERSCRIPT
           *output++ = '2';
@@ -1086,7 +1076,7 @@ private:
           *output++ = '1';
           break;
 
-        // Superscript Unicode letters
+        // Superscript Unicode letter
         case 0x2071: // ⁱ SUPERSCRIPT LATIN SMALL LETTER I
           START_SUPERSCRIPT
           *output++ = 'i';
@@ -1095,7 +1085,7 @@ private:
         // case 0x2072: // not assigened.
         // case 0x2073: // not assigened.
 
-        // Superscript Unicode digits
+        // Superscript Unicode digits (⁰, ⁴-⁹)
         case 0x2070: // ⁰ SUPERSCRIPT ZERO
         case 0x2074: // ⁴ SUPERSCRIPT FOUR
         case 0x2075: // ⁵ SUPERSCRIPT FIVE
@@ -1107,7 +1097,7 @@ private:
           *output++ = '0' + static_cast<char>(c - 0x2070);
           break;
 
-        // Superscript Unicode arithmetic operators
+        // Superscript Unicode arithmetic operators (⁺, ⁻, ⁼)
         case 0x207A: // ⁺ SUPERSCRIPT PLUS SIGN
           START_SUPERSCRIPT
           *output++ = '+';
@@ -1123,7 +1113,7 @@ private:
           *output++ = '=';
           break;
 
-        // Superscript Unicode parentheses. Should be in pairs
+        // Superscript Unicode parentheses (⁽, ⁾). Should be in pairs
         case 0x207D: // ⁽ SUPERSCRIPT LEFT PARENTHESIS
           START_SUPERSCRIPT
           *output++ = '(';
@@ -1134,7 +1124,7 @@ private:
           *output++ = ')';
           break;
 
-        // Superscript Unicode letters
+        // Superscript Unicode letter (ⁿ)
         case 0x207F: // ⁿ SUPERSCRIPT LATIN SMALL LETTER N
           START_SUPERSCRIPT
           *output++ = 'n';
@@ -1162,11 +1152,10 @@ private:
         *output++ = ')';
       }
 
-      return static_cast<UINT>(output - buffer);
+      return static_cast<uint32_t>(output - buffer);
     }
   };
 };
-
 } // namespace GUI
-
+#endif
 #endif

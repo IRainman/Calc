@@ -1,0 +1,3894 @@
+Test OK: -92666518056446206563E-300
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = -9.266651805644621e-281
+expect = -9.266651805644621e-281
+output = -9.26665180564462e-281
+
+Test OK: 2 + )
+is error = true
+is nan = true
+is equal = false
+is less than epsilon = false
+is edentical output = true
+return = nan
+expect = nan
+output = 
+5: unexpected
+5: extraneous input
+
+Test OK: 2 + (
+is error = true
+is nan = false
+is equal = false
+is less than epsilon = false
+is edentical output = false
+return = 4
+expect = nan
+output = 
+5: unexpected
+5: expected parenthesis
+
+Test OK: e(
+is error = true
+is nan = true
+is equal = false
+is less than epsilon = false
+is edentical output = true
+return = nan
+expect = nan
+output = 
+2: extraneous input
+
+Test OK: pi(e)
+is error = true
+is nan = true
+is equal = false
+is less than epsilon = false
+is edentical output = true
+return = nan
+expect = nan
+output = 
+3: extraneous input
+
+Test OK: pi(sin)
+is error = true
+is nan = true
+is equal = false
+is less than epsilon = false
+is edentical output = true
+return = nan
+expect = nan
+output = 
+3: extraneous input
+
+Test OK: sin + 12
+is error = true
+is nan = false
+is equal = false
+is less than epsilon = false
+is edentical output = false
+return = 12
+expect = nan
+output = 
+5: expected parenthesis
+
+Test OK: sin(1, 2, 3)
+is error = true
+is nan = false
+is equal = false
+is less than epsilon = false
+is edentical output = false
+return = 3
+expect = nan
+output = 
+0: incorrect parameters count
+
+Test OK: 1(
+is error = true
+is nan = true
+is equal = false
+is less than epsilon = false
+is edentical output = true
+return = nan
+expect = nan
+output = 
+2: extraneous input
+
+Test OK: sin(0 
+is error = true
+is nan = false
+is equal = false
+is less than epsilon = false
+is edentical output = false
+return = 0
+expect = nan
+output = 
+6: expected parenthesis
+
+Test OK: sin(
+is error = true
+is nan = false
+is equal = false
+is less than epsilon = false
+is edentical output = false
+return = 8.711324845427e-311
+expect = nan
+output = 
+4: unexpected
+4: expected parenthesis
+
+Test OK: 1+1 1
+is error = true
+is nan = true
+is equal = false
+is less than epsilon = false
+is edentical output = true
+return = nan
+expect = nan
+output = 
+5: extraneous input
+
+Test OK: 1+1;
+is error = true
+is nan = true
+is equal = false
+is less than epsilon = false
+is edentical output = true
+return = nan
+expect = nan
+output = 
+3: unparsable
+
+Test OK: +1.4e-3
+is error = true
+is nan = false
+is equal = false
+is less than epsilon = false
+is edentical output = false
+return = 1.0014
+expect = nan
+output = 
+1: unexpected
+
+Test OK: 9999999999999999999e1000000000000000000000000000000
+is error = true
+is nan = true
+is equal = false
+is less than epsilon = false
+is edentical output = true
+return = nan
+expect = nan
+output = 
+0: unparsable
+0: unexpected
+
+Test OK: 999999999999999999e-1000000000000000000000000000000
+is error = true
+is nan = true
+is equal = false
+is less than epsilon = false
+is edentical output = true
+return = nan
+expect = nan
+output = 
+0: unparsable
+0: unexpected
+
+Test OK: 1.00000000001e-2147483638
+is error = true
+is nan = true
+is equal = false
+is less than epsilon = false
+is edentical output = true
+return = nan
+expect = nan
+output = 
+0: unparsable
+0: unexpected
+
+Test OK: 1.00000000001e+2147483638
+is error = true
+is nan = true
+is equal = false
+is less than epsilon = false
+is edentical output = true
+return = nan
+expect = nan
+output = 
+0: unparsable
+0: unexpected
+
+Test OK: phi
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1.618033988749895
+expect = 1.618033988749895
+output = 1.61803398874989
+
+Test OK: pi
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 3.141592653589793
+expect = 3.141592653589793
+output = 3.14159265358979
+
+Test OK: e
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 2.718281828459045
+expect = 2.718281828459045
+output = 2.71828182845905
+
+Test OK: e_gamma
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0.5772156649015329
+expect = 0.5772156649015329
+output = 0.577215664901533
+
+Test OK: 2*pi
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 6.283185307179586
+expect = 6.283185307179586
+output = 6.28318530717959
+
+Test OK: pi/2
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1.5707963267948966
+expect = 1.5707963267948966
+output = 1.5707963267949
+
+Test OK: pi/3
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1.0471975511965976
+expect = 1.0471975511965976
+output = 1.0471975511966
+
+Test OK: pi/4
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0.7853981633974483
+expect = 0.7853981633974483
+output = 0.785398163397448
+
+Test OK: pi/5
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0.6283185307179586
+expect = 0.6283185307179586
+output = 0.628318530717959
+
+Test OK: pi/6
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0.5235987755982988
+expect = 0.5235987755982988
+output = 0.523598775598299
+
+Test OK: pi/7
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0.4487989505128276
+expect = 0.4487989505128276
+output = 0.448798950512828
+
+Test OK: pi/8
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0.39269908169872414
+expect = 0.39269908169872414
+output = 0.392699081698724
+
+Test OK: pi/9
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0.3490658503988659
+expect = 0.3490658503988659
+output = 0.349065850398866
+
+Test OK: sqrt(pi/2)
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = true
+is edentical output = true
+return = 1.2533141373155001
+expect = 1.2533141373155003
+output = 1.2533141373155
+
+Test OK: sqrt(2*pi)
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = true
+is edentical output = true
+return = 2.5066282746310002
+expect = 2.5066282746310007
+output = 2.506628274631
+
+Test OK: ln(e)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1
+expect = 1
+output = 1
+
+Test OK: log2(e)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1.4426950408889634
+expect = 1.4426950408889634
+output = 1.44269504088896
+
+Test OK: log10(e)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0.4342944819032518
+expect = 0.4342944819032518
+output = 0.434294481903252
+
+Test OK: 1/pi
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0.3183098861837907
+expect = 0.3183098861837907
+output = 0.318309886183791
+
+Test OK: sqrt(pi)
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = true
+is edentical output = true
+return = 1.7724538509055159
+expect = 1.772453850905516
+output = 1.77245385090552
+
+Test OK: 1/sqrt(pi)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0.5641895835477563
+expect = 0.5641895835477563
+output = 0.564189583547756
+
+Test OK: ln(2)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0.6931471805599453
+expect = 0.6931471805599453
+output = 0.693147180559945
+
+Test OK: ln(10)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 2.302585092994046
+expect = 2.302585092994046
+output = 2.30258509299405
+
+Test OK: sqrt(2)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1.4142135623730951
+expect = 1.4142135623730951
+output = 1.4142135623731
+
+Test OK: sqrt(3)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1.7320508075688772
+expect = 1.7320508075688772
+output = 1.73205080756888
+
+Test OK: 1/sqrt(3)
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = true
+is edentical output = true
+return = 0.5773502691896258
+expect = 0.5773502691896257
+output = 0.577350269189626
+
+Test OK: e ^ pi
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = true
+is edentical output = true
+return = 23.140692632779267
+expect = 23.14069263277927
+output = 23.1406926327793
+
+Test OK: pi ^ e
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = true
+is edentical output = true
+return = 22.45915771836104
+expect = 22.459157718361045
+output = 22.459157718361
+
+Test OK:       640320^3     + 744 - 0.00000000000075
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 2.6253741264076874e+17
+expect = 2.6253741264076874e+17
+output = 2.62537412640769e+17
+
+Test OK: 12^3*(231^2 - 1)^3 + 744 - 0.00000000000075
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 2.6253741264076874e+17
+expect = 2.6253741264076874e+17
+output = 2.62537412640769e+17
+
+Test OK: c
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 299792458
+expect = 299792458
+output = 299792458
+
+Test OK: G
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 6.6743e-11
+expect = 6.6743e-11
+output = 6.6743e-11
+
+Test OK: atm
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 101325
+expect = 101325
+output = 101325
+
+Test OK: g0
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 9.80665
+expect = 9.80665
+output = 9.80665
+
+Test OK: NA
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 6.02214076e+23
+expect = 6.02214076e+23
+output = 6.02214076e+23
+
+Test OK: kB
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1.380649e-23
+expect = 1.380649e-23
+output = 1.380649e-23
+
+Test OK: F
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 96485.33212331001
+expect = 96485.33212331001
+output = 96485.33212331
+
+Test OK: R
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 8.31446261815324
+expect = 8.31446261815324
+output = 8.31446261815324
+
+Test OK: h
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 6.62607015e-34
+expect = 6.62607015e-34
+output = 6.62607015e-34
+
+Test OK: hbar
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1.0545718176461565e-34
+expect = 1.0545718176461565e-34
+output = 1.05457181764616e-34
+
+Test OK: G0
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 7.748091729e-05
+expect = 7.748091729e-05
+output = 7.748091729e-05
+
+Test OK: l_P
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1.616255e-35
+expect = 1.616255e-35
+output = 1.616255e-35
+
+Test OK: m_P
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 2.176434e-08
+expect = 2.176434e-08
+output = 2.176434e-08
+
+Test OK: T_P
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1.416784e+32
+expect = 1.416784e+32
+output = 1.416784e+32
+
+Test OK: t_P
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 5.391247e-44
+expect = 5.391247e-44
+output = 5.391247e-44
+
+Test OK: mu0
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1.2566370612696e-06
+expect = 1.2566370612696e-06
+output = 1.2566370612696e-06
+
+Test OK: epsilon0
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 8.85418781881409e-12
+expect = 8.85418781881409e-12
+output = 8.85418781881409e-12
+
+Test OK: Z0
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 376.730313412
+expect = 376.730313412
+output = 376.730313412
+
+Test OK: e_charge
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1.602176634e-19
+expect = 1.602176634e-19
+output = 1.602176634e-19
+
+Test OK: me
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 9.1093837139e-31
+expect = 9.1093837139e-31
+output = 9.1093837139e-31
+
+Test OK: mp
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1.67262192595e-27
+expect = 1.67262192595e-27
+output = 1.67262192595e-27
+
+Test OK: mn
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1.67492750056e-27
+expect = 1.67492750056e-27
+output = 1.67492750056e-27
+
+Test OK: mu
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1.66053906892e-27
+expect = 1.66053906892e-27
+output = 1.66053906892e-27
+
+Test OK: a0
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 5.29177210544e-11
+expect = 5.29177210544e-11
+output = 5.29177210544e-11
+
+Test OK: Eh
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 4.359744722206e-18
+expect = 4.359744722206e-18
+output = 4.359744722206e-18
+
+Test OK: muB
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 9.2740100657e-24
+expect = 9.2740100657e-24
+output = 9.2740100657e-24
+
+Test OK: lambda_e
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 2.42631023538e-12
+expect = 2.42631023538e-12
+output = 2.42631023538e-12
+
+Test OK: lambda_bar_e
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 3.8615926744e-13
+expect = 3.8615926744e-13
+output = 3.8615926744e-13
+
+Test OK: re
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 2.8179403205e-15
+expect = 2.8179403205e-15
+output = 2.8179403205e-15
+
+Test OK: sigmae
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 6.6524587051e-29
+expect = 6.6524587051e-29
+output = 6.6524587051e-29
+
+Test OK: 1.4e-3
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0.0014
+expect = 0.0014
+output = 0.0014
+
+Test OK: -1.4e+3
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = -1400
+expect = -1400
+output = -1400
+
+Test OK: 1e-3
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0.001
+expect = 0.001
+output = 0.001
+
+Test OK: 1e+0
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1
+expect = 1
+output = 1
+
+Test OK: 1e+1
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 10
+expect = 10
+output = 10
+
+Test OK: 1e+2
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 100
+expect = 100
+output = 100
+
+Test OK: 1e3
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1000
+expect = 1000
+output = 1000
+
+Test OK: 1e+4
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 10000
+expect = 10000
+output = 10000
+
+Test OK: 1e5
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 100000
+expect = 100000
+output = 100000
+
+Test OK: 1e+6
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1000000
+expect = 1000000
+output = 1000000
+
+Test OK: 1e+7
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 10000000
+expect = 10000000
+output = 10000000
+
+Test OK: 1+2
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 3
+expect = 3
+output = 3
+
+Test OK: 5-3
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 2
+expect = 2
+output = 2
+
+Test OK: 4*2
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 8
+expect = 8
+output = 8
+
+Test OK: 4*4*4*4*4*4*3*3*3*3
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 331776
+expect = 331776
+output = 331776
+
+Test OK: 8/4
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 2
+expect = 2
+output = 2
+
+Test OK: 2^3
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 8
+expect = 8
+output = 8
+
+Test OK: exp(0)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1
+expect = 1
+output = 1
+
+Test OK: log1p(1e-16)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1e-16
+expect = 1e-16
+output = 1e-16
+
+Test OK: expm1(1e-16)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1e-16
+expect = 1e-16
+output = 1e-16
+
+Test OK: factorial(0)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1
+expect = 1
+output = 1
+
+Test OK: factorial(1)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1
+expect = 1
+output = 1
+
+Test OK: factorial(2)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 2
+expect = 2
+output = 2
+
+Test OK: factorial(3)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 6
+expect = 6
+output = 6
+
+Test OK: factorial(4)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 24
+expect = 24
+output = 24
+
+Test OK: factorial(5)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 120
+expect = 120
+output = 120
+
+Test OK: factorial(6)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 720
+expect = 720
+output = 720
+
+Test OK: factorial(7)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 5040
+expect = 5040
+output = 5040
+
+Test OK: factorial(8)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 40320
+expect = 40320
+output = 40320
+
+Test OK: factorial(9)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 362880
+expect = 362880
+output = 362880
+
+Test OK: factorial(10)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 3628800
+expect = 3628800
+output = 3628800
+
+Test OK: factorial(11)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 39916800
+expect = 39916800
+output = 39916800
+
+Test OK: factorial(12)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 479001600
+expect = 479001600
+output = 479001600
+
+Test OK: factorial(13)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 6227020800
+expect = 6227020800
+output = 6227020800
+
+Test OK: factorial(14)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 87178291200
+expect = 87178291200
+output = 87178291200
+
+Test OK: factorial(15)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1307674368000
+expect = 1307674368000
+output = 1307674368000
+
+Test OK: factorial(16)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 20922789888000
+expect = 20922789888000
+output = 20922789888000
+
+Test OK: factorial(17)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 355687428096000
+expect = 355687428096000
+output = 355687428096000
+
+Test OK: factorial(18)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 6402373705728000
+expect = 6402373705728000
+output = 6.402373705728e+15
+
+Test OK: factorial(19)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1.21645100408832e+17
+expect = 1.21645100408832e+17
+output = 1.21645100408832e+17
+
+Test OK: factorial(20)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 2.43290200817664e+18
+expect = 2.43290200817664e+18
+output = 2.43290200817664e+18
+
+Test OK: factorial(170)
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = false
+is edentical output = true
+return = 7.257415615308004e+306
+expect = 7.257415615307999e+306
+output = 7.257415615308e+306
+
+Test OK: factorial(171)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = false
+is edentical output = true
+return = inf
+expect = inf
+output = inf
+
+Test OK: gamma(5)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 24
+expect = 24
+output = 24
+
+Test OK: ln(gamma(5))
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 3.1780538303479458
+expect = 3.1780538303479458
+output = 3.17805383034795
+
+Test OK: gamma(5)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 24
+expect = 24
+output = 24
+
+Test OK: gamma(0.5)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1.772453850905516
+expect = 1.772453850905516
+output = 1.77245385090552
+
+Test OK: gamma(-1.57349847316239045877)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 2.30240725833968
+expect = 2.30240725833968
+output = 2.30240725833968
+
+Test OK: gamma(-2.61072086844414465000)
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = true
+is edentical output = true
+return = -0.8881363584012418
+expect = -0.8881363584012419
+output = -0.888136358401242
+
+Test OK: gamma(-3.63529336643690109783)
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = true
+is edentical output = true
+return = 0.24512753983436628
+expect = 0.24512753983436625
+output = 0.245127539834366
+
+Test OK: gamma(-4.65323776174314244171)
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = true
+is edentical output = true
+return = -0.052779639587319405
+expect = -0.0527796395873194
+output = -0.0527796395873194
+
+Test OK: beta(1, 1)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1
+expect = 1
+output = 1
+
+Test OK: beta(0.5, 0.5)
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = true
+is edentical output = true
+return = 3.1415926535897936
+expect = 3.141592653589793
+output = 3.14159265358979
+
+Test OK: beta(2, 2)
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = false
+is edentical output = true
+return = 0.1666666666666666
+expect = 0.16666666666666666
+output = 0.166666666666667
+
+Test OK: permutation(5, 3)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 60
+expect = 60
+output = 60
+
+Test OK: P(5, 3)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 60
+expect = 60
+output = 60
+
+Test OK: combination(5, 3)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 10
+expect = 10
+output = 10
+
+Test OK: C(5, 3)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 10
+expect = 10
+output = 10
+
+Test OK: erf(0)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0
+expect = 0
+output = 0
+
+Test OK: erfc(0)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1
+expect = 1
+output = 1
+
+Test OK: mod(5, 2)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1
+expect = 1
+output = 1
+
+Test OK: ln(e)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1
+expect = 1
+output = 1
+
+Test OK: log10(1000)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 3
+expect = 3
+output = 3
+
+Test OK: log2(8)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 3
+expect = 3
+output = 3
+
+Test OK: log(sh(42) + ch(42))
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 42
+expect = 42
+output = 42
+
+Test OK: log2(2^3)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 3
+expect = 3
+output = 3
+
+Test OK: log10(10^3)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 3
+expect = 3
+output = 3
+
+Test OK: sh(0)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0
+expect = 0
+output = 0
+
+Test OK: ch(0)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1
+expect = 1
+output = 1
+
+Test OK: tanh(0)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0
+expect = 0
+output = 0
+
+Test OK: asinh(0)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0
+expect = 0
+output = 0
+
+Test OK: acosh(1)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0
+expect = 0
+output = 0
+
+Test OK: atanh(0)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0
+expect = 0
+output = 0
+
+Test OK: abs(-42)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 42
+expect = 42
+output = 42
+
+Test OK: ceil(pi)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 4
+expect = 4
+output = 4
+
+Test OK: floor(pi)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 3
+expect = 3
+output = 3
+
+Test OK: round(pi)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 3
+expect = 3
+output = 3
+
+Test OK: trunc(pi)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 3
+expect = 3
+output = 3
+
+Test OK: hypot(3,4)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 5
+expect = 5
+output = 5
+
+Test OK: hypot(1,2,2)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 3
+expect = 3
+output = 3
+
+Test OK: 2 + 2
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 4
+expect = 4
+output = 4
+
+Test OK: 2 * 2
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 4
+expect = 4
+output = 4
+
+Test OK: 2 + 2 * 2
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 6
+expect = 6
+output = 6
+
+Test OK: (2 + 2) * 2
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 8
+expect = 8
+output = 8
+
+Test OK: (1+2)*3
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 9
+expect = 9
+output = 9
+
+Test OK: 2*(3+4)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 14
+expect = 14
+output = 14
+
+Test OK: (2 + 2) * 2
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 8
+expect = 8
+output = 8
+
+Test OK: 2 + (2 * 2)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 6
+expect = 6
+output = 6
+
+Test OK: (2 + 3) * (4 - 1)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 15
+expect = 15
+output = 15
+
+Test OK: pow( sin( pi / 2 ) / 0.001 + 24, 2 )
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1048576
+expect = 1048576
+output = 1048576
+
+Test OK: pow(exp2(32), 1/4)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 256
+expect = 256
+output = 256
+
+Test OK: sqrt(cos(rad(30))^2+sin(rad(30))^2)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1
+expect = 1
+output = 1
+
+Test OK: deg(arcsin(sin(rad(30))))
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = true
+is edentical output = true
+return = 30.000000000000004
+expect = 30
+output = 30
+
+Test OK: 0.000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1.2345678901234567e-100
+expect = 1.2345678901234567e-100
+output = 1.23456789012346e-100
+
+Test OK: 123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890.123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1.2345678901234568e+89
+expect = 1.2345678901234568e+89
+output = 1.23456789012346e+89
+
+Test OK: 104110013277974872254e-225
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1.0411001327797486e-205
+expect = 1.0411001327797486e-205
+output = 1.04110013277975e-205
+
+Test OK: 2.225073858507201e-308
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 2.225073858507201e-308
+expect = 2.225073858507201e-308
+output = 2.2250738585072e-308
+
+Test OK: 2.22507385850720113605740979670913197593481954635164564e-308
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 2.225073858507201e-308
+expect = 2.225073858507201e-308
+output = 2.2250738585072e-308
+
+Test OK: 3254505089005000000000000000000000e-284
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 3.254505089005e-251
+expect = 3.254505089005e-251
+output = 3.254505089005e-251
+
+Test OK: 1090544144181609348835077142190
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1.0905441441816094e+30
+expect = 1.0905441441816094e+30
+output = 1.09054414418161e+30
+
+Test OK: 7275957614183425903320312500000000e81
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 7.275957614183425e+114
+expect = 7.275957614183425e+114
+output = 7.27595761418343e+114
+
+Test OK: 9007199254740993.00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 9007199254740992
+expect = 9007199254740992
+output = 9.00719925474099e+15
+
+Test OK: 2.22507385850720212418870147920222032907240528279439037814303133837435107319244194686754406432563881851382188218502438069999947733013005649884107791928741341929297200970481951993067993290969042784064731682041565926728632933630474670123316852983422152744517260835859654566319282835244787787799894310779783833699159288594555213714181128458251145584319223079897504395086859412457230891738946169368372321191373658977977723286698840356390251044443035457396733706583981055420456693824658413747607155981176573877626747665912387199931904006317334709003012790188175203447190250028061277777916798391090578584006464715943810511489154282775041174682194133952466682503431306181587829379004205392375072083366693241580002758391118854188641513168478436313080237596295773983001708984375e-308
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 2.2250738585072024e-308
+expect = 2.2250738585072024e-308
+output = 2.2250738585072e-308
+
+Test OK: -2240084132271013504.131248280843119943687942846658579428
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = -2.2400841322710136e+18
+expect = -2.2400841322710136e+18
+output = -2.24008413227101e+18
+
+Test OK: 179769313486231570814527423731704356798070567525844996598917476803157260780028538760589558632766878171540458953514382464234321326889464182768467546703537516986049910576551282076245490090389328944075868508455133942304583236903222948165808559332123348274797826204144723168738177180919299881250404026184124858368
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1.7976931348623157e+308
+expect = 1.7976931348623157e+308
+output = 1.79769313486232e+308
+
+Test OK: ( (2 - 0.5*2^-52) * 2^1023 )
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = false
+is edentical output = true
+return = inf
+expect = inf
+output = inf
+
+Test OK: 179769313486231580793728971405303415079934132710037826936173778980444968292764750946649017977587207096330286416692887910946555547851940402630657488671505820681908902000708383676273854845817711531764475730270069855571366959622842914819860834936475292719074168444365510704342711559699508093042880177904174497792
+is error = true
+is nan = true
+is equal = false
+is less than epsilon = false
+is edentical output = true
+return = nan
+expect = nan
+output = 
+0: unparsable
+0: unexpected
+
+Test OK: 10000 / 540 * 3
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 55.55555555555556
+expect = 55.55555555555556
+output = 55.5555555555556
+
+Test OK: 500 / 9
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 55.55555555555556
+expect = 55.55555555555556
+output = 55.5555555555556
+
+Test OK: 1 / 3 * 3
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1
+expect = 1
+output = 1
+
+Test OK: 9876543.210123456789
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 9876543.210123457
+expect = 9876543.210123457
+output = 9876543.21012346
+
+Test OK: 0.1 + 0.1
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0.2
+expect = 0.2
+output = 0.2
+
+Test OK: 0.1 + 0.1 + 0.1
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = true
+is edentical output = true
+return = 0.30000000000000004
+expect = 0.3
+output = 0.3
+
+Test OK: 0.1 + 0.1 + 0.1 + 0.1
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0.4
+expect = 0.4
+output = 0.4
+
+Test OK: 0.1 + 0.1 + 0.1 + 0.1 + 0.1
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0.5
+expect = 0.5
+output = 0.5
+
+Test OK: 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0.6
+expect = 0.6
+output = 0.6
+
+Test OK: 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0.7
+expect = 0.7
+output = 0.7
+
+Test OK: 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = true
+is edentical output = true
+return = 0.7999999999999999
+expect = 0.8
+output = 0.8
+
+Test OK: 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = true
+is edentical output = true
+return = 0.8999999999999999
+expect = 0.9
+output = 0.9
+
+Test OK: 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = true
+is edentical output = true
+return = 0.9999999999999999
+expect = 1
+output = 1
+
+Test OK: 1.0 - 0.99
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = false
+is edentical output = true
+return = 0.010000000000000009
+expect = 0.01
+output = 0.01
+
+Test OK: 0.1 - 0.09
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = false
+is edentical output = true
+return = 0.010000000000000009
+expect = 0.01
+output = 0.01
+
+Test OK: 0.01 - 0.009
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = false
+is edentical output = true
+return = 0.0010000000000000009
+expect = 0.001
+output = 0.001
+
+Test OK: 0.001 - 0.0009
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = false
+is edentical output = true
+return = 0.00010000000000000005
+expect = 0.0001
+output = 0.0001
+
+Test OK: 0.0001 - 0.00009
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = true
+is edentical output = true
+return = 9.999999999999999e-06
+expect = 1e-05
+output = 1e-05
+
+Test OK: 0.00001 - 0.000009
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = false
+is edentical output = true
+return = 1.0000000000000006e-06
+expect = 1e-06
+output = 1e-06
+
+Test OK: 0.000001 - 0.0000009
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1e-07
+expect = 1e-07
+output = 1e-07
+
+Test OK: 0.0000001 - 0.00000009
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = false
+is edentical output = true
+return = 9.999999999999997e-09
+expect = 1e-08
+output = 1e-08
+
+Test OK: 0.00000001 - 0.000000009
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = false
+is edentical output = true
+return = 1.0000000000000007e-09
+expect = 1e-09
+output = 1e-09
+
+Test OK: 0.000000001 - 0.0000000009
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = false
+is edentical output = true
+return = 1.0000000000000007e-10
+expect = 1e-10
+output = 1e-10
+
+Test OK: 0.0000000001 - 0.00000000009
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = false
+is edentical output = true
+return = 1.0000000000000004e-11
+expect = 1e-11
+output = 1e-11
+
+Test OK: 0.00000000001 - 0.000000000009
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = true
+is edentical output = true
+return = 9.999999999999998e-13
+expect = 1e-12
+output = 1e-12
+
+Test OK: 0.000000000001 - 0.0000000000009
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = false
+is edentical output = true
+return = 9.999999999999998e-14
+expect = 1e-13
+output = 1e-13
+
+Test OK: 0.0000000000001 - 0.00000000000009
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = false
+is edentical output = true
+return = 1.0000000000000008e-14
+expect = 1e-14
+output = 1e-14
+
+Test OK: 0.00000000000001 - 0.000000000000009
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = false
+is edentical output = true
+return = 1.0000000000000005e-15
+expect = 1e-15
+output = 1e-15
+
+Test OK: 0.000000000000001 - 0.0000000000000009
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = false
+is edentical output = true
+return = 1.0000000000000005e-16
+expect = 1e-16
+output = 1e-16
+
+Test OK: 0.0000000000000001 - 0.00000000000000009
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = true
+is edentical output = true
+return = 1.0000000000000002e-17
+expect = 1e-17
+output = 1e-17
+
+Test OK: 0.00000000000000001 - 0.000000000000000009
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = false
+is edentical output = true
+return = 1.0000000000000008e-18
+expect = 1e-18
+output = 1e-18
+
+Test OK: 0.000000000000000001 - 0.0000000000000000009
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = false
+is edentical output = true
+return = 1.0000000000000005e-19
+expect = 1e-19
+output = 1e-19
+
+Test OK: 1 / 100000000000000000000000000
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = true
+is edentical output = true
+return = 9.999999999999999e-27
+expect = 1e-26
+output = 1e-26
+
+Test OK: 1 / 1000000000000000000000000000000000000000
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = true
+is edentical output = true
+return = 1.0000000000000001e-39
+expect = 1e-39
+output = 1e-39
+
+Test OK: 0.2 - 0.1
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0.1
+expect = 0.1
+output = 0.1
+
+Test OK: 0.3 - 0.2
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = false
+is edentical output = true
+return = 0.09999999999999998
+expect = 0.1
+output = 0.1
+
+Test OK: 0.3 - 0.1
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = true
+is edentical output = true
+return = 0.19999999999999998
+expect = 0.2
+output = 0.2
+
+Test OK: 0.2 + 0.1
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = true
+is edentical output = true
+return = 0.30000000000000004
+expect = 0.3
+output = 0.3
+
+Test OK: 0.1 + 0.2
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = true
+is edentical output = true
+return = 0.30000000000000004
+expect = 0.3
+output = 0.3
+
+Test OK: 10.0 - 0.93
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 9.07
+expect = 9.07
+output = 9.07
+
+Test OK: 10.0 - 0.94
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 9.06
+expect = 9.06
+output = 9.06
+
+Test OK: 10.0 - 0.95
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 9.05
+expect = 9.05
+output = 9.05
+
+Test OK: 10.0 - 0.96
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 9.04
+expect = 9.04
+output = 9.04
+
+Test OK: 10.0 - 0.97
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 9.03
+expect = 9.03
+output = 9.03
+
+Test OK: 10.0 - 0.98
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 9.02
+expect = 9.02
+output = 9.02
+
+Test OK: 10.0 - 0.99
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 9.01
+expect = 9.01
+output = 9.01
+
+Test OK: 10.0 - 1.0
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 9
+expect = 9
+output = 9
+
+Test OK: 10.0 - 1.01
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 8.99
+expect = 8.99
+output = 8.99
+
+Test OK: 10.0 - 1.02
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 8.98
+expect = 8.98
+output = 8.98
+
+Test OK: 10.0 - 1.03
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 8.97
+expect = 8.97
+output = 8.97
+
+Test OK: 10.0 - 1.04
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 8.96
+expect = 8.96
+output = 8.96
+
+Test OK: 10.0 - 1.05
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 8.95
+expect = 8.95
+output = 8.95
+
+Test OK: 10.0 - 1.06
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 8.94
+expect = 8.94
+output = 8.94
+
+Test OK: 10.0 - 1.07
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 8.93
+expect = 8.93
+output = 8.93
+
+Test OK: 10.0 - 1.08
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 8.92
+expect = 8.92
+output = 8.92
+
+Test OK: 10.0 - 1.09
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 8.91
+expect = 8.91
+output = 8.91
+
+Test OK: 10.0 - 1.1
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 8.9
+expect = 8.9
+output = 8.9
+
+Test OK: 10.0 - 1.11
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 8.89
+expect = 8.89
+output = 8.89
+
+Test OK: 10.0 - 1.12
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = true
+is edentical output = true
+return = 8.879999999999999
+expect = 8.88
+output = 8.88
+
+Test OK: 10.0 - 1.13
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = true
+is edentical output = true
+return = 8.870000000000001
+expect = 8.87
+output = 8.87
+
+Test OK: 10.0 - 1.14
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 8.86
+expect = 8.86
+output = 8.86
+
+Test OK: 10.0 - 1.15
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 8.85
+expect = 8.85
+output = 8.85
+
+Test OK: 10.0 - 1.16
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 8.84
+expect = 8.84
+output = 8.84
+
+Test OK: 10.0 - 1.17
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 8.83
+expect = 8.83
+output = 8.83
+
+Test OK: 10.0 - 1.18
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 8.82
+expect = 8.82
+output = 8.82
+
+Test OK: 10.0 - 1.19
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 8.81
+expect = 8.81
+output = 8.81
+
+Test OK: 10.0 - 1.2
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 8.8
+expect = 8.8
+output = 8.8
+
+Test OK: ( 3 * 14468371.32764871 + 3 * 2858973.58793243 + 3 * 3938402.12874453 ) / ( 14468371.32764871 + 2858973.58793243 + 3938402.12874453 )
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = true
+is edentical output = true
+return = 2.9999999999999996
+expect = 3
+output = 3
+
+Test OK: ( 9 * 14468371.32764871 + 9 * 2858973.58793243 + 9 * 3938402.12874453 ) / ( 14468371.32764871 + 2858973.58793243 + 3938402.12874453 )
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = true
+is edentical output = true
+return = 8.999999999999998
+expect = 9
+output = 9
+
+Test OK: sin(pi/2)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1
+expect = 1
+output = 1
+
+Test OK: cos(pi/2)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0
+expect = 0
+output = 0
+
+Test OK: sin(pi)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0
+expect = 0
+output = 0
+
+Test OK: cos(pi)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = -1
+expect = -1
+output = -1
+
+Test OK: sin(3*pi/2)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = -1
+expect = -1
+output = -1
+
+Test OK: cos(3*pi/2)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0
+expect = 0
+output = 0
+
+Test OK: sin(inf)
+is error = false
+is nan = true
+is equal = false
+is less than epsilon = false
+is edentical output = true
+return = nan
+expect = nan
+output = nan
+
+Test OK: cos(inf)
+is error = false
+is nan = true
+is equal = false
+is less than epsilon = false
+is edentical output = true
+return = nan
+expect = nan
+output = nan
+
+Test OK: tan(3*pi/2)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = false
+is edentical output = true
+return = inf
+expect = inf
+output = inf
+
+Test OK: tan(-pi)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0
+expect = 0
+output = 0
+
+Test OK: tan(pi)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0
+expect = 0
+output = 0
+
+Test OK: 87 * tan(pi) - 7
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = -7
+expect = -7
+output = -7
+
+Test OK: tan(pi/2)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = false
+is edentical output = true
+return = inf
+expect = inf
+output = inf
+
+Test OK: tan(-pi/2)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = false
+is edentical output = true
+return = -inf
+expect = -inf
+output = -inf
+
+Test OK: tan(pi/4)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1
+expect = 1
+output = 1
+
+Test OK: tan(-pi/4)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = -1
+expect = -1
+output = -1
+
+Test OK: tan(3*pi/4)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = -1
+expect = -1
+output = -1
+
+Test OK: tan(-3*pi/4)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1
+expect = 1
+output = 1
+
+Test OK: tan(5*pi/4)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1
+expect = 1
+output = 1
+
+Test OK: tan(-5*pi/4)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = -1
+expect = -1
+output = -1
+
+Test OK: tan(7*pi/4)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = -1
+expect = -1
+output = -1
+
+Test OK: tan(-7*pi/4)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1
+expect = 1
+output = 1
+
+Test OK: tan(9*pi/4)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1
+expect = 1
+output = 1
+
+Test OK: tan(-9*pi/4)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = -1
+expect = -1
+output = -1
+
+Test OK: tan(11*pi/4)
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = false
+is edentical output = true
+return = -1.0000000000000024
+expect = -1
+output = -1
+
+Test OK: tan(-11*pi/4)
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = false
+is edentical output = true
+return = 1.0000000000000024
+expect = 1
+output = 1
+
+Test OK: tan(13*pi/4)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1
+expect = 1
+output = 1
+
+Test OK: tan(-13*pi/4)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = -1
+expect = -1
+output = -1
+
+Test OK: tan(15*pi/4)
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = false
+is edentical output = true
+return = -1.0000000000000027
+expect = -1
+output = -1
+
+Test OK: tan(-15*pi/4)
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = false
+is edentical output = true
+return = 1.0000000000000027
+expect = 1
+output = 1
+
+Test OK: tan(17*pi/4)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1
+expect = 1
+output = 1
+
+Test OK: tan(-17*pi/4)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = -1
+expect = -1
+output = -1
+
+Test OK: tan(19*pi/4)
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = false
+is edentical output = true
+return = -1.0000000000000029
+expect = -1
+output = -1
+
+Test OK: tan(-19*pi/4)
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = false
+is edentical output = true
+return = 1.0000000000000029
+expect = 1
+output = 1
+
+Test OK: tan(21*pi/4)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1
+expect = 1
+output = 1
+
+Test OK: tan(-21*pi/4)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = -1
+expect = -1
+output = -1
+
+Test OK: tan(23*pi/4)
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = false
+is edentical output = true
+return = -1.000000000000003
+expect = -1
+output = -1
+
+Test OK: tan(-23*pi/4)
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = false
+is edentical output = true
+return = 1.000000000000003
+expect = 1
+output = 1
+
+Test OK: tan(25*pi/4)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1
+expect = 1
+output = 1
+
+Test OK: tan(-25*pi/4)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = -1
+expect = -1
+output = -1
+
+Test OK: tan(27*pi/4)
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = false
+is edentical output = true
+return = -1.0000000000000033
+expect = -1
+output = -1
+
+Test OK: tan(-27*pi/4)
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = false
+is edentical output = true
+return = 1.0000000000000033
+expect = 1
+output = 1
+
+Test OK: tan(inf)
+is error = false
+is nan = true
+is equal = false
+is less than epsilon = false
+is edentical output = true
+return = nan
+expect = nan
+output = nan
+
+Test OK: inf
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = false
+is edentical output = true
+return = inf
+expect = inf
+output = inf
+
+Test OK: 1 / 0
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = false
+is edentical output = true
+return = inf
+expect = inf
+output = inf
+
+Test OK: 0 / 0
+is error = false
+is nan = true
+is equal = false
+is less than epsilon = false
+is edentical output = false
+return = -nan
+expect = nan
+output = -nan
+
+Test OK: sqrt(4 - 9)
+is error = false
+is nan = true
+is equal = false
+is less than epsilon = false
+is edentical output = false
+return = -nan
+expect = nan
+output = -nan
+
+Test OK: rad(180)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 3.141592653589793
+expect = 3.141592653589793
+output = 3.14159265358979
+
+Test OK: deg(pi)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 180
+expect = 180
+output = 180
+
+Test OK: sin(0)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0
+expect = 0
+output = 0
+
+Test OK: cos(0)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1
+expect = 1
+output = 1
+
+Test OK: tan(0)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0
+expect = 0
+output = 0
+
+Test OK: cos(0)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1
+expect = 1
+output = 1
+
+Test OK: tan(0)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0
+expect = 0
+output = 0
+
+Test OK: sin(rad(30))
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0.5
+expect = 0.5
+output = 0.5
+
+Test OK: cos(rad(60))
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0.5
+expect = 0.5
+output = 0.5
+
+Test OK: tan(rad(45))
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1
+expect = 1
+output = 1
+
+Test OK: sin(pi/4)^2
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = true
+is edentical output = true
+return = 0.5000000000000001
+expect = 0.5
+output = 0.5
+
+Test OK: cos(pi/3)^2
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0.25
+expect = 0.25
+output = 0.25
+
+Test OK: sin(0)^2 + cos(0)^2
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1
+expect = 1
+output = 1
+
+Test OK: sin(rad(30)) + cos(rad(60))
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1
+expect = 1
+output = 1
+
+Test OK: sin(rad(30)) - cos(rad(60))
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0
+expect = 0
+output = 0
+
+Test OK: sin(rad(30)) * cos(rad(60))
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0.25
+expect = 0.25
+output = 0.25
+
+Test OK: sin(rad(30)) / cos(rad(60))
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1
+expect = 1
+output = 1
+
+Test OK: cos(rad(30)) / sin(rad(60))
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = true
+is edentical output = true
+return = 1.0000000000000002
+expect = 1
+output = 1
+
+Test OK: arcsin(1)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1.5707963267948966
+expect = 1.5707963267948966
+output = 1.5707963267949
+
+Test OK: arccos(1)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0
+expect = 0
+output = 0
+
+Test OK: arctan(1)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0.7853981633974483
+expect = 0.7853981633974483
+output = 0.785398163397448
+
+Test OK: atan2(0, 0)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0
+expect = 0
+output = 0
+
+Test OK: atan2(0, 7)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0
+expect = 0
+output = 0
+
+Test OK: atan2(7, 7)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0.7853981633974483
+expect = 0.7853981633974483
+output = 0.785398163397448
+
+Test OK: atan2(7, -7)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 2.356194490192345
+expect = 2.356194490192345
+output = 2.35619449019234
+
+Test OK: atan2(0, -7)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 3.141592653589793
+expect = 3.141592653589793
+output = 3.14159265358979
+
+Test OK: atan2(-7, -7)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = -2.356194490192345
+expect = -2.356194490192345
+output = -2.35619449019234
+
+Test OK: atan2(-7, 7)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = -0.7853981633974483
+expect = -0.7853981633974483
+output = -0.785398163397448
+
+Test OK: atan2(-0, -0)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = -3.141592653589793
+expect = -3.141592653589793
+output = -3.14159265358979
+
+Test OK: atan2(-0, 0)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = -0
+expect = -0
+output = -0
+
+Test OK: atan2(0, -0)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 3.141592653589793
+expect = 3.141592653589793
+output = 3.14159265358979
+
+Test OK: atan2(7, 0)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1.5707963267948966
+expect = 1.5707963267948966
+output = 1.5707963267949
+
+Test OK: pow(2,3)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 8
+expect = 8
+output = 8
+
+Test OK: sqrt(4)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 2
+expect = 2
+output = 2
+
+Test OK: sqrt(4) + sqrt(9)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 5
+expect = 5
+output = 5
+
+Test OK: sqrt(4) - sqrt(9)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = -1
+expect = -1
+output = -1
+
+Test OK: sqrt(4) * sqrt(9)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 6
+expect = 6
+output = 6
+
+Test OK: sqrt(4) / sqrt(9)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0.6666666666666666
+expect = 0.6666666666666666
+output = 0.666666666666667
+
+Test OK: sqrt(4) ^ sqrt(9)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 8
+expect = 8
+output = 8
+
+Test OK: sqrt(4 + 9)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 3.605551275463989
+expect = 3.605551275463989
+output = 3.60555127546399
+
+Test OK: sqrt(4 * 9)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 6
+expect = 6
+output = 6
+
+Test OK: sqrt(4 / 9)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0.6666666666666666
+expect = 0.6666666666666666
+output = 0.666666666666667
+
+Test OK: sqrt(4 ^ 9)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 512
+expect = 512
+output = 512
+
+Test OK: sqrt(4 + 9) ^ 2
+is error = false
+is nan = false
+is equal = false
+is less than epsilon = true
+is edentical output = true
+return = 12.999999999999998
+expect = 13
+output = 13
+
+Test OK: sqrt(4 * 9) ^ 2
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 36
+expect = 36
+output = 36
+
+Test OK: sqrt(4 / 9) ^ 2
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0.4444444444444444
+expect = 0.4444444444444444
+output = 0.444444444444444
+
+Test OK: sqrt(4 ^ 9) ^ 2
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 262144
+expect = 262144
+output = 262144
+
+Test OK: cbrt(27)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 3
+expect = 3
+output = 3
+
+Test OK: cbrt(27) + cbrt(64)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 7
+expect = 7
+output = 7
+
+Test OK: cbrt(27) - cbrt(64)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = -1
+expect = -1
+output = -1
+
+Test OK: cbrt(27) * cbrt(64)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 12
+expect = 12
+output = 12
+
+Test OK: cbrt(27) / cbrt(64)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0.75
+expect = 0.75
+output = 0.75
+
+Test OK: cbrt(27) ^ cbrt(64)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 81
+expect = 81
+output = 81
+
+Test OK: cbrt(27 + 64)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 4.497941445275415
+expect = 4.497941445275415
+output = 4.49794144527541
+
+Test OK: cbrt(27 * 64)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 12
+expect = 12
+output = 12
+
+Test OK: cbrt(27 / 64)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0.75
+expect = 0.75
+output = 0.75
+
+Test OK: cbrt(27 ^ 64)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 3.433683820292513e+30
+expect = 3.433683820292513e+30
+output = 3.43368382029251e+30
+
+Test OK: 0^0
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1
+expect = 1
+output = 1
+
+Test OK: -4 ^ 2
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 16
+expect = 16
+output = 16
+
+Test OK: 0 - 4 ^ 2
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = -16
+expect = -16
+output = -16
+
+Test OK: 3 ^ 3 ^ 3
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 7625597484987
+expect = 7625597484987
+output = 7625597484987
+
+Test OK: (3 ^ 3) ^ 3
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 19683
+expect = 19683
+output = 19683
+
+Test OK: 2 ^ 2 ^ 2 ^ 2
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 65536
+expect = 65536
+output = 65536
+
+Test OK: 2 ^ 2 ^ 2
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 16
+expect = 16
+output = 16
+
+Test OK: 2 ^ (3 ^ 2)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 512
+expect = 512
+output = 512
+
+Test OK: 2 ^ (4 ^ 2)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 65536
+expect = 65536
+output = 65536
+
+Test OK: (2 ^ 3) ^ 2
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 64
+expect = 64
+output = 64
+
+Test OK: (2 ^ 4) ^ 2
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 256
+expect = 256
+output = 256
+
+Test OK: min(1)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1
+expect = 1
+output = 1
+
+Test OK: min(1, 2, 3)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1
+expect = 1
+output = 1
+
+Test OK: max(1, 2, 3)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 3
+expect = 3
+output = 3
+
+Test OK: min(1, 2, 3, 4)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1
+expect = 1
+output = 1
+
+Test OK: max(1, 2, 3, 4)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 4
+expect = 4
+output = 4
+
+Test OK: min(1, 2, 3, 4, 5)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1
+expect = 1
+output = 1
+
+Test OK: max(1, 2, 3, 4, 5)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 5
+expect = 5
+output = 5
+
+Test OK: min(1, 2, 3, 4, 5, 6)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1
+expect = 1
+output = 1
+
+Test OK: max(1, 2, 3, 4, 5, 6)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 6
+expect = 6
+output = 6
+
+Test OK: min(1, 2, 3, 4, 5, 6, 7)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1
+expect = 1
+output = 1
+
+Test OK: max(1, 2, 3, 4, 5, 6, 7)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 7
+expect = 7
+output = 7
+
+Test OK: min(1, 2, 3, 4, 5, 6, 7, 8)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1
+expect = 1
+output = 1
+
+Test OK: max(1, 2, 3 ,4 ,5 ,6 ,7, 8)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 8
+expect = 8
+output = 8
+
+Test OK: min(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 1
+expect = 1
+output = 1
+
+Test OK: max(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 14
+expect = 14
+output = 14
+
+Test OK: fma(0.2, 0.1, 0.3)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 0.32
+expect = 0.32
+output = 0.32
+
+Test OK: distance(1, 1, 2, 3)
+is error = false
+is nan = false
+is equal = true
+is less than epsilon = true
+is edentical output = true
+return = 6
+expect = 6
+output = 6
+
+Tests:
+ passed: 386,
+ failed: 0
+fegetround() == FE_TONEAREST
+ time is: 27082us.
+
+bin 10101011110011011110111101101001 -> 2882400105
+hex ABCDEF69 -> 2882400105

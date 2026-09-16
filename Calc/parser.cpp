@@ -24,16 +24,15 @@ const auto &ids = Identifiers::get();
   auto result = expr_4();
   switch (_current.type) {
   case Token::Type::RESULT:
-    if (result.type == Token::Type::NUM) [[likely]] {
+    if (result.type == Token::Type::NUM) {
       return result;
-    } else [[unlikely]] {
+    } else {
       return issue(_current, _lexer.position(), Issue::expected_number);
     }
   case Token::Type::ISSUE:
-    [[unlikely]] return _current;
+    return _current;
   default:
-    [[unlikely]] return issue(_current, _lexer.position(),
-                              Issue::extraneous_input);
+    return issue(_current, _lexer.position(), Issue::extraneous_input);
   }
 }
 
@@ -44,29 +43,29 @@ void Parser::advance() noexcept { _lexer.next(_current); }
   while (true) {
     switch (_current.type) {
     case Token::Type::ADD:
-      if (result.type == Token::Type::NUM) [[likely]] {
+      if (result.type == Token::Type::NUM) {
         advance();
         const auto number = expr_3();
-        if (number.type == Token::Type::NUM) [[likely]] {
+        if (number.type == Token::Type::NUM) {
           result.number += number.number;
           break;
-        } else [[unlikely]] {
+        } else {
           return issue(_current, _lexer.position(), Issue::expected_number);
         }
-      } else [[unlikely]] {
+      } else {
         return issue(_current, _lexer.position(), Issue::expected_number);
       }
     case Token::Type::SUB:
-      if (result.type == Token::Type::NUM) [[likely]] {
+      if (result.type == Token::Type::NUM) {
         advance();
         const auto number = expr_3();
-        if (number.type == Token::Type::NUM) [[likely]] {
+        if (number.type == Token::Type::NUM) {
           result.number -= number.number;
           break;
-        } else [[unlikely]] {
+        } else {
           return issue(_current, _lexer.position(), Issue::expected_number);
         }
-      } else [[unlikely]] {
+      } else {
         return issue(_current, _lexer.position(), Issue::expected_number);
       }
     default:
@@ -80,29 +79,29 @@ void Parser::advance() noexcept { _lexer.next(_current); }
   while (true) {
     switch (_current.type) {
     case Token::Type::MUL:
-      if (result.type == Token::Type::NUM) [[likely]] {
+      if (result.type == Token::Type::NUM) {
         advance();
         const auto number = expr_2();
-        if (number.type == Token::Type::NUM) [[likely]] {
+        if (number.type == Token::Type::NUM) {
           result.number *= number.number;
           break;
-        } else [[unlikely]] {
+        } else {
           return issue(_current, _lexer.position(), Issue::expected_number);
         }
-      } else [[unlikely]] {
+      } else {
         return issue(_current, _lexer.position(), Issue::expected_number);
       }
     case Token::Type::DIV:
-      if (result.type == Token::Type::NUM) [[likely]] {
+      if (result.type == Token::Type::NUM) {
         advance();
         const auto number = expr_2();
-        if (number.type == Token::Type::NUM) [[likely]] {
+        if (number.type == Token::Type::NUM) {
           result.number /= number.number;
           break;
-        } else [[unlikely]] {
+        } else {
           return issue(_current, _lexer.position(), Issue::expected_number);
         }
-      } else [[unlikely]] {
+      } else {
         return issue(_current, _lexer.position(), Issue::expected_number);
       }
     default:
@@ -117,28 +116,28 @@ void Parser::advance() noexcept { _lexer.next(_current); }
       [[indeterminate]];
   do {
     tokens[count] = expr_1();
-    if (_current.type == Token::Type::POW) [[unlikely]] {
+    if (_current.type == Token::Type::POW) {
       advance();
-    } else [[likely]] {
+    } else {
       break;
     }
   } while (++count != static_cast<ParamCount>(tokens.size()));
 
-  if (count == static_cast<ParamCount>(tokens.size())) [[unlikely]] {
+  if (count == static_cast<ParamCount>(tokens.size())) {
     return issue(_current, _lexer.position(), Issue::too_many_in_expression);
   }
 
   auto &result = tokens[count];
-  if (--count != static_cast<ParamCount>(-1)) [[unlikely]] {
-    if (result.type == Token::Type::NUM) [[likely]] {
+  if (--count != static_cast<ParamCount>(-1)) {
+    if (result.type == Token::Type::NUM) {
       do {
-        if (tokens[count].type == Token::Type::NUM) [[likely]] {
+        if (tokens[count].type == Token::Type::NUM) {
           result.number = Identifiers::pow(tokens[count].number, result.number);
-        } else [[unlikely]] {
+        } else {
           return issue(_current, _lexer.position(), Issue::expected_number);
         }
       } while (--count != static_cast<ParamCount>(-1));
-    } else [[unlikely]] {
+    } else {
       return issue(_current, _lexer.position(), Issue::expected_number);
     }
   }
@@ -151,10 +150,10 @@ void Parser::advance() noexcept { _lexer.next(_current); }
   case Token::Type::SUB: {
     advance();
     auto result = expr_0();
-    if (result.type == Token::Type::NUM) [[likely]] {
+    if (result.type == Token::Type::NUM) {
       result.number = -result.number;
       return result;
-    } else [[unlikely]] {
+    } else {
       return issue(_current, _lexer.position(), Issue::expected_number);
     }
   }
@@ -186,10 +185,10 @@ void Parser::advance() noexcept { _lexer.next(_current); }
   // auto subexpression_start_pos = _lexer.position();
   advance();
   const auto result = expr_4();
-  if (_current.type == Token::Type::RPAREN) [[likely]] {
+  if (_current.type == Token::Type::RPAREN) {
     advance();
     return result;
-  } else [[unlikely]] {
+  } else {
     return issue(_current, _lexer.position(), Issue::expected_parenthesis);
   }
 }
@@ -215,7 +214,7 @@ void Parser::advance() noexcept { _lexer.next(_current); }
   auto function_start_pos = _lexer.position();
   auto result = _current;
   advance();
-  if (_current.type == Token::Type::LPAREN) [[likely]] {
+  if (_current.type == Token::Type::LPAREN) {
     advance();
     const auto &[caller, check] = result.identifier->second;
     ParamCount count = 0;
@@ -228,14 +227,13 @@ void Parser::advance() noexcept { _lexer.next(_current); }
       switch (_current.type) {
       case Token::Type::RPAREN: {
         advance();
-        if (check.is_function() && check.params_count_is_valid(count))
-            [[likely]] {
+        if (check.params_count_is_valid(count)) {
           std::array<Value, std::numeric_limits<ParamCount>::max()> values
               [[indeterminate]];
           for (ParamCount i = 0; i != count; ++i) {
-            if (parameters[i].type == Token::Type::NUM) [[likely]] {
+            if (parameters[i].type == Token::Type::NUM) {
               values[i] = parameters[i].number;
-            } else [[unlikely]] {
+            } else {
               return issue(_current, function_start_pos,
                            Issue::expected_number);
             }
@@ -243,7 +241,7 @@ void Parser::advance() noexcept { _lexer.next(_current); }
           result.type = Token::Type::NUM;
           result.number = caller({values.begin(), values.begin() + count});
           return result;
-        } else [[unlikely]] {
+        } else {
           function_start_pos -= result.identifier->first.size();
           return issue(_current, function_start_pos,
                        Issue::incorrect_parameters_count);
@@ -253,17 +251,14 @@ void Parser::advance() noexcept { _lexer.next(_current); }
         advance();
         continue;
       }
-      default:
-        [[unlikely]] {
-          return issue(_current, _lexer.position(),
-                       Issue::expected_parenthesis);
-        }
+      default: {
+        return issue(_current, _lexer.position(), Issue::expected_parenthesis);
+      }
       }
     } while (count != static_cast<ParamCount>(parameters.size()));
 
-    [[unlikely]] return issue(_current, _lexer.position(),
-                              Issue::too_many_parameters);
-  } else [[unlikely]] {
+    return issue(_current, _lexer.position(), Issue::too_many_parameters);
+  } else {
     return issue(_current, _lexer.position(), Issue::expected_parenthesis);
   }
 }

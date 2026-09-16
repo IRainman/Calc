@@ -5,327 +5,221 @@
 #ifndef EQUASION_NORMALIZATON_HPP
 #define EQUASION_NORMALIZATON_HPP
 
+#ifdef CALC_ALLOW_UNICODE_IN_GUI
+
 namespace GUI {
 
 #ifdef CALC_TESTS_ENABLED
-// clang-format off
+
 /**
- * Test cases for GUI Unicode normalization.
- *
- * Each test case contains:
- *   - input: UTF-8 encoded source text as std::string_view.
- *   - failed: expected Normalizer::failed() result.
- *   - output: expected normalized ASCII text.
- *
- * The input strings are UTF-8 because these tests exercise the same text
- * representation used by the GUI test adapter before it is converted to
- * UTF-16 for Normalizer. ASCII input may be written directly; non-ASCII
- * characters should remain UTF-8 encoded in the source file, or use explicit
- * UTF-8 byte escapes where source-encoding ambiguity matters.
- *
- * A failed test case means normalization must stop at the first unsupported
- * UTF-16 code unit. The expected output therefore contains only the portion
- * successfully normalized before that character.
- *
- * Test groups are organized by normalization feature so that a failing case
- * identifies the affected mapping or state-machine rule:
- *   - Separators: whitespace and Unicode space normalization.
- *   - Fullwidth forms: compatibility forms mapped to ASCII.
- *   - Operators: arithmetic operator variants.
- *   - Parentheses and punctuation: compatibility punctuation mappings.
- *   - Fractions: vulgar fractions and fraction numerator forms.
- *   - Constants and Greek letters: mathematical and physical symbols.
- *   - Mathematical functions: roots, logarithms, and implicit arguments.
- *   - Decimal exponent notation: the U+23E8 exponent symbol.
- *   - Astronomical symbols: celestial-body names and astronomical units.
- *   - Subscripts: numeric and supported letter subscripts.
- *   - Superscripts: individual mappings and superscript state transitions.
- *   - Superscript parentheses: parenthesized superscript syntax.
- *   - Combinations: interaction between independent normalization features.
- *   - ASCII pass-through: printable ASCII and separator handling.
- *   - Unsupported characters: early termination and partial output.
- *
- * Keep the cases deterministic and focused: each test should verify one
- * normalization rule or a small, intentional combination of rules.
- * @see gui_tests()
+ * Test cases for GUI
  */
-static auto normalizer_tests = std::to_array< std::pair< std::string_view, 
-    std::pair< bool, std::string_view > > >({
-    // Separators
-    { "\t\n\v\f\r ",  { false, "      " }}, // ASCII
+// clang-format off
+static auto normalizer_tests = std::to_array<std::pair<std::string_view, std::string_view>>({
+    { "½∜(7π÷2)", "1/2qdrt(7pi/2)" },
+    { "½∜(7π÷3)R☉×c * (⅒+ ⅟₉)⏨₉  +ℯ⁶", "1/2qdrt(7pi/3)R_sun*c * (1/10+ 1/9)*10^(9)  +e^(6)" },
 
-    // Separators
-    { "\xC2\xA0",     { false, " " } }, // ANSI 0xA0, U+00A0 NO-BREAK SPACE
+    // Separators.
+    { "\t\n\v\f\r ", "      " },
+    { "\u00A0", " " },
+    { "\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u200B\u200C\u200D\u200E\u200F\u2010\u2011\u2012\u2013\u2014\u2015\u2016\u2017\u2018\u2019\u201A\u201B\u201C\u201D\u201E\u201F\u2020\u2021\u2022\u2023\u2024\u2025\u2026\u2027\u2028\u2029\u202A\u202B\u202C\u202D\u202E\u202F\u3000", "                                                 " },
 
-    // Separators
-    { "\xE3\x80\x80", { false, " " } }, // U+3000 IDEOGRAPHIC SPACE
-
-    // Separators from 0x2000 to 0x202F
-    { "\xE2\x80\x80", { false, " " } }, // U+2000 EN QUAD
-    { "\xE2\x80\x81", { false, " " } }, // U+2001 EM QUAD
-    { "\xE2\x80\x82", { false, " " } }, // U+2002 EN SPACE
-    { "\xE2\x80\x83", { false, " " } }, // U+2003 EM SPACE
-    { "\xE2\x80\x84", { false, " " } }, // U+2004 THREE-PER-EM SPACE
-    { "\xE2\x80\x85", { false, " " } }, // U+2005 FOUR-PER-EM SPACE
-    { "\xE2\x80\x86", { false, " " } }, // U+2006 SIX-PER-EM SPACE
-    { "\xE2\x80\x87", { false, " " } }, // U+2007 FIGURE SPACE
-    { "\xE2\x80\x88", { false, " " } }, // U+2008 PUNCTUATION SPACE
-    { "\xE2\x80\x89", { false, " " } }, // U+2009 THIN SPACE
-    { "\xE2\x80\x8A", { false, " " } }, // U+200A HAIR SPACE
-    { "\xE2\x80\x8B", { false, " " } }, // U+200B ZERO WIDTH SPACE
-    { "\xE2\x80\x8C", { false, " " } }, // U+200C ZERO WIDTH NON-JOINER
-    { "\xE2\x80\x8D", { false, " " } }, // U+200D ZERO WIDTH JOINER
-    { "\xE2\x80\x8E", { false, " " } }, // U+200E LEFT-TO-RIGHT MARK
-    { "\xE2\x80\x8F", { false, " " } }, // U+200F RIGHT-TO-LEFT MARK
-    { "\xE2\x80\x90", { false, " " } }, // U+2010 HYPHEN
-    { "\xE2\x80\x91", { false, " " } }, // U+2011 NON-BREAKING HYPHEN
-    { "\xE2\x80\x92", { false, " " } }, // U+2012 FIGURE DASH
-    { "\xE2\x80\x93", { false, " " } }, // U+2013 EN DASH
-    { "\xE2\x80\x94", { false, " " } }, // U+2014 EM DASH
-    { "\xE2\x80\x95", { false, " " } }, // U+2015 HORIZONTAL BAR
-    { "\xE2\x80\x96", { false, " " } }, // U+2016 DOUBLE VERTICAL LINE
-    { "\xE2\x80\x97", { false, " " } }, // U+2017 DOUBLE LOW LINE
-    { "\xE2\x80\x98", { false, " " } }, // U+2018 LEFT SINGLE QUOTATION MARK
-    { "\xE2\x80\x99", { false, " " } }, // U+2019 RIGHT SINGLE QUOTATION MARK
-    { "\xE2\x80\x9A", { false, " " } }, // U+201A SINGLE LOW-9 QUOTATION MARK
-    { "\xE2\x80\x9B", { false, " " } }, // U+201B SINGLE HIGH-REVERSED-9 QUOTATION MARK
-    { "\xE2\x80\x9C", { false, " " } }, // U+201C LEFT DOUBLE QUOTATION MARK
-    { "\xE2\x80\x9D", { false, " " } }, // U+201D RIGHT DOUBLE QUOTATION MARK
-    { "\xE2\x80\x9E", { false, " " } }, // U+201E DOUBLE LOW-9 QUOTATION MARK
-    { "\xE2\x80\x9F", { false, " " } }, // U+201F DOUBLE HIGH-REVERSED-9 QUOTATION MARK
-    { "\xE2\x80\xA0", { false, " " } }, // U+2020 DAGGER
-    { "\xE2\x80\xA1", { false, " " } }, // U+2021 DOUBLE DAGGER
-    { "\xE2\x80\xA2", { false, " " } }, // U+2022 BULLET
-    { "\xE2\x80\xA3", { false, " " } }, // U+2023 TRIANGULAR BULLET
-    { "\xE2\x80\xA4", { false, " " } }, // U+2024 ONE DOT LEADER
-    { "\xE2\x80\xA5", { false, " " } }, // U+2025 TWO DOT LEADER
-    { "\xE2\x80\xA6", { false, " " } }, // U+2026 HORIZONTAL ELLIPSIS
-    { "\xE2\x80\xA7", { false, " " } }, // U+2027 HYPHENATION POINT
-    { "\xE2\x80\xA8", { false, " " } }, // U+2028 LINE SEPARATOR
-    { "\xE2\x80\xA9", { false, " " } }, // U+2029 PARAGRAPH SEPARATOR
-    { "\xE2\x80\xAA", { false, " " } }, // U+202A LEFT-TO-RIGHT EMBEDDING
-    { "\xE2\x80\xAB", { false, " " } }, // U+202B RIGHT-TO-LEFT EMBEDDING
-    { "\xE2\x80\xAC", { false, " " } }, // U+202C POP DIRECTIONAL FORMATTING
-    { "\xE2\x80\xAD", { false, " " } }, // U+202D LEFT-TO-RIGHT OVERRIDE
-    { "\xE2\x80\xAE", { false, " " } }, // U+202E RIGHT-TO-LEFT OVERRIDE
-    { "\xE2\x80\xAF", { false, " " } }, // U+202F NARROW NO-BREAK SPACE
-    
     // Fullwidth forms.
-    {          "ＡＢＣＸＹＺａｂｃｘｙｚ０１２３４５６７８９＋－＊／（）＝＜＞＠＃％＆",
-      { false, "ABCXYZabcxyz0123456789+-*/()=<>@#%&" }},
-    {          "！＂＃＄％＆＇（）＊＋，－．／０１２３４５６７８９：；＜＝＞？＠ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ［＼］＾＿｀ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ｛｜｝～",
-      { false, "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~" }},
-    {          "！＂＃＄％＆＇（）＊＋，－．／",
-      { false, "!\"#$%&'()*+,-./" }},
-    {          "０１２３４５６７８９：；＜＝＞？＠", 
-      { false, "0123456789:;<=>?@" }},
-    {          "ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ",
-      { false, "ABCDEFGHIJKLMNOPQRSTUVWXYZ" }},
-    {          "ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ",
-      { false, "abcdefghijklmnopqrstuvwxyz" }},
-    {          "［＼］＾＿｀｛｜｝～", 
-      { false, "[\\]^_`{|}~" }},
-   
+    { "ＡＢＣＸＹＺａｂｃｘｙｚ０１２３４５６７８９＋－＊／（）＝＜＞＠＃％＆", "ABCXYZabcxyz0123456789+-*/()=<>@#%&" },
+    { "！＂＃＄％＆＇（）＊＋，－．／０１２３４５６７８９：；＜＝＞？＠ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ［＼］＾＿｀ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ｛｜｝～", "!\\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~" },
+    { "！＂＃＄％＆＇（）＊＋，－．／", "!\"#$%&'()*+,-./" },
+    { "０１２３４５６７８９：；＜＝＞？＠", "0123456789:;<=>?@" },
+    { "ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ", "ABCDEFGHIJKLMNOPQRSTUVWXYZ" },
+    { "ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ", "abcdefghijklmnopqrstuvwxyz" },
+    { "［＼］＾＿｀｛｜｝～", "[]\\^_`{|}~" },
+
     // Operators.
-    { "+-*/", { false, "+-*/" }},
-    { "·×÷", { false, "**/" }},
-    { "⁄∕⧸", { false, "///" }},
-    { "⁎∗⋅﹡", { false, "****" }},
-    { "₊﹢₋−﹣", { false, "++---" }},
+    { "+-*/", "+-*/" },
+    { "·×÷", "***" },
+    { "⁄∕⧸", "///" },
+    { "⁎∗⋅﹡", "****" },
+    { "₊﹢₋−﹣", "++---" },
 
     // Parentheses and punctuation.
-    { "()₍₎﹙﹚", { false, "()()()" }},
-    { "﹐", { false, "," }},
-    { "﹒", { false, "." }},
+    { "()₍₎﹙﹚", "()()()" },
+    { "﹐", "," },
+    { "﹒", "." },
 
     // Fractions.
-    { "¼½¾", { false, "1/41/23/4" }},
-    { "⅐⅑⅒⅓⅔⅕⅖⅗⅘", { false, "1/71/91/101/32/31/52/53/54/5" }},
-    { "⅙⅚⅛⅜⅝⅞⅟↉", { false, "1/65/61/83/85/87/81/0/3" }},
-    { "3⅟₉", { false, "31/9" }},
+    { "¼½¾", "1/41/23/4" },
+    { "⅐⅑⅒⅓⅔⅕⅖⅗⅘", "1/71/91/101/32/31/52/53/54/5" },
+    { "⅙⅚⅛⅜⅝⅞⅟↉", "1/65/61/83/85/87/81/00/3" },
+    { "3⅟₉", "31/9" },
 
     // Mathematical constants and Greek letters.
-    { "πτφϕⅇΓαζμµσϐ∞ℯ", { false, "pi(2*pi)phiphie_atomicgammaalphariemann_zetamumusigmabetainfe" }},
-    { "Γγαζμµσεβϐ∞", { false, "gammagammaalphariemann_zetamumusigmaepsilonbetabetainf" }},
-    { "Γαζμµσεϐ∞", { false, "gammaalphariemann_zetamumusigmaepsilonbetainf" }},
-    { "ℯℇƵ", { true, "eE" }}, // Ƶ is intentionally unsupported after "ℯℇ".
-  
+    { "πτφϕⅇΓαζμµσϐ∞ℯ", "pi(2*pi)phiphie_atomicgammaalphariemann_zetamumumusigmabetainfe" },
+    { "Γαζμµσεϐ∞", "gammaalphariemann_zetamumumusigmaepsilonbetainf" },
+    { "ℯℇƵ", "eE" }, // Ƶ is intentionally unsupported after "ℯℇ".
+
     // Physical constants.
-    { "ℎℏ", { false, "hhbar" }},
-    { "Ɛℇ", { false, "EE" }},
+    { "ℎℏ", "hhbar" },
+    { "Ɛℇ", "EE" },
 
     // Mathematical functions.
-    { "√x",   { false, "sqrt(x)" }},
-    { "∛x",   { false, "cbrt(x)" }},
-    { "∜x",   { false, "qdrt(x)" }},
-    { "√(x)", { false, "sqrt(x)" }},
-    { "∛(x)", { false, "cbrt(x)" }},
-    { "∜(x)", { false, "qdrt(x)" }},
-    { "√x+1", { false, "sqrt(x)+1" }},
-    { "∛x−1", { false, "cbrt(x)-1" }},
-    { "∜x×2", { false, "qdrt(x)*2" }},
-    { "√x y", { false, "sqrt(x) y" }},
-    { "√x,y", { false, "sqrt(x),y" }},
-    { "⎷x",   { false, "sqrt(x)" }},
-    { "√√x",  { false, "sqrt(sqrt(x))" }},
-    { "√∛x",  { false, "sqrt(cbrt(x))" }},
-    { "∛∜x",  { false, "cbrt(qdrt(x))" }},
-    { "㏑x",     { false, "ln(x)" }},
-    { "㏒x",     { false, "log(x)" }},
-    { "㏑x+㏒y", { false, "ln(x)+log(y)" }},
-    { "√x²",  { false, "sqrt(x^(2))" }},
-    { "√😀", { true, "sqrt()" }},
+    { "√x", "sqrt(x)" },
+    { "∛x", "cbrt(x)" },
+    { "∜x", "qdrt(x)" },
+    { "√(x)", "sqrt(x)" },
+    { "∛(x)", "cbrt(x)" },
+    { "∜(x)", "qdrt(x)" },
+    { "√x+1", "sqrt(x)+1" },
+    { "∛x−1", "cbrt(x)-1" },
+    { "∜x×2", "qdrt(x)*2" },
+    { "√x y", "sqrt(x) y" },
+    { "√x,y", "sqrt(x),y" },
+    { "√√x", "sqrt(sqrt(x))" },
+    { "√∛x", "sqrt(cbrt(x))" },
+    { "∛∜x", "cbrt(qdrt(x))" },
+    { "㏑x", "ln(x)" },
+    { "㏒x", "log(x)" },
+    { "㏑x+㏒y", "ln(x)+log(y)" },
+    { "√x²", "sqrt(x^(2))" },
 
     // Decimal exponent notation.
-    { "1⏨3", { false, "1e3" }},
-    { "1⏨−3", { false, "1e-3" }},
-    { "⏨₉", { false, "e9" }},
-    { "2⏨³", { false, "2e3" }},
-    { "⏨⁹", { false, "e9" }},
-    { "(2)⏨3", { false, "(2)*10^(3)" }},
-    { "(2)⏨(3)", { false, "(2)*10^(3)" }},
+    { "1⏨3", "1*10^(3)" },
+    { "1⏨−3", "1*10^(-3)" },
+    { "1⏨(3)", "1*10^(3)" },
+    { "⏨₉", "*10^(9)" },
+    { "2⏨³", "2*10^(3)" },
 
     // Astronomical symbols.
-    { "⊕♁", { false, "_earth_earth" }},
-    { "⊙☉☼", { false, "_sun_sun_sun" }},
-    { "☽☾", { false, "_moon_moon" }},
-    { "☿", { false, "_mercury" }},
-    { "♀", { false, "_venus" }},
-    { "♂", { false, "_mars" }},
-    { "♃", { false, "_jupiter" }},
-    { "♄", { false, "_saturn" }},
-    { "♅", { false, "_uranus" }},
-    { "♆", { false, "_neptune" }},
-    { "♇", { false, "_pluto" }},
-    { "㍳", { false, "*au" }},
-    { "㍶", { false, "*pc" }},
-    { "R☉×c", { false, "R_sun*c" }},
+    { "⊕♁", "_earth_earth" },
+    { "⊙☉☼", "_sun_sun_sun" },
+    { "☽☾", "_moon_moon" },
+    { "☿", "_mercury" },
+    { "♀", "_venus" },
+    { "♂", "_mars" },
+    { "♃", "_jupiter" },
+    { "♄", "_saturn" },
+    { "♅", "_uranus" },
+    { "♆", "_neptune" },
+    { "♇", "_pluto" },
+    { "㍳", "*au" },
+    { "㍶", "*pc" },
+    { "R☉×c", "R_sun*c" },
 
     // Subscript digits and letters.
-    { "₀₁₂₃₄₅₆₇₈₉", { false, "0123456789" }},
-    { "ₐₑₒₓₕₖₗₘₙₚₛₜ", { false, "aeoxhklmnpst" }},
-    { "x₂₃₄₅₆₇₈₉", { false, "x23456789" }},
-    { "₊₋₍₎", { false, "+-()" }},
-    { "ₔ", { true, "" }},  // U+2094 is explicitly excluded from the subscript-letter lookup.
+    { "₀₁₂₃₄₅₆₇₈₉", "0123456789" },
+    { "ₐₑₒₓₕₖₗₘₙₚₛₜ", "aeoxhklmnpst" },
+    { "x₂₃₄₅₆₇₈₉", "x23456789" },
+    { "x₄", "" }, // U+2084 is not a subscript letter and is handled as a digit.
+    { "ₔ", "" },  // U+2094 is explicitly excluded from the subscript-letter lookup.
 
     // Superscripts: individual characters.
-    { "x⁰", { false, "x^(0)" }},
-    { "x¹", { false, "x^(1)" }},
-    { "x²", { false, "x^(2)" }},
-    { "x³", { false, "x^(3)" }},
-    { "x⁴", { false, "x^(4)" }},
-    { "x⁵", { false, "x^(5)" }},
-    { "x⁶", { false, "x^(6)" }},
-    { "x⁷", { false, "x^(7)" }},
-    { "x⁸", { false, "x^(8)" }},
-    { "x⁹", { false, "x^(9)" }},
-    { "xⁱ", { false, "x^(i)" }},
-    { "xⁿ", { false, "x^(n)" }},
-    { "x⁺", { false, "x^(+)" }},
-    { "x⁻", { false, "x^(-)" }},
-    { "x⁼", { false, "x^(=)" }},
-    
-    // Superscript grouping/state machine.
-    { "x²³", { false, "x^(23)" }},
-    { "x⁴⁵⁶⁷⁸⁹", { false, "x^(456789)" }},
-    { "xⁱⁿ", { false, "x^(in)" }},
-    { "x²⁺⁻⁼", { false, "x^(2+-=)" }},
-    { "x²+1", { false, "x^(2)+1" }},
-    { "x²)", { false, "x^(2))" }},
-    { "x² y", { false, "x^(2) y" }},
-    { "²", { false, "2" }},
-    { "ⁿ", { false, "n" }},
-    { "²³⁴⁵⁶⁷⁸⁹", { false, "23456789" }},
+    { "x⁰", "x^(0)" },
+    { "x¹", "x^(1)" },
+    { "x²", "x^(2)" },
+    { "x³", "x^(3)" },
+    { "x⁴", "x^(4)" },
+    { "x⁵", "x^(5)" },
+    { "x⁶", "x^(6)" },
+    { "x⁷", "x^(7)" },
+    { "x⁸", "x^(8)" },
+    { "x⁹", "x^(9)" },
+    { "xⁱ", "x^(i)" },
+    { "xⁿ", "x^(n)" },
+    { "x⁺", "x^(+)" },
+    { "x⁻", "x^(-)" },
+    { "x⁼", "x^(=)" },
 
-    // Superscript parentheses.
-    { "⁽", { false, "(" }},
-    { "⁾", { false, ")" }},
-    { "⁽⁾", { false, "()" }},
-    { "x⁽⁾", { false, "x^(())" }},
-    { "x⁽ⁿ⁾", { false, "x^((n))" }},
-    { "x²😀", { true, "x^(2)" }},
-    
+    // Superscript grouping/state machine.
+    { "x²³", "x^(23)" },
+    { "x⁴⁵⁶⁷⁸⁹", "x^(456789)" },
+    { "xⁱⁿ", "x^(in)" },
+    { "x²⁺⁻⁼", "x^(2+-=)" },
+    { "x²+1", "x^(2)+1" },
+    { "x²)", "x^(2))" },
+    { "x² y", "x^(2) y" },
+    { "²", "^(2)" },
+    { "ⁿ", "^(n)" },
+    { "²³⁴⁵⁶⁷⁸⁹", "^(23456789)" },
+
+    // Superscript parentheses. These intentionally lock in the current state-machine behavior.
+    { "⁽", "^()" },
+    { "⁾", "^))" },
+    { "⁽⁾", "^())" },
+    { "x⁽⁾", "x^())" },
+
     // Combinations of normalization features.
-    { "½π²", { false, "1/2pi^(2)" }},
-    { "(½π)²", { false, "(1/2pi)^(2)" }},
-    { "α+β−γ×μ÷σ", { false, "alpha+beta-gamma*mu/sigma" }},
-    { "√(1−½)²", { false, "sqrt(1-1/2)^(2)" }},
-    { "⅓×π+⅔×π", { false, "1/3*pi+2/3*pi" }},
-    { "⅓π+⅔π", { false, "1/3pi+2/3pi" }},
-    { "R☉=cℏ", { false, "R_sun=chbar" }},
-    { "㏑(1)+㏒(10)", { false, "ln(1)+log(10)" }},
-    { "１２３．４５６", { false, "123.456" }},
-    { "﹣９﹒０９", { false, "-9.09" }},
-    
+    { "½π²", "1/2pi^(2)" },
+    { "α+β−γ×μ÷σ", "alpha+beta-gamma*mu/sigma" },
+    { "√(1−½)²", "sqrt(1-1/2)^(2)" },
+    { "⅓×π+⅔×π", "1/3*pi+2/3*pi" },
+    { "R☉=cℏ", "R_sun=c hbar" },
+    { "㏑(1)+㏒(10)", "ln(1)+log(10)" },
+    { "１２３．４５６", "123.456" },
+    { "﹣９﹒０９", "-9.09" },
+
     // ASCII pass-through and separator boundaries.
-    { "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789", { false, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" }},
-    { "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~", { false, "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~" }},
-    { "  abc\tdef\nxyz ", { false, "  abc def xyz " }},
+    { "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789", "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" },
+    { "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~", "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~" },
+    { "  abc\tdef\nxyz ", "  abc def xyz " },
 
     // Unsupported characters: normalization must stop at the first unsupported UTF-16 code unit.
-    { "A😀B", { true, "A" }},
-    { "abc©def", { true, "abc" }},
-    { "abcₔdef", { true, "abc" }},
-    { "abc⁲def", { true, "abc" }},
-    { "|—J│Оa╓Чn", { true, "| J" }},
-    { "±", { true, "" }},
-    
-    { "½∜(7π÷2)", { false, "1/2qdrt(7pi/2)" }},
-    { "½∜(7π÷3)R☉×c * (⅒+ ⅟₉)⏨₉  +ℯ⁶", { false ,"1/2qdrt(7pi/3)R_sun*c * (1/10+ 1/9)*10^(9)  +e^(6)" }},
-    { "﹣₉﹒₀₉⏨₉", { false, "-9.09e9" }},
-    { "12³×(231² - 1)³ + 744 - 0.00000000000075", { false, "12^(3)*(231^(2) - 1)^(3) + 744 - 0.00000000000075" }},
+    { "A😀B", "A" },
+    { "abc©def", "abc" },
+    { "abcₔdef", "abc" },
+    { "abc⁲def", "abc" },
+    { "﹣₉﹒₀₉⏨₉", "-9.09*10^(9)" },
+
+    { "12³×(231² - 1)³ + 744 - 0.00000000000075", "12^(3)*(231^(2) - 1)^(3) + 744 - 0.00000000000075" },
 	// TODO: user constants and variables support:
 	// Also I ask ChatGPT https://chatgpt.com/c/6a89e39f-5610-83eb-8182-d914dc425042
 	// Which syntax we should use?
-	{ "x=π2;", { false, "x=pi2;" }},
+	{ "x=π2;", "x=pi2;" },
 	// Intervals needed:
-	{ "[0...π]", { false, "[0...pi]" }},
-	{ "[0...π, step]", { false, "[0...pi, step]" }},
+	{ "[0...π]", "[0...pi]" },
+	{ "[0...π, step]", "[0...pi, step]" },
 	// blocks?
-	{ "{x= 150 ⁄ 12 + 1 }", { false, "{x= 150 / 12 + 1 }" }},
+	{ "{x= 150 ⁄ 12 + 1 }", "{x= 150 / 12 + 1 }" },
 	// TODO: equation support, for input test https://xrjunque.nom.es/AllInOne:
-	{ "{x=((−b ? √(b²−4⋅a⋅c))⁄(2a))π}", { false, "{x=((-b ? sqrt(b^(2)-4*a*c))/(2a))pi}" }},
+	{ "{x=((−b ? √(b²−4⋅a⋅c))⁄(2a))π}", "{x=((-b ? sqrt(b^(2)-4*a*c))/(2a))pi}" },
+
+    { "|—J│Оa╓Чn", "| J"},
+    { "±", "" },
+
+	// convert MathML to plain before processing (needs another library):
+    { "<math><mrow><mi>x</mi><mo>=</mo><mfrac><mrow><mo ... skip this! >−</mo><mi>b</mi><mo>?</mo><msqrt><mrow><msup><mi>b</mi><mn>2</mn></msup><mo>−</mo><mn>4</mn><mi>a</mi><mi>c</mi></mrow></msqrt></mrow><mrow><mn>2</mn><mi>a</mi></mrow></mfrac><mo>⋅</mo><mi>π</mi></mrow></math>",
+      // It's the simple normalization to ASCII.
+      "<math><mrow><mi>x</mi><mo>=</mo><mfrac><mrow><mo ... skip this! >-</mo><mi>b</mi><mo>?</mo><msqrt><mrow><msup><mi>b</mi><mn>2</mn></msup><mo>-</mo><mn>4</mn><mi>a</mi><mi>c</mi></mrow></msqrt></mrow><mrow><mn>2</mn><mi>a</mi></mrow></mfrac><mo>*</mo><mi>pi</mi></mrow></math>" },
 });
 // clang-format on
 #endif
 
 /**
  * @class Normalizer
- * @brief Transforms Unicode mathematical notation into an ASCII-compatible
- *        representation.
+ * @brief Transforms Unicode and ANSI mathematical notation into
+ *        ASCII-compatible representation.
  *
- * This class handles normalization for preprocessing mathematical
- * expressions, converting selected Unicode mathematical notation to the
- * ASCII syntax expected by the calculator. It supports:
+ * This class handles normalization for preprocessing mathematical expressions,
+ * converting specialized mathematical symbols to their standard ASCII
+ * equivalents. Supports extensive Unicode character mappings including:
  *
- *   - Mathematical constants and symbols: π → "pi", τ → "(2*pi)", φ/ϕ → "phi",
- *     ∞ → "inf", ℯ → "e", ⅇ → "e_atomic"
- *   - Mathematical functions: √/⎷ → "sqrt", ∛ → "cbrt", ∜ → "qdrt",
- *     ㏑ → "ln", ㏒ → "log"
- *   - Vulgar fractions: ¼, ½, ¾ and the supported Unicode fraction forms
- *   - Selected Greek letters: α, β, γ/Γ, ε, ζ, μ/µ and σ
- *   - Superscripts: supported digits/operators/letters are grouped as "^(...)"
- *     after ordinary input; a superscript-only leading input is emitted
- *     without the wrapper
- *   - Subscripts: ₀₋₉ and the supported Unicode subscript letters
- *   - Operators and punctuation: common Unicode variants normalized to ASCII
- *   - Fullwidth forms: U+FF01-U+FF5E mapped directly to U+0021-U+007E
- *   - Whitespace/separators: supported Unicode separator characters mapped
- *     to ASCII space
- *   - Astronomical identifiers: Earth, Sun, Moon and the supported planets
- *   - Astronomical units: ㍳ → "*au", ㍶ → "*pc"
- *   - Physical constants/symbols: ℏ → "hbar", ℎ → "h", Ɛ/ℇ → "E"
+ *   - Mathematical constants: π → "pi", φ → "phi", ℯ → "e"
+ *   - Mathematical functions: √ → "sqrt(", ∛ → "cbrt(", ∜ → "qdrt("
+ *   - Vulgar fractions: ¼ → "1/4", ⅕ → "1/5", etc.
+ *   - Greek letters: α → "alpha", β → "beta", γ → "gamma", etc.
+ *   - Superscripts: ² → "^(2)", ⁵ → "^(5)", ⁿ → "^(n)"
+ *   - Subscripts: ₀₋₉ → direct digit mapping
+ *   - Operators: × → "*", ÷ → "/", − → "-", etc.
+ *   - Fullwidth characters: normalized to ASCII range
+ *   - Whitespace variants: normalized to ASCII space
+ *   - Astronomical symbols: ⊕ → "_earth", ☉ → "_sun"
+ *   - Physical constants: ℏ → "hbar", ℎ → "h"
  *
- * Normalization is a single-pass runtime operation used through
- * std::string::resize_and_overwrite(). References are stored with
- * [[no_unique_address]].
+ * The normalizer is designed for constexpr evaluation, supporting both
+ * compile-time and runtime processing. It is strict about memory requirements
+ * and uses reference semantics to minimize overhead via the
+ * [[no_unique_address]] attribute.
  *
  * @note Non-copyable and non-default-constructible utility class.
- * @note The current mappings have a maximum expansion of 12 ASCII bytes per
- *       input UTF-16 code unit (ζ → "riemann_zeta"). A capacity based on
- *       input.length() * 12 is therefore sufficient for the currently supported
- *       mappings, although the constructor assertion currently checks only
- *       input.length() * 4.
+ * @note The output buffer must have capacity of at least input.length() * 4
+ * bytes since some Unicode characters expand to multiple ASCII characters.
  *
  * Usage:
  * ```cpp
@@ -349,28 +243,25 @@ public:
   /**
    * @brief Constructs a Normalizer and performs the normalization.
    *
-   * Initiates the normalization process by calling the Operation functor
-   * with the equation buffer. The normalization is performed immediately
-   * within the constructor via resize_and_overwrite.
+   * Initiates the normalization process by calling the Operation functor with
+   * the equation buffer. The normalization is performed immediately within the
+   * constructor via resize_and_overwrite.
    *
    * @param edit Reference to the Edit containing the input Unicode text to
    * normalize
    * @param equasion Reference to a std::string buffer that will contain the
    * normalized output
    *
-   * @pre equasion.capacity() must be large enough for the complete expanded
-   *      ASCII result. For the current mappings, edit.length() * 12 is a
-   *      sufficient worst-case bound. The implementation currently asserts
-   *      only capacity() > edit.length() * 4.
-   * @post equasion contains the normalized ASCII representation up to the
-   * failed character or end of input if successful
+   * @pre equasion.capacity() must be >= edit.length() * 4 to accommodate
+   * expanded characters
+   * @post equasion contains the normalized ANSI representation up to the failed
+   * character or end of input if successful
    *
    * @note The constructor performs the actual normalization work through
-   *       resize_and_overwrite.
-   * @warning Behavior is undefined if the output buffer is too small.
+   * resize_and_overwrite
+   * @warning Behavior is undefined if the precondition is not met
    */
-  constexpr explicit Normalizer(const EditView &edit,
-                                std::string &equasion) noexcept
+  explicit constexpr Normalizer(EditView &edit, std::string &equasion) noexcept
       : _equasion(equasion), _edit(edit) {
     assert(_equasion.capacity() > _edit.length() * 4);
     _equasion.resize_and_overwrite(
@@ -390,8 +281,8 @@ public:
    * input characters, indicating an unsupported or invalid character was
    * encountered.
    *
-   * @return true if normalization failed (incomplete), false if all input
-   * was normalized
+   * @return true if normalization failed (incomplete), false if all input was
+   * normalized
    *
    * @see normalized()
    */
@@ -412,17 +303,17 @@ private:
   /// Reference to output buffer
   [[no_unique_address]] std::string &_equasion;
   /// Reference to input view
-  [[no_unique_address]] const EditView &_edit;
+  [[no_unique_address]] EditView &_edit;
   /// Count of normalized input chars
-  [[no_unique_address]] UINT _normalized;
+  [[no_unique_address]] uint32_t _normalized;
 
   /**
    * @struct Operation
    * @brief Functor that performs the actual Unicode and ANSI normalization.
    *
-   * This struct is the core normalization engine, implementing a state
-   * machine that processes UTF-16 input character-by-character and writes
-   * normalized ASCII output. It handles multiple parsing states:
+   * This struct is the core normalization engine, implementing a state machine
+   * that processes UTF-16 input character-by-character and writes normalized
+   * ASCII output. It handles multiple parsing states:
    *
    *   - **Superscript mode**: Tracks when superscript characters are
    * encountered and wraps them in "^(...)" notation
@@ -442,9 +333,9 @@ private:
    */
   struct Operation {
     /// Reference to counter tracking processed input chars
-    UINT &normalized;
+    uint32_t &normalized;
     /// UTF-16 input string pointer
-    LPCWSTR begin;
+    LPWSTR begin;
     /// Length of input string in characters
     LPCWSTR end;
 
@@ -452,8 +343,9 @@ private:
      * @brief Copies a string literal to the output buffer and returns new
      * position.
      *
-     * The array bound gives the exact literal size to copy. Uses memcpy for
-     * efficiency and skips the null terminator.
+     * Template specialization on string length allows compile-time computation
+     * of the copy size. Uses memcpy for efficiency and skips the null
+     * terminator.
      *
      * @tparam N Deduced string literal size including null terminator
      * @param out Output buffer position
@@ -470,8 +362,8 @@ private:
     }
 
     /**
-     * @brief Classifies whether a character belongs to the supported
-     *        superscript code-point set.
+     * @brief Classifies if a character is a superscript digit, operator, or
+     * variable.
      *
      * Used by the superscript state machine to determine if the current
      * character should continue the superscript sequence or trigger its
@@ -496,8 +388,7 @@ private:
      * @brief Classifies whitespace and separator characters.
      *
      * Normalized to single ASCII space (0x20). Includes:
-     *   - ASCII control: tab, newline, vertical tab, form feed, carriage
-     *                    return
+     *   - ASCII control: tab, newline, vertical tab, form feed, carriage return
      *   - ASCII space (0x20)
      *   - ANSI non-breaking space (0xA0)
      *   - Unicode spaces: general punctuation (0x2000-0x202F), fullwidth
@@ -516,24 +407,21 @@ private:
     }
 
     /**
-     * @brief Classifies characters that terminate an implicit function
-     *        argument.
+     * @brief Classifies operator characters.
      *
-     * Includes ASCII arithmetic operators and comma, legacy single-byte
-     * mathematical operator values, and broad Unicode mathematical-operator
-     * ranges. U+221A-U+221C (√, ∛, ∜) are intentionally excluded from these
-     * ranges because they are handled as function symbols.
+     * Includes basic arithmetic operators and mathematical symbols:
+     *   - ASCII: +, -, *, /
+     *   - ANSI: · (0xB7), × (0xD7), ÷ (0xF7)
+     *   - Unicode: All characters in mathematical operators range
+     * (0x2200-0x22FF)
      *
      * @param c Character to test
      * @return true if c is an operator
      */
     [[nodiscard]] inline static constexpr bool is_operator(WCHAR c) noexcept {
       return (c == L'+' || c == L'-' || c == L'*' || c == L'/' || // ASCII
-              c == L',' ||                                        // ASCII
               c == 0xB7 || c == 0xD7 || c == 0xF7 ||              // ANSI
-              c >= 0x2200 && c <= 0x2219 || // Unicode before roots
-              c >= 0x221E && c <= 0x22FF    // Unicode after roots
-
+              c >= 0x2200 && c <= 0x22FF                          // Unicode
       );
     }
 
@@ -576,9 +464,9 @@ private:
      * like "sqrt", "cbrt", "ln", etc.
      *
      * A function argument ends when encountering:
-     *   - A separator such as space, tab, newline, or a supported Unicode space
-     *   - An operator, comma, or supported mathematical-operator code point
-     *   - A parenthesis
+     *   - A separator space, tab, etc.
+     *   - An operator +, -, *, /, etc.
+     *   - A parenthesis (, )
      *
      * @param c Character to test
      * @return true if c marks the end of a function's implicit argument
@@ -592,34 +480,38 @@ private:
      * @brief Normalization functor - the main processing engine.
      *
      * Processes the entire input string character-by-character, performing
-     * Unicode-to-ASCII conversions and state machine management. This is
-     * the primary normalization algorithm.
+     * Unicode-to-ASCII conversions and state machine management. This is the
+     * primary normalization algorithm.
      *
      * **Algorithm Overview:**
-     * 1. Initialize superscript and implicit-function state.
-     * 2. Iterate through each UTF-16 code unit:
-     *    a. Close active superscript/function state when the current character
-     *       marks a boundary.
-     *    b. Pass through printable ASCII unchanged.
-     *    c. Normalize separators, fullwidth forms, and subscripts.
-     *    d. Dispatch special symbols through the switch statement.
-     *    e. Stop at the first unsupported code unit.
-     * 3. Finalize by closing any still-active superscript/function state.
+     * 1. Initialize state machines (superscript flag, function nesting counter)
+     * 2. Iterate through each input character:
+     *    a. Check if exiting superscript context and append closing ')'
+     *    b. Check if exiting function context and append closing ')'
+     *    c. Process character:
+     *       - Printable ASCII → copy directly
+     *       - Separator → replace with ASCII space
+     *       - Fullwidth (0xFF01-0xFF5E) → map to ASCII via subtraction
+     *       - Subscript digits (0x2080-0x2089) → map ASCII to digits
+     *       - Subscript letters (0x2090-0x209C) → lookup in letter array
+     *       - Switch statement (400+ mappings) for special symbols:
+     *         * Operators: ×→*, ÷→/, etc.
+     *         * Fractions: ½→"1/2", ⅖→"2/5", etc.
+     *         * Constants: π→"pi", ℏ→"hbar", etc.
+     *         * Functions: √→"sqrt(", ∛→"cbrt(", etc.
+     *         * Superscripts: wrap in "^(...)" notation
+     *       - Unknown character → stop processing
+     * 3. Finalize: close any open parenthesis from superscript/function modes
      *
      * **State Machines:**
-     * - **Superscript mode (bool in_superscript):**
-     *   Activated by superscripts after ordinary input, generating a "^(...)"
-     *   wrapper. Closed when a non-superscript character is encountered.
+     * - **Superscript mode (bool in_superscript)**:
+     *   Activated by superscript characters, generates "^(...)" wrapper.
+     *   Closed when a non-superscript character is encountered.
      *
-     * - **Initial-superscript mode (bool only_superscript):**
-     *   Keeps a leading superscript-only input unwrapped. It is cleared as soon
-     *   as a non-superscript code unit is encountered.
-     *
-     * - **Function mode (uint8_t in_function):**
-     *   Counts implicit argument parentheses opened by sqrt, cbrt, qdrt, ln,
-     *   log, or the parenthesized decimal-exponent form following a ')' .
-     *   It is decremented when a separator, operator, or parenthesis ends the
-     *   implicit argument.
+     * - **Function mode (uint8_t in_function)**:
+     *   Incremented when function names (sqrt, ln, log, etc.) are encountered.
+     *   Tracks nesting depth (though typically 0 or 1 in practice).
+     *   Decremented when function_end condition is met.
      *
      * **Performance Characteristics:**
      * - Single-pass algorithm: O(n) where n = input length
@@ -628,56 +520,44 @@ private:
      * - Uses switch statement (compiler jump table vs if-chain)
      * - Memcpy for multi-character replacements
      *
-     * @param buffer Output buffer where normalized ASCII string will be
-     * written
+     * @param buffer Output buffer where normalized ASCII string will be written
      * @param bufferCapacity Size of output buffer (unused, determined by
      * caller)
      * @return Length of normalized output in bytes (not including null
      * terminator)
      *
-     * @note This function signature matches
-     * std::string::resize_and_overwrite's operation callback, allowing it
-     * to be used as a callable in that API
+     * @note This function signature matches std::string::resize_and_overwrite's
+     *       operation callback, allowing it to be used as a callable in that
+     * API
      * @note The 'normalized' reference is updated to track input position
      * during processing
      * @note Returns the final output buffer position minus the starting
      * position
      *
-     * @warning The buffer capacity must be sufficient for the complete expanded
-     *          output. For the current mappings, input.length() * 12 is a
-     *          sufficient worst-case bound. The constructor assertion currently
-     *          checks only capacity() > input.length() * 4.
-     * @warning Processing stops at the first unsupported UTF-16 code unit and
-     *          returns the successfully normalized prefix.
+     * @warning Assumes buffer has capacity >= input.length() * 8
+     * @warning Will stop processing and return partial result on unsupported
+     * character
      */
     [[nodiscard]] inline unsigned int operator()(char *buffer,
                                                  unsigned int) noexcept {
       normalized = 0;
 
-      auto input = begin;
-
-      auto output = buffer;
+      char *output = buffer;
 
       // Tracks if we are currently in a superscript block
       bool in_superscript = false;
-
-      // Tracks if we have input started from superscript
-      bool only_superscript = false;
 
       // Tracks nesting depth of implicit function argument parentheses
       uint8_t in_function = 0;
 
       // Main processing loop - processes all input characters
-      while (input != end) {
-        const auto c = *input;
+      while (begin != end) [[likely]] {
+        const auto c = *begin;
 
         // Exit superscript mode if encountering a non-superscript character
-        if (!is_superscript(c)) {
-          only_superscript = false;
-          if (in_superscript) {
-            in_superscript = false;
-            *output++ = ')';
-          }
+        if (in_superscript && !is_superscript(c)) {
+          in_superscript = false;
+          *output++ = ')';
         }
 
         // Exit function mode when encountering function argument boundary
@@ -718,6 +598,7 @@ private:
 
         // Dispatch to appropriate handler for special characters
         switch (c) {
+
         // Operators - ANSI and Unicode (Small and Subscripts)
 
         // Plus sign variants
@@ -734,24 +615,26 @@ private:
           break;
 
         // Division sign variants
-        case 0xF7:   // ÷ ANSI DIVISION SIGN
         case 0x2044: // ⁄ FRACTION SLASH
         case 0x2215: // ∕ DIVISION SLASH
         case 0x29F8: // ⧸ BIG SOLIDUS
+        case 0xF7:   // ÷ ANSI DIVISION SIGN
           *output++ = '/';
           break;
 
         // Multiplication sign variants
-        case 0xB7:   // · ANSI MIDDLE DOT
-        case 0xD7:   // × ANSI MULTIPLICATION SIGN
         case 0x204E: // ⁎ LOW ASTERISK
         case 0x2217: // ∗ ASTERISK OPERATOR
         case 0x22C5: // ⋅ DOT OPERATOR
         case 0xFE61: // ﹡ SMALL ASTERISK
+        case 0xB7:   // · ANSI MIDDLE DOT
+        case 0xD7:   // × ANSI MULTIPLICATION SIGN
           *output++ = '*';
           break;
-#ifdef CALC_USED_EQUALS_OPERATORS
-        // TODO https://www.fileformat.info/info/unicode/category/Sm/list.htm
+
+#if 0
+          // TODO https://www.fileformat.info/info/unicode/category/Sm/list.htm
+
         // Relational Operators
         case 0x2260: // ≠
           output = append(output, "!=");
@@ -775,10 +658,11 @@ private:
           output = append(output, "~=");
           break;
 
-          // case PLUS-MINUS SIGN' (U+00B1) ±
-          // case MINUS-OR-PLUS SIGN' (U+2213) ∓
+          // PLUS-MINUS SIGN' (U+00B1) ±
+          // MINUS-OR-PLUS SIGN' (U+2213) ∓
 #endif
-        // Fractions - ANSI
+
+        // Fractions - ANSI (¼, ½, ¾)
         case 0xBC: // ¼
           output = append(output, "1/4");
           break;
@@ -791,7 +675,7 @@ private:
           output = append(output, "3/4");
           break;
 
-        // Fractions - Unicode
+        // Fractions - Unicode (comprehensive coverage)
         case 0x2150: // ⅐ VULGAR FRACTION ONE SEVENTH
           output = append(output, "1/7");
           break;
@@ -900,7 +784,6 @@ private:
           break;
 
         case 0x0393: // Γ GREEK CAPITAL LETTER GAMMA
-        case 0x03B3: // γ GREEK SMALL LETTER GAMMA
           output = append(output, "gamma");
           break;
 
@@ -912,8 +795,9 @@ private:
           output = append(output, "riemann_zeta");
           break;
 
-        case 0xB5:   // µ ANSI MICRO SIGN
+        // Mu - Unicode and ANSI
         case 0x03BC: // μ GREEK SMALL LETTER MU
+        case 0xB5:   // µ ANSI MICRO SIGN
           output = append(output, "mu");
           break;
 
@@ -921,9 +805,7 @@ private:
           output = append(output, "sigma");
           break;
 
-        case 0x03D0: // ϐ GREEK BETA SYMBOL
-        case 0x03B2: // β GREEK SMALL LETTER BETA
-        case 0xA7B5: // β LATIN SMALL LETTER BETA
+        case 0x03D0: // β GREEK BETA SYMBOL
           output = append(output, "beta");
           break;
 
@@ -935,7 +817,7 @@ private:
           *output++ = 'e';
           break;
 
-        // Physical constants
+        // Physical constants - Unicode
         case 0x0190: // Ɛ LATIN CAPITAL LETTER OPEN E
         case 0x2107: // ℇ EULER CONSTANT
           output = append(output, "E");
@@ -954,19 +836,10 @@ private:
           break;
 
 #define START_FUNCTION                                                         \
-  if (input + 1 != end && *(input + 1) != L'(') {                              \
+  if (begin + 1 != end && *(begin + 1) != L'(') {                              \
     ++in_function;                                                             \
     *output++ = '(';                                                           \
   }
-        // Special case
-        case 0x23E8: // ⏨ DECIMAL EXPONENT SYMBOL
-          if (begin <= input - 1 && *(input - 1) == L')') {
-            output = append(output, "*10^");
-            START_FUNCTION
-          } else {
-            *output++ = 'e';
-          }
-          break;
 
         // Unicode mathematical function symbols
         case 0x221A: // √ SQUARE ROOT
@@ -982,6 +855,11 @@ private:
 
         case 0x221C: // ∜ FOURTH ROOT
           output = append(output, "qdrt");
+          START_FUNCTION
+          break;
+
+        case 0x23E8: // ⏨ DECIMAL EXPONENT SYMBOL
+          output = append(output, "*10^");
           START_FUNCTION
           break;
 
@@ -1059,18 +937,12 @@ private:
           // Superscript - ANSI digits and Unicode variants
 
 #define START_SUPERSCRIPT                                                      \
-  if (!only_superscript) {                                                     \
-    if (begin == input) {                                                      \
-      only_superscript = true;                                                 \
-    }                                                                          \
-    if (!only_superscript && !in_superscript &&                                \
-        *(input - 1) != 0x23E8 /*⏨*/) {                                        \
-      in_superscript = true;                                                   \
-      output = append(output, "^(");                                           \
-    }                                                                          \
+  if (!in_superscript) {                                                       \
+    in_superscript = true;                                                     \
+    output = append(output, "^(");                                             \
   }
 
-        // Superscript ANSI digits
+        // Superscript ANSI digits (², ³, ¹)
         case 0xB2: // ² SUPERSCRIPT TWO
           START_SUPERSCRIPT
           *output++ = '2';
@@ -1086,7 +958,7 @@ private:
           *output++ = '1';
           break;
 
-        // Superscript Unicode letters
+        // Superscript Unicode letter
         case 0x2071: // ⁱ SUPERSCRIPT LATIN SMALL LETTER I
           START_SUPERSCRIPT
           *output++ = 'i';
@@ -1095,7 +967,7 @@ private:
         // case 0x2072: // not assigened.
         // case 0x2073: // not assigened.
 
-        // Superscript Unicode digits
+        // Superscript Unicode digits (⁰, ⁴-⁹)
         case 0x2070: // ⁰ SUPERSCRIPT ZERO
         case 0x2074: // ⁴ SUPERSCRIPT FOUR
         case 0x2075: // ⁵ SUPERSCRIPT FIVE
@@ -1107,7 +979,7 @@ private:
           *output++ = '0' + static_cast<char>(c - 0x2070);
           break;
 
-        // Superscript Unicode arithmetic operators
+        // Superscript Unicode arithmetic operators (⁺, ⁻, ⁼)
         case 0x207A: // ⁺ SUPERSCRIPT PLUS SIGN
           START_SUPERSCRIPT
           *output++ = '+';
@@ -1123,18 +995,19 @@ private:
           *output++ = '=';
           break;
 
-        // Superscript Unicode parentheses. Should be in pairs
+        // Superscript Unicode parentheses (⁽, ⁾)
+        // Special handling: these can appear in pairs, so use ^ prefix only
+        // once
         case 0x207D: // ⁽ SUPERSCRIPT LEFT PARENTHESIS
-          START_SUPERSCRIPT
-          *output++ = '(';
-          break;
-
         case 0x207E: // ⁾ SUPERSCRIPT RIGHT PARENTHESIS
-          START_SUPERSCRIPT
-          *output++ = ')';
+          if (!in_superscript) {
+            in_superscript = true;
+            *output++ = '^';
+          }
+          *output++ = c == 0x207D ? '(' : ')';
           break;
 
-        // Superscript Unicode letters
+        // Superscript Unicode letter (ⁿ)
         case 0x207F: // ⁿ SUPERSCRIPT LATIN SMALL LETTER N
           START_SUPERSCRIPT
           *output++ = 'n';
@@ -1148,7 +1021,7 @@ private:
         }
 
       normalization_of_current_end:
-        ++input;
+        ++begin;
         ++normalized;
       }
 
@@ -1162,11 +1035,10 @@ private:
         *output++ = ')';
       }
 
-      return static_cast<UINT>(output - buffer);
+      return static_cast<uint32_t>(output - buffer);
     }
   };
 };
-
 } // namespace GUI
-
+#endif
 #endif

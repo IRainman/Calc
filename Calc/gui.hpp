@@ -198,9 +198,10 @@ static void __cdecl _setup_crt_leak_check() noexcept {
 
 // Disable warnings for GUI code:
 // clang-format off
-__pragma(warning(disable : 4267)); // 'argument': conversion from 'size_t' to 'int', possible loss of data
-__pragma(warning(disable : 4865)); // vector<bool> is never constructed with a non-constant size
-__pragma(warning(disable : 5039)); // potentially throwing function passed to extern C
+#pragma warning(disable : 4267) // 'argument': conversion from 'type_x' to 'type_y', possible loss of data
+#pragma warning(disable : 4865) // the underlying type of 'x' will change when '/Zc:enumTypes' is specified on the command line
+#pragma warning(disable : 5039) // 'x': pointer or reference to potentially throwing function passed to 'extern "C"' function under -EHc. Undefined behavior may occur if this function throws an exception.
+#pragma warning(disable : 4820) // 'x': 'n' bytes padding added after data member 'y'
 // clang-format on
 #include <windows.h>
 #ifdef CALC_SUPPORT_LINK_WINDOW
@@ -215,7 +216,7 @@ __pragma(warning(disable : 5039)); // potentially throwing function passed to ex
 /**
  * Dialog procedure type.
  */
-typedef INT_PTR CALLBACK DlgProc(HWND, UINT, WPARAM, LPARAM);
+typedef INT_PTR CALLBACK DlgProc(HWND, UINT, WPARAM, LPARAM) noexcept;
 
 #ifdef CALC_SUPPORT_EXTENDENT_STYLES
 /**
@@ -502,8 +503,8 @@ struct RegRead {
     DWORD outSize = sizeof(out);
     if (RegQueryValueExA(key, name, nullptr, &type,
                          reinterpret_cast<LPBYTE>(&out),
-                         &outSize) == ERROR_SUCCESS) [[likely]] {
-      if (type == REG_DWORD) [[likely]] {
+                         &outSize) == ERROR_SUCCESS) {
+      if (type == REG_DWORD) {
         return out;
       }
     }
@@ -514,8 +515,8 @@ struct RegRead {
                                     DWORD out_size) const noexcept {
     DWORD type [[indeterminate]];
     if (RegQueryValueExA(key, name, nullptr, &type, out, &out_size) ==
-        ERROR_SUCCESS) [[likely]] {
-      if (type == REG_BINARY) [[likely]] {
+        ERROR_SUCCESS) {
+      if (type == REG_BINARY) {
         return static_cast<UINT>(out_size);
       }
     }
@@ -604,15 +605,15 @@ static FlushMenuThemesFn FlushMenuThemes [[indeterminate]];
 constexpr static void init_uxtheme_callers() noexcept {
   auto uxtheme = GetModuleHandleA("uxtheme.dll");
   // clang-format off
-  __pragma(warning(push))
-  __pragma(warning(disable : 4191)) // allow FARPROC -> function pointer casts here
+#pragma warning(push)
+#pragma warning(disable : 4191) // allow FARPROC -> function pointer casts here
   RefreshImmersiveColorPolicyState = reinterpret_cast<RefreshImmersiveColorPolicyStateFn>(
       GetProcAddress(uxtheme, MAKEINTRESOURCEA(104)));
   SetPreferredAppMode = reinterpret_cast<SetPreferredAppModeFn>(
       GetProcAddress(uxtheme, MAKEINTRESOURCEA(135)));
   FlushMenuThemes = reinterpret_cast<FlushMenuThemesFn>(
       GetProcAddress(uxtheme, MAKEINTRESOURCEA(136)));
-  __pragma(warning(pop))
+#pragma warning(pop)
   // clang-format on
 }
 
@@ -1263,17 +1264,12 @@ public:
    *
    * @note Uses BeginDeferWindowPos/EndDeferWindowPos for batched updates,
    *       minimizing window redraws and providing atomic-like behavior
-   * @note Early exit [[unlikely]] if dimensions haven't changed
    * @note The deferred position update uses SWP_NOZORDER | SWP_NOACTIVATE flags
    *
    * @warning Should only be called from WM_SIZE message handler
    * @see WM_SIZE message
    */
   constexpr void resize(const LONG width, const LONG height) noexcept {
-    // Early exit if size hasn't changed
-    if (_width == width && _height == height) [[unlikely]] {
-      return;
-    }
     _width = width;
     _height = height;
 
@@ -1613,13 +1609,14 @@ constexpr static... check_system_version(...) noexcept {
   auto ntdll = GetModuleHandleA("ntdll.dll");
   // clang-format off
   typedef void (WINAPI* pfnRtlGetNtVersionNumbers)(ULONG*, ULONG*, ULONG*) noexcept;
-  __pragma(warning(push))
-  __pragma(warning(disable : 4191)) // allow FARPROC -> function pointer casts here
+#pragma warning(push)
+#pragma warning(disable : 4191) // allow FARPROC -> function pointer casts here
   auto RtlGetNtVersionNumbers = (pfnRtlGetNtVersionNumbers)GetProcAddress(ntdll, "RtlGetNtVersionNumbers");
-  __pragma(warning(pop))
+#pragma warning(pop)
+  // clang-format on
 
   ULONG major, minor, build;
-  // clang-format on
+
   /**
    * Note: Windows 11 and Windows 10 both return Major 10.
    * Differentiate by build number (Windows 11 is Build >= 22000).

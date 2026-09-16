@@ -15,21 +15,21 @@
 [[nodiscard]] constexpr static Value bin(const std::string_view x) noexcept {
   UInteger bin_val;
   auto res = fast_float::from_chars(x.data(), x.data() + x.size(), bin_val, 2);
-  if (res.ec == std::errc{}) [[likely]] {
+  if (res.ec == std::errc{}) {
     return static_cast<Value>(bin_val);
   }
 
-  [[unlikely]] return std::numeric_limits<Value>::quiet_NaN();
+  return std::numeric_limits<Value>::quiet_NaN();
 }
 
 [[nodiscard]] constexpr static Value hex(const std::string_view x) noexcept {
   UInteger hex_val;
   auto res = fast_float::from_chars(x.data(), x.data() + x.size(), hex_val, 16);
-  if (res.ec == std::errc{}) [[likely]] {
+  if (res.ec == std::errc{}) {
     return static_cast<Value>(hex_val);
   }
 
-  [[unlikely]] return std::numeric_limits<Value>::quiet_NaN();
+  return std::numeric_limits<Value>::quiet_NaN();
 }
 
 constexpr static auto binary_and_hex_parsing(char *ret) {
@@ -92,9 +92,9 @@ std::string calc_tests() {
       Lexer l(t.first);
       Parser p(l);
       const auto token = p.result();
+#ifdef CALC_TESTS_DEV_ENABLED // Development
       const auto is_issue = token.type == Token::Type::ISSUE;
 
-#ifdef CALC_TESTS_DEV_ENABLED // Development
       Result buffer_value [[indeterminate]];
       Result buffer_test [[indeterminate]];
 
@@ -170,11 +170,11 @@ std::string calc_tests() {
                          (end - start) / tests.size())
                          .count());
 #else // Performance
-  output_end =
-      fmt::format_to(output_end, FMT_COMPILE("Performance tests time is: {}ns per case."),
-                     std::chrono::duration_cast<std::chrono::nanoseconds>(
-                         (end - start) / (tests.size() * count))
-                         .count());
+  output_end = fmt::format_to(
+      output_end, FMT_COMPILE("Performance tests time is: {}ns per case."),
+      std::chrono::duration_cast<std::chrono::nanoseconds>(
+          (end - start) / (tests.size() * count))
+          .count());
 #endif
 
   output.resize(output_end - output.data());
