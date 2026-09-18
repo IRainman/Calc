@@ -18,11 +18,11 @@ namespace codata2022 {
 // -------------------------------------------------------------
 
 // Deuteron
-constexpr double deuteron_mass = 3.3435837768e-27;               // kg
-constexpr double deuteron_mass_energy_J = 3.00506323491e-10;     // J
-constexpr double deuteron_mass_energy_MeV = 1875.61294500;       // MeV
-constexpr double deuteron_g_factor = 0.8574382338;               // dimensionless
-constexpr double deuteron_magnetic_moment = 4.33073548e-27;      // J/T
+constexpr double deuteron_mass = 3.3435837768e-27;           // kg
+constexpr double deuteron_mass_energy_J = 3.00506323491e-10; // J
+constexpr double deuteron_mass_energy_MeV = 1875.61294500;   // MeV
+constexpr double deuteron_g_factor = 0.8574382338;           // dimensionless
+constexpr double deuteron_magnetic_moment = 4.33073548e-27;  // J/T
 constexpr double deuteron_compton_wavelength = 6.6260700396e-16; // m
 
 // Triton
