@@ -360,7 +360,6 @@
     <ClCompile Include="lexer.cpp" />
     <ClCompile Include="parser.cpp" />
     <ClCompile Include="formatter.cpp" />
-    <ClCompile Include="issue_manager.cpp" />
     <ClCompile Include="gui.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -378,7 +377,6 @@
     <ClInclude Include="lexer.hpp" />
     <ClInclude Include="parser.hpp" />
     <ClInclude Include="formatter.hpp" />
-    <ClInclude Include="issue_manager.hpp" />
     <ClInclude Include="pch.hpp" />
     <ClInclude Include="flags.hpp" />
     <ClInclude Include="targetver.h" />

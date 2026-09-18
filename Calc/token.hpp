@@ -21,7 +21,7 @@ constexpr static const auto issue_text = std::to_array<std::string_view>(
     {"unparsable", "extraneous input", "too many ^ in expression",
      "expected parenthesis", "incorrect parameters count",
      "too many parameters", "expected number"});
-static_assert(static_cast<uint8_t>(Issue::_count) == issue_text.size());
+static_assert(static_cast<size_t>(Issue::_count) == issue_text.size());
 
 struct Token {
   enum class Type : ParamCount {
@@ -69,9 +69,19 @@ struct Token {
   // Type of this token.
   [[no_unique_address]] Type type [[indeterminate]];
 
-  constexpr Token(const Type t) noexcept : type(t) {}
+  constexpr inline Token(const Type t) noexcept : type(t) {}
 
-  constexpr Token() noexcept { /*no init here!*/ };
+  constexpr inline Token() noexcept { /*no init here!*/ };
 };
+
+/**
+ * Report a new issue.
+ */
+inline void issue(Token &current, const EquationSize position,
+                  const Issue index) noexcept {
+  current.type = Token::Type::ISSUE;
+  current.issue.position = static_cast<uint32_t>(position);
+  current.issue.index = index;
+}
 
 #endif

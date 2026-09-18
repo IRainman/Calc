@@ -63,9 +63,9 @@ private:
    */
   EquationSize return_unparsable(Token &token) const noexcept;
 
+  Token _delayed{Token::Type::ISSUE};
   std::string_view _view;
   const std::string_view::const_pointer _begin;
-  Token _delayed{Token::Type::ISSUE};
   Token::Type _previous = Token::Type::ISSUE;
   friend class Parser;
 };

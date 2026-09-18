@@ -28,5 +28,11 @@
 //---------------------------------------------------------------------------
 #endif
 #endif
-
+//---------------------------------------------------------------------------
+/**
+ * It's possible to disable this larger code from Calc because Unicode input are
+ * really rare and very expensive to parse.
+ */
+#define CALC_SUPPORT_UNICODE_INPUT
+//---------------------------------------------------------------------------
 #endif

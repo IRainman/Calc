@@ -5,7 +5,6 @@
 #include "pch.hpp"
 #ifdef CALC_TESTS_ENABLED
 #include "formatter.hpp"
-#include "issue_manager.hpp"
 #include "lexer.hpp"
 #include "parser.hpp"
 #include "tests.hpp"
@@ -91,7 +90,8 @@ std::string calc_tests() {
     for (const auto &t : tests) {
       Lexer l(t.first);
       Parser p(l);
-      const auto token = p.result();
+      Token token [[indeterminate]];
+      p.result(token);
 #ifdef CALC_TESTS_DEV_ENABLED // Development
       const auto is_issue = token.type == Token::Type::ISSUE;
 
@@ -103,11 +103,11 @@ std::string calc_tests() {
       const std::string_view formated_test(buffer_test.data(),
                                            value(t.second, buffer_test));
 
-      const auto is_error = std::isnan(t.second) && is_issue;
-      const auto is_nan = std::isnan(t.second) && std::isnan(token.number);
-      const auto is_equal = t.second == token.number;
+      const auto is_error = is_issue && std::isnan(t.second);
+      const auto is_nan = std::isnan(token.number) && std::isnan(t.second);
+      const auto is_equal = token.number == t.second;
       const auto is_less_than_epsilon =
-          Identifiers::compare(t.second, token.number);
+          Identifiers::compare(token.number, t.second);
       const auto is_normal = std::isnormal(token.number);
       const auto is_identical_output = formated_value == formated_test;
 
@@ -118,7 +118,8 @@ std::string calc_tests() {
       }
 
       Result buffer [[indeterminate]];
-      const std::string_view formated_report(buffer.data(), report(buffer));
+      const std::string_view formated_report(buffer.data(),
+                                             result(token, buffer));
 
       // clang-format off
       output_end = fmt::format_to(output_end, FMT_COMPILE("Test {}: {}\n"
@@ -171,7 +172,7 @@ std::string calc_tests() {
                          .count());
 #else // Performance
   output_end = fmt::format_to(
-      output_end, FMT_COMPILE("Performance tests time is: {}ns per case."),
+      output_end, FMT_COMPILE("Calc performance tests time is: {}ns per case."),
       std::chrono::duration_cast<std::chrono::nanoseconds>(
           (end - start) / (tests.size() * count))
           .count());

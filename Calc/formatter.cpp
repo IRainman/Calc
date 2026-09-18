@@ -5,7 +5,6 @@
 #include "pch.hpp"
 
 #include "formatter.hpp"
-#include "issue_manager.hpp"
 
 #ifdef CALC_SUPPORT_FRACTIONAL_OUTPUT
 #include "identifiers.hpp"
@@ -64,12 +63,12 @@ char *value(Value value, Result &ret) noexcept {
  * Format Token.
  * @return the end of the formated text.
  */
-char *result(Token token, Result &ret) noexcept {
-  auto end = ret.data();
+char *result(const Token &token, Result &ret) noexcept {
   if (token.type == Token::Type::ISSUE) {
-    end = report(ret);
+    return fmt::format_to(ret.data(), FMT_COMPILE("{}: {}\n"),
+                          token.issue.position,
+                          issue_text[static_cast<uint8_t>(token.issue.index)]);
   } else {
-    end = value(token.number, ret);
+    return value(token.number, ret);
   }
-  return end;
 }

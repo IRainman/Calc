@@ -9,7 +9,6 @@
 #include "pch.hpp"
 
 #include "formatter.hpp"
-#include "issue_manager.hpp"
 #include "lexer.hpp"
 #include "parser.hpp"
 #ifdef CALC_TESTS_ENABLED
@@ -17,7 +16,12 @@
 #endif
 
 #include "gui.hpp"
+#ifdef CALC_SUPPORT_UNICODE_INPUT
 #include "gui_unicode_normalizer.hpp"
+#ifdef CALC_TESTS_ENABLED
+#include "gui_unicode_normalizer_tests.hpp"
+#endif
+#endif
 
 namespace GUI {
 
@@ -122,28 +126,36 @@ public:
     if (LOWORD(wP) == IDC_BUTTON_CALC && HIWORD(wP) == BN_CLICKED) {
       const EditView input(_layout.handle(0));
 
-      Normalizer to_ascii(input, _equasion);
-
       Token token [[indeterminate]];
-      if (to_ascii.failed()) {
-        token = issue(token, to_ascii.normalized(), Issue::unparsable);
+#ifdef CALC_SUPPORT_UNICODE_INPUT
+      Normalizer to_ascii(input.text(), input.length(), _equasion);
+      if (to_ascii.failed()) [[unlikely]] {
+        issue(token, to_ascii.normalized(), Issue::unparsable);
+#else
+      input.read(_equasion);
+      if (input.length() != _equasion.length()) [[unlikely]] {
+        issue(token, _equasion.length(), Issue::unparsable);
+#endif
       } else {
+
         Lexer lexer(_equasion);
 
         Parser parser(lexer);
 
-        token = parser.result();
+        parser.result(token);
       }
+
       Result text [[indeterminate]];
       set_result(text.data(), result(token, text));
     }
+
     return TRUE;
   }
 
   /**
    * Save user data from GUI.
    */
-  constexpr void save_user_data(const HWND window) noexcept {
+  constexpr inline void save_user_data(const HWND window) noexcept {
     save_window_data(window);
   }
 
@@ -157,7 +169,7 @@ public:
   /**
    * Create Calc GUI.
    *
-   * @warning call init befor any usage of any functionality!
+   * @warning call init before any usage of any functionality!
    * @see init()
    */
   [[nodiscard]] constexpr static auto create(const HINSTANCE instance,
@@ -192,7 +204,7 @@ public:
 #endif
     // Allocate user input memory nearby
     _equasion.reserve(cfg::input_max_text_length * 4);
-#ifdef CALC_TESTS_ENABLED
+#if defined(CALC_TESTS_ENABLED) && defined(CALC_SUPPORT_UNICODE_INPUT)
     gui_tests();
 #endif
     load_window_data(window);
@@ -246,7 +258,7 @@ public:
   [[nodiscard]] constexpr inline auto &about() noexcept { return _about; }
 
 private:
-#ifdef CALC_TESTS_ENABLED
+#if defined(CALC_TESTS_ENABLED) && defined(CALC_SUPPORT_UNICODE_INPUT)
   /**
    * @see normalizer_tests, Normalizer, Edit, EditView
    */
@@ -259,34 +271,43 @@ private:
 #ifdef CALC_TESTS_DEV_ENABLED // Development
     unsigned int failed = 0;
 #else // Performance
-    constexpr unsigned int count = 100;
+    std::wstring wide_string [[indeterminate]];
+    wide_string.resize(cfg::input_max_text_length);
+    constexpr unsigned int count = 1'000'000;
     for (unsigned int i = count; --i != 0;)
 #endif
     for (const auto &test : normalizer_tests) {
-      { // Write UTF-8 text to the input Edit
-        const auto &text = test.first;
+      const auto &test_text = test.first;
+#ifdef CALC_TESTS_DEV_ENABLED // Development
+      {
+        Edit input(_layout.handle(0), test_text.length());
 
-        Edit input(_layout.handle(0), text.length());
-
-        input.write(text.data(), text.size());
+        // Write UTF-8 text to the input Edit
+        input.write(test_text.data(), test_text.size());
       }
 
-      {
-        // Read UTF-16 text from the input EditView
-        const EditView input(_layout.handle(0));
+      // Read UTF-16 text from the input EditView
+      const EditView input(_layout.handle(0));
 
-        // Convert UTF-16 text to ASCII representation
-        Normalizer normalizer(input, _equasion);
+      // Convert UTF-16 text to ASCII representation
+      Normalizer normalizer(input.text(), input.length(), _equasion);
+#else
+        // Convert UTF-8 text to the UTF-16 text for the test
+        const UINT length = static_cast<UINT>(MultiByteToWideChar(
+            CP_UTF8, 0, test_text.data(), test_text.length(),
+            wide_string.data(), cfg::input_max_text_length));
 
-        const auto &[test_failed, test_equasion] = test.second;
-
-        // If result unexpected:
-        if (test_failed != normalizer.failed() || test_equasion != _equasion) {
-          set_result(_equasion.data(), _equasion.size());
-#ifdef CALC_TESTS_DEV_ENABLED // Development
-          ++failed;
+        // Convert UTF-16 text to ASCII representation with normalization
+        Normalizer normalizer(wide_string.data(), length, _equasion);
 #endif
-        }
+      const auto &[test_failed, test_equasion] = test.second;
+
+      // If result unexpected:
+      if (test_failed != normalizer.failed() || test_equasion != _equasion) {
+        set_result(_equasion.data(), _equasion.size());
+#ifdef CALC_TESTS_DEV_ENABLED // Development
+        ++failed;
+#endif
       }
     }
 
@@ -296,15 +317,15 @@ private:
         output_end,
         FMT_COMPILE("Tests:\n"
                     " passed: {},\n failed: {}\n"
-                    " time is {}µs per case."),
+                    " GUI time is {}µs per case."),
         normalizer_tests.size() - static_cast<size_t>(failed), failed,
         std::chrono::duration_cast<std::chrono::microseconds>(
             (end - start) / normalizer_tests.size())
             .count());
 #else // Performance
     output_end =
-        fmt::format_to(output_end, FMT_COMPILE("GUI is {}µs per case."),
-                       std::chrono::duration_cast<std::chrono::microseconds>(
+        fmt::format_to(output_end, FMT_COMPILE("Norm. is {}ns per case."),
+                       std::chrono::duration_cast<std::chrono::nanoseconds>(
                            (end - start) / (normalizer_tests.size() * count))
                            .count());
 #endif
@@ -314,7 +335,7 @@ private:
   /**
    *
    */
-  constexpr void set_result(const char *text,
+  constexpr inline void set_result(const char *text,
                             const char *text_end) const noexcept {
     set_text(_layout.handle(1), text, const_cast<char *>(text_end));
   }
@@ -322,7 +343,7 @@ private:
   /**
    *
    */
-  constexpr void set_result(const char *text, size_t size) const noexcept {
+  constexpr inline void set_result(const char *text, size_t size) const noexcept {
     set_result(text, text + size);
   }
 
@@ -421,7 +442,7 @@ private:
     /**
      * Add "About..." menu item to system menu for window.
      */
-    static constexpr void add_menu_to_system_menu(const HWND window) noexcept {
+    static constexpr inline void add_menu_to_system_menu(const HWND window) noexcept {
       // IDM_ABOUTBOX must be in the system command range.
       static_assert((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
       static_assert(IDM_ABOUTBOX < 0xF000);
@@ -478,7 +499,7 @@ private:
   /**
    * Set window icons (small and big).
    */
-  static constexpr void set_icons(const HWND window,
+  static constexpr inline void set_icons(const HWND window,
                                   const HINSTANCE app) noexcept {
     // clang-format off
     PostMessageA(window, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(LoadIconA(app, MAKEINTRESOURCEA(IDR_MAINFRAME_SMALL))));

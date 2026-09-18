@@ -62,7 +62,6 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 #include <string>        // Win32 GUI
 #include <string_view>   // Calc
 #include <unordered_map> // Calc
-#include <vector>        // Calc issues
 #ifdef CALC_TEST_EQUATION_SOLVER
 #include <complex>
 #endif
@@ -154,7 +153,7 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
  * Types using for calculation.
  */
 using EquationSize = size_t;
-using ParamCount = uint8_t;
+using ParamCount = int8_t;
 using Integer = std::int64_t;
 using UInteger = std::uint64_t;
 
@@ -183,7 +182,7 @@ constexpr auto output_precision = std::numeric_limits<Value>::digits10;
  */
 using Result = std::array<char,
 #ifdef CALC_TESTS_ENABLED
-                          1024
+                          128 * 1024
 #else
                           std::hardware_destructive_interference_size
 #endif

@@ -21,9 +21,6 @@
     <ClCompile Include="pch.cpp">
       <Filter>Modules</Filter>
     </ClCompile>
-    <ClCompile Include="issue_manager.cpp">
-      <Filter>Modules</Filter>
-    </ClCompile>
     <ClCompile Include="lexer.cpp">
       <Filter>Modules</Filter>
     </ClCompile>
@@ -54,9 +51,6 @@
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="tests.hpp">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="issue_manager.hpp">
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="lexer.hpp">

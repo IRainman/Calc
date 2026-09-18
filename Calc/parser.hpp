@@ -41,7 +41,7 @@ public:
   /**
    * Parse and evaluate an expression.
    */
-  [[nodiscard]] Token result() noexcept;
+  void result(Token &result) noexcept;
 
 private:
   /**
@@ -49,26 +49,26 @@ private:
    */
   void advance() noexcept;
 
-  [[nodiscard]] Token expr_4() noexcept;
+  void expr_4(Token &result) noexcept;
 
-  [[nodiscard]] Token expr_3() noexcept;
+  void expr_3(Token &result) noexcept;
 
-  [[nodiscard]] Token expr_2() noexcept;
+  void expr_2(Token &result) noexcept;
 
-  [[nodiscard]] Token expr_1() noexcept;
+  void expr_1(Token &result) noexcept;
 
-  [[nodiscard]] Token expr_0() noexcept;
+  void expr_0(Token &result) noexcept;
 
-  [[nodiscard]] Token number() noexcept;
+  void number(Token &result) noexcept;
 
-  [[nodiscard]] Token function() noexcept;
+  void function(Token &result) noexcept;
 
-  [[nodiscard]] Token constant() noexcept;
+  void constant(Token &result) noexcept;
 
-  [[nodiscard]] Token subexpression() noexcept;
+  void subexpression(Token &result) noexcept;
 
-  [[no_unique_address]] Lexer &_lexer;
   [[no_unique_address]] Token _current [[indeterminate]];
+  [[no_unique_address]] Lexer &_lexer;
 };
 
 #endif

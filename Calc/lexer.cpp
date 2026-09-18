@@ -4,7 +4,6 @@
 
 #include "pch.hpp"
 
-#include "issue_manager.hpp"
 #include "lexer.hpp"
 
 namespace {
@@ -20,7 +19,7 @@ const auto &ids = Identifiers::get();
 inline void Lexer::advance(EquationSize n) noexcept { _view.remove_prefix(n); }
 
 inline EquationSize Lexer::return_unparsable(Token &current) const noexcept {
-  current = issue(current, position(), Issue::unparsable);
+  issue(current, position(), Issue::unparsable);
   return 0;
 }
 
@@ -48,9 +47,6 @@ Lexer::read_operator(Token &current) const noexcept {
 Lexer::read_number(Token &current) const noexcept {
   [[assume((_view.size() >= 1))]];
 
-  const auto begin = _view.data();
-  const auto end = _view.data() + _view.size();
-
   constexpr auto options =
       fast_float::parse_options{fast_float::chars_format::general
 #ifndef FASTFLOAT_ONLY_POSITIVE_C_NUMBER_WO_INF_NAN
@@ -58,8 +54,8 @@ Lexer::read_number(Token &current) const noexcept {
 #endif
       };
 
-  const auto res =
-      fast_float::from_chars_advanced(begin, end, current.number, options);
+  const auto res = fast_float::from_chars_advanced(
+      _view.data(), _view.data() + _view.size(), current.number, options);
 
   if (res.ec == std::errc{}) {
     [[assume(current.number >= 0 &&
@@ -67,10 +63,10 @@ Lexer::read_number(Token &current) const noexcept {
 
     current.type = Token::Type::NUM;
 
-    [[assume(res.ptr - begin >= 1)]];
-    return static_cast<EquationSize>(res.ptr - begin);
+    [[assume(res.ptr - _view.data() >= 1)]];
+    return static_cast<EquationSize>(res.ptr - _view.data());
 
-  } else {
+  } else [[unlikely]] {
     // Handles a value which is either too small or too large to parse.
     return return_unparsable(current);
   }
@@ -97,7 +93,7 @@ Lexer::read_ident(Token &current) const noexcept {
 
     return n;
 
-  } else {
+  } else [[unlikely]] {
     return return_unparsable(current);
   }
 }
@@ -159,7 +155,7 @@ void Lexer::next(Token &current) noexcept {
       is_separator = true;
       continue;
 
-    } else {
+    } else [[unlikely]] {
       // invalid_token_return
       return_unparsable(current);
       return;
