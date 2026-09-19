@@ -369,7 +369,7 @@ public:
    * @return Length in UTF-16 characters of the text.
    * @see text()
    */
-  [[nodiscard]] constexpr auto length() const noexcept {
+  [[nodiscard]] constexpr UINT length() const noexcept {
     return _max_size / sizeof(WCHAR);
   }
 

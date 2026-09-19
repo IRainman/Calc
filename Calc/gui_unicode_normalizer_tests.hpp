@@ -115,7 +115,7 @@ static auto normalizer_tests = std::to_array< std::pair< std::string_view, std::
     //     only_superscript, because that state is entered only at input[0].
     {   // Maximal Normalizer stress test
         // Printable ASCII: exercises the initial fast path.
-        "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~ "
+        " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
         
         // Every separator classified by is_separator().
         "\t\n\v\f\r \xC2\xA0"
@@ -233,7 +233,7 @@ static auto normalizer_tests = std::to_array< std::pair< std::string_view, std::
         { true,
 
           // ASCII
-          "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~ "
+          " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
 
           // 56 separators -> 56 ASCII spaces.
           "\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20"

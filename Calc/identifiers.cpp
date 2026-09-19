@@ -669,10 +669,12 @@ assoc_laguerre(Value degree, Value order, Value value) noexcept {
   }
 }
 
+/**
+ * Minkowski distance: parameters contains p all other parameters is distances
+ * d[i] = v[i] - w[i] for two vectors v and w
+ */
 [[nodiscard]] /*constexpr*/ static Value
 distance(std::span<Value> params) noexcept {
-  // Minkowski distance: parameters contains p all other parameters is distances
-  // d[i] = v[i] - w[i] for two vectors v and w
   Value ex = 0.0;
   Value min_d = std::numeric_limits<Value>::infinity();
   Value max_d = -std::numeric_limits<Value>::infinity();
@@ -688,6 +690,14 @@ distance(std::span<Value> params) noexcept {
          : !std::isnormal(ex) && !std::signbit(params[0])
              ? max_d
              : pow(ex, 1.0 / params[0]);
+}
+
+[[nodiscard]] constexpr static auto dBm(Value mW) noexcept {
+  return 10.0 * log10(mW);
+}
+
+[[nodiscard]] constexpr static auto mW(Value dBm) noexcept {
+  return pow(10.0, dBm / 10.0);
 }
 
 #ifdef CALC_TEST_EQUATION_SOLVER
@@ -1160,7 +1170,9 @@ static const map ids = {
     {"hermite", function_pointer<2, hermite>()},
 
     {"riemann_zeta", function_pointer<1, std::riemann_zeta>()},
-
+    //---------------------------------------------------------------------------
+    {"dBm", function_pointer<1, dBm>()},
+    {"mW", function_pointer<1, mW>()},
     //---------------------------------------------------------------------------
 };
 
