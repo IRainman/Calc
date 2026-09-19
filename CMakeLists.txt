@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.30)
 
 project(Calc
-  VERSION 2.10.3
-  LANGUAGES C CXX
+  VERSION 2026.9.20.0
+  LANGUAGES CXX
 )
 
 # ============================================================================
@@ -23,13 +23,6 @@ endif()
 #   GNU / GCC
 # ============================================================================
 
-if(NOT CMAKE_C_COMPILER_ID MATCHES "^(Clang|GNU)$")
-  message(FATAL_ERROR
-    "Calc CMake build supports Clang and GCC for C. "
-    "Detected compiler: ${CMAKE_C_COMPILER_ID}"
-  )
-endif()
-
 if(NOT CMAKE_CXX_COMPILER_ID MATCHES "^(Clang|GNU)$")
   message(FATAL_ERROR
     "Calc CMake build supports Clang and GCC for C++. "
@@ -40,10 +33,6 @@ endif()
 # ============================================================================
 # Language standards
 # ============================================================================
-
-set(CMAKE_C_STANDARD 23)
-set(CMAKE_C_STANDARD_REQUIRED ON)
-set(CMAKE_C_EXTENSIONS OFF)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -61,20 +50,10 @@ message(STATUS "System:")
 message(STATUS "  ${CMAKE_SYSTEM_NAME}")
 
 message(STATUS "")
-message(STATUS "C compiler:")
-message(STATUS "  ${CMAKE_C_COMPILER_ID}")
-message(STATUS "  ${CMAKE_C_COMPILER_VERSION}")
-message(STATUS "  ${CMAKE_C_COMPILER}")
-
-message(STATUS "")
 message(STATUS "C++ compiler:")
 message(STATUS "  ${CMAKE_CXX_COMPILER_ID}")
 message(STATUS "  ${CMAKE_CXX_COMPILER_VERSION}")
 message(STATUS "  ${CMAKE_CXX_COMPILER}")
-
-message(STATUS "")
-message(STATUS "C standard:")
-message(STATUS "  C23")
 
 message(STATUS "")
 message(STATUS "C++ standard:")
@@ -181,23 +160,7 @@ target_include_directories(Calc PRIVATE
 # ============================================================================
 
 target_compile_features(Calc PRIVATE
-  c_std_23
   cxx_std_23
-)
-
-set_property(
-  TARGET Calc
-  PROPERTY C_STANDARD 23
-)
-
-set_property(
-  TARGET Calc
-  PROPERTY C_STANDARD_REQUIRED ON
-)
-
-set_property(
-  TARGET Calc
-  PROPERTY C_EXTENSIONS OFF
 )
 
 set_property(

@@ -193,11 +193,9 @@ jobs:
           set -eux
 
           if [ "$COMPILER" = "clang" ]; then
-            c_compiler=clang
             cxx_compiler=clang++
             linker_flags="-fuse-ld=lld"
           else
-            c_compiler=gcc
             cxx_compiler=g++
             linker_flags=""
           fi
@@ -207,15 +205,10 @@ jobs:
             -B "$BUILD_DIR" \
             -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_C_COMPILER="$c_compiler" \
             -DCMAKE_CXX_COMPILER="$cxx_compiler" \
-            -DCMAKE_C_STANDARD=23 \
-            -DCMAKE_C_STANDARD_REQUIRED=ON \
-            -DCMAKE_C_EXTENSIONS=OFF \
             -DCMAKE_CXX_STANDARD=23 \
             -DCMAKE_CXX_STANDARD_REQUIRED=ON \
             -DCMAKE_CXX_EXTENSIONS=OFF \
-            -DCMAKE_C_FLAGS="-march=x86-64-v2" \
             -DCMAKE_CXX_FLAGS="-march=x86-64-v2" \
             -DCMAKE_EXE_LINKER_FLAGS="$linker_flags"
 
@@ -234,10 +227,6 @@ jobs:
           cache="$BUILD_DIR/CMakeCache.txt"
 
           test -f "$cache"
-
-          echo "C compiler:"
-          grep 'CMAKE_C_COMPILER_ID:' "$cache"
-          grep 'CMAKE_C_COMPILER:' "$cache"
 
           echo
           echo "C++ compiler:"
