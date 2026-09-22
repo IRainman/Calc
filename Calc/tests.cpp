@@ -47,7 +47,7 @@ constexpr static auto binary_and_hex_parsing(char *ret) {
   case x:                                                                      \
     return #x
 
-constexpr std::string_view round_name(int const d) {
+constexpr static std::string_view round_name(int const d) {
   switch (d) {
     CASE_RETURN_NAME(FE_TONEAREST);
     CASE_RETURN_NAME(FE_DOWNWARD);
