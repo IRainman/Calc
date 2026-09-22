@@ -154,7 +154,7 @@ static auto normalizer_tests = std::to_array< std::pair< std::string_view, std::
         "πτφϕⅇΓγαζμµσϐ∞ℯƐℇℎℏε"
 
         // Every astronomical mapping and astronomical unit.
-        "⊕♁⊙☉☼☽☾☿♀♂♃♄♅♆♇㍳㍶"
+        "♁☉☽☾☿♀♂♃♄♅⛢♆♇㍳㍶"
 
         // Every supported subscript mapping.
         "₀₁₂₃₄₅₆₇₈₉ₐₑₒₓₕₖₗₘₙₚₛₜ₊₋₍₎"
@@ -258,7 +258,7 @@ static auto normalizer_tests = std::to_array< std::pair< std::string_view, std::
           "pi(2*pi)phiphie_atomicgammagammaalphariemann_zetamumusigmabetainfeEEhhbarepsilon"
 
           // Astronomy.
-          "_earth_earth_sun_sun_sun_moon_moon_mercury_venus_mars_jupiter_saturn_uranus_neptune_pluto*au*pc"
+          "_earth_sun_moon_moon_mercury_venus_mars_jupiter_saturn_uranus_uranus_neptune_pluto*au*pc"
 
           // Subscripts.
           "0123456789aeoxhklmnpst+-()"
@@ -332,20 +332,19 @@ static auto normalizer_tests = std::to_array< std::pair< std::string_view, std::
     { "1⏨−3", { false, "1e-3" }},
     { "⏨₉", { false, "e9" }},
     { "2⏨³", { false, "2e3" }},
-    { "⏨⁹", { false, "e9" }},
     { "(2)⏨3", { false, "(2)*10^(3)" }},
     { "(2)⏨(3)", { false, "(2)*10^(3)" }},
 
     // Astronomical symbols.
-    { "⊕♁", { false, "_earth_earth" }},
-    { "⊙☉☼", { false, "_sun_sun_sun" }},
+    { "♁", { false, "_earth" }},
+    { "☉", { false, "_sun" }},
     { "☽☾", { false, "_moon_moon" }},
     { "☿", { false, "_mercury" }},
     { "♀", { false, "_venus" }},
     { "♂", { false, "_mars" }},
     { "♃", { false, "_jupiter" }},
     { "♄", { false, "_saturn" }},
-    { "♅", { false, "_uranus" }},
+    { "♅⛢", { false, "_uranus_uranus" }},
     { "♆", { false, "_neptune" }},
     { "♇", { false, "_pluto" }},
     { "㍳", { false, "*au" }},
@@ -393,7 +392,7 @@ static auto normalizer_tests = std::to_array< std::pair< std::string_view, std::
     { "⁽⁾", { false, "()" }},
     { "x⁽⁾", { false, "x^(())" }},
     { "x⁽ⁿ⁾", { false, "x^((n))" }},
-    { "¹²³⁴⁵⁶⁷⁸⁹⁰ ¹²³⁴⁵⁶⁷⁸⁹⁰", { false, "1234567890 ^(1234567890)" }}, // only_superscript -> separator -> in_superscript
+    { "¹²³⁴⁵⁶⁷⁸⁹⁰ ¹²³⁴⁵⁶⁷⁸⁹⁰", { false, "1234567890 ^(1234567890)" }}, // only_superscript -> !is_superscript() -> in_superscript
     
     // Combinations of normalization features
     { "½π²", { false, "1/2pi^(2)" }},
@@ -415,8 +414,8 @@ static auto normalizer_tests = std::to_array< std::pair< std::string_view, std::
     { "|—J│Оa╓Чn", { true, "| J" }},
     { "±", { true, "" }},
     { "x²😀", { true, "x^(2)" }},
-    { "ₔ", { true, "" }},  // U+2094 is explicitly excluded from the subscript-letter lookup
-    { "√😀", { true, "sqrt(" }}, // Should be fast exit without correctnes of states machines
+    { "ₔ", { true, "" }}, // U+2094 is explicitly excluded from the subscript-letter lookup
+    { "√😀", { true, "sqrt(" }}, // Should be fast exit without correctnes of state machines
     
 	// TODO: user constants and variables support:
 	// Also I ask ChatGPT https://chatgpt.com/c/6a89e39f-5610-83eb-8182-d914dc425042
