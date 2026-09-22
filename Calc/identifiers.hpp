@@ -46,11 +46,11 @@ using map = const std::unordered_map<std::string_view, const Fn>;
 
 [[nodiscard]] /*constexpr*/ Value pow(const Value x, const Value y) noexcept;
 
-[[nodiscard]] constexpr Value degrees_to_radians(const Value x) noexcept;
+//[[nodiscard]] constexpr Value degrees_to_radians(const Value x) noexcept;
 
-[[nodiscard]] constexpr Value radians_to_degrees(const Value x) noexcept;
+//[[nodiscard]] constexpr Value radians_to_degrees(const Value x) noexcept;
 
-[[nodiscard]] constexpr Integer gcd(Integer a, Integer b) noexcept;
+//[[nodiscard]] constexpr Integer gcd(Integer a, Integer b) noexcept;
 
 [[nodiscard]] /*constexpr*/ bool compare(const Value a, const Value b) noexcept;
 }; // namespace Identifiers

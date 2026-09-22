@@ -258,24 +258,10 @@ template <const Value value> [[nodiscard]] consteval Fn constant() noexcept {
          x <= static_cast<Value>(std::numeric_limits<Integer>::max());
 }
 
-[[nodiscard]] constexpr Integer gcd(Integer a, Integer b) noexcept {
-  while (b != 0) {
-    auto const r = a % b;
-    a = b;
-    b = r;
-  }
-  return a;
-}
-
-[[nodiscard]] static constexpr Integer lcm(Integer a, Integer b) noexcept {
-  auto const g = gcd(a, b);
-  return (a / g) * b;
-}
-
 [[nodiscard]] static constexpr Value gcd(Value a, Value b) noexcept {
   if (is_integer(a) && is_integer(b)) {
     return static_cast<Value>(
-        gcd(static_cast<Integer>(a), static_cast<Integer>(b)));
+        std::gcd(static_cast<Integer>(a), static_cast<Integer>(b)));
   } else {
     return std::numeric_limits<Value>::quiet_NaN();
   }
@@ -284,7 +270,7 @@ template <const Value value> [[nodiscard]] consteval Fn constant() noexcept {
 [[nodiscard]] static constexpr Value lcm(Value a, Value b) noexcept {
   if (is_integer(a) && is_integer(b)) {
     return static_cast<Value>(
-        lcm(static_cast<Integer>(a), static_cast<Integer>(b)));
+        std::lcm(static_cast<Integer>(a), static_cast<Integer>(b)));
   } else {
     return std::numeric_limits<Value>::quiet_NaN();
   }
@@ -298,33 +284,35 @@ template <const Value value> [[nodiscard]] consteval Fn constant() noexcept {
   return std::ranges::max(params);
 }
 
-[[nodiscard]] /*constexpr*/ bool compare(const Value a,
-                                         const Value b) noexcept {
+[[nodiscard]] /*constexpr*/ /*static*/ bool compare(const Value a,
+                                                    const Value b) noexcept {
   return std::abs(a - b) <= std::numeric_limits<Value>::epsilon() *
                                 std::max(std::abs(a), std::abs(b));
 }
 
-[[nodiscard]] constexpr Value degrees_to_radians(const Value x) noexcept {
+[[nodiscard]] constexpr static Value
+degrees_to_radians(const Value x) noexcept {
   return x * std::numbers::pi_v<Value> / 180.0;
 }
 
-[[nodiscard]] constexpr Value radians_to_degrees(const Value x) noexcept {
+[[nodiscard]] constexpr static Value
+radians_to_degrees(const Value x) noexcept {
   return x * 180.0 / std::numbers::pi_v<Value>;
 }
 
-[[nodiscard]] constexpr Value grad_to_radians(const Value x) noexcept {
+[[nodiscard]] constexpr static Value grad_to_radians(const Value x) noexcept {
   return x * std::numbers::pi_v<Value> / 200.0;
 }
 
-[[nodiscard]] constexpr Value radians_to_grad(const Value x) noexcept {
+[[nodiscard]] constexpr static Value radians_to_grad(const Value x) noexcept {
   return x * 200.0 / std::numbers::pi_v<Value>;
 }
 
-[[nodiscard]] constexpr Value turn_to_radians(const Value x) noexcept {
+[[nodiscard]] constexpr static Value turn_to_radians(const Value x) noexcept {
   return x * 2.0 * std::numbers::pi_v<Value>;
 }
 
-[[nodiscard]] constexpr Value radians_to_turn(const Value x) noexcept {
+[[nodiscard]] constexpr static Value radians_to_turn(const Value x) noexcept {
   return x / (2.0 * std::numbers::pi_v<Value>);
 }
 

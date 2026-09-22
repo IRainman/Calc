@@ -7,7 +7,6 @@
 #include "formatter.hpp"
 
 #ifdef CALC_SUPPORT_FRACTIONAL_OUTPUT
-#include "identifiers.hpp"
 
 // Function to convert decimal to fraction
 constexpr static std::pair<Integer, Integer> decimalToFraction(Value number) {
@@ -30,7 +29,7 @@ constexpr static std::pair<Integer, Integer> decimalToFraction(Value number) {
   // equivalent of fractional
   // part and precision value
   Integer gcdVal =
-      Identifiers::gcd(static_cast<Integer>(std::round(fVal * value)), value);
+      std::gcd(static_cast<Integer>(std::round(fVal * value)), value);
 
   // Calculate num and deno
   Integer num = static_cast<Integer>(std::round(fVal * value)) / gcdVal;
