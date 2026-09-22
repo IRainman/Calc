@@ -651,9 +651,9 @@ class Theme {
   /// Slightly darker text than pure light
   static constexpr auto _dark_bakground_text_color = RGB(240, 240, 240);
 
-  [[no_unique_address]] const auto _dark_bakground_window_brush =
+  [[no_unique_address]] const HBRUSH _dark_bakground_window_brush =
       CreateSolidBrush(_dark_bakground_window_color);
-  [[no_unique_address]] const auto _dark_bakground_field_brush =
+  [[no_unique_address]] const HBRUSH _dark_bakground_field_brush =
       CreateSolidBrush(_dark_bakground_field_color);
 
   /**
