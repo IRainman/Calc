@@ -118,7 +118,7 @@ public:
    *              ↓
    *            Result
    *              ↓
-   *    ASCII to system UTF-16 (set_result)
+   *    ASCII to system UTF-16 (set_result implicit)
    *              ↓
    *     System UTF-16 result
    */
@@ -137,7 +137,6 @@ public:
         issue(token, _equasion.length(), Issue::unparsable);
 #endif
       } else {
-
         Lexer lexer(_equasion);
 
         Parser parser(lexer);
@@ -155,7 +154,7 @@ public:
   /**
    * Save user data from GUI.
    */
-  constexpr inline void save_user_data(const HWND window) noexcept {
+  constexpr inline void save_user_data(const HWND window) const noexcept {
     save_window_data(window);
   }
 
@@ -189,8 +188,9 @@ public:
    * @warning call create first!
    * @see create()
    */
-  [[nodiscard]] constexpr BOOL init(const HWND window, const LPARAM lP) {
-    set_icons(window, reinterpret_cast<HINSTANCE>(lP));
+  [[nodiscard]] constexpr BOOL init(const HWND window,
+                                    const LPARAM lParam) noexcept {
+    set_icons(window, reinterpret_cast<HINSTANCE>(lParam));
 
     About::add_menu_to_system_menu(window);
 
@@ -217,8 +217,8 @@ public:
   /**
    * Resize Calc window.
    */
-  [[nodiscard]] constexpr BOOL resize(const LPARAM lP) noexcept {
-    _layout.resize(LOWORD(lP), HIWORD(lP));
+  [[nodiscard]] constexpr BOOL resize(const LPARAM lParam) noexcept {
+    _layout.resize(LOWORD(lParam), HIWORD(lParam));
     return TRUE;
   }
 
@@ -226,8 +226,8 @@ public:
    * Return to the system minimal sizes for Calc window.
    */
   [[nodiscard]] constexpr inline BOOL
-  minmaxinfo(const LPARAM lP) const noexcept {
-    const auto lpMMI = reinterpret_cast<LPMINMAXINFO>(lP);
+  minmaxinfo(const LPARAM lParam) const noexcept {
+    const auto lpMMI = reinterpret_cast<LPMINMAXINFO>(lParam);
     lpMMI->ptMinTrackSize.x = _layout.min_x();
     lpMMI->ptMinTrackSize.y = _layout.min_y();
     return TRUE;
@@ -262,7 +262,7 @@ private:
   /**
    * @see normalizer_tests, Normalizer, Edit, EditView
    */
-  constexpr void gui_tests() {
+  constexpr inline void gui_tests() {
     std::string &output = _equasion;
 
     auto output_end = output.data();
@@ -336,14 +336,15 @@ private:
    *
    */
   constexpr inline void set_result(const char *text,
-                            const char *text_end) const noexcept {
-    set_text(_layout.handle(1), text, const_cast<char *>(text_end));
+                                   const char *text_end) const noexcept {
+    set_text(_layout.handle(1), text, text_end);
   }
 
   /**
    *
    */
-  constexpr inline void set_result(const char *text, size_t size) const noexcept {
+  constexpr inline void set_result(const char *text,
+                                   size_t size) const noexcept {
     set_result(text, text + size);
   }
 
@@ -384,13 +385,15 @@ private:
         wp.rcNormalPosition.top = physical(*top, dpi);
         wp.rcNormalPosition.right = physical(*right, dpi);
         wp.rcNormalPosition.bottom = physical(*bottom, dpi);
+      } else {
+#endif
+        // -> use as is
+        wp.rcNormalPosition.left = *left;
+        wp.rcNormalPosition.top = *top;
+        wp.rcNormalPosition.right = *right;
+        wp.rcNormalPosition.bottom = *bottom;
+#ifdef CALC_SUPPORT_DPI_CHANGES
       }
-#else
-      // -> use as is
-      wp.rcNormalPosition.left = *left;
-      wp.rcNormalPosition.top = *top;
-      wp.rcNormalPosition.right = *right;
-      wp.rcNormalPosition.bottom = *bottom;
 #endif
     } else {
       // -> use default position
@@ -442,7 +445,8 @@ private:
     /**
      * Add "About..." menu item to system menu for window.
      */
-    static constexpr inline void add_menu_to_system_menu(const HWND window) noexcept {
+    static constexpr inline void
+    add_menu_to_system_menu(const HWND window) noexcept {
       // IDM_ABOUTBOX must be in the system command range.
       static_assert((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
       static_assert(IDM_ABOUTBOX < 0xF000);
@@ -468,13 +472,13 @@ private:
     }
 #ifdef CALC_SUPPORT_LINK_WINDOW
     /**
-     * Helper to open homepage of the Calc
+     * Open homepage of the Calc
      */
     [[nodiscard]] static constexpr BOOL
     open_homepage(const HWND window, const LPARAM lParam) noexcept {
       const auto nm = reinterpret_cast<LPNMHDR>(lParam);
       if (nm->idFrom == IDC_LINK_HOMEPAGE && nm->code == NM_CLICK) {
-        const auto l = reinterpret_cast<NMLINK *>(lParam);
+        const auto l = reinterpret_cast<PNMLINK>(lParam);
         ShellExecuteW(window, L"open", l->item.szUrl, nullptr, nullptr,
                       SW_SHOWNORMAL);
         return TRUE;
@@ -500,10 +504,10 @@ private:
    * Set window icons (small and big).
    */
   static constexpr inline void set_icons(const HWND window,
-                                  const HINSTANCE app) noexcept {
+                                         const HINSTANCE instance) noexcept {
     // clang-format off
-    PostMessageA(window, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(LoadIconA(app, MAKEINTRESOURCEA(IDR_MAINFRAME_SMALL))));
-    PostMessageA(window, WM_SETICON, ICON_BIG,   reinterpret_cast<LPARAM>(LoadIconA(app, MAKEINTRESOURCEA(IDR_MAINFRAME_BIG))));
+    PostMessageA(window, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(LoadIconA(instance, MAKEINTRESOURCEA(IDR_MAINFRAME_SMALL))));
+    PostMessageA(window, WM_SETICON, ICON_BIG,   reinterpret_cast<LPARAM>(LoadIconA(instance, MAKEINTRESOURCEA(IDR_MAINFRAME_BIG))));
     // clang-format on
   }
 
@@ -575,9 +579,6 @@ constexpr static INT_PTR CALLBACK main_proc(const HWND window,
     return gui.init(window, lParam);
 #ifdef CALC_SUPPORT_AUTO_RESTART
   case WM_ENDSESSION:
-    if (wParam) {
-      gui.save_user_data(window);
-    }
     return TRUE;
 #endif
 #ifdef CALC_SUPPORT_DARK_MODE

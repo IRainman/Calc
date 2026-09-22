@@ -201,7 +201,6 @@ static void __cdecl _setup_crt_leak_check() noexcept {
 #pragma warning(disable : 4267) // 'argument': conversion from 'type_x' to 'type_y', possible loss of data
 #pragma warning(disable : 4865) // the underlying type of 'x' will change when '/Zc:enumTypes' is specified on the command line
 #pragma warning(disable : 5039) // 'x': pointer or reference to potentially throwing function passed to 'extern "C"' function under -EHc. Undefined behavior may occur if this function throws an exception.
-#pragma warning(disable : 4820) // 'x': 'n' bytes padding added after data member 'y'
 // clang-format on
 #include <windows.h>
 #ifdef CALC_SUPPORT_LINK_WINDOW
@@ -233,7 +232,7 @@ constexpr static void set_extended_style(const HWND window,
  * Set text to window. Shoul be zero terminated!
  * @see Edit
  */
-constexpr static void set_text(const HWND window, LPCSTR text) noexcept {
+constexpr static void set_text(const HWND window, LPCSTR const text) noexcept {
   SetWindowTextA(window, text);
 }
 
@@ -241,9 +240,9 @@ constexpr static void set_text(const HWND window, LPCSTR text) noexcept {
  * Set text to window (end is for C string terminator).
  * @see Edit
  */
-constexpr static void set_text(const HWND window, LPCSTR text,
-                               LPSTR const text_end) noexcept {
-  *text_end = '\0'; // because of C string
+constexpr static void set_text(const HWND window, LPCSTR const text,
+                               LPCSTR const text_end) noexcept {
+  *const_cast<LPSTR>(text_end) = '\0'; // because of C string
   set_text(window, text);
 }
 
@@ -307,7 +306,7 @@ public:
    * @return UTF-8 text to the ouput paramether.
    */
   constexpr void read(std::string &output) const noexcept {
-    assert(_length <= output.capacity());
+    assert(length() <= output.capacity());
     output.resize(output.capacity());
     output.resize(WideCharToMultiByte(CP_UTF8, 0, text(), length(),
                                       output.data(), output.capacity(), NULL,
@@ -319,7 +318,7 @@ public:
    * @see data()
    */
   [[nodiscard]] constexpr auto size() const noexcept {
-    return static_cast<UINT>(_length * sizeof(WCHAR));
+    return static_cast<UINT>(length() * sizeof(WCHAR));
   }
 
   /**
@@ -377,45 +376,48 @@ public:
    * @return Pointer (LPWSTR) to the UTF-16 text.
    * @see length()
    */
-  [[nodiscard]] constexpr auto text() noexcept { return _text; }
+  [[nodiscard]] constexpr auto text() const noexcept { return _text; }
 
   /**
    * Set end of the text.
    * @see text(), length()
    */
-  constexpr void set_text_end(LPWSTR end) noexcept {
-    assert(end >= _text && UINT(end - _text) <= length());
-    *end = L'\0'; // because of C string
+  constexpr void set_text_end(LPCWSTR const text_end) const noexcept {
+    assert(text_end >= _text && UINT(text_end - _text) <= length());
+    *const_cast<LPWSTR>(text_end) = L'\0'; // because of C string
   }
 
   /**
    * Set length in characters of the text.
    * @see text(), length()
    */
-  constexpr void set_length(const UINT len) noexcept {
-    assert(len <= length());
-    set_text_end(_text + len);
+  constexpr void set_length(const UINT new_length) const noexcept {
+    assert(new_length <= length());
+    set_text_end(_text + new_length);
   }
 
   /**
    * Write UTF-8 text.
    */
-  constexpr void write(const char *text, const int len) noexcept {
-    assert(unsigned(len) <= length());
-    set_length(MultiByteToWideChar(CP_UTF8, 0, text, len, _text, len));
+  constexpr void write(LPCSTR const new_text,
+                       const UINT new_length) const noexcept {
+    assert(new_length <= length());
+    set_length(MultiByteToWideChar(CP_UTF8, 0, new_text, new_length, text(),
+                                   length()));
   }
 
   /**
    * Write UTF-8 text.
    */
-  constexpr void write(const char *text, const char *text_end) noexcept {
+  constexpr void write(LPCSTR const text,
+                       LPCSTR const text_end) const noexcept {
     write(text, static_cast<UINT>(text_end - text));
   }
 
   /**
    * @return UTF-8 text to the ouput paramether.
    */
-  constexpr auto &read(std::string &output) noexcept {
+  constexpr auto &read(std::string &output) const noexcept {
     assert(length() <= output.capacity());
     output.resize(output.capacity());
     output.resize(WideCharToMultiByte(CP_UTF8, 0, text(), length(),
@@ -442,7 +444,7 @@ public:
    * Set size in bytes of the data.
    * @see data(), size()
    */
-  constexpr void set_size(const UINT size) noexcept {
+  constexpr void set_size(const UINT size) const noexcept {
     set_length(size / sizeof(WCHAR));
   }
 
@@ -459,6 +461,7 @@ private:
 struct RegWrite {
   RegWrite() = delete;
   RegWrite(const RegWrite &) = delete;
+  RegWrite &operator=(RegWrite const &) = delete;
   RegWrite(RegWrite &&) = delete;
 
   constexpr explicit RegWrite(const HKEY root, const char *subkey) noexcept {
@@ -488,6 +491,7 @@ private:
 struct RegRead {
   RegRead() = delete;
   RegRead(const RegRead &) = delete;
+  RegRead &operator=(RegRead const &) = delete;
   RegRead(RegRead &&) = delete;
 
   constexpr explicit RegRead(const HKEY root, const char *subkey) noexcept {
@@ -531,7 +535,7 @@ private:
 /**
  * @return dpi for window
  */
-[[nodiscard]] constexpr static UINT dpi(const HWND window) noexcept {
+[[nodiscard]] constexpr static auto dpi(const HWND window) noexcept {
 #ifdef CALC_SUPPORT_DPI_FOR_WINDOW
   // Use per-window DPI
   return GetDpiForWindow(window);
@@ -548,7 +552,7 @@ private:
  * Convert coordinates from logical to physical.
  * @return physical coordiantes.
  */
-[[nodiscard]] constexpr static LONG physical(LONG logical, LONG dpi) noexcept {
+[[nodiscard]] constexpr static auto physical(LONG logical, LONG dpi) noexcept {
   return std::lroundf(static_cast<float>(logical) * static_cast<float>(dpi) /
                       static_cast<float>(USER_DEFAULT_SCREEN_DPI));
 }
@@ -557,7 +561,7 @@ private:
  * Convert coordinates from physical to logical.
  * @return logical coordiantes.
  */
-[[nodiscard]] constexpr static LONG logical(LONG physical, LONG dpi) noexcept {
+[[nodiscard]] constexpr static auto logical(LONG physical, LONG dpi) noexcept {
   return std::lroundf(static_cast<float>(physical) *
                       static_cast<float>(USER_DEFAULT_SCREEN_DPI) /
                       static_cast<float>(dpi));
@@ -639,7 +643,7 @@ constexpr static void init_uxtheme_callers() noexcept {
  *                                        // created
  *   theme.apply(some_window); // Apply theme to a window
  */
-struct Theme {
+class Theme {
   /// Dark window background
   static constexpr auto _dark_bakground_window_color = RGB(32, 32, 32);
   /// Slightly lighter gray than window for fields
@@ -647,10 +651,77 @@ struct Theme {
   /// Slightly darker text than pure light
   static constexpr auto _dark_bakground_text_color = RGB(240, 240, 240);
 
-  [[no_unique_address]] const HBRUSH _dark_bakground_window_brush =
+  [[no_unique_address]] const auto _dark_bakground_window_brush =
       CreateSolidBrush(_dark_bakground_window_color);
-  [[no_unique_address]] const HBRUSH _dark_bakground_field_brush =
+  [[no_unique_address]] const auto _dark_bakground_field_brush =
       CreateSolidBrush(_dark_bakground_field_color);
+
+  /**
+   * Cached dark mode setting for the application.
+   *
+   * Stores whether dark mode is currently enabled. This value is determined
+   * from the Windows Registry during initialization (in is_dark_mode with
+   * is_main_window=true) and reused for performance to reduce registry reads.
+   *
+   * @note Marked with [[indeterminate]] to indicate the value is not
+   * initialized until is_dark_mode(true) is called during init().
+   */
+  [[no_unique_address]] bool _dark_mode [[indeterminate]];
+
+  /**
+   * Checks whether dark mode is currently enabled.
+   *
+   * Returns the cached dark mode setting for the application.
+   *
+   * @return true if dark mode is enabled, false otherwise.
+   * @note This reflects the cached state; use is_dark_mode(is_main_window)
+   *       to detect the current system preference.
+   */
+  [[nodiscard]] constexpr auto is_dark_mode() const noexcept {
+    return _dark_mode;
+  }
+
+  /**
+   * Determines if dark mode should be used (system preference detection).
+   *
+   * For the main application window, reads the Windows Registry to detect the
+   * user's preferred application theme and caches the result in _dark_mode.
+   * For other windows, this function is a no-op and returns the cached value.
+   *
+   * @param is_main_window If true, reads the Windows Personalize registry key
+   *                       to detect the user's dark mode preference
+   *                       (HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\
+   *                       CurrentVersion\\Themes\\Personalize\\AppsUseLightTheme).
+   *                       If false, uses the cached _dark_mode value.
+   * @return true if dark mode is enabled, false for light mode.
+   * @note Registry value: AppsUseLightTheme = 0 means dark mode is enabled,
+   *       non-zero means light mode is enabled.
+   * @see init()
+   */
+  [[nodiscard]] constexpr auto
+  is_dark_mode(const bool is_main_window) noexcept {
+    if (is_main_window) {
+      // clang-format off
+      const RegRead personalize(HKEY_CURRENT_USER,
+                  "Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize");
+      const auto light = personalize.read("AppsUseLightTheme");
+      _dark_mode = light && *light == 0;
+      // clang-format on
+    }
+    return is_dark_mode();
+  }
+
+public:
+  /**
+   * @brief Default constructor.
+   *
+   * Creates an uninitialized theme. Must first call init().
+   */
+  constexpr Theme() noexcept { /*no init here*/ };
+
+  Theme(Theme const &) = delete;
+  Theme &operator=(Theme const &) = delete;
+  Theme(Theme &&) = delete;
 
   /**
    * Initializes the application theme system.
@@ -710,7 +781,7 @@ struct Theme {
    * @note Use this in WM_CTLCOLORDLG message handling to properly theme
    * dialogs.
    */
-  [[nodiscard]] constexpr INT_PTR dialog_background() const noexcept {
+  [[nodiscard]] constexpr auto dialog_background() const noexcept {
     return reinterpret_cast<INT_PTR>(is_dark_mode()
                                          ? _dark_bakground_window_brush
                                          : GetSysColorBrush(COLOR_WINDOW));
@@ -732,7 +803,7 @@ struct Theme {
    * colors are set on the provided device context.
    * @see _dark_bakground_text_color, _dark_bakground_window_color
    */
-  [[nodiscard]] constexpr INT_PTR
+  [[nodiscard]] constexpr auto
   static_control(const WPARAM wPhdc) const noexcept {
     auto hdc = reinterpret_cast<HDC>(wPhdc);
     if (is_dark_mode()) {
@@ -761,7 +832,7 @@ struct Theme {
    *       fields in the calculator display).
    * @see _dark_bakground_text_color, _dark_bakground_field_color
    */
-  [[nodiscard]] constexpr INT_PTR edit(const WPARAM wPhdc) const noexcept {
+  [[nodiscard]] constexpr auto edit(const WPARAM wPhdc) const noexcept {
     if (is_dark_mode()) {
       auto hdc = reinterpret_cast<HDC>(wPhdc);
       SetTextColor(hdc, _dark_bakground_text_color);
@@ -769,7 +840,7 @@ struct Theme {
       return reinterpret_cast<INT_PTR>(_dark_bakground_field_brush);
     } else {
       // Fall back to default light behavior
-      return FALSE;
+      return reinterpret_cast<INT_PTR>(nullptr);
     }
   }
 
@@ -791,49 +862,6 @@ private:
                                        const LPARAM dark) noexcept {
     SetWindowTheme(window, dark ? L"DarkMode_Explorer" : L"Explorer", nullptr);
     return TRUE;
-  }
-
-  /**
-   * Checks whether dark mode is currently enabled.
-   *
-   * Returns the cached dark mode setting for the application.
-   *
-   * @return true if dark mode is enabled, false otherwise.
-   * @note This reflects the cached state; use is_dark_mode(is_main_window)
-   *       to detect the current system preference.
-   */
-  [[nodiscard]] constexpr bool is_dark_mode() const noexcept {
-    return _dark_mode;
-  }
-
-  /**
-   * Determines if dark mode should be used (system preference detection).
-   *
-   * For the main application window, reads the Windows Registry to detect the
-   * user's preferred application theme and caches the result in _dark_mode.
-   * For other windows, this function is a no-op and returns the cached value.
-   *
-   * @param is_main_window If true, reads the Windows Personalize registry key
-   *                       to detect the user's dark mode preference
-   *                       (HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\
-   *                       CurrentVersion\\Themes\\Personalize\\AppsUseLightTheme).
-   *                       If false, uses the cached _dark_mode value.
-   * @return true if dark mode is enabled, false for light mode.
-   * @note Registry value: AppsUseLightTheme = 0 means dark mode is enabled,
-   *       non-zero means light mode is enabled.
-   * @see init()
-   */
-  [[nodiscard]] constexpr bool
-  is_dark_mode(const bool is_main_window) noexcept {
-    if (is_main_window) {
-      // clang-format off
-      const RegRead personalize(HKEY_CURRENT_USER,
-                  "Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize");
-      const auto light = personalize.read("AppsUseLightTheme");
-      _dark_mode = light && *light == 0;
-      // clang-format on
-    }
-    return is_dark_mode();
   }
 
   /**
@@ -866,26 +894,14 @@ private:
     RefreshImmersiveColorPolicyState();
     FlushMenuThemes();
   }
-
-  /**
-   * Cached dark mode setting for the application.
-   *
-   * Stores whether dark mode is currently enabled. This value is determined
-   * from the Windows Registry during initialization (in is_dark_mode with
-   * is_main_window=true) and reused for performance to reduce registry reads.
-   *
-   * @note Marked with [[indeterminate]] to indicate the value is not
-   * initialized until is_dark_mode(true) is called during init().
-   */
-  [[no_unique_address]] bool _dark_mode [[indeterminate]];
 };
 #endif
 
 /**
  * Helper to work with points in window layout
  */
-struct Point : tagPOINT {
-  constexpr Point() noexcept = default;
+struct Point final : tagPOINT {
+  constexpr Point() noexcept { /*no init here*/ };
 
   constexpr Point(const LONG _x, const LONG _y) noexcept {
     x = _x;
@@ -896,10 +912,11 @@ struct Point : tagPOINT {
 /**
  * Helper to work with rectangles in window layout
  */
-struct Rect : tagRECT {
-  constexpr Rect() noexcept = default;
+struct Rect final : tagRECT {
+  constexpr Rect() noexcept { /*no init here*/ };
 
   Rect(const Rect &) = delete;
+  Rect &operator=(Rect const &) = delete;
 
   constexpr Rect(const LONG x, const LONG y, const LONG width,
                  const LONG heigth) noexcept {
@@ -932,31 +949,30 @@ enum class Anchor : BYTE {
 };
 
 /// Bitwise OR for Anchor
-constexpr static Anchor operator|(Anchor lhs, Anchor rhs) noexcept {
+constexpr static auto operator|(Anchor lhs, Anchor rhs) noexcept {
   using T = std::underlying_type_t<Anchor>;
   return static_cast<Anchor>(static_cast<T>(lhs) | static_cast<T>(rhs));
 }
 
 /// Bitwise AND for Anchor
-constexpr static Anchor operator&(Anchor lhs, Anchor rhs) noexcept {
+constexpr static auto operator&(Anchor lhs, Anchor rhs) noexcept {
   using T = std::underlying_type_t<Anchor>;
   return static_cast<Anchor>(static_cast<T>(lhs) & static_cast<T>(rhs));
 }
 
 /// Helper to check if a flag is set for Anchor
-constexpr static bool has_flag(Anchor value, Anchor flag) noexcept {
+constexpr static auto has_flag(Anchor value, Anchor flag) noexcept {
   return static_cast<bool>(value & flag);
 }
 
 /**
  * @class Layout
  * @brief Template-based dynamic window layout manager with anchor-based
- * resizing.
+ *        resizing.
  *
  * @tparam elements Compile-time constant specifying the number of child
- * controls managed by this layout. This determines the fixed size of all
- *                  internal arrays (handles, widths, heights, margins,
- *                  anchors).
+ *         controls managed by this layout. This determines the fixed size of
+ *         all internal arrays (handles, widths, heights, margins, anchors).
  *
  * A sophisticated layout management system for Windows dialog-based
  * applications that automatically handles the repositioning and resizing of
@@ -966,11 +982,11 @@ constexpr static bool has_flag(Anchor value, Anchor flag) noexcept {
  *
  * **Key Features:**
  * - **Anchor-based positioning**: Each control specifies anchor constraints
- * that determine how it moves and resizes relative to window edges
+ *   that determine how it moves and resizes relative to window edges
  * - **Deferred window updates**: Uses Windows BeginDeferWindowPos /
- * DeferWindowPos / EndDeferWindowPos for efficient batched window updates
+ *   DeferWindowPos / EndDeferWindowPos for efficient batched window updates
  * - **Compile-time constexpr support**: All initialization methods are
- * constexpr, allowing compile-time configuration when possible
+ *   constexpr, allowing compile-time configuration when possible
  * - **Minimal memory overhead**: Uses [[no_unique_address]] to minimize memory
  *   footprint of layout constraints
  * - **Minimum size enforcement**: Supports minimum window dimensions to prevent
@@ -979,14 +995,12 @@ constexpr static bool has_flag(Anchor value, Anchor flag) noexcept {
  * **Anchor Behaviors:**
  * The Anchor enum flags control how a control responds to parent window
  * resizes:
- *
  *   - **Left**: Control's left edge stays fixed distance from parent's left
  *               edge
  *   - **Right**: Control's right edge stays fixed distance from parent's right
  *                edge
  *   - **HorizontalStretch**: Control stretches/shrinks horizontally with the
  *                            window
- *
  *   - **Top**: Control's top edge stays fixed distance from parent's top edge
  *   - **Bottom**: Control's bottom edge stays fixed distance from parent's
  *                 bottom edge
@@ -1026,10 +1040,10 @@ public:
   /**
    * @brief Default constructor.
    *
-   * Creates an uninitialized layout. Must call init_window(), init_min_sizes(),
-   * and multiple init_anchor() calls before using resize().
+   * Creates an uninitialized layout. Must first call init_window(),
+   * init_min_sizes(), and multiple init_anchor() before using resize().
    */
-  constexpr Layout() noexcept = default;
+  constexpr Layout() noexcept { /*no init here*/ };
 
   Layout(Layout const &) = delete;
   Layout &operator=(Layout const &) = delete;
@@ -1056,6 +1070,18 @@ protected:
    * @tparam elements Number of controls managed by the parent Layout
    */
   template <typename BYTE elements> struct Constraints {
+    /**
+     * @brief Default constructor.
+     *
+     * Creates an uninitialized constraints. Must first call init() for each
+     * layout element.
+     */
+    constexpr Constraints() noexcept { /*no init here*/ };
+
+    Constraints(Constraints const &) = delete;
+    Constraints &operator=(Constraints const &) = delete;
+    Constraints(Constraints &&) = delete;
+
     /**
      * @brief Initializes constraints for a single control.
      *
@@ -1227,9 +1253,8 @@ public:
    * for efficiency.
    *
    * **Algorithm:**
-   * 1. Early exit if size hasn't changed
-   * 2. Update stored window dimensions
-   * 3. For each registered control:
+   * 1. Update stored window dimensions
+   * 2. For each registered control:
    *    a. Calculate new position/size based on anchor flags:
    *       - **Left anchor**: left edge fixed from layout left + margin
    *       - **Right anchor**: right edge fixed from layout right - margin
@@ -1238,22 +1263,7 @@ public:
    *       - **Bottom anchor**: bottom edge fixed from layout bottom - margin
    *       - **VerticalStretch**: both edges move with margins
    *    b. Queue the window update via DeferWindowPos
-   * 4. Apply all updates atomically via EndDeferWindowPos
-   *
-   * **Anchor Logic:**
-   * For horizontal positioning (priority: Left > Right > HorizontalStretch):
-   * - Left only: rect.left = margin.left; rect.right = margin.left + width
-   * - Right only: rect.right = new_width - margin.right; rect.left = rect.right
-   *                            - width
-   * - HorizontalStretch: rect.left = margin.left; rect.right = new_width -
-   *                      margin.right
-   *
-   * For vertical positioning (priority: Top > Bottom > VerticalStretch):
-   * - Top only: rect.top = margin.top; rect.bottom = margin.top + height
-   * - Bottom only: rect.bottom = new_height - margin.bottom; rect.top =
-   *                              rect.bottom - height
-   * - VerticalStretch: rect.top = margin.top; rect.bottom = new_height -
-   *                               margin.bottom
+   * 3. Apply all updates atomically via EndDeferWindowPos
    *
    * @param width New client area width in pixels
    * @param height New client area height in pixels
@@ -1472,7 +1482,7 @@ public:
     return _values.data();
   }
 
-  [[nodiscard]] constexpr INT count() const noexcept { return _values.size(); }
+  [[nodiscard]] constexpr INT size() const noexcept { return _values.size(); }
 };
 
 /**
