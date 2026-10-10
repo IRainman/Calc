@@ -130,7 +130,7 @@ private:
   /// Reference to output ASCII buffer
   [[no_unique_address]] std::string &_equasion;
   /// Pointer to the UTF-16 input text
-  [[no_unique_address]] LPCWSTR const _text;
+  [[no_unique_address]] __restrict LPCWSTR const _text;
   /// Count of the UTF-16 input text chars
   [[no_unique_address]] const UINT _length;
   /// Count of succesfully normalized UTF-16 input chars
@@ -164,9 +164,9 @@ private:
     /// Reference to counter of succesfully normalized input chars
     UINT &_normalized;
     /// UTF-16 input string pointer
-    LPCWSTR const _begin;
+    __restrict LPCWSTR const _begin;
     /// UTF-16 input end string pointer
-    LPCWSTR const _end;
+    __restrict LPCWSTR const _end;
 
     /**
      * @brief Copies a string literal to the output buffer and returns new
@@ -184,7 +184,7 @@ private:
      */
     template <uint8_t N>
     [[nodiscard]] inline static constexpr char *
-    append(char *out, const char (&str)[N]) noexcept {
+    append(char *__restrict out, const char (&str)[N]) noexcept {
       std::memcpy(out, str, N - 1);
       return out + N - 1;
     }
@@ -203,7 +203,7 @@ private:
      * @return true if c is in the superscript Unicode range
      */
     [[nodiscard]] inline static constexpr bool
-    is_superscript(WCHAR c) noexcept {
+    is_superscript(const WCHAR c) noexcept {
       return (c == 0xB2 || c == 0xB3 || c == 0xB9 || // ANSI ²³¹
               c >= 0x2070 && c <= 0x207F             // Unicode ⁰ⁱ⁴⁵⁶⁷⁸⁹⁺⁻⁼⁽⁾ⁿ
       );
@@ -221,7 +221,8 @@ private:
      * @param c Character to test
      * @return true if c is a separator/whitespace character
      */
-    [[nodiscard]] inline static constexpr bool is_separator(WCHAR c) noexcept {
+    [[nodiscard]] inline static constexpr bool
+    is_separator(const WCHAR c) noexcept {
       return (c >= L'\t' && c <= L'\r' ||   // ASCII control characters
               c == L' ' ||                  // ASCII space
               c == 0xA0 ||                  // ANSI NO-BREAK SPACE
@@ -241,7 +242,8 @@ private:
      * @note roots are excluded from these ranges because they are handled as
      *       functions.
      */
-    [[nodiscard]] inline static constexpr bool is_operator(WCHAR c) noexcept {
+    [[nodiscard]] inline static constexpr bool
+    is_operator(const WCHAR c) noexcept {
       return (c == L'+' || c == L'-' || c == L'*' || c == L'/' || // ASCII
               c == L',' ||                                        // ASCII
               c == 0xB7 || c == 0xD7 || c == 0xF7 ||              // ANSI
@@ -258,7 +260,8 @@ private:
      * @param c Character to test
      * @return true if c is a parenthesis
      */
-    [[nodiscard]] inline static constexpr bool is_parentesis(WCHAR c) noexcept {
+    [[nodiscard]] inline static constexpr bool
+    is_parentesis(const WCHAR c) noexcept {
       return (c == L'(' || c == L')' ||     // ASCII
               c == 0x208D || c == 0x208E || // Unicode ₍ ₎
               c == 0xFE59 || c == 0xFE5A    // Unicode﹙﹚
@@ -274,27 +277,27 @@ private:
      * @return true if c is in the printable ASCII range
      */
     [[nodiscard]] inline static constexpr bool
-    is_printable_ascii(WCHAR c) noexcept {
+    is_printable_ascii(const WCHAR c) noexcept {
       return c >= 0x20 && c <= 0x7E;
     }
 
     /**
-     * @brief Detects the boundary of an implicit function argument.
+     * @brief Detects the boundary of an implicit argument.
      *
-     * Used by the function state machine to determine when to close the
-     * automatically inserted opening parenthesis after function names
-     * like "sqrt", etc.
+     * Used by the implicit argument state machine to determine when to close
+     * the automatically inserted opening parenthesis after function names like
+     * "sqrt", etc.
      *
-     * A function argument ends when encountering:
+     * An implicit argument ends when encountering:
      *   - A separator such as space, tab, newline, etc
      *   - An operator
      *   - A parenthesis
      *
      * @param c Character to test
-     * @return true if c marks the end of a function's implicit argument
+     * @return true if c marks the end of an implicit argument
      */
     [[nodiscard]] inline static constexpr bool
-    is_function_end(WCHAR c) noexcept {
+    is_implicit_argument_end(const WCHAR c) noexcept {
       return is_separator(c) || is_operator(c) || is_parentesis(c);
     }
 
@@ -307,15 +310,14 @@ private:
      *
      * **Algorithm Overview:**
      * 1. Try fast path for printable ASCII as fast as possible.
-     * 2. Initialize superscript and implicit-function state.
+     * 2. Initialize superscript and implicit-argument state.
      * 3. Iterate through each UTF-16 code unit:
-     *    a. Close active superscript/function state when the current character
-     *       marks a boundary.
+     *    a. Close active state when the current character marks a boundary.
      *    b. Pass through printable ASCII unchanged.
      *    c. Normalize separators, fullwidth forms, and subscripts.
      *    d. Dispatch special symbols through the switch statement.
      *    e. Stop at the first unsupported code unit.
-     * 4. Finalize by closing any still-active superscript/function state.
+     * 4. Finalize by closing any still-active superscript/argument state.
      *
      * **State Machines:**
      * - **Initial-superscript mode (bool only_superscript):**
@@ -326,18 +328,18 @@ private:
      *   Activated by superscripts after ordinary input, generating a "^(...)"
      *   wrapper. Closed when a non-superscript character is encountered.
      *
-     * - **Function mode (UINT in_function):**
+     * - **Implicit argument mode (UINT in_implicit_argument):**
      *   Counts implicit argument parentheses opened by sqrt, etc or
      *   parenthesized the decimal-exponent ⏨ after a ')'. It is decremented
      *   when a separator, operator, or parenthesis ends the implicit argument.
      *
      * **Performance Characteristics:**
      * - Single-pass algorithm: O(n) where n = input length
-     * - No backtracking or lookahead (except ±1 check for functions and
+     * - No backtracking or lookahead (except ±1 check for implicit argument and
      *   superscript)
      * - Direct character-by-character output: minimal memory operations
      * - Uses switch statement (compiler jump table vs if-chain)
-     * - Memcpy for multi-character replacements
+     * - memcpy for multi-character replacements
      *
      * @param buffer Output buffer for normalized ASCII string
      * @return Length of normalized output in bytes
@@ -373,8 +375,8 @@ private:
         // Tracks if we are currently in a superscript block
         bool in_superscript = false;
 
-        // Tracks nesting depth of implicit function argument parentheses
-        UINT in_function = 0;
+        // Tracks nesting depth of implicit argument parentheses
+        UINT in_implicit_argument = 0;
 
         // Main processing loop - processes all input characters
         for (; input != _end; ++input) {
@@ -388,9 +390,10 @@ private:
             *output++ = ')';
           }
 
-          // Exit function mode when encountering function argument boundary
-          if (in_function && is_function_end(c)) [[unlikely]] {
-            --in_function;
+          // Exit implicit argument mode when encountering argument boundary
+          if (in_implicit_argument && is_implicit_argument_end(c))
+              [[unlikely]] {
+            --in_implicit_argument;
             *output++ = ')';
           }
 
@@ -661,17 +664,25 @@ private:
             output = append(output, "epsilon");
             break;
 
-#define START_FUNCTION                                                         \
-  if (input + 1 != _end && *(input + 1) != L'(') {                             \
-    ++in_function;                                                             \
+#define START_IMPLICIT_ARGUMENT                                                \
+  if ((input + 1) != _end && *(input + 1) != L'(') {                           \
+    ++in_implicit_argument;                                                    \
     *output++ = '(';                                                           \
   }
           // Special case
           case 0x23E8: // ⏨ DECIMAL EXPONENT SYMBOL
-            if (_begin <= input - 1 && *(input - 1) == L')') {
-              output = append(output, "*10^");
-              START_FUNCTION
-            } else {
+            if (_begin == input) [[unlikely]] {
+              if (input + 1 == _end) {
+                output = append(output, "10");
+              } else [[unlikely]] {
+                output = append(output, "10^");
+                START_IMPLICIT_ARGUMENT
+              }
+            } else if (_begin < (input - 1) && *(input - 1) == L')')
+                [[unlikely]] {
+              output = append(output, "10^");
+              START_IMPLICIT_ARGUMENT
+            } else [[likely]] {
               *output++ = 'e';
             }
             break;
@@ -680,31 +691,31 @@ private:
           case 0x221A: // √ SQUARE ROOT
           case 0x23B7: // ⎷ RADICAL SYMBOL BOTTOM
             output = append(output, "sqrt");
-            START_FUNCTION
+            START_IMPLICIT_ARGUMENT
             break;
 
           case 0x221B: // ∛ CUBE ROOT
             output = append(output, "cbrt");
-            START_FUNCTION
+            START_IMPLICIT_ARGUMENT
             break;
 
           case 0x221C: // ∜ FOURTH ROOT
             output = append(output, "qdrt");
-            START_FUNCTION
+            START_IMPLICIT_ARGUMENT
             break;
 
           // CJK compatibility functions - Square symbol notations
           case 0x33D1: // ㏑ SQUARE LN
             output = append(output, "ln");
-            START_FUNCTION
+            START_IMPLICIT_ARGUMENT
             break;
 
           case 0x33D2: // ㏒ SQUARE LOG
             output = append(output, "log");
-            START_FUNCTION
+            START_IMPLICIT_ARGUMENT
             break;
 
-#undef START_FUNCTION
+#undef START_IMPLICIT_ARGUMENT
 
           // Astronomical symbols - Planets and celestial bodies
           case 0x2609: // ☉ SUN
@@ -820,12 +831,12 @@ private:
             START_SUPERSCRIPT
             *output++ = '-';
             break;
-
+#ifdef CALC_USED_EQUALS_OPERATORS
           case 0x207C: // ⁼ SUPERSCRIPT EQUALS SIGN
             START_SUPERSCRIPT
             *output++ = '=';
             break;
-
+#endif
           // Superscript Unicode parentheses. Should be in pairs
           case 0x207D: // ⁽ SUPERSCRIPT LEFT PARENTHESIS
             START_SUPERSCRIPT
@@ -855,8 +866,8 @@ private:
         if (in_superscript) [[unlikely]] {
           *output++ = ')';
         }
-        while (in_function) [[unlikely]] {
-          --in_function;
+        while (in_implicit_argument) [[unlikely]] {
+          --in_implicit_argument;
           *output++ = ')';
         }
       }

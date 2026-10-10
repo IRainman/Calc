@@ -5,11 +5,10 @@
 #ifndef EQUASION_NORMALIZATON_TESTS_HPP
 #define EQUASION_NORMALIZATON_TESTS_HPP
 
-#ifdef CALC_SUPPORT_UNICODE_INPUT
+#if defined(CALC_SUPPORT_UNICODE_INPUT) && defined(CALC_TESTS_ENABLED)
 
 namespace GUI {
 
-#ifdef CALC_TESTS_ENABLED
 // clang-format off
 /**
  * Test cases for GUI Unicode normalization.
@@ -35,12 +34,14 @@ static auto normalizer_tests = std::to_array< std::pair< std::string_view, std::
 
     // Complex expressions
     { "½∜(7π÷2)", { false, "1/2qdrt(7pi/2)" }},
-    { "½∜(7π÷3)R☉×c * (⅒+ ⅟₉)⏨₉  +ℯ⁶", { false ,"1/2qdrt(7pi/3)R_sun*c * (1/10+ 1/9)*10^(9)  +e^(6)" }},
+    { "½∜(7π÷3)R☉×c * (⅒+⅟₉)⏨₉  +ℯ⁶", { false ,"1/2qdrt(7pi/3)R_sun*c * (1/10+1/9)10^(9)  +e^(6)" }},
+    { "⅜∛176 + R☉(7π÷3⏨⁵)c * (⅟₁₇₉ + ⅞)⏨₇ + R⛢(7π÷3⏨⁵)c", { false, "3/8cbrt(176) + R_sun(7pi/3e5)c * (1/179 + 7/8)10^(7) + R_uranus(7pi/3e5)c" }},
     { "﹣₉﹒₀₉⏨₉", { false, "-9.09e9" }},
     { "12³×(231² - 1)³ + 744 - 0.00000000000075", { false, "12^(3)*(231^(2) - 1)^(3) + 744 - 0.00000000000075" }},
     
     {   // Separators
         "\t\n\v\f\r \xC2\xA0 \xE3\x80\x80 \xE2\x80\x80 \xE2\x80\x81 \xE2\x80\xAE \xE2\x80\xAF"
+
         // Fullwidth forms
         "ＡＢＣＸＹＺａｂｃｘｙｚ０１２３４５６７８９＋－＊／（）＝＜＞＠＃％＆"
         "！＂＃＄％＆＇（）＊＋，－．／０１２３４５６７８９：；＜＝＞？＠ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ［＼］＾＿｀ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ｛｜｝～"
@@ -49,19 +50,21 @@ static auto normalizer_tests = std::to_array< std::pair< std::string_view, std::
         "ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ"
         "ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ"
         "［＼］＾＿｀｛｜｝～"
+
         // Operators, parentheses and punctuation
         "₊﹢₋−﹣⁎∗⋅﹡⁄∕⧸·×÷()₍₎﹙﹚﹐﹒+-*/"
+
         // Fractions
         "¼½¾⅐⅑⅒⅓⅔⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞⅟↉3⅟₉" // Does we need additional logic here? This logic can be apply or not?
 
         // ASCII pass-through and separator boundaries needs to be converted to the ASCII space
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" 
         "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~" 
-        "  abc\tdef\nxyz "
-        ,
-    { false,
+        "  abc\tdef\nxyz ",
+        { false,
         // Separators
         "                 "
+
         // Fullwidth forms
         "ABCXYZabcxyz0123456789+-*/()=<>@#%&"
         "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
@@ -70,8 +73,10 @@ static auto normalizer_tests = std::to_array< std::pair< std::string_view, std::
         "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         "abcdefghijklmnopqrstuvwxyz"
         "[\\]^_`{|}~"
+
         // Operators, parentheses and punctuation
         "++---****///**/()()(),.+-*/"
+
         // Fractions
         "1/41/23/41/71/91/101/32/31/52/53/54/51/65/61/83/85/87/81/0/331/9" // Does we need additional logic here? This logic can be apply or not?
 
@@ -141,12 +146,10 @@ static auto normalizer_tests = std::to_array< std::pair< std::string_view, std::
 
         // Every direct operator / punctuation mapping.
         "₊﹢₋−﹣⁎∗⋅﹡⁄∕⧸·×÷()₍₎﹙﹚﹐﹒+-*/"
-
 #ifdef CALC_USED_EQUALS_OPERATORS
         // Every mapping enabled by CALC_USED_EQUALS_OPERATORS.
         "≠ ≤ ≥ ≡ ≈ ≃ ≅ "
 #endif
-
         // Every supported vulgar fraction.
         "¼½¾⅐⅑⅒⅓⅔⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞⅟↉"
 
@@ -175,16 +178,30 @@ static auto normalizer_tests = std::to_array< std::pair< std::string_view, std::
 
         // Superscript grouping:
         // every supported superscript digit, letter, operator and parenthesis.
-        "x⁰¹²³⁴⁵⁶⁷⁸⁹ⁱⁿ⁺⁻⁼⁽⁾ "
-        "x²³¹ⁱⁿ⁺⁻⁼⁽⁾ "
-        "²³¹⁰⁴⁵⁶⁷⁸⁹ⁱⁿ⁺⁻⁼⁽⁾ "
-        "x²+1 x³) xⁱ xⁿ x⁺ x⁻ x⁼ "
-        "x⁽⁾ x⁽ⁿ⁾ "
+        "x⁰¹²³⁴⁵⁶⁷⁸⁹ⁱⁿ⁺⁻"
+#ifdef CALC_USED_EQUALS_OPERATORS
+        "⁼"
+#endif
+        "⁽⁾ "
+        "x²³¹ⁱⁿ⁺⁻"
+#ifdef CALC_USED_EQUALS_OPERATORS
+        "⁼"
+#endif
+        "⁽⁾ "
+        "²³¹⁰⁴⁵⁶⁷⁸⁹ⁱⁿ⁺⁻"
+#ifdef CALC_USED_EQUALS_OPERATORS
+        "⁼"
+#endif
+        "⁽⁾ "
+        "x²+1 x³ xⁱ xⁿ x⁺ x⁻ "
+#ifdef CALC_USED_EQUALS_OPERATORS
+        "x⁼ "
+#endif
 
         // Decimal exponent notation:
         // normal exponent, signed exponent, subscript/superscript exponent,
         // implicit function after a closing ')', and explicit '(...)'.
-        "1⏨3 1⏨−3 ⏨₉ 2⏨³ "
+        "1⏨3 1⏨−3 7⏨₉ 2⏨³ "
         "(2)⏨3 (2)⏨(3) (2)⏨−3 "
 
         // Function-end boundaries using ASCII separators.
@@ -229,9 +246,7 @@ static auto normalizer_tests = std::to_array< std::pair< std::string_view, std::
         // Therefore the normalized prefix must be:
         //     "sqrt(x^(2))"
         "√x²∀",
-
         { true,
-
           // ASCII
           " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
 
@@ -272,15 +287,29 @@ static auto normalizer_tests = std::to_array< std::pair< std::string_view, std::
           "sqrt(x) "
 
           // Superscripts.
-          "x^(0123456789in+-=()) "
-          "x^(231in+-=()) "
-          "^(2310456789in+-=()) "
-          "x^(2)+1 x^(3)) x^(i) x^(n) x^(+) x^(-) x^(=) "
-          "x^(()) x^((n)) "
+          "x^(0123456789in+-"
+#ifdef CALC_USED_EQUALS_OPERATORS
+          "="
+#endif
+          "()) "
+          "x^(231in+-"
+#ifdef CALC_USED_EQUALS_OPERATORS
+          "="
+#endif
+          "()) "
+          "^(2310456789in+-"
+#ifdef CALC_USED_EQUALS_OPERATORS
+          "="
+#endif
+          "()) "
+          "x^(2)+1 x^(3) x^(i) x^(n) x^(+) x^(-) "
+#ifdef CALC_USED_EQUALS_OPERATORS
+          "x^(=) "
+#endif
 
           // Decimal exponent.
-          "1e3 1e-3 e9 2e3 "
-          "(2)*10^(3) (2)*10^(3) (2)*10^()-3 "
+          "1e3 1e-3 7e9 2e3 "
+          "(2)10^(3) (2)10^(3) (2)10^()-3 "
 
           // Boundaries.
           "sqrt(x) cbrt(y) qdrt(z) ln(q) log(r)  "
@@ -298,42 +327,44 @@ static auto normalizer_tests = std::to_array< std::pair< std::string_view, std::
           "R_sun*c "
           "alpha+beta-gamma*mu/sigma "
 
-          // Unsupported U+2200 terminates here.
           "sqrt(x^(2))"
+          // Unsupported U+2200 terminates here.
         }
     },
 
-    // Mathematical and phisical constants and Greek letters. Last symbol Ƶ is intentionally unsupported after "ℯℇ".
-    { "ƐπℇτℎℏφϕⅇΓαζμµσϐ∞ℯΓγαζμµσεβϐ∞Γαζμµσεϐ∞ℯℇƵ", { true, "EpiE(2*pi)hhbarphiphie_atomicgammaalphariemann_zetamumusigmabetainfegammagammaalphariemann_zetamumusigmaepsilonbetabetainfgammaalphariemann_zetamumusigmaepsilonbetainfeE" }},
+    // Mathematical and physical constants and Greek letters. Last symbol Ƶ is intentionally unsupported after "ℯ ℇ ".
+    { "Ɛ π ℇ τ ℎ ℏ φ ϕ ⅇ Γ α ζ μ µ σ ϐ ∞ ℯ Γ γ α ζ μ µ σ ε β ϐ ∞ Γ α ζ μ µ σ ε ϐ ∞ ℯ ℇ Ƶ 12354567896541587463", { true, "E pi E (2*pi) h hbar phi phi e_atomic gamma alpha riemann_zeta mu mu sigma beta inf e gamma gamma alpha riemann_zeta mu mu sigma epsilon beta beta inf gamma alpha riemann_zeta mu mu sigma epsilon beta inf e E " }},
 
     // Mathematical functions.
-    { "√x",   { false, "sqrt(x)" }},
-    { "∛x",   { false, "cbrt(x)" }},
-    { "∜x",   { false, "qdrt(x)" }},
-    { "√(x)", { false, "sqrt(x)" }},
-    { "∛(x)", { false, "cbrt(x)" }},
-    { "∜(x)", { false, "qdrt(x)" }},
-    { "√x+1", { false, "sqrt(x)+1" }},
-    { "∛x−1", { false, "cbrt(x)-1" }},
-    { "∜x×2", { false, "qdrt(x)*2" }},
-    { "√x y", { false, "sqrt(x) y" }},
-    { "√x,y", { false, "sqrt(x),y" }},
-    { "⎷x",   { false, "sqrt(x)" }},
-    { "√√x",  { false, "sqrt(sqrt(x))" }},
-    { "√∛x",  { false, "sqrt(cbrt(x))" }},
-    { "∛∜x",  { false, "cbrt(qdrt(x))" }},
+    { "√x",      { false, "sqrt(x)" }},
+    { "∛x",      { false, "cbrt(x)" }},
+    { "∜x",      { false, "qdrt(x)" }},
+    { "√(x)",    { false, "sqrt(x)" }},
+    { "∛(x)",    { false, "cbrt(x)" }},
+    { "∜(x)",    { false, "qdrt(x)" }},
+    { "√x+1",    { false, "sqrt(x)+1" }},
+    { "∛x−1",    { false, "cbrt(x)-1" }},
+    { "∜x×2",    { false, "qdrt(x)*2" }},
+    { "√x y",    { false, "sqrt(x) y" }},
+    { "√x,y",    { false, "sqrt(x),y" }},
+    { "⎷x",      { false, "sqrt(x)" }},
+    { "√√x",     { false, "sqrt(sqrt(x))" }},
+    { "√∛x",     { false, "sqrt(cbrt(x))" }},
+    { "∛∜x",     { false, "cbrt(qdrt(x))" }},
     { "㏑x",     { false, "ln(x)" }},
     { "㏒x",     { false, "log(x)" }},
     { "㏑x+㏒y", { false, "ln(x)+log(y)" }},
-    { "√x²",  { false, "sqrt(x^(2))" }},
+    { "√x²",     { false, "sqrt(x^(2))" }},
 
     // Decimal exponent notation.
+    { "⏨", { false, "10" }},
     { "1⏨3", { false, "1e3" }},
     { "1⏨−3", { false, "1e-3" }},
-    { "⏨₉", { false, "e9" }},
+    { "⏨₉", { false, "10^(9)" }},
+    { "⏨³", { false, "10^(3)" }},
     { "2⏨³", { false, "2e3" }},
-    { "(2)⏨3", { false, "(2)*10^(3)" }},
-    { "(2)⏨(3)", { false, "(2)*10^(3)" }},
+    { "(2)⏨3", { false, "(2)10^(3)" }},
+    { "(2)⏨(3)", { false, "(2)10^(3)" }},
 
     // Astronomical symbols.
     { "♁", { false, "_earth" }},
@@ -372,13 +403,17 @@ static auto normalizer_tests = std::to_array< std::pair< std::string_view, std::
     { "xⁿ", { false, "x^(n)" }},
     { "x⁺", { false, "x^(+)" }},
     { "x⁻", { false, "x^(-)" }},
+#ifdef CALC_USED_EQUALS_OPERATORS
     { "x⁼", { false, "x^(=)" }},
+#endif
     
     // Superscript grouping/state machine
     { "x²³", { false, "x^(23)" }},
     { "x¹²³⁴⁵⁶⁷⁸⁹", { false, "x^(123456789)" }},
     { "xⁱⁿ", { false, "x^(in)" }},
+#ifdef CALC_USED_EQUALS_OPERATORS
     { "x²⁺⁻⁼", { false, "x^(2+-=)" }},
+#endif
     { "x²+1", { false, "x^(2)+1" }},
     { "x²)", { false, "x^(2))" }},
     { "x² y", { false, "x^(2) y" }},
@@ -401,7 +436,7 @@ static auto normalizer_tests = std::to_array< std::pair< std::string_view, std::
     { "√(1−½)²", { false, "sqrt(1-1/2)^(2)" }},
     { "⅓×π+⅔×π", { false, "1/3*pi+2/3*pi" }},
     { "⅓π+⅔π", { false, "1/3pi+2/3pi" }},
-    { "R☉=cℏ", { false, "R_sun=chbar" }},
+    { "R☉=c×ℏ", { false, "R_sun=c*hbar" }},
     { "㏑(1)+㏒(10)", { false, "ln(1)+log(10)" }},
     { "１２３．４５６", { false, "123.456" }},
     { "﹣９﹒０９", { false, "-9.09" }},
@@ -409,29 +444,30 @@ static auto normalizer_tests = std::to_array< std::pair< std::string_view, std::
     // Unsupported characters: normalization must stop at the first unsupported UTF-16 code unit
     { "A😀B", { true, "A" }},
     { "abc©def", { true, "abc" }},
-    { "abcₔdef", { true, "abc" }},
+    { "abcₔdef", { true, "abc" }}, // U+2094 is explicitly excluded from the subscript-letter lookup
     { "abc⁲def", { true, "abc" }},
     { "|—J│Оa╓Чn", { true, "| J" }},
     { "±", { true, "" }},
     { "x²😀", { true, "x^(2)" }},
     { "ₔ", { true, "" }}, // U+2094 is explicitly excluded from the subscript-letter lookup
     { "√😀", { true, "sqrt(" }}, // Should be fast exit without correctnes of state machines
-    
+#ifdef CALC_USED_EQUALS_OPERATORS
 	// TODO: user constants and variables support:
 	// Also I ask ChatGPT https://chatgpt.com/c/6a89e39f-5610-83eb-8182-d914dc425042
 	// Which syntax we should use?
-	{ "x=π2;", { false, "x=pi2;" }},
+	{ "x=2π;", { false, "x=2pi;" }},
 	// Intervals needed:
 	{ "[0...π]", { false, "[0...pi]" }},
 	{ "[0...π, step]", { false, "[0...pi, step]" }},
 	// blocks?
 	{ "{x= 150 ⁄ 12 + 1 }", { false, "{x= 150 / 12 + 1 }" }},
 	// TODO: equation support, for input test https://xrjunque.nom.es/AllInOne:
-	{ "{x=((−b ? √(b²−4⋅a⋅c))⁄(2a))π}", { false, "{x=((-b ? sqrt(b^(2)-4*a*c))/(2a))pi}" }},
+	{ "{x=((−b ± √(b²−4⋅a⋅c))⁄(2a))π}", { false, "{x=((-b ? sqrt(b^(2)-4*a*c))/(2a))pi}" }},
+#endif
 });
 // clang-format on
-#endif
 
 } // namespace GUI
 #endif
+
 #endif
