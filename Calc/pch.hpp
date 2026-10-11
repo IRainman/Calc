@@ -25,10 +25,12 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 #define _M_IX86_FP 2 // additional librarys arch helper for MSVC.
 #define __SSE2__ 1   // explicitely enable SSE2 for 32 and 64 bit builds
 #define __SSE3__ 1   // explicitely enable SSE3 for 32 and 64 bit builds
+// That equals Pentium 4 Prescott - the maximum 32 bit CPU instructions.
 #if defined(_M_X64) || defined(__x86_64__) || defined(__amd64__)
 #define __SSSE3__ 1  // explicitely enable SSSE3 for 64 bit builds
 #define __SSE4_1__ 1 // explicitely enable SSE4.1 for 64 bit builds
 #define __SSE4_2__ 1 // explicitely enable SSE4.2 for 64 bit builds
+// That equals x86_64 v2 instructions.
 #endif
 #endif
 
@@ -99,12 +101,8 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 #pragma warning(pop)
 
 //---------------------------------------------------------------------------
-// clang-format off
-#pragma warning(push)
-#pragma warning(disable : 4061) // enumerator 'x' in switch of enum 'y' is not explicitly handled by a case label
-#pragma warning(disable : 4574) // 'x' is defined to be 'n': did you mean to use '#if x'?
-#pragma warning(disable : 4582) // constructor is not implicitly called
 // fmt compile options:
+// clang-format off
 #define FMT_HEADER_ONLY 1
 #define FMT_USE_FLOAT 0
 #define FMT_USE_LONG_DOUBLE 0
@@ -133,11 +131,15 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 #define FMT_STATIC_THOUSANDS_SEPARATOR '\''
 // used because otherwise fmt produces much larger code:
 #define FMT_ENFORCE_COMPILE_STRING
+#pragma warning(push)
+#pragma warning(disable : 4061) // enumerator 'x' in switch of enum 'y' is not explicitly handled by a case label
+#pragma warning(disable : 4574) // 'x' is defined to be 'n': did you mean to use '#if x'?
+#pragma warning(disable : 4582) // constructor is not implicitly called
 // clang-format on
 #include "../../fmt/include/fmt/compile.h"
 #pragma warning(pop)
-//---------------------------------------------------------------------------
 
+//---------------------------------------------------------------------------
 // fast_float compile options:
 // clang-format off
 #if CALC_USE_128_BIT_FLOAT
@@ -166,8 +168,8 @@ using Value = std::float128_t;
 #warning "WIP: Calc is using 64-bit double implementation in many places."
 
 #define CALC_USE_128_BIT_FLOAT 1
-constexpr auto huge_value_precision = 1e33;
-constexpr auto small_value_precision = 1e-33;
+constexpr Value huge_value_precision = 1e33;
+constexpr Value small_value_precision = 1e-33;
 #else
 #if __STDCPP_FLOAT64_T__ == 1
 using Value = std::float64_t;
@@ -176,8 +178,8 @@ using Value = double;
 #endif
 
 #define CALC_USE_128_BIT_FLOAT 0
-constexpr auto huge_value_precision = 1e15;
-constexpr auto small_value_precision = 1e-15;
+constexpr Value huge_value_precision = 1e15;
+constexpr Value small_value_precision = 1e-15;
 #endif
 constexpr auto output_precision = std::numeric_limits<Value>::digits10;
 
@@ -189,7 +191,7 @@ using Result = std::array<char,
 #ifdef CALC_TESTS_ENABLED
                           1024
 #else
-                          zmij::double_buffer_size
+                          zmij::double_buffer_size + 1/*potencial C terminator in the system API*/)
 #endif
                           >;
 //---------------------------------------------------------------------------
