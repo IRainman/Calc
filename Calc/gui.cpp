@@ -42,13 +42,13 @@ class CalcApp {
   struct CalcConfiguration {
     static constexpr const char *reg_key = "Software\\HedgehogInTheCPP\\Calc";
 
-    static constexpr LONG min_width = 345;
+    static constexpr LONG min_width = 354;
 
     static constexpr LONG min_height = 170;
 
-    static constexpr BYTE elements = 3;
+    static constexpr LONG default_shift = 100;
 
-    static constexpr BYTE default_shift_px = 100;
+    static constexpr BYTE elements = 3;
 
     /// @see https://learn.microsoft.com/windows/win32/controls/em-limittext
     static constexpr UINT input_max_text_length =
@@ -138,9 +138,7 @@ public:
 #endif
       } else {
         Lexer lexer(_equasion);
-
         Parser parser(lexer);
-
         parser.result(token);
       }
 
@@ -151,19 +149,16 @@ public:
     return TRUE;
   }
 
+  // clang-format off
   /**
-   * Save user data from GUI.
+   * Close Calc GUI and save program data.
    */
-  constexpr inline void save_user_data(const HWND window) const noexcept {
-    save_window_data(window);
+  [[nodiscard]] constexpr auto close(const HWND window) const noexcept {
+    save_program_data(window);
+    return EndDialog(window, 0);
   }
 
-  /**
-   * Close Calc GUI.
-   */
-  [[nodiscard]] constexpr static auto close(const HWND window) noexcept {
-    return EndDialog(window, FALSE);
-  }
+  // clang-format on
 
   /**
    * Create Calc GUI.
@@ -188,13 +183,13 @@ public:
    * @warning call create first!
    * @see create()
    */
-  [[nodiscard]] constexpr BOOL init(const HWND window,
-                                    const LPARAM lParam) noexcept {
-    set_icons(window, reinterpret_cast<HINSTANCE>(lParam));
+  [[nodiscard]] constexpr BOOL init(const HWND main_window,
+                                    const LPARAM lParam) {
+    set_icons(main_window, reinterpret_cast<HINSTANCE>(lParam));
 
-    About::add_menu_to_system_menu(window);
+    About::add_menu_to_system_menu(main_window);
 
-    layout_init(window);
+    layout_init(main_window);
 #ifdef CALC_SUPPORT_EXTENDENT_STYLES
     set_extended_style(_layout.handle(1), ES_EX_ALLOWEOL_ALL);
     set_extended_style(_layout.handle(0), ES_EX_ALLOWEOL_ALL);
@@ -207,7 +202,7 @@ public:
 #if defined(CALC_TESTS_ENABLED) && defined(CALC_SUPPORT_UNICODE_INPUT)
     gui_tests();
 #endif
-    load_window_data(window);
+    load_program_data(main_window);
 
     goto_end_of_text(_layout.handle(0));
 
@@ -236,20 +231,20 @@ public:
   /**
    * Initialize layout helper for resizing.
    */
-  constexpr inline void layout_init(const HWND window) noexcept {
+  constexpr inline void layout_init(const HWND main_window) noexcept {
     // clang-format off
 #ifdef CALC_SUPPORT_DPI_CHANGES
-    _dpi = dpi(window);
+    _dpi = dpi(main_window);
 
-    _layout.init_min_sizes(window, physical(cfg::min_width, _dpi), physical(cfg::min_height, _dpi));
+    _layout.init_min_sizes(main_window, physical(cfg::min_width, _dpi), physical(cfg::min_height, _dpi));
 #else
-    _layout.init_min_sizes(window, cfg::min_width, cfg::min_height);
+    _layout.init_min_sizes(main_window, cfg::min_width, cfg::min_height);
 #endif
-    _layout.init_window(window);
-    _layout.init_anchor(window, 0, IDC_EDIT_INPUT,  Anchor::HorizontalStretch | Anchor::VerticalStretch);
-    _layout.init_anchor(window, 1, IDC_EDIT_RESULT, Anchor::Right | Anchor::Bottom);
-    _layout.init_anchor(window, 2, IDC_BUTTON_CALC, Anchor::Right | Anchor::Bottom);
-                  static_assert(3 == cfg::elements);
+    _layout.init_window(main_window);
+    _layout.init_anchor(main_window, 0, IDC_EDIT_INPUT,  Anchor::HorizontalStretch | Anchor::VerticalStretch);
+    _layout.init_anchor(main_window, 1, IDC_EDIT_RESULT, Anchor::Right | Anchor::Bottom);
+    _layout.init_anchor(main_window, 2, IDC_BUTTON_CALC, Anchor::Right | Anchor::Bottom);
+                       static_assert(3 == cfg::elements);
     // clang-format on
   }
 #ifdef CALC_SUPPORT_DARK_MODE
@@ -291,6 +286,14 @@ private:
 
       // Convert UTF-16 text to ASCII representation
       Normalizer normalizer(input.text(), input.length(), _equasion);
+
+      const auto &[test_failed, test_equasion] = test.second;
+
+      // If result unexpected:
+      if (test_failed != normalizer.failed() || test_equasion != _equasion) {
+        set_result(_equasion.data(), _equasion.size());
+        ++failed;
+      }
 #else
         // Convert UTF-8 text to the UTF-16 text for the test
         const UINT length = static_cast<UINT>(MultiByteToWideChar(
@@ -298,17 +301,9 @@ private:
             wide_string.data(), cfg::input_max_text_length));
 
         // Convert UTF-16 text to ASCII representation with normalization
-        Normalizer normalizer(wide_string.data(), length, _equasion);
+        [[maybe_unused]] Normalizer normalizer(wide_string.data(), length,
+                                               _equasion);
 #endif
-      const auto &[test_failed, test_equasion] = test.second;
-
-      // If result unexpected:
-      if (test_failed != normalizer.failed() || test_equasion != _equasion) {
-        set_result(_equasion.data(), _equasion.size());
-#ifdef CALC_TESTS_DEV_ENABLED // Development
-        ++failed;
-#endif
-      }
     }
 
     const auto end = std::chrono::steady_clock::now();
@@ -340,18 +335,15 @@ private:
     set_text(_layout.handle(1), text, text_end);
   }
 
-  /**
-   *
-   */
   constexpr inline void set_result(const char *text,
-                                   size_t size) const noexcept {
-    set_result(text, text + size);
+                                   const UINT size) const noexcept {
+    set_text(_layout.handle(1), text, size);
   }
 
   /**
    * Load Calc data from the system database
    */
-  constexpr inline void load_window_data(const HWND window) {
+  constexpr inline void load_program_data(const HWND main_window) {
     Edit input(_layout.handle(0), cfg::input_max_text_length);
     const RegRead reg(HKEY_CURRENT_USER, cfg::reg_key);
 #ifndef CALC_TESTS_ENABLED
@@ -398,22 +390,23 @@ private:
     } else {
       // -> use default position
 #ifdef CALC_SUPPORT_DPI_CHANGES
-      const auto shift = physical(cfg::default_shift_px, _dpi);
+      const auto shift = physical(cfg::default_shift, _dpi);
 #else
-      const auto &shift = cfg::default_shift_px;
+      const auto &shift = cfg::default_shift;
 #endif
       wp.rcNormalPosition.left = shift;
       wp.rcNormalPosition.top = shift;
       wp.rcNormalPosition.right = _layout.min_width() + shift;
       wp.rcNormalPosition.bottom = _layout.min_height() + shift;
     }
-    SetWindowPlacement(window, &wp);
+    SetWindowPlacement(main_window, &wp);
   }
 
   /**
    * Save Calc data to the system database
    */
-  constexpr void save_window_data(const HWND hWnd) const noexcept {
+  constexpr inline void
+  save_program_data(const HWND main_window) const noexcept {
     const RegWrite reg(HKEY_CURRENT_USER, cfg::reg_key);
 #ifndef CALC_TESTS_ENABLED
     const EditView input(_layout.handle(0));
@@ -421,7 +414,7 @@ private:
 #endif
     WINDOWPLACEMENT wp [[indeterminate]];
     wp.length = sizeof(wp);
-    GetWindowPlacement(hWnd, &wp);
+    GetWindowPlacement(main_window, &wp);
     reg.write("flags", wp.flags);
     reg.write("showCmd", wp.showCmd);
 #ifdef CALC_SUPPORT_DPI_CHANGES
@@ -443,15 +436,11 @@ private:
    */
   struct About {
     /**
-     * Add "About..." menu item to system menu for window.
+     * Add "About..." menu item to system menu for main window.
      */
     static constexpr inline void
-    add_menu_to_system_menu(const HWND window) noexcept {
-      // IDM_ABOUTBOX must be in the system command range.
-      static_assert((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
-      static_assert(IDM_ABOUTBOX < 0xF000);
-
-      const auto system_menu = GetSystemMenu(window, FALSE);
+    add_menu_to_system_menu(const HWND main_window) noexcept {
+      const auto system_menu = GetSystemMenu(main_window, FALSE);
       AppendMenuA(system_menu, MF_SEPARATOR, FALSE, nullptr);
       AppendMenuA(system_menu, MF_STRING, IDM_ABOUTBOX, "&About...");
     }
@@ -459,11 +448,14 @@ private:
     /**
      * Create about window
      */
-    [[nodiscard]] static constexpr BOOL create(const HWND parent, WPARAM wParam,
-                                               DlgProc about_proc) noexcept {
+    [[nodiscard]] static constexpr BOOL
+    create(const HWND main_window, WPARAM wParam, DlgProc about_proc) noexcept {
+      // IDM_ABOUTBOX must be in the system command range.
+      static_assert(IDM_ABOUTBOX < 0xF000);
+      static_assert((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
       if ((wParam & 0xFFF0) == IDM_ABOUTBOX &&
           SUCCEEDED(DialogBoxParamA(GetModuleHandleA(nullptr),
-                                    MAKEINTRESOURCEA(IDD_ABOUTBOX), parent,
+                                    MAKEINTRESOURCEA(IDD_ABOUTBOX), main_window,
                                     about_proc, FALSE))) {
         return TRUE;
       } else {
@@ -475,11 +467,11 @@ private:
      * Open homepage of the Calc
      */
     [[nodiscard]] static constexpr BOOL
-    open_homepage(const HWND window, const LPARAM lParam) noexcept {
+    open_homepage(const HWND about_window, const LPARAM lParam) noexcept {
       const auto nm = reinterpret_cast<LPNMHDR>(lParam);
       if (nm->idFrom == IDC_LINK_HOMEPAGE && nm->code == NM_CLICK) {
         const auto l = reinterpret_cast<PNMLINK>(lParam);
-        ShellExecuteW(window, L"open", l->item.szUrl, nullptr, nullptr,
+        ShellExecuteW(about_window, L"open", l->item.szUrl, nullptr, nullptr,
                       SW_SHOWNORMAL);
         return TRUE;
       } else {
@@ -490,24 +482,26 @@ private:
     /**
      * Close about window
      */
-    [[nodiscard]] static constexpr BOOL close(const HWND window,
+    [[nodiscard]] static constexpr BOOL close(const HWND about_window,
                                               const WPARAM wParam) noexcept {
       if (LOWORD(wParam) == IDCANCEL) {
-        return EndDialog(window, FALSE);
+        return EndDialog(about_window, FALSE);
       } else {
         return FALSE;
       }
     }
   };
 
+  static constexpr About _about [[indeterminate]];
+
   /**
    * Set window icons (small and big).
    */
-  static constexpr inline void set_icons(const HWND window,
+  static constexpr inline void set_icons(const HWND main_window,
                                          const HINSTANCE instance) noexcept {
     // clang-format off
-    PostMessageA(window, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(LoadIconA(instance, MAKEINTRESOURCEA(IDR_MAINFRAME_SMALL))));
-    PostMessageA(window, WM_SETICON, ICON_BIG,   reinterpret_cast<LPARAM>(LoadIconA(instance, MAKEINTRESOURCEA(IDR_MAINFRAME_BIG))));
+    PostMessageA(main_window, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(LoadIconA(instance, MAKEINTRESOURCEA(IDR_MAINFRAME_SMALL))));
+    PostMessageA(main_window, WM_SETICON, ICON_BIG,   reinterpret_cast<LPARAM>(LoadIconA(instance, MAKEINTRESOURCEA(IDR_MAINFRAME_BIG))));
     // clang-format on
   }
 
@@ -520,7 +514,6 @@ private:
 #ifdef CALC_SUPPORT_DPI_CHANGES
   [[no_unique_address]] UINT _dpi [[indeterminate]];
 #endif
-  [[no_unique_address]] About _about [[indeterminate]];
 };
 
 static CalcApp gui;
@@ -528,27 +521,27 @@ static CalcApp gui;
 /**
  * About dialog callback processing (resource-based).
  */
-constexpr static INT_PTR CALLBACK about_proc(const HWND window,
+constexpr static INT_PTR CALLBACK about_proc(const HWND about_window,
                                              const UINT message,
                                              const WPARAM wParam,
                                              const LPARAM lParam) noexcept {
   switch (message) {
   case WM_COMMAND:
-    return gui.about().close(window, wParam);
+    return gui.about().close(about_window, wParam);
 #ifdef CALC_SUPPORT_LINK_WINDOW
   case WM_NOTIFY:
-    return gui.about().open_homepage(window, lParam);
+    return gui.about().open_homepage(about_window, lParam);
 #endif
 #ifdef CALC_SUPPORT_DARK_MODE
   case WM_INITDIALOG:
-    gui.theme().apply(window);
+    gui.theme().apply(about_window);
     return TRUE;
   case WM_CTLCOLORDLG:
     return gui.theme().dialog_background();
   case WM_CTLCOLORSTATIC:
     return gui.theme().static_control(wParam);
   case WM_SYSCOLORCHANGE:
-    gui.theme().apply(window, true);
+    gui.theme().apply(about_window, true);
     return TRUE;
 #endif
   default:
@@ -559,7 +552,7 @@ constexpr static INT_PTR CALLBACK about_proc(const HWND window,
 /**
  * Calc dialog callback processing (resource-based).
  */
-constexpr static INT_PTR CALLBACK main_proc(const HWND window,
+constexpr static INT_PTR CALLBACK main_proc(const HWND main_window,
                                             const UINT message,
                                             const WPARAM wParam,
                                             const LPARAM lParam) noexcept {
@@ -567,16 +560,16 @@ constexpr static INT_PTR CALLBACK main_proc(const HWND window,
   case WM_COMMAND:
     return gui.calc(wParam);
   case WM_SYSCOMMAND:
-    return gui.about().create(window, wParam, about_proc);
+    return gui.about().create(main_window, wParam, about_proc);
   case WM_GETMINMAXINFO:
     return gui.minmaxinfo(lParam);
   case WM_SIZE:
     return gui.resize(lParam);
   case WM_INITDIALOG:
 #ifdef CALC_SUPPORT_DARK_MODE
-    gui.theme().init(window);
+    gui.theme().init(main_window);
 #endif
-    return gui.init(window, lParam);
+    return gui.init(main_window, lParam);
 #ifdef CALC_SUPPORT_AUTO_RESTART
   case WM_ENDSESSION:
     return TRUE;
@@ -589,12 +582,11 @@ constexpr static INT_PTR CALLBACK main_proc(const HWND window,
   case WM_CTLCOLORSTATIC:
     return gui.theme().static_control(wParam);
   case WM_SYSCOLORCHANGE:
-    gui.theme().apply(window, true, true);
+    gui.theme().apply(main_window, true, true);
     return TRUE;
 #endif
   case WM_CLOSE:
-    gui.save_user_data(window);
-    return gui.close(window);
+    return gui.close(main_window);
   default:
     return FALSE;
   }

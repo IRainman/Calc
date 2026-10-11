@@ -67,13 +67,14 @@
 
 #define CALC_SUPPORT_AUTO_RESTART // RegisterApplicationRestart
 
+#define CALC_SUPPORT_DEVIRTUALIZED_REG // REG_OPTION_DONT_VIRTUALIZE
+
 #if (_WIN32_WINNT >= 0x0605)
 
 #define CALC_SUPPORT_DPI_FOR_WINDOW // GetDpiForWindow
 /**
- * Removed because it's very difficult to implement, and for Calc it's
+ * CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART removed because it's very difficult to implement, and for Calc it's
  * completely over-engineering and overhead:
- * CALC_SUPPORT_DPI_CHANGES_WITHOUT_RESTART
  * WM_DPICHANGED signal,
  * AdjustWindowRectExForDpi,
  * SetProcessDpiAwarenessContext,

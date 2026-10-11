@@ -191,7 +191,8 @@ using Result = std::array<char,
 #ifdef CALC_TESTS_ENABLED
                           1024
 #else
-                          zmij::double_buffer_size + 1/*potencial C terminator in the system API*/)
+                          zmij::double_buffer_size +
+                              1 /*potencial C terminator in the system API*/
 #endif
                           >;
 //---------------------------------------------------------------------------

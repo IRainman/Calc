@@ -7,7 +7,7 @@
 
 #include "token.hpp"
 
-char *value(const Value value, Result &ret) noexcept;
+char *value(const Value &value, Result &ret) noexcept;
 
 char *result(const Token &value, Result &ret) noexcept;
 

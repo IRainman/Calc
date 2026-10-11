@@ -45,9 +45,9 @@ constexpr static std::pair<Integer, Integer> decimalToFraction(Value number) {
 
 /**
  * Format Value.
- * @return the end of the formated text.
+ * @return the end of the formated Result.
  */
-char *value(Value value, Result &ret) noexcept {
+char *value(const Value &value, Result &ret) noexcept {
   auto end = ret.data();
   // https://www.exploringbinary.com/decimal-precision-of-binary-floating-point-numbers/
   if (std::isnormal(value)) {
@@ -60,7 +60,7 @@ char *value(Value value, Result &ret) noexcept {
 
 /**
  * Format Token.
- * @return the end of the formated text.
+ * @return the end of the formated Result.
  */
 char *result(const Token &token, Result &ret) noexcept {
   if (token.type == Token::Type::ISSUE) {

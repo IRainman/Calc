@@ -18,9 +18,6 @@ namespace GUI {
 /// before Windows Vista or Server 2008
 #define WINDOWS_ENABLE_CPLUSPLUS
 
-/// Disable warnings about unsafe functions in Windows API
-#define _CRT_SECURE_NO_WARNINGS
-
 /// Speed up build time by excluding rarely-used stuff from Windows headers
 #define VC_EXTRALEAN
 #define WIN32_LEAN_AND_MEAN
@@ -198,7 +195,7 @@ static void __cdecl _setup_crt_leak_check() noexcept {
 
 // Disable warnings for GUI code:
 // clang-format off
-#pragma warning(disable : 4267) // 'argument': conversion from 'type_x' to 'type_y', possible loss of data
+#pragma warning(disable : 4267) // 'argument': conversion from 'x' to 'y', possible loss of data
 #pragma warning(disable : 4865) // the underlying type of 'x' will change when '/Zc:enumTypes' is specified on the command line
 #pragma warning(disable : 5039) // 'x': pointer or reference to potentially throwing function passed to 'extern "C"' function under -EHc. Undefined behavior may occur if this function throws an exception.
 // clang-format on
@@ -223,8 +220,7 @@ typedef INT_PTR CALLBACK DlgProc(HWND, UINT, WPARAM, LPARAM) noexcept;
  */
 constexpr static void set_extended_style(const HWND window,
                                          const DWORD style) noexcept {
-  PostMessageA(window, EM_SETEXTENDEDSTYLE, static_cast<WPARAM>(style),
-               static_cast<LPARAM>(style));
+  PostMessageA(window, EM_SETEXTENDEDSTYLE, style, style);
 }
 #endif
 
@@ -246,14 +242,23 @@ constexpr static void set_text(const HWND window, LPCSTR const text,
   set_text(window, text);
 }
 
+/**
+ * Set text to window.
+ * @see Edit
+ */
+constexpr static void set_text(const HWND window, LPCSTR const text,
+                               const UINT size) noexcept {
+  set_text(window, text, text + size);
+}
+
 #ifdef CALC_SUPPORT_SET_LIMIT_TEXT
 /**
  * Set window text limit
  * @see Edit
  */
 constexpr static void set_text_limit(const HWND window,
-                                     WPARAM max_symbols) noexcept {
-  PostMessageA(window, EM_LIMITTEXT, max_symbols, 0);
+                                     const UINT limit) noexcept {
+  PostMessageA(window, EM_LIMITTEXT, limit, 0);
 }
 #endif
 
@@ -261,8 +266,7 @@ constexpr static void set_text_limit(const HWND window,
  * Goto end of text in window and scroll caret to it
  */
 constexpr static void goto_end_of_text(const HWND window) noexcept {
-  PostMessageA(window, EM_SETSEL, static_cast<WPARAM>(0),
-               static_cast<LPARAM>(-1));
+  PostMessageA(window, EM_SETSEL, 0, -1);
   PostMessageA(window, EM_SCROLLCARET, 0, 0);
 }
 
@@ -348,6 +352,15 @@ public:
   Edit(Edit const &) = delete;
   Edit &operator=(Edit const &) = delete;
 
+  /**
+   * @brief Acquires and resizes the edit control's text buffer.
+   * @param edit Handle to a multiline edit control with the dialog-local edit
+   *             option enabled.
+   * @param max_length Maximum text capacity in UTF-16 characters.
+   * @note The control's local memory may be relocated. The buffer remains
+   *       locked for this object's lifetime and is restored to the control
+   *       when the object is destroyed.
+   */
   constexpr explicit Edit(const HWND edit, const UINT max_length) noexcept
       : _edit(edit), _max_size(max_length * sizeof(WCHAR)) {
     _handle = reinterpret_cast<HLOCAL>(SendMessageA(edit, EM_GETHANDLE, 0, 0));
@@ -409,6 +422,20 @@ public:
   /**
    * Write UTF-8 text.
    */
+  constexpr void write(const std::string_view text) const noexcept {
+    write(text.data(), static_cast<UINT>(text.size()));
+  }
+
+  /**
+   * Write UTF-8 text.
+   */
+  constexpr void write(const std::string &text) const noexcept {
+    write(text.data(), static_cast<UINT>(text.size()));
+  }
+
+  /**
+   * Write UTF-8 text.
+   */
   constexpr void write(LPCSTR const text,
                        LPCSTR const text_end) const noexcept {
     write(text, static_cast<UINT>(text_end - text));
@@ -421,8 +448,8 @@ public:
     assert(length() <= output.capacity());
     output.resize(output.capacity());
     output.resize(WideCharToMultiByte(CP_UTF8, 0, text(), length(),
-                                      output.data(), output.capacity(), NULL,
-                                      NULL));
+                                      output.data(), output.capacity(), nullptr,
+                                      nullptr));
     return output;
   }
 
@@ -465,7 +492,12 @@ struct RegWrite {
   RegWrite(RegWrite &&) = delete;
 
   constexpr explicit RegWrite(const HKEY root, const char *subkey) noexcept {
-    RegCreateKeyExA(root, subkey, FALSE, nullptr, REG_OPTION_NON_VOLATILE,
+    RegCreateKeyExA(root, subkey, FALSE, nullptr,
+                    REG_OPTION_NON_VOLATILE
+#ifdef CALC_SUPPORT_DEVIRTUALIZED_REG
+                        | REG_OPTION_DONT_VIRTUALIZE
+#endif
+                    ,
                     KEY_WRITE, nullptr, &key, nullptr);
   }
 
@@ -507,8 +539,8 @@ struct RegRead {
     DWORD outSize = sizeof(out);
     if (RegQueryValueExA(key, name, nullptr, &type,
                          reinterpret_cast<LPBYTE>(&out),
-                         &outSize) == ERROR_SUCCESS) {
-      if (type == REG_DWORD) {
+                         &outSize) == ERROR_SUCCESS) [[likely]] {
+      if (type == REG_DWORD) [[likely]] {
         return out;
       }
     }
@@ -516,12 +548,13 @@ struct RegRead {
   }
 
   [[nodiscard]] constexpr UINT read(const char *name, LPBYTE out,
-                                    DWORD out_size) const noexcept {
+                                    UINT out_size) const noexcept {
     DWORD type [[indeterminate]];
-    if (RegQueryValueExA(key, name, nullptr, &type, out, &out_size) ==
-        ERROR_SUCCESS) {
-      if (type == REG_BINARY) {
-        return static_cast<UINT>(out_size);
+    if (RegQueryValueExA(key, name, nullptr, &type, out,
+                         reinterpret_cast<LPDWORD>(&out_size)) == ERROR_SUCCESS)
+        [[likely]] {
+      if (type == REG_BINARY) [[likely]] {
+        return out_size;
       }
     }
     return 0;
@@ -549,8 +582,9 @@ private:
 }
 
 /**
- * Convert coordinates from logical to physical.
- * @return physical coordiantes.
+ * Convert coordinates from logical with USER_DEFAULT_SCREEN_DPI to physical for
+ * dpi.
+ * @return physical coordinates.
  */
 [[nodiscard]] constexpr static auto physical(LONG logical, LONG dpi) noexcept {
   return std::lroundf(static_cast<float>(logical) * static_cast<float>(dpi) /
@@ -558,8 +592,9 @@ private:
 }
 
 /**
- * Convert coordinates from physical to logical.
- * @return logical coordiantes.
+ * Convert coordinates from physical with dpi to logical with
+ * USER_DEFAULT_SCREEN_DPI.
+ * @return logical coordinates.
  */
 [[nodiscard]] constexpr static auto logical(LONG physical, LONG dpi) noexcept {
   return std::lroundf(static_cast<float>(physical) *
