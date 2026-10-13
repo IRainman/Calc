@@ -15,12 +15,13 @@ enum class Issue : ParamCount {
   incorrect_parameters_count,
   too_many_parameters,
   expected_number,
+  expected_valid_expression,
   _count
 };
 constexpr static const auto issue_text = std::to_array<std::string_view>(
     {"unparsable", "extraneous input", "too many ^ in expression",
      "expected parenthesis", "incorrect parameters count",
-     "too many parameters", "expected number"});
+     "too many parameters", "expected number", "expected valid expression"});
 static_assert(static_cast<size_t>(Issue::_count) == issue_text.size());
 
 struct Token {

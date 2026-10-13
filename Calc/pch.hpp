@@ -153,7 +153,7 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
  * Types using for calculation.
  */
 using EquationSize = size_t;
-using ParamCount = int8_t;
+using ParamCount = uint8_t;
 using Integer = std::int64_t;
 using UInteger = std::uint64_t;
 
@@ -174,6 +174,7 @@ using Value = double;
 #define CALC_USE_128_BIT_FLOAT 0
 constexpr Value huge_value_precision = 1e15;
 constexpr Value small_value_precision = 1e-15;
+constexpr uint8_t exponent_precision = 3;
 #endif
 constexpr auto output_precision = std::numeric_limits<Value>::digits10;
 
@@ -185,7 +186,13 @@ using Result = std::array<char,
 #ifdef CALC_TESTS_ENABLED
                           1024
 #else
-                          zmij::double_buffer_size +
+                          std::max(1 /*sign*/ + 1 /*point*/ + output_precision +
+                                       1 /*exponent symbol*/ +
+                                       1 /*sign of exponent*/ +
+                                       exponent_precision,
+                                   25 /*maximum issue length*/ +
+                                       5 /*maximum issue position*/ +
+                                       2 /*text added by formatter*/) +
                               1 /*potencial C terminator in the system API*/
 #endif
                           >;
