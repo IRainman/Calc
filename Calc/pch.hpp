@@ -83,6 +83,7 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 #warning "128-bit float type isn't supported by zmij. The library convert any output values to 64-bit double."
 #endif
 // Tests time is : 81207ms. Without Tests time is : 118164ms.
+//#define ZMIJ_OPTIMIZE_SIZE 0 // Give best result. Don't need to use ZMIJ_OPTIMIZE_SIZE 1
 #pragma warning(push)
 #pragma warning(disable : 4100) // unreferenced formal parameter
 #pragma warning(disable : 4189) // local variable is initialized but not referenced
@@ -118,19 +119,12 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 #define FMT_USE_FLOAT128 0
 #endif
 #endif
-// because we have cleaner output we can reduce i-cache pressure:
-#define FMT_OPTIMIZE_SIZE 2 // Tests time is: 49612ms.
-#define FMT_OS 0
-#define FMT_USE_RTTI 0
-#define FMT_CPP_LIB_FILESYSTEM 0 // Tests time is: 49980ms.
-#define FMT_BUILTIN_TYPES 0
-#define FMT_UNICODE 0
-#define FMT_REDUCE_INT_INSTANTIATIONS 1
-#define FMT_USE_FULL_CACHE_DRAGONBOX 0 // Tests time is: 50111ms.
+// because we have cleaner output we can reduce i-cache and data cache pressure:
+#define FMT_OPTIMIZE_SIZE 2
+#define FMT_USE_FULL_CACHE_DRAGONBOX 0
 #define FMT_USE_LOCALE 0
-#define FMT_STATIC_THOUSANDS_SEPARATOR '\''
-// used because otherwise fmt produces much larger code:
-#define FMT_ENFORCE_COMPILE_STRING
+#define FMT_UNICODE 0
+#define FMT_ENFORCE_COMPILE_STRING // used because otherwise fmt produces much larger code.
 #pragma warning(push)
 #pragma warning(disable : 4061) // enumerator 'x' in switch of enum 'y' is not explicitly handled by a case label
 #pragma warning(disable : 4574) // 'x' is defined to be 'n': did you mean to use '#if x'?
