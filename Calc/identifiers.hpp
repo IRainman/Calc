@@ -44,14 +44,8 @@ struct Fn {
 using map = const std::unordered_map<std::string_view, const Fn>;
 [[nodiscard]] const map &get() noexcept;
 
-[[nodiscard]] /*constexpr*/ extern Value pow(const Value x, const Value y) noexcept;
+[[nodiscard]] /*constexpr*/ Value pow(const Value x, const Value y) noexcept;
 
-[[nodiscard]] constexpr extern Value degrees_to_radians(const Value x) noexcept;
-
-[[nodiscard]] constexpr extern Value radians_to_degrees(const Value x) noexcept;
-
-[[nodiscard]] constexpr extern Integer gcd(Integer a, Integer b) noexcept;
-
-[[nodiscard]] /*constexpr*/ extern bool compare(const Value a, const Value b) noexcept;
+[[nodiscard]] /*constexpr*/ bool compare(const Value a, const Value b) noexcept;
 }; // namespace Identifiers
 #endif

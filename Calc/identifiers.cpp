@@ -284,8 +284,8 @@ template <const Value value> [[nodiscard]] consteval Fn constant() noexcept {
   return std::ranges::max(params);
 }
 
-[[nodiscard]] static /*constexpr*/ bool compare(const Value a,
-                                                const Value b) noexcept {
+[[nodiscard]] /*static*/ /*constexpr*/ bool compare(const Value a,
+                                                    const Value b) noexcept {
   return std::abs(a - b) <= std::numeric_limits<Value>::epsilon() *
                                 std::max(std::abs(a), std::abs(b));
 }
@@ -518,7 +518,7 @@ accumulate(std::span<Value> params) noexcept {
 }
 
 // for better precision
-[[nodiscard]] static Value pow(Value x, Value y) noexcept {
+[[nodiscard]] /*static*/ Value pow(Value x, Value y) noexcept {
   if (compare(x, std::numbers::e_v<Value>)) {
     return std::exp(y);
   }
