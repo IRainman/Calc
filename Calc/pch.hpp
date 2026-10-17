@@ -176,7 +176,7 @@ constexpr Value huge_value_precision = 1e15;
 constexpr Value small_value_precision = 1e-15;
 constexpr uint8_t exponent_precision = 3;
 #endif
-constexpr auto output_precision = std::numeric_limits<Value>::digits10;
+constexpr uint8_t output_precision = std::numeric_limits<Value>::digits10;
 
 //---------------------------------------------------------------------------
 /**

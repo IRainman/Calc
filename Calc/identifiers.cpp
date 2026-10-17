@@ -284,8 +284,8 @@ template <const Value value> [[nodiscard]] consteval Fn constant() noexcept {
   return std::ranges::max(params);
 }
 
-[[nodiscard]] /*constexpr*/ /*static*/ bool compare(const Value a,
-                                                    const Value b) noexcept {
+[[nodiscard]] static /*constexpr*/ bool compare(const Value a,
+                                                const Value b) noexcept {
   return std::abs(a - b) <= std::numeric_limits<Value>::epsilon() *
                                 std::max(std::abs(a), std::abs(b));
 }
@@ -518,7 +518,7 @@ accumulate(std::span<Value> params) noexcept {
 }
 
 // for better precision
-[[nodiscard]] Value pow(Value x, Value y) noexcept {
+[[nodiscard]] static Value pow(Value x, Value y) noexcept {
   if (compare(x, std::numbers::e_v<Value>)) {
     return std::exp(y);
   }
@@ -531,14 +531,13 @@ accumulate(std::span<Value> params) noexcept {
 [[nodiscard]] static Value normalize_sine(Value value) noexcept {
   if (std::isnormal(value)) {
     // upgrade to significant nearest values
-    constexpr Value sqrt2_over_2 =
+    constexpr auto sqrt2_over_2 =
         std::numbers::sqrt2_v<Value> / static_cast<Value>(2);
-    constexpr Value epsilon = static_cast<Value>(small_value_precision);
-    for (const Value v :
+    for (const auto &v :
          {static_cast<Value>(-1.0), -sqrt2_over_2, static_cast<Value>(-0.5),
           static_cast<Value>(0.0), static_cast<Value>(0.5), sqrt2_over_2,
           static_cast<Value>(1.0)}) {
-      if (std::abs(value - v) <= epsilon) {
+      if (std::abs(value - v) <= small_value_precision) {
         return v;
       }
     }
@@ -550,19 +549,20 @@ accumulate(std::span<Value> params) noexcept {
 // for better precision
 [[nodiscard]] static Value normalize_tan(Value value) noexcept {
   // upgrade to infinity
-  constexpr Value huge = static_cast<Value>(huge_value_precision);
-  if (value >= huge) {
+  if (value >= huge_value_precision) {
     return std::numeric_limits<Value>::infinity();
   }
-  if (value <= -huge) {
+  if (value <= -huge_value_precision) {
     return -std::numeric_limits<Value>::infinity();
   }
   // upgrade to nearest integer
-  const Value rounded = std::round(value);
-  constexpr Value epsilon = static_cast<Value>(small_value_precision);
-  if (std::abs(value - rounded) <= epsilon) {
-    return rounded == 0 /*remove -0*/ ? 0 : rounded;
+  const auto rounded = std::round(value);
+  if (std::abs(value - rounded) <= small_value_precision) {
+    return rounded == 0 /*remove -0*/
+               ? 0
+               : rounded;
   }
+
   // return as is
   return value;
 }
