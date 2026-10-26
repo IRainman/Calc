@@ -2,14 +2,16 @@
  * Copyright 2009-present Elle Solomina, a.rainman on gmail point com
  */
 
-#ifndef FLAGS_HPP
-#define FLAGS_HPP
+#ifndef TYPES_HPP
+#define TYPES_HPP
 
 //---------------------------------------------------------------------------
 #ifdef _DEBUG
+/// Calc tests. Can be enabled in release for performance measurment.
 #define CALC_TESTS_ENABLED
 #ifndef NDEBUG
-#define CALC_TESTS_DEV_ENABLED // if commented it's measurement performance
+/// if disabled it's measurment performance.
+#define CALC_TESTS_DEV_ENABLED
 #endif
 //---------------------------------------------------------------------------
 #ifdef CALC_TESTS_DEV_ENABLED
@@ -27,6 +29,12 @@
 #endif
 //---------------------------------------------------------------------------
 #endif
+#endif
+//---------------------------------------------------------------------------
+/// TODO fix me: should be in Parser.
+// #define CALC_USE_IMPLICIT_MULTIPLICATION_IN_LEXER
+#ifndef CALC_USE_IMPLICIT_MULTIPLICATION_IN_LEXER
+#define CALC_USE_IMPLICIT_MULTIPLICATION_IN_PARSER // WIP
 #endif
 //---------------------------------------------------------------------------
 /**

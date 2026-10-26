@@ -139,6 +139,7 @@
       <AdditionalOptions>/Zc:__cplusplus /std:c++latest</AdditionalOptions>
       <CompileAsWinRT>false</CompileAsWinRT>
       <WarningLevel>EnableAllWarnings</WarningLevel>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -191,6 +192,7 @@
       <AdditionalOptions>/Zc:__cplusplus /std:c++latest</AdditionalOptions>
       <CompileAsWinRT>false</CompileAsWinRT>
       <WarningLevel>EnableAllWarnings</WarningLevel>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -255,6 +257,7 @@
       <AdditionalOptions>/Zc:__cplusplus /std:c++latest</AdditionalOptions>
       <CompileAsWinRT>false</CompileAsWinRT>
       <WarningLevel>EnableAllWarnings</WarningLevel>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -325,6 +328,7 @@
       <AdditionalOptions>/Zc:__cplusplus /std:c++latest</AdditionalOptions>
       <CompileAsWinRT>false</CompileAsWinRT>
       <WarningLevel>EnableAllWarnings</WarningLevel>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -365,6 +369,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="types.hpp" />
     <ClInclude Include="codata2022.hpp" />
     <ClInclude Include="identifiers.hpp" />
     <ClInclude Include="tests.hpp" />
@@ -374,7 +379,6 @@
     <ClInclude Include="parser.hpp" />
     <ClInclude Include="formatter.hpp" />
     <ClInclude Include="pch.hpp" />
-    <ClInclude Include="flags.hpp" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="gui.hpp" />
     <ClInclude Include="gui_unicode_normalizer.hpp" />
