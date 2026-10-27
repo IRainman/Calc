@@ -122,7 +122,7 @@ std::string calc_tests() {
                                              result(token, buffer));
 
       // clang-format off
-      output_end = fmt::format_to(output_end, FMT_COMPILE("Test {}: {}\n"
+      output_end = fmt::format_to(output_end, FMT_COMPILE("Test {}: \"{}\"\n"
                                                           "is error = {}\n"
                                                           "is nan = {}\n"
                                                           "is equal = {}\n"

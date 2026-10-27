@@ -189,6 +189,7 @@ static constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>(
 	{ "1e+7",		10000000.0 },
 
 	// basic operations:
+	{ "1+-2",	-1.0 },
 	{ "1+2",	3.0 },
 	{ "5-3",	2.0 },
 	{ "4*2",	8.0 },
