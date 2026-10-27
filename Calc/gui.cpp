@@ -130,11 +130,13 @@ public:
 #ifdef CALC_SUPPORT_UNICODE_INPUT
       Normalizer to_ascii(input.text(), input.length(), _equasion);
       if (to_ascii.failed()) [[unlikely]] {
-        issue(token, to_ascii.normalized(), Issue::unparsable);
+        token.position = to_ascii.normalized();
+        issue(token, Issue::unparsable);
 #else
       input.read(_equasion);
       if (input.length() != _equasion.length()) [[unlikely]] {
-        issue(token, _equasion.length(), Issue::unparsable);
+        token.position = _equasion.length();
+        issue(token, Issue::unparsable);
 #endif
       } else {
         Lexer lexer(_equasion);
