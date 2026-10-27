@@ -11,7 +11,8 @@ enum class Issue : ParamCount {
   unparsable = 0,
   extraneous_input = 1,
   too_many_in_expression,
-  expected_parenthesis,
+  expected_left_parenthesis,
+  expected_right_parenthesis,
   incorrect_parameters_count,
   too_many_parameters,
   expected_number,
@@ -20,8 +21,9 @@ enum class Issue : ParamCount {
 };
 constexpr static const auto issue_text = std::to_array<std::string_view>(
     {"unparsable", "extraneous input", "too many ^ in expression",
-     "expected parenthesis", "incorrect parameters count",
-     "too many parameters", "expected number", "expected valid expression"});
+     "expected left parenthesis", "expected right parenthesis",
+     "incorrect parameters count", "too many parameters", "expected number",
+     "expected valid expression"});
 static_assert(static_cast<size_t>(Issue::_count) == issue_text.size());
 
 struct Token {
@@ -52,20 +54,19 @@ struct Token {
   };
 
   union {
-    // If token is a number parsed from string or a constant, this is the value
-    // of it.
+    // If token is a number this is the value of it.
     [[no_unique_address]] Value number [[indeterminate]];
 
     // If token is a identifier or a constant, there is a pointer to it.
     [[no_unique_address]] Identifiers::map::const_pointer identifier
         [[indeterminate]];
 
-    // If token is an error, there is a small helper that handle it.
-    struct {
-      [[no_unique_address]] uint32_t position [[indeterminate]];
-      [[no_unique_address]] Issue index [[indeterminate]];
-    } issue;
+    // If token is an error, there is a index of message for it.
+    [[no_unique_address]] Issue index [[indeterminate]];
   };
+
+  // Position of this token in the input string.
+  [[no_unique_address]] EquationPosition position [[indeterminate]];
 
   // Type of this token.
   [[no_unique_address]] Type type [[indeterminate]];
@@ -78,11 +79,9 @@ struct Token {
 /**
  * Report a new issue.
  */
-inline void issue(Token &current, const EquationSize position,
-                  const Issue index) noexcept {
+inline void issue(Token &current, const Issue index) noexcept {
   current.type = Token::Type::ISSUE;
-  current.issue.position = static_cast<uint32_t>(position);
-  current.issue.index = index;
+  current.index = index;
 }
 
 #endif

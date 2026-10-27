@@ -8,49 +8,45 @@
 
 class Lexer {
 public:
-  explicit Lexer(const std::string_view data) noexcept
-      : _view{data}, _begin{data.data()} {}
+  explicit Lexer(const std::string_view &data) noexcept
+      : _begin{data.data()}, _end{data.data() + data.size()} {
+    _current = _begin;
+  }
 
   Lexer() = delete;
   Lexer(const Lexer &) = delete;
   Lexer(Lexer &&) = delete;
 
-private:
   /**
    * Write the next token to the link.
    */
   void next(Token &token) noexcept;
 
+private:
   /**
    * Return the current position.
    */
-  [[nodiscard]] EquationSize position() const noexcept;
+  [[nodiscard]] EquationPosition position() const noexcept;
 
   /**
-   * Move current position n symbols further.
+   * Read a separator at the beginning of the input view.
    */
-  void advance(EquationSize n) noexcept;
+  void read_separator(Token &token) noexcept;
 
   /**
-   * Read a separator at the beginning of the input view and return its size.
+   * Read an operator at the beginning of the input view.
    */
-  [[nodiscard]] EquationSize read_separator() const noexcept;
+  void read_operator(Token &token) noexcept;
 
   /**
-   * Read an operator at the beginning of the input view and return size of it.
+   * Read a number at the beginning of the input view.
    */
-  [[nodiscard]] EquationSize read_operator(Token &token) const noexcept;
+  void read_number(Token &token) noexcept;
 
   /**
-   * Read a number at the beginning of the input view and return size of it.
+   * Read an identifier at the beginning of the input view.
    */
-  [[nodiscard]] EquationSize read_number(Token &token) const noexcept;
-
-  /**
-   * Read an identifier at the beginning of the input view and return size of
-   * it.
-   */
-  [[nodiscard]] EquationSize read_ident(Token &token) const noexcept;
+  void read_ident(Token &token) noexcept;
 
   /**
    * Read the normal end at the beginning of the input view.
@@ -58,16 +54,16 @@ private:
   void return_result(Token &token) const noexcept;
 
   /**
-   * Read some unparsable input in the input view and return 0 to reparse from
-   * this point.
+   * Read some unparsable input in the input view.
    */
-  EquationSize return_unparsable(Token &token) const noexcept;
+  void return_unparsable(Token &current) const noexcept;
 
-  Token _delayed{Token::Type::ISSUE};
-  std::string_view _view;
+  
   const std::string_view::const_pointer _begin;
-  Token::Type _previous = Token::Type::ISSUE;
-  friend class Parser;
+  const std::string_view::const_pointer _end;
+  std::string_view::const_pointer _current;
+  [[no_unique_address]] Token _delayed{Token::Type::ISSUE};
+  [[no_unique_address]] Token::Type _previous = Token::Type::ISSUE;
 };
 
 #endif

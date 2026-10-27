@@ -26,14 +26,17 @@ void Parser::result(Token &result) noexcept {
     // full expression parsed, may produce RESULT or ISSUE
     return;
   }
-  case Token::Type::ISSUE:
+  case Token::Type::ISSUE: {
     // early exit with grammar error
     [[unlikely]] result = _current;
     return;
-  default:
-    // early exit when expression absolutely unparsable
-    [[unlikely]] issue(result, _lexer.position(), Issue::extraneous_input);
+  }
+  default: {
+    // early exit when expression is incorrect
+    result.position = _current.position;
+    [[unlikely]] issue(result, Issue::expected_valid_expression);
     return;
+  }
   }
 }
 
@@ -43,7 +46,7 @@ void Parser::expr_4(Token &result) noexcept {
   expr_3(result);
   while (true) {
     switch (_current.type) {
-    case Token::Type::ADD:
+    case Token::Type::ADD: {
       if (result.type == Token::Type::NUM) {
         advance();
         Token number;
@@ -52,14 +55,14 @@ void Parser::expr_4(Token &result) noexcept {
           result.number += number.number;
           break;
         } else {
-          [[unlikely]] issue(result, _lexer.position(), Issue::expected_number);
-          return;
+          result.position = number.position;
+          goto issue_expected_number;
         }
       } else {
-        [[unlikely]] issue(result, _lexer.position(), Issue::expected_number);
-        return;
+        goto issue_expected_number;
       }
-    case Token::Type::SUB:
+    }
+    case Token::Type::SUB: {
       if (result.type == Token::Type::NUM) {
         advance();
         Token number;
@@ -68,24 +71,27 @@ void Parser::expr_4(Token &result) noexcept {
           result.number -= number.number;
           break;
         } else {
-          [[unlikely]] issue(result, _lexer.position(), Issue::expected_number);
-          return;
+          result.position = number.position;
+          goto issue_expected_number;
         }
       } else {
-        [[unlikely]] issue(result, _lexer.position(), Issue::expected_number);
-        return;
+        goto issue_expected_number;
       }
-    default:
+    }
+    default: {
       return;
     }
+    }
   }
+issue_expected_number:
+  [[unlikely]] issue(result, Issue::expected_number);
 }
 
 void Parser::expr_3(Token &result) noexcept {
   expr_2(result);
   while (true) {
     switch (_current.type) {
-    case Token::Type::MUL:
+    case Token::Type::MUL: {
       if (result.type == Token::Type::NUM) {
         advance();
         Token number;
@@ -94,14 +100,14 @@ void Parser::expr_3(Token &result) noexcept {
           result.number *= number.number;
           break;
         } else {
-          [[unlikely]] issue(result, _lexer.position(), Issue::expected_number);
-          return;
+          result.position = number.position;
+          goto issue_expected_number;
         }
       } else {
-        [[unlikely]] issue(result, _lexer.position(), Issue::expected_number);
-        return;
+        goto issue_expected_number;
       }
-    case Token::Type::DIV:
+    }
+    case Token::Type::DIV: {
       if (result.type == Token::Type::NUM) {
         advance();
         Token number;
@@ -110,17 +116,20 @@ void Parser::expr_3(Token &result) noexcept {
           result.number /= number.number;
           break;
         } else {
-          [[unlikely]] issue(result, _lexer.position(), Issue::expected_number);
-          return;
+          result.position = number.position;
+          goto issue_expected_number;
         }
       } else {
-        [[unlikely]] issue(result, _lexer.position(), Issue::expected_number);
-        return;
+        goto issue_expected_number;
       }
-    default:
+    }
+    default: {
       return;
     }
+    }
   }
+issue_expected_number:
+  [[unlikely]] issue(result, Issue::expected_number);
 }
 
 void Parser::expr_2(Token &result) noexcept {
@@ -136,7 +145,8 @@ void Parser::expr_2(Token &result) noexcept {
     }
   } while (++count != static_cast<ParamCount>(tokens.size()));
   if (count == static_cast<ParamCount>(tokens.size())) [[unlikely]] {
-    issue(result, _lexer.position(), Issue::too_many_in_expression);
+    result.position = _current.position;
+    issue(result, Issue::too_many_in_expression);
     return;
   }
 
@@ -150,19 +160,22 @@ void Parser::expr_2(Token &result) noexcept {
         result.number = Identifiers::pow(tokens[count].number, result.number);
         break;
       }
-      case Token::Type::ISSUE:
-        [[unlikely]] return;
+      case Token::Type::ISSUE: {
+        [[unlikely]] result = tokens[count];
+        return;
+      }
       default: {
-        [[unlikely]] issue(result, _lexer.position(), Issue::expected_number);
+        result.position = tokens[count].position;
+        [[unlikely]] issue(result, Issue::expected_number);
         return;
       }
       }
     }
-  case Token::Type::ISSUE:
+  case Token::Type::ISSUE: {
     [[unlikely]] return;
+  }
   default: {
-    [[unlikely]] issue(result, _lexer.position(),
-                       Issue::expected_valid_expression);
+    [[unlikely]] issue(result, Issue::expected_valid_expression);
     return;
   }
   }
@@ -178,55 +191,61 @@ void Parser::expr_1(Token &result) noexcept {
     case Token::Type::NUM: {
       result.number = -result.number;
       return;
-    case Token::Type::ISSUE:
-      [[unlikely]] return;
+    }
+    case Token::Type::ISSUE: {
+      [[unlikely]] result = _current;
+      return;
+    }
     default: {
-      [[unlikely]] issue(result, _lexer.position(), Issue::expected_number);
+      [[unlikely]] issue(result, Issue::expected_number);
       return;
     }
     }
-    }
   }
-  default:
+  default: {
     expr_0(result);
     return;
+  }
   }
 }
 
 void Parser::expr_0(Token &result) noexcept {
   switch (_current.type) {
-  case Token::Type::LPAREN:
+  case Token::Type::LPAREN: {
     subexpression(result);
     return;
-  case Token::Type::NUM:
+  }
+  case Token::Type::NUM: {
     number(result);
     return;
-  case Token::Type::FUNCT:
+  }
+  case Token::Type::FUNCT: {
     function(result);
     return;
-  case Token::Type::CONST:
+  }
+  case Token::Type::CONST: {
     constant(result);
     return;
-  default:
+  }
+  default: {
     result = _current;
     return;
+  }
   }
 }
 
 void Parser::subexpression(Token &result) noexcept {
-  // auto subexpression_start_pos = _lexer.position();
   advance();
   expr_4(result);
   if (_current.type == Token::Type::RPAREN) {
     advance();
   } else {
-    [[unlikely]] issue(result, _lexer.position(), Issue::expected_parenthesis);
-    return;
+    result.position = _current.position;
+    [[unlikely]] issue(result, Issue::expected_right_parenthesis);
   }
 }
 
 void Parser::constant(Token &result) noexcept {
-  // auto constant_start_pos = _lexer.position();
   const auto &[caller, _] = _current.identifier->second;
   result.type = Token::Type::NUM;
   result.number = caller({});
@@ -234,14 +253,12 @@ void Parser::constant(Token &result) noexcept {
 }
 
 void Parser::number(Token &result) noexcept {
-  // auto number_start_pos = _lexer.position();
   result.type = Token::Type::NUM;
   result.number = _current.number;
   advance();
 }
 
 void Parser::function(Token &result) noexcept {
-  const auto function_start_pos = _lexer.position();
   result = _current;
   advance();
   if (_current.type == Token::Type::LPAREN) {
@@ -264,18 +281,16 @@ void Parser::function(Token &result) noexcept {
             if (parameters[i].type == Token::Type::NUM) {
               values[i] = parameters[i].number;
             } else {
-              [[unlikely]] issue(result, function_start_pos,
-                                 Issue::expected_valid_expression);
+              result.position = parameters[i].position;
+              [[unlikely]] issue(result, Issue::expected_valid_expression);
               return;
             }
           }
-          result.type = Token::Type::NUM;
           result.number = caller({values.begin(), values.begin() + count});
+          result.type = Token::Type::NUM;
           return;
         } else {
-          [[unlikely]] issue(
-              result, function_start_pos - result.identifier->first.size(),
-              Issue::incorrect_parameters_count);
+          [[unlikely]] issue(result, Issue::incorrect_parameters_count);
           return;
         }
       }
@@ -284,17 +299,18 @@ void Parser::function(Token &result) noexcept {
         continue;
       }
       default: {
-        [[unlikely]] issue(result, _lexer.position(),
-                           Issue::expected_parenthesis);
+        result.position = _current.position;
+        [[unlikely]] issue(result, Issue::expected_right_parenthesis);
         return;
       }
       }
     } while (count != static_cast<ParamCount>(parameters.size()));
 
-    [[unlikely]] issue(result, _lexer.position(), Issue::too_many_parameters);
+    [[unlikely]] issue(result, Issue::too_many_parameters);
     return;
   } else {
-    [[unlikely]] issue(result, _lexer.position(), Issue::expected_parenthesis);
+    result.position = _current.position;
+    [[unlikely]] issue(result, Issue::expected_left_parenthesis);
     return;
   }
 }

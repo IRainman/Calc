@@ -16,7 +16,7 @@ public:
    *
    * expr_4 = expr_3 ( ('+' | '-') expr_3 )*;
    *
-   * expr_3 = expr_2 ( ('*' | '/') expr_2 )*
+   * expr_3 = expr_2 ( ('*' | '/') expr_2 )*;
    *
    * expr_2 = expr_1 ( '^' expr_1 )*;
    *
@@ -27,6 +27,10 @@ public:
    *        | CONST
    *        | FUNCT
    *        ;
+   * 
+   * subexpression
+   * 
+   * constant
    *
    * function = FUNCT '(' parameters ')'
    *

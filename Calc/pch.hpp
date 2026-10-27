@@ -43,19 +43,19 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 #pragma warning(disable : 4623) // default constructor was implicitly defined as deleted
 #pragma warning(disable : 4625) // copy constructor was implicitly defined as deleted
 #pragma warning(disable : 4626) // assignment operator was implicitly defined as deleted
-#pragma warning(disable : 4668) // is not defined as a preprocessor macro, replacing with '0' for 'directives'
-#pragma warning(disable : 4710) // ' ': function not inlined
-#pragma warning(disable : 4711) // function ' ' selected for automatic inline expansion
+#pragma warning(disable : 4668) // 'D' is not defined as a preprocessor macro, replacing with '0' for 'directives'
+#pragma warning(disable : 4710) // 'f': function not inlined
+#pragma warning(disable : 4711) // function 'f' selected for automatic inline expansion
 #pragma warning(disable : 4820) // 'x': 'n' bytes padding added after data member 'y'
 #pragma warning(disable : 5026) // 'x': move constructor was implicitly defined as deleted
 #pragma warning(disable : 5027) // move assignment operator was implicitly defined as deleted
-#pragma warning(disable : 5030) // attribute ' ' is not recognized
+#pragma warning(disable : 5030) // attribute 'a' is not recognized
 #pragma warning(disable : 5045) // warning for unsafe buffer usage
 #pragma warning(disable : 5222) // all unscoped attribute names are reserved for future standardization
 // clang-format on
 
 //---------------------------------------------------------------------------
-#include "flags.hpp"
+#include "types.hpp"
 // add headers that you want to pre-compile here:
 #include <array>         // Calc and Win32 GUI (Layout)
 #include <limits>        // Calc
@@ -148,14 +148,15 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 // clang-format on
 #include "../../fast_float/include/fast_float/fast_float.h"
 
-//---------------------------------------------------------------------------
+// namespace Calc {
 /**
  * Types using for calculation.
  */
-using EquationSize = size_t;
-using ParamCount = uint8_t;
-using Integer = std::int64_t;
-using UInteger = std::uint64_t;
+using EquationSize = std::size_t;
+using EquationPosition = std::uint_fast16_t;
+using ParamCount = std::uint_fast8_t;
+using Integer = std::int_fast64_t;
+using UInteger = std::uint_fast64_t;
 
 #if _DEBUG && __STDCPP_FLOAT128_T__ == 1
 using Value = std::float128_t;
@@ -197,4 +198,6 @@ using Result = std::array<char,
 #endif
                           >;
 //---------------------------------------------------------------------------
+//} // namespace Calc
+
 #endif

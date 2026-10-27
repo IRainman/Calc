@@ -31,12 +31,6 @@
 #endif
 #endif
 //---------------------------------------------------------------------------
-/// TODO fix me: should be in Parser.
-// #define CALC_USE_IMPLICIT_MULTIPLICATION_IN_LEXER
-#ifndef CALC_USE_IMPLICIT_MULTIPLICATION_IN_LEXER
-#define CALC_USE_IMPLICIT_MULTIPLICATION_IN_PARSER // WIP
-#endif
-//---------------------------------------------------------------------------
 /**
  * It's possible to disable this larger code from Calc because Unicode input are
  * really rare and very expensive to parse.

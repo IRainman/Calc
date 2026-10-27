@@ -10,42 +10,45 @@ namespace {
 const auto &ids = Identifiers::get();
 };
 
-[[nodiscard]] inline EquationSize Lexer::position() const noexcept {
-  [[assume(_view.data() - _begin >= 0)]];
+inline EquationPosition Lexer::position() const noexcept {
+  [[assume(_current - _begin >= 0 && _current < _end)]];
 
-  return static_cast<EquationSize>(_view.data() - _begin);
+  return static_cast<EquationPosition>(_current - _begin);
 }
 
-inline void Lexer::advance(EquationSize n) noexcept { _view.remove_prefix(n); }
-
-inline EquationSize Lexer::return_unparsable(Token &current) const noexcept {
-  issue(current, position(), Issue::unparsable);
-  return 0;
+inline void Lexer::return_unparsable(Token &current) const noexcept {
+  current.position = position();
+  issue(current, Issue::unparsable);
 }
 
-[[nodiscard]] inline EquationSize
-Lexer::read_operator(Token &current) const noexcept {
-  [[assume((_view.size() >= 1))]];
+inline void Lexer::read_operator(Token &current) noexcept {
+  [[assume(_current - _begin >= 1 && _current < _end)]];
 
-  current.type = static_cast<Token::Type>(_view.front());
+  current.position = position();
+  current.type = static_cast<Token::Type>(*_current);
 
-  return 1;
+  ++_current;
+
+  [[assume(_current - _begin >= 1 && _current <= _end)]];
 }
 
-[[nodiscard]] inline EquationSize Lexer::read_separator() const noexcept {
-  [[assume((_view.size() >= 1))]];
+inline void Lexer::read_separator(Token &current) noexcept {
+  [[assume((_current - _begin >= 1 && _current < _end))]];
+#if 0
+  current.position = position();
+  current.type = static_cast<Token::Type>(*_current);
+#endif
+  do {
+    ++_current;
+  } while (_current != _end && *_current == ' ');
 
-  EquationSize n = 1;
-  while (n != _view.size() && _view[n] == ' ') {
-    ++n;
-  }
-
-  return n;
+  [[assume(_current - _begin >= 1 && _current <= _end)]];
 }
 
-[[nodiscard]] inline EquationSize
-Lexer::read_number(Token &current) const noexcept {
-  [[assume((_view.size() >= 1))]];
+[[nodiscard]] inline void Lexer::read_number(Token &current) noexcept {
+  [[assume(_current - _begin >= 1 && _current < _end)]];
+
+  current.position = position();
 
   constexpr auto options =
       fast_float::parse_options{fast_float::chars_format::general
@@ -54,51 +57,49 @@ Lexer::read_number(Token &current) const noexcept {
 #endif
       };
 
-  const auto res = fast_float::from_chars_advanced(
-      _view.data(), _view.data() + _view.size(), current.number, options);
+  const auto res = fast_float::from_chars_advanced(_current, _end, current.number, options);
 
   if (res.ec == std::errc{}) {
     [[assume(current.number >= 0 &&
              current.number <= std::numeric_limits<Value>::max())]];
 
     current.type = Token::Type::NUM;
+    _current = res.ptr;
 
-    [[assume(res.ptr - _view.data() >= 1)]];
-    return static_cast<EquationSize>(res.ptr - _view.data());
-
+    [[assume(_current - _begin >= 1 && _current <= _end)]];
   } else [[unlikely]] {
     // Handles a value which is either too small or too large to parse.
-    return return_unparsable(current);
+    return_unparsable(current);
   }
 }
 
-[[nodiscard]] inline EquationSize
-Lexer::read_ident(Token &current) const noexcept {
-  [[assume((_view.size() >= 1))]];
+[[nodiscard]] inline void Lexer::read_ident(Token &current) noexcept {
+  [[assume(_current - _begin >= 1 && _current < _end)]];
 
-  EquationSize n = 1;
-  while (n != _view.size() &&
-         ((_view[n] >= 'A' && _view[n] <= 'Z') ||
-          (_view[n] >= 'a' && _view[n] <= 'z') ||
-          (_view[n] >= '0' && _view[n] <= '9') || _view[n] == '_')) {
-    ++n;
-  }
+  current.position = position();
 
-  if (const auto identifier = ids.find(_view.substr(0, n));
+  const auto ident_begin = _current;
+
+  do {
+    ++_current;
+  } while (_current != _end &&
+           ((*_current >= 'A' && *_current <= 'Z') ||
+            (*_current >= 'a' && *_current <= 'z') ||
+            (*_current >= '0' && *_current <= '9') || *_current == '_'));
+
+  if (const auto identifier = ids.find(std::string_view(ident_begin, _current));
       identifier != ids.end()) {
-    const auto &[_, c] = identifier->second;
-
-    current.type = c.is_function() ? Token::Type::FUNCT : Token::Type::CONST;
+    const auto &[_, p] = identifier->second;
     current.identifier = &(*identifier);
-
-    return n;
-
+    current.type = p.is_function() ? Token::Type::FUNCT : Token::Type::CONST;
   } else [[unlikely]] {
-    return return_unparsable(current);
+    return_unparsable(current);
   }
+  [[assume(_current - _begin >= 1 && _current <= _end)]];
 }
 
 inline void Lexer::return_result(Token &current) const noexcept {
+  current.position = position();
   current.type = Token::Type::RESULT;
 }
 
@@ -124,34 +125,35 @@ implicit_mult_second(const Token &current) noexcept {
 void Lexer::next(Token &current) noexcept {
   if (_delayed.type != Token::Type::ISSUE) {
     current = _delayed;
+    _previous = _delayed.type;
     _delayed.type = Token::Type::ISSUE;
-    _previous = current.type;
     return;
   }
 
   bool is_separator = false;
 
-  while (!_view.empty()) {
-    const auto &cur = _view.front();
-
+  while (_current != _end) {
     // https://en.cppreference.com/w/cpp/language/ascii
-    [[assume(cur >= 32 && cur <= 126)]];
+    [[assume(*_current >= 32 && *_current <= 126)]];
 
-    if (cur == '(' || cur == ')' || cur == '*' || cur == '+' || cur == ',' ||
-        cur == '-' || cur == '/' || cur == '^') {
-      advance(read_operator(current));
+    if (*_current == '(' || *_current == ')' || *_current == '*' ||
+        *_current == '+' || *_current == ',' || *_current == '-' ||
+        *_current == '/' || *_current == '^') {
+      read_operator(current);
       goto valid_token_return;
 
-    } else if (cur >= '0' && cur <= '9') {
-      advance(read_number(current));
+    } else if (*_current >= '0' && *_current <= '9') {
+      read_number(current);
+
       goto valid_token_return;
 
-    } else if ((cur >= 'A' && cur <= 'Z') || (cur >= 'a' && cur <= 'z')) {
-      advance(read_ident(current));
+    } else if ((*_current >= 'A' && *_current <= 'Z') ||
+               (*_current >= 'a' && *_current <= 'z')) {
+      read_ident(current);
       goto valid_token_return;
 
-    } else if (cur == ' ') {
-      advance(read_separator());
+    } else if (*_current == ' ') {
+      read_separator(current);
       is_separator = true;
       continue;
 

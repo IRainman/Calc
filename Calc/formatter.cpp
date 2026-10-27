@@ -64,9 +64,8 @@ char *value(const Value &value, Result &ret) noexcept {
  */
 char *result(const Token &token, Result &ret) noexcept {
   if (token.type == Token::Type::ISSUE) {
-    return fmt::format_to(ret.data(), FMT_COMPILE("{}: {}\n"),
-                          token.issue.position,
-                          issue_text[static_cast<uint8_t>(token.issue.index)]);
+    return fmt::format_to(ret.data(), FMT_COMPILE("{}: {}\n"), token.position,
+                          issue_text[static_cast<uint8_t>(token.index)]);
   } else {
     return value(token.number, ret);
   }
