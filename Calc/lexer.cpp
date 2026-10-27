@@ -32,7 +32,7 @@ inline void Lexer::read_operator(Token &current) noexcept {
   [[assume(_current - _begin >= 1 && _current <= _end)]];
 }
 
-inline void Lexer::read_separator(Token &current) noexcept {
+inline void Lexer::read_separator(Token & /*current*/) noexcept {
   [[assume((_current - _begin >= 1 && _current < _end))]];
 #if 0
   current.position = position();
@@ -57,7 +57,8 @@ inline void Lexer::read_separator(Token &current) noexcept {
 #endif
       };
 
-  const auto res = fast_float::from_chars_advanced(_current, _end, current.number, options);
+  const auto res =
+      fast_float::from_chars_advanced(_current, _end, current.number, options);
 
   if (res.ec == std::errc{}) {
     [[assume(current.number >= 0 &&
