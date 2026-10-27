@@ -11,14 +11,16 @@ struct Fn {
 
   [[no_unique_address]] struct P {
     /**
-     * Test is Fn is a constant and no needs arguments.
+     * Test is Fn is a constant and no needs arguments and simply returns a
+     * constant value.
      */
     [[nodiscard]] constexpr bool is_constant() const noexcept {
       return !is_function();
     }
 
     /**
-     * Test is Fn is a function and may needs arguments.
+     * Test is Fn is a function that may needs arguments and before return do
+     * some work.
      */
     [[nodiscard]] constexpr bool is_function() const noexcept {
       return this_is_function;

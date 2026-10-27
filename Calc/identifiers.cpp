@@ -316,55 +316,55 @@ radians_to_degrees(const Value x) noexcept {
   return x / (2.0 * std::numbers::pi_v<Value>);
 }
 
-[[nodiscard]] static /*constexpr*/ Value v_or(const Value n,
-                                              const Value m) noexcept {
+[[nodiscard]] static constexpr Value v_or(const Value n,
+                                          const Value m) noexcept {
   if (is_integer(n) && is_integer(m)) {
-    return static_cast<Value>(static_cast<UInteger>(std::llrint(n)) |
-                              static_cast<UInteger>(std::llrint(m)));
+    return static_cast<Value>(static_cast<UInteger>(n) |
+                              static_cast<UInteger>(m));
   } else {
     return std::numeric_limits<Value>::quiet_NaN();
   }
 }
 
-[[nodiscard]] static /*constexpr*/ Value v_xor(const Value n,
-                                               const Value m) noexcept {
+[[nodiscard]] static constexpr Value v_xor(const Value n,
+                                           const Value m) noexcept {
   if (is_integer(n) && is_integer(m)) {
-    return static_cast<Value>(static_cast<UInteger>(std::llrint(n)) ^
-                              static_cast<UInteger>(std::llrint(m)));
+    return static_cast<Value>(static_cast<UInteger>(n) ^
+                              static_cast<UInteger>(m));
   } else {
     return std::numeric_limits<Value>::quiet_NaN();
   }
 }
 
-[[nodiscard]] static /*constexpr*/ Value v_and(const Value n,
-                                               const Value m) noexcept {
+[[nodiscard]] static constexpr Value v_and(const Value n,
+                                           const Value m) noexcept {
   if (is_integer(n) && is_integer(m)) {
-    return static_cast<Value>(static_cast<UInteger>(std::llrint(n)) &
-                              static_cast<UInteger>(std::llrint(m)));
+    return static_cast<Value>(static_cast<UInteger>(n) &
+                              static_cast<UInteger>(m));
   } else {
     return std::numeric_limits<Value>::quiet_NaN();
   }
 }
 
-[[nodiscard]] static /*constexpr*/ Value v_not(const Value n) noexcept {
+[[nodiscard]] static constexpr Value v_not(const Value n) noexcept {
   if (is_integer(n)) {
-    return static_cast<Value>((~static_cast<UInteger>(std::llrint(n))));
+    return static_cast<Value>(~static_cast<UInteger>(n));
   } else {
     return std::numeric_limits<Value>::quiet_NaN();
   }
 }
 
-[[nodiscard]] static /*constexpr*/ Value shl(const Value n) noexcept {
+[[nodiscard]] static constexpr Value shl(const Value n) noexcept {
   if (is_integer(n)) {
-    return static_cast<Value>(static_cast<UInteger>(std::llrint(n)) << 1);
+    return static_cast<Value>(static_cast<UInteger>(n) << 1);
   } else {
     return std::numeric_limits<Value>::quiet_NaN();
   }
 }
 
-[[nodiscard]] static /*constexpr*/ Value shr(const Value n) noexcept {
+[[nodiscard]] static constexpr Value shr(const Value n) noexcept {
   if (is_integer(n)) {
-    return static_cast<Value>(static_cast<UInteger>(std::llrint(n)) >> 1);
+    return static_cast<Value>(static_cast<UInteger>(n) >> 1);
   } else {
     return std::numeric_limits<Value>::quiet_NaN();
   }
@@ -490,16 +490,17 @@ radians_to_degrees(const Value x) noexcept {
   return std::numeric_limits<Value>::quiet_NaN();
 }
 #if 0
+// https://en.cppreference.com/cpp/algorithm/accumulate
 [[nodiscard]] static constexpr Value
 accumulate(std::span<Value> params) noexcept {
   return std::accumulate(
       params.begin(), params.end(),
-      0.0); // https://en.cppreference.com/cpp/algorithm/accumulate
+      0.0); 
 }
 
+// https://en.cppreference.com/cpp/algorithm/reduce
 [[nodiscard]] static constexpr Value reduce(std::span<Value> params) noexcept {
   return std::reduce(params.begin(), params.end());
-  // https://en.cppreference.com/cpp/algorithm/reduce
 }
 #endif
 [[nodiscard]] static constexpr Value hypot(std::span<Value> params) noexcept {
@@ -753,7 +754,7 @@ distance(std::span<Value> params) noexcept {
     }
     roots[1] = std::complex<Value>(-sqrtQ * cosh(theta / 3.0) - b / 3.0,
                                    sqrt(3) * sqrtQ * sinh(theta / 3.0));
-    roots[2] = conj(roots[1]);
+    roots[2] = std::conj(roots[1]);
   }
   return roots;
 }
@@ -775,10 +776,11 @@ using namespace codata2022;
 
 static const map ids = {
     //---------------------------------------------------------------------------
-    /// added for optimization, reduce code size and speedup float parsing.
+    /// added for optimization, reduce code size and speedup float parsing
     {"inf", constant<std::numeric_limits<Value>::infinity()>()},
     //---------------------------------------------------------------------------
     /// C++20 https://en.cppreference.com/w/cpp/numeric/constants :
+
     /// Archimedes' constant π
     /// https://en.wikipedia.org/wiki/Pi_(mathematical_constant)
     {"pi", constant<std::numbers::pi_v<Value>>()},
@@ -789,7 +791,10 @@ static const map ids = {
     /// https://en.wikipedia.org/wiki/Euler%27s_constant
     {"E", constant<std::numbers::egamma_v<Value>>()},
 
+//---------------------------------------------------------------------------
 #ifdef CALC_TESTS_ENABLED
+    /// C++20 https://en.cppreference.com/w/cpp/numeric/constants :
+
     {"log2e", constant<std::numbers::log2e_v<Value>>()},
     {"log10e", constant<std::numbers::log10e_v<Value>>()},
     {"ln2", constant<std::numbers::ln2_v<Value>>()},
@@ -911,9 +916,8 @@ static const map ids = {
     {"Eh", constant<Eh>()},
     {"E_h", constant<E_h>()},
     {"V_h", constant<V_h>()},
-    // clang-format off
-    {"e_atomic", constant<e>()},// use distinct name to avoid collision with math "e"
-    // clang-format on
+    /// use distinct name to avoid collision with math "e"
+    {"e_atomic", constant<e>()},
     {"I_h", constant<I_h>()},
     {"mu_h", constant<mu_h>()},
 
@@ -959,9 +963,8 @@ static const map ids = {
     {"Z0", constant<Z0>()},
     {"h", constant<h>()},
     {"hbar", constant<hbar>()},
-    // clang-format off
-    {"e_charge", constant<e>()},// use distinct name to avoid collision with math "e"
-    // clang-format on
+    /// use distinct name to avoid collision with math "e"
+    {"e_charge", constant<e>()},
     {"NA", constant<NA>()},
     {"kB", constant<kB>()},
     {"F", constant<F>()},
@@ -1009,11 +1012,12 @@ static const map ids = {
     {"mualpha", constant<mualpha>()},
     {"re", constant<re>()},
     {"sigmae", constant<sigmae>()},
-
+    //---------------------------------------------------------------------------
     // TODO additional constants:
 
     //---------------------------------------------------------------------------
     // https://en.cppreference.com/w/cpp/numeric/math :
+
     {"sin", function_pointer<1, sin>()},
     {"cos", function_pointer<1, cos>()},
     {"tan", function_pointer<1, tan>()},
@@ -1103,13 +1107,11 @@ static const map ids = {
 
     {"mod", function_pointer<2, std::fmod>()},
 
-#ifdef CALC_TESTS_ENABLED
-#if 0
     {"midpoint", function_pointer<2, std::midpoint>()},
+#if 0
     {"clamp", function_pointer<3, std::clamp>()},
 #endif
     {"lerp", function_pointer<3, std::lerp>()},
-#endif
 
     {"not", function_pointer<1, v_not>()},
     {"and", function_pointer<2, v_and>()},
@@ -1125,7 +1127,7 @@ static const map ids = {
     {"countr_one", function_pointer<1, countr_one>()},
     {"popcount", function_pointer<1, popcount>()},
     //---------------------------------------------------------------------------
-    // C++17 https://en.cppreference.com/w/cpp/numeric/special_math
+    // C++17 https://en.cppreference.com/w/cpp/numeric/special_math :
 
     {"beta", function_pointer<2, std::beta>()},
 
@@ -1159,6 +1161,8 @@ static const map ids = {
 
     {"riemann_zeta", function_pointer<1, std::riemann_zeta>()},
     //---------------------------------------------------------------------------
+    // Engineering:
+
     {"dBm", function_pointer<1, dBm>()},
     {"mW", function_pointer<1, mW>()},
     //---------------------------------------------------------------------------
