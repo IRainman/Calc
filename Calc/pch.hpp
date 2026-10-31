@@ -87,10 +87,10 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 //---------------------------------------------------------------------------
 // Zmij compile options:
 // clang-format off
+// Tests time is : 81207ms. Without Tests time is : 118164ms.
 #if CALC_USE_128_BIT_FLOAT
 #warning "128-bit float type isn't supported by zmij. The library convert any output values to 64-bit double."
 #endif
-// Tests time is : 81207ms. Without Tests time is : 118164ms.
 //#define ZMIJ_OPTIMIZE_SIZE 0 // Give best result. Don't need to use ZMIJ_OPTIMIZE_SIZE 1
 #pragma warning(push)
 #pragma warning(disable : 4100) // unreferenced formal parameter
