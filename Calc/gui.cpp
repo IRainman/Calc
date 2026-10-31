@@ -631,10 +631,23 @@ int WINAPI WinMain(const HINSTANCE instance, const HINSTANCE /*prev_instance*/,
 
 // TODO Qt
 
-// for now, just print a message and exit with failure code
-int main(int /*argc*/, char * /*argv[]*/) noexcept {
-  fmt::print("Calc: GUI is not implemented for this platform yet.\n");
-  return EXIT_FAILURE;
+[[noreturn]] int main(int /*argc*/, char * /*argv[]*/) noexcept {
+  std::cerr << "Only CUI is currently implemented for this platform."
+            << std::endl;
+
+  std::string equasion;
+  for (;;) {
+    std::cout << "Enter expression: ";
+    std::cin >> equasion;
+    Token token [[indeterminate]];
+    Lexer lexer(equasion);
+    Parser parser(lexer);
+    parser.result(token);
+
+    Result text [[indeterminate]];
+    std::cout << std::string_view(text.data(), result(token, text))
+              << std::endl;
+  }
 }
 
 #endif

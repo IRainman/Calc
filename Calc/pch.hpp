@@ -37,6 +37,7 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 //---------------------------------------------------------------------------
 // Calc compile options:
 // clang-format off
+#ifdef _MSC_VER
 #pragma warning(disable : 4365) // signed/unsigned mismatch
 #pragma warning(disable : 4464) // relative include path contains '..'
 #pragma warning(disable : 4514) // unreferenced inline function has been removed
@@ -52,21 +53,28 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 #pragma warning(disable : 5030) // attribute 'a' is not recognized
 #pragma warning(disable : 5045) // warning for unsafe buffer usage
 #pragma warning(disable : 5222) // all unscoped attribute names are reserved for future standardization
+#endif
 // clang-format on
 
 //---------------------------------------------------------------------------
 #include "types.hpp"
 // add headers that you want to pre-compile here:
+
+#ifdef _WIN32
+#include <optional> // Win32 GUI (RegRead)
+#include <string>   // Win32 GUI (CalcApp, Normalizer)
+#else
+#include <iostream> // CUI for non-Windows platforms
+#endif
+
 #include <array>         // Calc and Win32 GUI (Layout)
 #include <limits>        // Calc
-#include <new>           // Win32 GUI (Normalizer), Formatter
+#include <new>           // Calc Formatter and Win32 GUI (Normalizer)
 #include <numbers>       // Calc
 #include <numeric>       // Calc
-#include <optional>      // Win32 GUI (RegRead)
 #include <ranges>        // Calc
 #include <span>          // Calc
 #include <stdfloat>      // Calc
-#include <string>        // Win32 GUI (CalcApp, Normalizer)
 #include <string_view>   // Calc
 #include <unordered_map> // Calc
 #ifdef CALC_TEST_EQUATION_SOLVER
@@ -91,12 +99,12 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 #pragma warning(disable : 4388) // 'operator': signed/unsigned mismatch
 #pragma warning(disable : 4242) // 'operator': conversion from 'type_x' to 'type_y', possible loss of data
 #pragma warning(disable : 4244) // conversion from 'type_x' to 'type_y', possible loss of data
-#pragma warning(disable : 4554) // 'operator' : check operator precedence for possible error; use parentheses to...
+#pragma warning(disable : 4554) // 'operator': check operator precedence for possible error; use parentheses to...
 #pragma warning(disable : 4390) // empty control statement has no effect
 #pragma warning(disable : 4456) // declaration of 'x' hides previous local declaration
 #pragma warning(disable : 4459) // declaration of 'x' hides global declaration
-#pragma warning(disable : 4804) // 'operator' : unsafe use of type 'type_x' in operation
-#pragma warning(disable : 5245) // '`anonymous-namespace'x': unreferenced function with internal linkage has been removed
+#pragma warning(disable : 4804) // 'operator': unsafe use of type 'type_x' in operation
+#pragma warning(disable : 5245) // anonymous-namespace 'x': unreferenced function with internal linkage has been removed
 // clang-format on
 #include "../../zmij/zmij.cc"
 #pragma warning(pop)

@@ -35,6 +35,8 @@
  * It's possible to disable this larger code from Calc because Unicode input are
  * really rare and very expensive to parse.
  */
+#ifdef _WIN32
 #define CALC_SUPPORT_UNICODE_INPUT
+#endif
 //---------------------------------------------------------------------------
 #endif

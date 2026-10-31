@@ -13,8 +13,8 @@ const auto &ids = Identifiers::get();
 // clang-format off
 #ifdef _MSC_VER
 #pragma warning(push)
-#pragma warning(disable : 4061) // enumerator in switch of enum not explicitly handled
-#pragma warning(disable : 4062) // enumerator in switch of enum not handled
+#pragma warning(disable : 4061) // enumerator 'x' in switch of enum 'y' is not explicitly handled by a case label
+#pragma warning(disable : 4062) // enumerator 'x' in switch of enum 'y' not handled
 #endif
 // clang-format on
 
