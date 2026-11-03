@@ -11,6 +11,7 @@
 #include "tests_equasions.hpp"
 #include <cfenv>
 
+namespace Calc {
 [[nodiscard]] constexpr static Value bin(const std::string_view x) noexcept {
   UInteger bin_val;
   auto res = fast_float::from_chars(x.data(), x.data() + x.size(), bin_val, 2);
@@ -66,7 +67,7 @@ static_assert(std::is_trivially_copyable_v<CalcWindowState>);
 static_assert(std::is_standard_layout_v<CalcWindowState>);
 */
 
-std::string calc_tests() {
+std::string tests() {
   std::string output;
   output.resize(
 #ifdef CALC_TESTS_DEV_ENABLED // Development
@@ -81,17 +82,17 @@ std::string calc_tests() {
   const auto start = std::chrono::steady_clock::now();
 
 #ifdef CALC_TESTS_DEV_ENABLED // Development
-  unsigned int failed = 0;
+  std::uint32_t failed = 0;
 #else // Performance
-  constexpr unsigned int count = 100'000;
-  for (unsigned int i = count; --i != 0;)
+  constexpr std::uint32_t count = 100'000;
+  for (std::uint32_t i = count; --i != 0;)
 #endif
   {
-    for (const auto &t : tests) {
-      Lexer l(t.first);
-      Parser p(l);
+    for (const auto &[input, expected] : test_equasions) {
+      Lexer lexer(input);
+      Parser parser(lexer);
       Token token [[indeterminate]];
-      p.result(token);
+      parser.result(token);
 #ifdef CALC_TESTS_DEV_ENABLED // Development
       const auto is_issue = token.type == Token::Type::ISSUE;
 
@@ -101,13 +102,13 @@ std::string calc_tests() {
       const std::string_view formated_value(buffer_value.data(),
                                             value(token.number, buffer_value));
       const std::string_view formated_test(buffer_test.data(),
-                                           value(t.second, buffer_test));
+                                           value(expected, buffer_test));
 
-      const auto is_error = is_issue && std::isnan(t.second);
-      const auto is_nan = std::isnan(token.number) && std::isnan(t.second);
-      const auto is_equal = token.number == t.second;
+      const auto is_error = is_issue && std::isnan(expected);
+      const auto is_nan = std::isnan(token.number) && std::isnan(expected);
+      const auto is_equal = token.number == expected;
       const auto is_less_than_epsilon =
-          Identifiers::compare(token.number, t.second);
+          Identifiers::compare(token.number, expected);
       const auto is_normal = std::isnormal(token.number);
       const auto is_identical_output = formated_value == formated_test;
 
@@ -134,7 +135,7 @@ std::string calc_tests() {
                                                           "output = {}\n"
                                                           "{}\n"),
 
-                                                 passed ? "OK" : "FAILED", t.first,
+                                                 passed ? "OK" : "FAILED", input,
                                                           is_error,
                                                           is_nan,
                                                           is_equal,
@@ -142,7 +143,7 @@ std::string calc_tests() {
                                                           is_normal,
                                                           is_identical_output,
                                                           token.number,
-                                                          t.second,
+                                                          expected,
                                                is_issue ? "" : formated_value,
                                               !is_issue ? "" : formated_report
 );
@@ -159,22 +160,22 @@ std::string calc_tests() {
 #ifdef CALC_TESTS_DEV_ENABLED // Development
   output_end = binary_and_hex_parsing(output_end);
 
-  output_end =
-      fmt::format_to(output_end,
-                     FMT_COMPILE("Tests:\n"
-                                 " fegetround() == {}\n"
-                                 " passed: {},\n failed: {}\n"
-                                 " time is: {}ns per case."),
-                     round_name(std::fegetround()),
-                     tests.size() - static_cast<size_t>(failed), failed,
-                     std::chrono::duration_cast<std::chrono::nanoseconds>(
-                         (end - start) / tests.size())
-                         .count());
+  output_end = fmt::format_to(
+      output_end,
+      FMT_COMPILE("Tests:\n"
+                  " fegetround() == {}\n"
+                  " passed: {},\n failed: {}\n"
+                  " time is: {}ns per case."),
+      round_name(std::fegetround()),
+      static_cast<std::uint32_t>(test_equasions.size()) - failed, failed,
+      std::chrono::duration_cast<std::chrono::nanoseconds>(
+          (end - start) / test_equasions.size())
+          .count());
 #else // Performance
   output_end = fmt::format_to(
       output_end, FMT_COMPILE("Calc performance tests time is: {}ns per case."),
       std::chrono::duration_cast<std::chrono::nanoseconds>(
-          (end - start) / (tests.size() * count))
+          (end - start) / (test_equasions.size() * count))
           .count());
 #endif
 
@@ -182,4 +183,5 @@ std::string calc_tests() {
 
   return output;
 }
+} // namespace Calc
 #endif

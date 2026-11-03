@@ -208,6 +208,7 @@ not implemented yet
 #include "codata2022.hpp"
 #include "identifiers.hpp"
 
+namespace Calc {
 namespace Identifiers {
 template <const ParamCount> using WrappedFnImplArg = Value;
 
@@ -1171,3 +1172,4 @@ static const map ids = {
 [[nodiscard]] const map &get() noexcept { return ids; }
 
 } // namespace Identifiers
+} // namespace Calc

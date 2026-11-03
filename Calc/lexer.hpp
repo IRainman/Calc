@@ -6,6 +6,7 @@
 #define LEXER_HPP
 #include "token.hpp"
 
+namespace Calc {
 class Lexer {
 public:
   explicit Lexer(const std::string_view &data) noexcept
@@ -58,12 +59,12 @@ private:
    */
   void return_unparsable(Token &current) const noexcept;
 
-  
   const std::string_view::const_pointer _begin;
   const std::string_view::const_pointer _end;
   std::string_view::const_pointer _current;
   [[no_unique_address]] Token _delayed{Token::Type::ISSUE};
   [[no_unique_address]] Token::Type _previous = Token::Type::ISSUE;
 };
+} // namespace Calc
 
 #endif

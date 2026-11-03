@@ -5,7 +5,9 @@
  */
 
 #ifdef CALC_TESTS_ENABLED
-std::string calc_tests();
+namespace Calc {
+std::string tests();
+} // namespace Calc
 #endif
 
 #endif

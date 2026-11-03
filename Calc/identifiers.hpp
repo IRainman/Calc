@@ -5,6 +5,7 @@
 #ifndef IDENTIFIERS_HPP
 #define IDENTIFIERS_HPP
 
+namespace Calc {
 namespace Identifiers {
 struct Fn {
   [[no_unique_address]] Value (*const fn)(std::span<Value>);
@@ -49,5 +50,6 @@ using map = const std::unordered_map<std::string_view, const Fn>;
 [[nodiscard]] /*constexpr*/ Value pow(const Value x, const Value y) noexcept;
 
 [[nodiscard]] /*constexpr*/ bool compare(const Value a, const Value b) noexcept;
-}; // namespace Identifiers
+} // namespace Identifiers
+} // namespace Calc
 #endif

@@ -77,7 +77,7 @@ namespace GUI {
 #define NONCMESSAGES
 #define NOMDI
 #define NOSYSPARAMSINFO
-#ifndef CALC_SUPPORT_DPI_CHANGES
+#ifndef WinHE_SUPPORT_DPI_CHANGES
 #define NOWINABLE
 #endif
 #define NO_STATE_FLAGS
@@ -96,12 +96,12 @@ namespace GUI {
 #define OEMRESOURCE -OEM Resource values
 #define NOATOM -Atom Manager routines
 #define NOCLIPBOARD -Clipboard routines
-#ifndef CALC_SUPPORT_DARK_MODE
+#ifndef WinHE_SUPPORT_DARK_MODE
 #define NOCOLOR -Screen colors
 #endif
 //  #define NOCTLMGR -Control and Dialog routines
 #define NODRAWTEXT -DrawText() and DT_ *
-#if !defined(CALC_SUPPORT_DARK_MODE) && !defined(CALC_SUPPORT_DPI_CHANGES)
+#if !defined(WinHE_SUPPORT_DARK_MODE) && !defined(WinHE_SUPPORT_DPI_CHANGES)
 #define NOGDI -All GDI defines and routines
 #endif
 #define NOKERNEL -All KERNEL defines and routines
@@ -135,7 +135,7 @@ namespace GUI {
 #define NOPROGRESS Progress gas gauge.
 #define NOHOTKEY HotKey control
 #define NOHEADER Header bar control.
-#ifndef CALC_SUPPORT_DARK_MODE
+#ifndef WinHE_SUPPORT_DARK_MODE
 #define NOIMAGEAPIS ImageList apis.
 #endif
 #define NOLISTVIEW ListView control.
@@ -144,7 +144,7 @@ namespace GUI {
 #define NOANIMATE Animate control.
 #define NOBUTTON Button control.
 #define NOSTATIC Static control.
-#ifndef CALC_SUPPORT_EXTENDENT_STYLES
+#ifndef WinHE_SUPPORT_EXTENDENT_STYLES
 #define NOEDIT Edit control.
 #endif
 #define NOLISTBOX Listbox control.
@@ -201,11 +201,11 @@ static void __cdecl _setup_crt_leak_check() noexcept {
 #pragma warning(disable : 5039) // 'x': pointer or reference to potentially throwing function passed to 'extern "C"' function under -EHc. Undefined behavior may occur if this function throws an exception.
 // clang-format on
 #include <windows.h>
-#ifdef CALC_SUPPORT_LINK_WINDOW
+#ifdef WinHE_SUPPORT_LINK_WINDOW
 #include <commctrl.h>
 #include <shellapi.h>
 #endif
-#ifdef CALC_SUPPORT_DARK_MODE
+#ifdef WinHE_SUPPORT_DARK_MODE
 #include <dwmapi.h>
 #include <uxtheme.h>
 #endif
@@ -215,7 +215,7 @@ static void __cdecl _setup_crt_leak_check() noexcept {
  */
 typedef INT_PTR CALLBACK DlgProc(HWND, UINT, WPARAM, LPARAM) noexcept;
 
-#ifdef CALC_SUPPORT_EXTENDENT_STYLES
+#ifdef WinHE_SUPPORT_EXTENDENT_STYLES
 /**
  * Set window extended styles.
  */
@@ -252,7 +252,7 @@ constexpr static void set_text(const HWND window, LPCSTR const text,
   set_text(window, text, text + size);
 }
 
-#ifdef CALC_SUPPORT_SET_LIMIT_TEXT
+#ifdef WinHE_SUPPORT_SET_LIMIT_TEXT
 /**
  * Set window text limit
  * @see Edit
@@ -507,7 +507,7 @@ struct RegWrite {
   constexpr explicit RegWrite(const HKEY root, const char *subkey) noexcept {
     RegCreateKeyExA(root, subkey, FALSE, nullptr,
                     REG_OPTION_NON_VOLATILE
-#ifdef CALC_SUPPORT_DEVIRTUALIZED_REG
+#ifdef WinHE_SUPPORT_DEVIRTUALIZED_REG
                         | REG_OPTION_DONT_VIRTUALIZE
 #endif
                     ,
@@ -577,12 +577,12 @@ private:
   HKEY key;
 };
 
-#ifdef CALC_SUPPORT_DPI_CHANGES
+#ifdef WinHE_SUPPORT_DPI_CHANGES
 /**
  * @return dpi for window
  */
 [[nodiscard]] constexpr static auto dpi(const HWND window) noexcept {
-#ifdef CALC_SUPPORT_DPI_FOR_WINDOW
+#ifdef WinHE_SUPPORT_DPI_FOR_WINDOW
   // Use per-window DPI
   return GetDpiForWindow(window);
 #else
@@ -616,7 +616,7 @@ private:
 };
 #endif
 
-#ifdef CALC_SUPPORT_DARK_MODE
+#ifdef WinHE_SUPPORT_DARK_MODE
 // clang-format off
 /**
  * Dynamic colors API for Windows 10 1903+.
@@ -945,9 +945,7 @@ private:
 };
 #endif
 
-/**
- * Helper to work with points in window layout
- */
+/// Helper to work with points in Layout
 struct Point final : tagPOINT {
   constexpr Point() noexcept { /*no init here*/ };
 
@@ -957,9 +955,7 @@ struct Point final : tagPOINT {
   }
 };
 
-/**
- * Helper to work with rectangles in window layout
- */
+/// Helper to work with rectangles in Layout
 struct Rect final : tagRECT {
   constexpr Rect() noexcept { /*no init here*/ };
 
@@ -983,9 +979,7 @@ struct Rect final : tagRECT {
   [[nodiscard]] constexpr auto height() const noexcept { return bottom - top; }
 };
 
-/**
- * Helper for resize Layout
- */
+/// Helper for resize Layout
 enum class Anchor : BYTE {
   None = 0,
   HorizontalStretch = 1 << 0,
@@ -1451,7 +1445,7 @@ private:
   [[no_unique_address]] Constraints<elements> _constraints [[indeterminate]];
 };
 
-#ifdef CALC_SUPPORT_DARK_MODE_TEST_WIN32_HELPER_REALIZATION
+#ifdef WinHE_SUPPORT_DARK_MODE_TEST_WIN32_HELPER_REALIZATION
 namespace Colors {
 
 /**
@@ -1511,26 +1505,20 @@ class Colors final {
       [[indeterminate]];
 
 public:
-  /**
-   * Get a system color by its COLOR_* index.
-   */
+  /// Get a system color by its COLOR_* index.
   [[nodiscard]] constexpr const COLORREF &
   operator[](const INT index) const noexcept {
     return _values[index];
   }
 
-  /**
-   * Get a mutable system color by its COLOR_* index.
-   */
+  /// Get a mutable system color by its COLOR_* index.
   [[nodiscard]] constexpr COLORREF &operator[](const INT index) noexcept {
     return _values[index];
   }
 
-  [[nodiscard]] constexpr LPCOLORREF data() const noexcept {
-    return _values.data();
-  }
+  [[nodiscard]] constexpr LPCOLORREF data() noexcept { return _values.data(); }
 
-  [[nodiscard]] constexpr INT size() const noexcept { return _values.size(); }
+  [[nodiscard]] constexpr int size() const noexcept { return _values.size(); }
 };
 
 /**
@@ -1558,8 +1546,8 @@ public:
  */
 [[nodiscard]]
 constexpr static bool set_colors(Colors &&new_values) noexcept {
-  return SetSysColors(static_cast<INT>(indexes.size()), indexes.data(),
-                      new_values.data()) != FALSE;
+  return SetSysColors(new_values.size(), indexes.data(), new_values.data()) !=
+         FALSE;
 }
 
 /**
@@ -1662,7 +1650,7 @@ argb_to_colorref(const DWORD value) noexcept {
 
 } // namespace Colors
 
-#ifdef CALC_SUPPORT_WINDOWS_VERSION_CHECK
+#ifdef WinHE_SUPPORT_WINDOWS_VERSION_CHECK
 constexpr static... check_system_version(...) noexcept {
   auto ntdll = GetModuleHandleA("ntdll.dll");
   // clang-format off

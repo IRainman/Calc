@@ -6,6 +6,7 @@
 
 #include "lexer.hpp"
 
+namespace Calc {
 namespace {
 const auto &ids = Identifiers::get();
 };
@@ -175,3 +176,4 @@ void Lexer::next(Token &current) noexcept {
 
   return_result(current);
 }
+} // namespace Calc

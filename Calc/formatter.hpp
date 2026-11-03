@@ -7,8 +7,12 @@
 
 #include "token.hpp"
 
+namespace Calc {
+
 char *value(const Value &value, Result &ret) noexcept;
 
 char *result(const Token &value, Result &ret) noexcept;
+
+} // namespace Calc
 
 #endif

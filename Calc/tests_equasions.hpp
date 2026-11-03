@@ -7,11 +7,12 @@
 
 #ifdef CALC_TESTS_ENABLED
 
+namespace Calc {
 /**
  * Test cases for Calc
  */
 // clang-format off
-static constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>({
+static constexpr auto test_equasions = std::to_array<std::pair<std::string_view, Value>>({
 	// syntax errors should produce error:
 	{ "(((((((((((((((((((((((((((((((((((((((((((((((((",	std::numeric_limits<Value>::quiet_NaN() },
 	{ "()",													std::numeric_limits<Value>::quiet_NaN() },
@@ -650,6 +651,7 @@ static constexpr auto tests = std::to_array<std::pair<std::string_view, Value>>(
 	{ "distance(1, 1, 2, 3)", 6.0 },
 });
 // clang-format on
+} // namespace Calc
 
 #endif
 #endif

@@ -52,7 +52,7 @@ class CalcApp {
 
     /// @see https://learn.microsoft.com/windows/win32/controls/em-limittext
     static constexpr UINT input_max_text_length =
-#ifdef CALC_SUPPORT_SET_LIMIT_TEXT
+#ifdef WinHE_SUPPORT_SET_LIMIT_TEXT
         128 * 1024;
 #else
         // max is 32k symbols for Edit control and can't be changed:
@@ -75,19 +75,19 @@ public:
 #ifdef _DEBUG
     _setup_crt_leak_check();
 #endif
-#ifdef CALC_SUPPORT_DARK_MODE
+#ifdef WinHE_SUPPORT_DARK_MODE
     init_uxtheme_callers();
 #endif
-#ifdef CALC_SUPPORT_DPI_CHANGES
+#ifdef WinHE_SUPPORT_DPI_CHANGES
     /**
      * Calc is system DPI aware. It for the DPI value once at start. If the DPI
      * changes application will be automatically scaled up or down by the
-     * system. #ifdef CALC_SUPPORT_DPI_FOR_WINDOW
+     * system. #ifdef WinHE_SUPPORT_DPI_FOR_WINDOW
      * SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
      */
     SetProcessDPIAware();
 #endif
-#ifdef CALC_SUPPORT_AUTO_RESTART
+#ifdef WinHE_SUPPORT_AUTO_RESTART
     /**
      * Calc automatically restarted after a crash, system shutdown or reboot or
      * user session end.
@@ -126,25 +126,25 @@ public:
     if (LOWORD(wP) == IDC_BUTTON_CALC && HIWORD(wP) == BN_CLICKED) {
       const EditView input(_layout.handle(0));
 
-      Token token [[indeterminate]];
+      Calc::Token token [[indeterminate]];
 #ifdef CALC_SUPPORT_UNICODE_INPUT
       Normalizer to_ascii(input.text(), input.length(), _equasion);
       if (to_ascii.failed()) [[unlikely]] {
         token.position = to_ascii.normalized();
-        issue(token, Issue::unparsable);
+        issue(token, Calc::Issue::unparsable);
 #else
       input.read(_equasion);
       if (input.length() != _equasion.length()) [[unlikely]] {
         token.position = _equasion.length();
-        issue(token, Issue::unparsable);
+        issue(token, Calc::Issue::unparsable);
 #endif
       } else {
-        Lexer lexer(_equasion);
-        Parser parser(lexer);
+        Calc::Lexer lexer(_equasion);
+        Calc::Parser parser(lexer);
         parser.result(token);
       }
 
-      Result text [[indeterminate]];
+      Calc::Result text [[indeterminate]];
       set_result(text.data(), result(token, text));
     }
 
@@ -192,11 +192,11 @@ public:
     About::add_menu_to_system_menu(main_window);
 
     layout_init(main_window);
-#ifdef CALC_SUPPORT_EXTENDENT_STYLES
+#ifdef WinHE_SUPPORT_EXTENDENT_STYLES
     set_extended_style(_layout.handle(1), ES_EX_ALLOWEOL_ALL);
     set_extended_style(_layout.handle(0), ES_EX_ALLOWEOL_ALL);
 #endif
-#ifdef CALC_SUPPORT_SET_LIMIT_TEXT
+#ifdef WinHE_SUPPORT_SET_LIMIT_TEXT
     set_text_limit(_layout.handle(0), cfg::input_max_text_length);
 #endif
     // Allocate user input memory nearby
@@ -235,7 +235,7 @@ public:
    */
   constexpr inline void layout_init(const HWND main_window) noexcept {
     // clang-format off
-#ifdef CALC_SUPPORT_DPI_CHANGES
+#ifdef WinHE_SUPPORT_DPI_CHANGES
     _dpi = dpi(main_window);
 
     _layout.init_min_sizes(main_window, physical(cfg::min_width, _dpi), physical(cfg::min_height, _dpi));
@@ -249,7 +249,7 @@ public:
                        static_assert(3 == cfg::elements);
     // clang-format on
   }
-#ifdef CALC_SUPPORT_DARK_MODE
+#ifdef WinHE_SUPPORT_DARK_MODE
   [[nodiscard]] constexpr inline auto &theme() noexcept { return _theme; }
 #endif
   [[nodiscard]] constexpr inline auto &about() noexcept { return _about; }
@@ -351,7 +351,7 @@ private:
 #ifndef CALC_TESTS_ENABLED
     input.set_size(reg.read("input", input.data(), input.size()));
 #else
-    const auto tests = calc_tests();
+    const auto tests = Calc::tests();
     input.write(tests.data(), static_cast<int>(tests.size()));
 #endif
     const auto flags = reg.read("flags");
@@ -361,7 +361,7 @@ private:
     const auto top = reg.read("top");
     const auto right = reg.read("right");
     const auto bottom = reg.read("bottom");
-#ifdef CALC_SUPPORT_DPI_CHANGES
+#ifdef WinHE_SUPPORT_DPI_CHANGES
     const auto saved_dpi = reg.read("savedDpi");
 #endif
     WINDOWPLACEMENT wp [[indeterminate]];
@@ -371,7 +371,7 @@ private:
 
     if (left && top && right && bottom) {
       // -> use saved position
-#ifdef CALC_SUPPORT_DPI_CHANGES
+#ifdef WinHE_SUPPORT_DPI_CHANGES
       if (saved_dpi) {
         // -> use with saved dpi
         const auto dpi = *saved_dpi;
@@ -386,12 +386,12 @@ private:
         wp.rcNormalPosition.top = *top;
         wp.rcNormalPosition.right = *right;
         wp.rcNormalPosition.bottom = *bottom;
-#ifdef CALC_SUPPORT_DPI_CHANGES
+#ifdef WinHE_SUPPORT_DPI_CHANGES
       }
 #endif
     } else {
       // -> use default position
-#ifdef CALC_SUPPORT_DPI_CHANGES
+#ifdef WinHE_SUPPORT_DPI_CHANGES
       const auto shift = physical(cfg::default_shift, _dpi);
 #else
       const auto &shift = cfg::default_shift;
@@ -419,7 +419,7 @@ private:
     GetWindowPlacement(main_window, &wp);
     reg.write("flags", wp.flags);
     reg.write("showCmd", wp.showCmd);
-#ifdef CALC_SUPPORT_DPI_CHANGES
+#ifdef WinHE_SUPPORT_DPI_CHANGES
     reg.write("left", logical(wp.rcNormalPosition.left, _dpi));
     reg.write("top", logical(wp.rcNormalPosition.top, _dpi));
     reg.write("right", logical(wp.rcNormalPosition.right, _dpi));
@@ -464,7 +464,7 @@ private:
         return FALSE;
       }
     }
-#ifdef CALC_SUPPORT_LINK_WINDOW
+#ifdef WinHE_SUPPORT_LINK_WINDOW
     /**
      * Open homepage of the Calc
      */
@@ -510,10 +510,10 @@ private:
   [[no_unique_address]] std::string _equasion [[indeterminate]];
 
   [[no_unique_address]] Layout<cfg::elements> _layout [[indeterminate]];
-#ifdef CALC_SUPPORT_DARK_MODE
+#ifdef WinHE_SUPPORT_DARK_MODE
   [[no_unique_address]] Theme _theme [[indeterminate]];
 #endif
-#ifdef CALC_SUPPORT_DPI_CHANGES
+#ifdef WinHE_SUPPORT_DPI_CHANGES
   [[no_unique_address]] UINT _dpi [[indeterminate]];
 #endif
 };
@@ -530,11 +530,11 @@ constexpr static INT_PTR CALLBACK about_proc(const HWND about_window,
   switch (message) {
   case WM_COMMAND:
     return gui.about().close(about_window, wParam);
-#ifdef CALC_SUPPORT_LINK_WINDOW
+#ifdef WinHE_SUPPORT_LINK_WINDOW
   case WM_NOTIFY:
     return gui.about().open_homepage(about_window, lParam);
 #endif
-#ifdef CALC_SUPPORT_DARK_MODE
+#ifdef WinHE_SUPPORT_DARK_MODE
   case WM_INITDIALOG:
     gui.theme().apply(about_window);
     return TRUE;
@@ -568,15 +568,15 @@ constexpr static INT_PTR CALLBACK main_proc(const HWND main_window,
   case WM_SIZE:
     return gui.resize(lParam);
   case WM_INITDIALOG:
-#ifdef CALC_SUPPORT_DARK_MODE
+#ifdef WinHE_SUPPORT_DARK_MODE
     gui.theme().init(main_window);
 #endif
     return gui.init(main_window, lParam);
-#ifdef CALC_SUPPORT_AUTO_RESTART
+#ifdef WinHE_SUPPORT_AUTO_RESTART
   case WM_ENDSESSION:
     return TRUE;
 #endif
-#ifdef CALC_SUPPORT_DARK_MODE
+#ifdef WinHE_SUPPORT_DARK_MODE
   case WM_CTLCOLORDLG:
     return gui.theme().dialog_background();
   case WM_CTLCOLOREDIT:
@@ -616,13 +616,13 @@ int WINAPI WinMain(const HINSTANCE instance, const HINSTANCE /*prev_instance*/,
     "/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #endif
 
-#ifdef CALC_SUPPORT_LINK_WINDOW
+#ifdef WinHE_SUPPORT_LINK_WINDOW
 #pragma comment(lib, "comctl32.lib")
 #endif
 
 #pragma comment(lib, "user32.lib")
 
-#ifdef CALC_SUPPORT_DARK_MODE
+#ifdef WinHE_SUPPORT_DARK_MODE
 #pragma comment(lib, "dwmapi.lib")
 #pragma comment(lib, "uxtheme.lib")
 #endif

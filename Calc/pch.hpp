@@ -64,7 +64,7 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 #include <optional> // Win32 GUI (RegRead)
 #include <string>   // Win32 GUI (CalcApp, Normalizer)
 #else
-#include <iostream> // CUI for non-Windows platforms
+#include <iostream> // Simple CUI for non-Windows platforms
 #endif
 
 #include <array>         // Calc and Win32 GUI (Layout)
@@ -92,6 +92,7 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 #warning "128-bit float type isn't supported by zmij. The library convert any output values to 64-bit double."
 #endif
 //#define ZMIJ_OPTIMIZE_SIZE 0 // Give best result. Don't need to use ZMIJ_OPTIMIZE_SIZE 1
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4100) // unreferenced formal parameter
 #pragma warning(disable : 4189) // local variable is initialized but not referenced
@@ -105,9 +106,12 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 #pragma warning(disable : 4459) // declaration of 'x' hides global declaration
 #pragma warning(disable : 4804) // 'operator': unsafe use of type 'type_x' in operation
 #pragma warning(disable : 5245) // anonymous-namespace 'x': unreferenced function with internal linkage has been removed
+#endif
 // clang-format on
 #include "../../zmij/zmij.cc"
+#ifdef _MSC_VER
 #pragma warning(pop)
+#endif
 
 //---------------------------------------------------------------------------
 // fmt compile options:
@@ -133,13 +137,17 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 #define FMT_USE_LOCALE 0
 #define FMT_UNICODE 0
 #define FMT_ENFORCE_COMPILE_STRING // used because otherwise fmt produces much larger code.
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4061) // enumerator 'x' in switch of enum 'y' is not explicitly handled by a case label
 #pragma warning(disable : 4574) // 'x' is defined to be 'n': did you mean to use '#if x'?
 #pragma warning(disable : 4582) // constructor is not implicitly called
+#endif
 // clang-format on
 #include "../../fmt/include/fmt/compile.h"
+#ifdef _MSC_VER
 #pragma warning(pop)
+#endif
 
 //---------------------------------------------------------------------------
 // fast_float compile options:
@@ -161,20 +169,21 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 // TODO: add simdutf compile options here? Or make simdutf a shared library?
 #endif
 //---------------------------------------------------------------------------
-// namespace Calc {
+namespace Calc {
 /**
  * Types using for calculation.
  */
 // maximum 65535 symbols in the input equation, it's enough for any human input.
+// Unfortunately it's not enough for developmenet testing. For testing we use
+// larger input, but for production it's not needed.
 using EquationPosition = std::uint_fast16_t;
 using ParamCount = std::uint_fast8_t;
 using Integer = std::int_fast64_t;
 using UInteger = std::uint_fast64_t;
 
 #if _DEBUG && __STDCPP_FLOAT128_T__ == 1
-using Value = std::float128_t;
 #warning "WIP: Calc is using 64-bit double implementation in many places."
-
+using Value = std::float128_t;
 #define CALC_USED_128_BIT_FLOAT 1
 constexpr Value huge_value_precision = 1e33;
 constexpr Value small_value_precision = 1e-33;
@@ -213,6 +222,6 @@ using Result = std::array<char,
 #endif
                           >;
 //---------------------------------------------------------------------------
-//} // namespace Calc
+} // namespace Calc
 
 #endif

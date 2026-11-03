@@ -7,6 +7,7 @@
 
 #include "identifiers.hpp"
 
+namespace Calc {
 enum class Issue : ParamCount {
   unparsable = 0,
   extraneous_input = 1,
@@ -83,5 +84,6 @@ inline void issue(Token &current, const Issue index) noexcept {
   current.type = Token::Type::ISSUE;
   current.index = index;
 }
+} // namespace Calc
 
 #endif

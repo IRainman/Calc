@@ -6,6 +6,7 @@
 
 #include "parser.hpp"
 
+namespace Calc {
 namespace {
 const auto &ids = Identifiers::get();
 };
@@ -313,6 +314,7 @@ void Parser::function(Token &result) noexcept {
     return;
   }
 }
+} // namespace Calc
 
 #ifdef _MSC_VER
 #pragma warning(pop)

@@ -7,6 +7,7 @@
 
 #include "lexer.hpp"
 
+namespace Calc {
 class Parser {
 public:
   /**
@@ -27,9 +28,9 @@ public:
    *        | CONST
    *        | FUNCT
    *        ;
-   * 
+   *
    * subexpression
-   * 
+   *
    * constant
    *
    * function = FUNCT '(' parameters ')'
@@ -74,5 +75,6 @@ private:
   [[no_unique_address]] Token _current [[indeterminate]];
   [[no_unique_address]] Lexer &_lexer;
 };
+} // namespace Calc
 
 #endif

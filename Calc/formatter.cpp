@@ -6,9 +6,9 @@
 
 #include "formatter.hpp"
 
+namespace Calc {
 #ifdef CALC_SUPPORT_FRACTIONAL_OUTPUT
-
-// Function to convert decimal to fraction
+/// Function to convert decimal to fraction
 constexpr static std::pair<Integer, Integer> decimalToFraction(Value number) {
   if (std::isnan(number) || std::isinf(number))
     return {0, 1};
@@ -19,15 +19,11 @@ constexpr static std::pair<Integer, Integer> decimalToFraction(Value number) {
   // Fetch fractional part of the decimal
   Value fVal = number - intVal;
 
-  // Consider precision value to
-  // convert fractional part to
-  // integral equivalent
+  // Consider precision value to convert fractional part to integral equivalent
   constexpr Integer value = 1000000000000000;
   constexpr Integer limit = 100000000000000;
 
-  // Calculate GCD of integral
-  // equivalent of fractional
-  // part and precision value
+  // Calculate GCD of integral equivalent of fractional part and precision value
   Integer gcdVal =
       std::gcd(static_cast<Integer>(std::round(fVal * value)), value);
 
@@ -70,3 +66,5 @@ char *result(const Token &token, Result &ret) noexcept {
     return value(token.number, ret);
   }
 }
+
+} // namespace Calc
