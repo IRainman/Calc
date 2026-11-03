@@ -135,7 +135,7 @@ issue_expected_number:
 void Parser::expr_2(Token &result) noexcept {
   ParamCount count = 0;
   std::array<Token, std::numeric_limits<ParamCount>::max()> tokens
-      [[indeterminate]];
+      [[indeterminate]]; // potential maximum: 2^16/(1+1) = 32768
   do {
     expr_1(tokens[count]);
     if (_current.type == Token::Type::POW) {
@@ -247,14 +247,14 @@ void Parser::subexpression(Token &result) noexcept {
 
 void Parser::constant(Token &result) noexcept {
   const auto &[caller, _] = _current.identifier->second;
-  result.type = Token::Type::NUM;
   result.number = caller({});
+  result.position = _current.position;
+  result.type = Token::Type::NUM;
   advance();
 }
 
 void Parser::number(Token &result) noexcept {
-  result.type = Token::Type::NUM;
-  result.number = _current.number;
+  result = _current;
   advance();
 }
 
@@ -266,7 +266,7 @@ void Parser::function(Token &result) noexcept {
     const auto &[caller, check] = result.identifier->second;
     ParamCount count = 0;
     std::array<Token, std::numeric_limits<ParamCount>::max()> parameters
-        [[indeterminate]];
+        [[indeterminate]]; // potential maximum: 2^16/(1+1)-1-1 = 32766
 
     do {
       expr_4(parameters[count]);
@@ -275,8 +275,7 @@ void Parser::function(Token &result) noexcept {
       case Token::Type::RPAREN: {
         advance();
         if (check.params_count_is_valid(count)) {
-          std::array<Value, std::numeric_limits<ParamCount>::max()> values
-              [[indeterminate]];
+          std::array<Value, parameters.size()> values [[indeterminate]];
           for (ParamCount i = 0; i != count; ++i) {
             if (parameters[i].type == Token::Type::NUM) {
               values[i] = parameters[i].number;

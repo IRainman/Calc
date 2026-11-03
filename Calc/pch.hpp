@@ -88,7 +88,7 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 // Zmij compile options:
 // clang-format off
 // Tests time is : 81207ms. Without Tests time is : 118164ms.
-#if CALC_USE_128_BIT_FLOAT
+#if CALC_USED_128_BIT_FLOAT
 #warning "128-bit float type isn't supported by zmij. The library convert any output values to 64-bit double."
 #endif
 //#define ZMIJ_OPTIMIZE_SIZE 0 // Give best result. Don't need to use ZMIJ_OPTIMIZE_SIZE 1
@@ -119,7 +119,7 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 #define FMT_USE_DOUBLE 0
 #define FMT_USE_FLOAT128 0
 #else
-#if CALC_USE_128_BIT_FLOAT
+#if CALC_USED_128_BIT_FLOAT
 #define FMT_USE_DOUBLE 0
 #define FMT_USE_FLOAT128 1
 #else
@@ -144,7 +144,7 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 //---------------------------------------------------------------------------
 // fast_float compile options:
 // clang-format off
-#if CALC_USE_128_BIT_FLOAT
+#if CALC_USED_128_BIT_FLOAT
 #warning "128-bit float type isn't supported by fast_float. The library convert any user input values to 64-bit double."
 #endif
 // https://github.com/fastfloat/fast_float/pull/307
@@ -156,11 +156,16 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 // clang-format on
 #include "../../fast_float/include/fast_float/fast_float.h"
 
+//---------------------------------------------------------------------------
+#ifdef CALC_USED_SIMDUTF
+// TODO: add simdutf compile options here? Or make simdutf a shared library?
+#endif
+//---------------------------------------------------------------------------
 // namespace Calc {
 /**
  * Types using for calculation.
  */
-using EquationSize = std::size_t;
+// maximum 65535 symbols in the input equation, it's enough for any human input.
 using EquationPosition = std::uint_fast16_t;
 using ParamCount = std::uint_fast8_t;
 using Integer = std::int_fast64_t;
@@ -170,7 +175,7 @@ using UInteger = std::uint_fast64_t;
 using Value = std::float128_t;
 #warning "WIP: Calc is using 64-bit double implementation in many places."
 
-#define CALC_USE_128_BIT_FLOAT 1
+#define CALC_USED_128_BIT_FLOAT 1
 constexpr Value huge_value_precision = 1e33;
 constexpr Value small_value_precision = 1e-33;
 #else
@@ -180,13 +185,15 @@ using Value = std::float64_t;
 using Value = double;
 #endif
 
-#define CALC_USE_128_BIT_FLOAT 0
+#define CALC_USED_128_BIT_FLOAT 0
 constexpr Value huge_value_precision = 1e15;
 constexpr Value small_value_precision = 1e-15;
 constexpr uint8_t exponent_precision = 3;
 #endif
 constexpr uint8_t output_precision = std::numeric_limits<Value>::digits10;
-
+#ifdef CALC_TEST_EQUATION_SOLVER
+using Complex = std::complex<Value>;
+#endif
 //---------------------------------------------------------------------------
 /**
  * Stack type for result formatting

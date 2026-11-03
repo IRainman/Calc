@@ -15,7 +15,7 @@
 #endif
 //---------------------------------------------------------------------------
 #ifdef CALC_TESTS_DEV_ENABLED
-// TODO
+// TODO?
 // #define CALC_TEST_EQUATION_SOLVER // WIP
 //---------------------------------------------------------------------------
 // TODO?
@@ -24,7 +24,7 @@
 // TODO?
 // CALC_USED_CONDITIONS
 #ifdef CALC_USED_CONDITIONS
-// CALC_USED_EQUALS_OPERATORS
+// CALC_USED_EQUALS_OPERATORS // WIP
 // CALC_USED_CYCLES
 #endif
 //---------------------------------------------------------------------------
@@ -38,5 +38,8 @@
 #ifdef _WIN32
 #define CALC_SUPPORT_UNICODE_INPUT
 #endif
+
+// TODO:
+// #define CALC_USED_SIMDUTF
 //---------------------------------------------------------------------------
 #endif

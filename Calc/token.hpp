@@ -57,11 +57,11 @@ struct Token {
     // If token is a number this is the value of it.
     [[no_unique_address]] Value number [[indeterminate]];
 
-    // If token is a identifier or a constant, there is a pointer to it.
+    // If token is a function or a constant, there is a pointer to it.
     [[no_unique_address]] Identifiers::map::const_pointer identifier
         [[indeterminate]];
 
-    // If token is an error, there is a index of message for it.
+    // If token is an error, there is an index of the message for it.
     [[no_unique_address]] Issue index [[indeterminate]];
   };
 

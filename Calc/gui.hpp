@@ -62,8 +62,9 @@ namespace GUI {
 /**
  * Disable rarely-used stuff from Windows headers
  */
-
-// #define NOAPISET // MultiByteToWideChar, WideCharToMultiByte
+#ifdef CALC_USED_SIMDUTF
+#define NOAPISET // MultiByteToWideChar, WideCharToMultiByte
+#endif
 #define NODDEMLSPY
 #define NO_COMMCTRL_DA
 #define NOWINBASEINTERLOCK
@@ -312,9 +313,13 @@ public:
   constexpr void read(std::string &output) const noexcept {
     assert(length() <= output.capacity());
     output.resize(output.capacity());
+#ifdef CALC_USED_SIMDUTF
+    // TODO use simdutf::convert_utf16_to_utf8 in the shared library.
+#else
     output.resize(WideCharToMultiByte(CP_UTF8, 0, text(), length(),
                                       output.data(), output.capacity(), NULL,
                                       NULL));
+#endif
   }
 
   /**
@@ -415,8 +420,12 @@ public:
   constexpr void write(LPCSTR const new_text,
                        const UINT new_length) const noexcept {
     assert(new_length <= length());
+#ifdef CALC_USED_SIMDUTF
+    // TODO use simdutf::convert_utf8_to_utf16 in the shared library.
+#else
     set_length(MultiByteToWideChar(CP_UTF8, 0, new_text, new_length, text(),
                                    length()));
+#endif
   }
 
   /**
@@ -447,9 +456,13 @@ public:
   constexpr auto &read(std::string &output) const noexcept {
     assert(length() <= output.capacity());
     output.resize(output.capacity());
+#ifdef CALC_USED_SIMDUTF
+    // TODO use simdutf::convert_utf16_to_utf8 in the shared library.
+#else
     output.resize(WideCharToMultiByte(CP_UTF8, 0, text(), length(),
                                       output.data(), output.capacity(), nullptr,
                                       nullptr));
+#endif
     return output;
   }
 

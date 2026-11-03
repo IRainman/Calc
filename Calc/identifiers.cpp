@@ -694,7 +694,7 @@ distance(std::span<Value> params) noexcept {
 [[nodiscard]] /*constexpr*/ static auto solve_quadratic(Value a, Value b,
                                                         Value c) noexcept {
   // Complex roots for cases where discriminant is negative
-  std::array<std::complex<Value>, 2> roots;
+  std::vector<Complex> roots;
 
   // Calculate discriminant
   const Value discriminant = pow(b, 2) - 4 * a * c;
@@ -709,7 +709,7 @@ distance(std::span<Value> params) noexcept {
     roots[1] = (-b - sqrt(discriminant)) / (2 * a);
   } else {
     // One complex root
-    roots[0] = std::complex<Value>(-b / (2 * a), sqrt(-discriminant) / (2 * a));
+    roots[0] = Complex(-b / (2 * a), sqrt(-discriminant) / (2 * a));
   }
   return roots;
 }
@@ -728,7 +728,7 @@ distance(std::span<Value> params) noexcept {
   const Value discriminant = pow(R, 2) - pow(Q, 3);
 
   // Complex roots for cases where discriminant is negative
-  std::array<std::complex<Value>, 3> roots;
+  std::vector<Complex> roots;
 
   const Value sqrtQ = sqrt(Q);
   if (compare(discriminant, 0)) {
