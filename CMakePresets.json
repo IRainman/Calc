@@ -1,0 +1,242 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Kitware/CMake/v4.3.0/Help/manual/presets/schema.json",
+  "version": 11,
+  "cmakeMinimumRequired": {
+    "major": 4,
+    "minor": 3,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "windows-msvc-x64",
+      "displayName": "Windows / MSVC / x64",
+      "description": "Visual Studio 18 2026, MSVC v145, x64 target.",
+      "generator": "Visual Studio 18 2026",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      },
+      "architecture": "x64",
+      "toolset": "v145"
+    },
+    {
+      "name": "windows-msvc-win32",
+      "displayName": "Windows / MSVC / Win32",
+      "description": "Visual Studio 18 2026, MSVC v145, Win32 target.",
+      "generator": "Visual Studio 18 2026",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      },
+      "architecture": "Win32",
+      "toolset": "v145"
+    },
+    {
+      "name": "linux-gcc-x64",
+      "displayName": "Linux / GCC / x86-64-v2",
+      "description": "GCC; x86-64-v2; Debug and Release.",
+      "generator": "Ninja Multi-Config",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      },
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "linux-gcc-x86",
+      "displayName": "Linux / GCC / 32-bit Prescott / SSE3",
+      "description": "GCC; 32-bit Prescott / SSE3; Debug and Release.",
+      "generator": "Ninja Multi-Config",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      },
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "CMAKE_CXX_FLAGS": "-m32",
+        "CMAKE_EXE_LINKER_FLAGS": "-m32"
+      }
+    },
+    {
+      "name": "linux-clang-x64",
+      "displayName": "Linux / Clang / x86-64-v2",
+      "description": "Clang; x86-64-v2; Debug and Release.",
+      "generator": "Ninja Multi-Config",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      },
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "CMAKE_EXE_LINKER_FLAGS": "-fuse-ld=lld"
+      }
+    },
+    {
+      "name": "linux-clang-x86",
+      "displayName": "Linux / Clang / 32-bit Prescott / SSE3",
+      "description": "Clang; 32-bit Prescott / SSE3; Debug and Release.",
+      "generator": "Ninja Multi-Config",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      },
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "CMAKE_EXE_LINKER_FLAGS": "-m32 -fuse-ld=lld",
+        "CMAKE_CXX_FLAGS": "-m32"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "windows-msvc-x64-debug",
+      "configurePreset": "windows-msvc-x64",
+      "configuration": "Debug",
+      "jobs": 0,
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
+      "name": "windows-msvc-x64-release",
+      "configurePreset": "windows-msvc-x64",
+      "configuration": "Release",
+      "jobs": 0,
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
+      "name": "windows-msvc-win32-debug",
+      "configurePreset": "windows-msvc-win32",
+      "configuration": "Debug",
+      "jobs": 0,
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
+      "name": "windows-msvc-win32-release",
+      "configurePreset": "windows-msvc-win32",
+      "configuration": "Release",
+      "jobs": 0,
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
+      "name": "linux-gcc-x64-debug",
+      "configurePreset": "linux-gcc-x64",
+      "configuration": "Debug",
+      "jobs": 0,
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "linux-gcc-x64-release",
+      "configurePreset": "linux-gcc-x64",
+      "configuration": "Release",
+      "jobs": 0,
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "linux-gcc-x86-debug",
+      "configurePreset": "linux-gcc-x86",
+      "configuration": "Debug",
+      "jobs": 0,
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "linux-gcc-x86-release",
+      "configurePreset": "linux-gcc-x86",
+      "configuration": "Release",
+      "jobs": 0,
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "linux-clang-x64-debug",
+      "configurePreset": "linux-clang-x64",
+      "configuration": "Debug",
+      "jobs": 0,
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "linux-clang-x64-release",
+      "configurePreset": "linux-clang-x64",
+      "configuration": "Release",
+      "jobs": 0,
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "linux-clang-x86-debug",
+      "configurePreset": "linux-clang-x86",
+      "configuration": "Debug",
+      "jobs": 0,
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "linux-clang-x86-release",
+      "configurePreset": "linux-clang-x86",
+      "configuration": "Release",
+      "jobs": 0,
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    }
+  ]
+}

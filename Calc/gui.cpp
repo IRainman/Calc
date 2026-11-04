@@ -631,7 +631,7 @@ int WINAPI WinMain(const HINSTANCE instance, const HINSTANCE /*prev_instance*/,
 
 // TODO Qt
 
-[[noreturn]] int main(int /*argc*/, char * /*argv[]*/) noexcept {
+[[noreturn]] int main(int /*argc*/, char ** /*argv[]*/) noexcept {
   std::cerr << "Only CUI is currently implemented for this platform."
             << std::endl;
 
@@ -639,12 +639,12 @@ int WINAPI WinMain(const HINSTANCE instance, const HINSTANCE /*prev_instance*/,
   for (;;) {
     std::cout << "Enter expression: ";
     std::cin >> equasion;
-    Token token [[indeterminate]];
-    Lexer lexer(equasion);
-    Parser parser(lexer);
+    Calc::Token token [[indeterminate]];
+    Calc::Lexer lexer(equasion);
+    Calc::Parser parser(lexer);
     parser.result(token);
 
-    Result text [[indeterminate]];
+    Calc::Result text [[indeterminate]];
     std::cout << std::string_view(text.data(), result(token, text))
               << std::endl;
   }

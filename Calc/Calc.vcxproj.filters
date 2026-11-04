@@ -38,9 +38,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="flags.hpp">
-      <Filter>Headers</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Headers</Filter>
     </ClInclude>
@@ -78,6 +75,9 @@
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="gui_unicode_normalizer.hpp">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="types.hpp">
       <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>
