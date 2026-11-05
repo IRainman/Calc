@@ -126,11 +126,14 @@ jobs:
 
           test -f "$cache"
 
-          grep 'CMAKE_CXX_COMPILER_ID:' "$cache"
+          compiler_info="$(find "out/build/$PRESET/CMakeFiles" -name CMakeCXXCompiler.cmake -print -quit)"
+
+          test -n "$compiler_info"
+          grep 'CMAKE_CXX_COMPILER_ID' "$compiler_info"
           grep 'CMAKE_CXX_COMPILER:' "$cache"
           grep 'CMAKE_SIZEOF_VOID_P:' "$cache"
 
-          grep -q "CMAKE_CXX_COMPILER_ID:.*$EXPECTED_COMPILER" "$cache"
+          grep -q "set(CMAKE_CXX_COMPILER_ID \"$EXPECTED_COMPILER\")" "$compiler_info"
           grep -q 'CMAKE_SIZEOF_VOID_P:INTERNAL=8' "$cache"
 
       - name: Build Debug
