@@ -172,12 +172,12 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -Command ^
     "$cmakePath = Join-Path (Get-Location) 'CMakeLists.txt';" ^
     "$rc = [System.IO.File]::ReadAllText($rcPath);" ^
     "$cmake = [System.IO.File]::ReadAllText($cmakePath);" ^
-    "$rc = Replace-One $rc '(?m)^([ \t]*FILEVERSION[ \t]+)\d+,\d+,\d+,\d+([ \t]*)$' ('$1' + $numeric + '$2') 'FILEVERSION';" ^
-    "$rc = Replace-One $rc '(?m)^([ \t]*PRODUCTVERSION[ \t]+)\d+,\d+,\d+,\d+([ \t]*)$' ('$1' + $numeric + '$2') 'PRODUCTVERSION';" ^
+    "$rc = Replace-One $rc '(?m)^([ \t]*FILEVERSION[ \t]+)\d+,\d+,\d+,\d+([ \t\r]*)$' ('$1' + $numeric + '$2') 'FILEVERSION';" ^
+    "$rc = Replace-One $rc '(?m)^([ \t]*PRODUCTVERSION[ \t]+)\d+,\d+,\d+,\d+([ \t\r]*)$' ('$1' + $numeric + '$2') 'PRODUCTVERSION';" ^
     "$rc = Replace-One $rc '(VALUE[ \t]+\x22FileVersion\x22,[ \t]*\x22)\d+\.\d+\.\d+\.\d+(\x22)' ('$1' + $full + '$2') 'FileVersion';" ^
     "$rc = Replace-One $rc '(VALUE[ \t]+\x22ProductVersion\x22,[ \t]*\x22)\d+\.\d+\.\d+\.\d+(\x22)' ('$1' + $full + '$2') 'ProductVersion';" ^
     "$rc = Replace-One $rc '(CTEXT[ \t]+\x22Calc[ \t]+)\d+\.\d+\.\d+\.\d+(\x22)' ('$1' + $full + '$2') 'About-box version';" ^
-    "$cmake = Replace-One $cmake '(?m)^([ \t]*VERSION[ \t]+)\d+\.\d+\.\d+(\.\d+)?([ \t]*)$' ('$1' + $full + '$3') 'CMake project VERSION';" ^
+    "$cmake = Replace-One $cmake '(?m)^([ \t]*VERSION[ \t]+)\d+\.\d+\.\d+(\.\d+)?([ \t\r]*)$' ('$1' + $full + '$3') 'CMake project VERSION';" ^
     "[System.IO.File]::WriteAllText($rcPath, $rc, [System.Text.UTF8Encoding]::new($true));" ^
     "[System.IO.File]::WriteAllText($cmakePath, $cmake, [System.Text.UTF8Encoding]::new($false));" ^
     "Write-Host ('Updated Calc.rc and CMakeLists.txt to ' + $full);"
