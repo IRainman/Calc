@@ -4,27 +4,30 @@ set -euo pipefail
 
 usage() {
     cat <<'EOF'
-Usage: ./release.sh VERSION [COMMIT MESSAGE]
+Usage: ./release.sh [COMMIT MESSAGE]
 
-Examples:
-  ./release.sh 2.10.5
-  ./release.sh 2.10.5 "Prepare v2.10.5 release"
-
-VERSION must have the form MAJOR.MINOR.PATCH.
+The release version is generated from the system date as YYYY.MM.DD.0.
 EOF
     exit 1
 }
 
-if (( $# < 1 || $# > 2 )); then
+if (( $# > 1 )); then
     usage
 fi
 
-VERSION="$1"
-TAG="v$VERSION"
-MESSAGE="Prepare $TAG release"
-if (( $# == 2 )); then
-    MESSAGE="$2"
+DATE_VERSION="$(LC_ALL=C date +%Y.%m.%d)" || {
+    echo "ERROR: Unable to read the system date." >&2
+    exit 1
+}
+
+if [[ ! "$DATE_VERSION" =~ ^[0-9]{4}\.[0-9]{2}\.[0-9]{2}$ ]]; then
+    echo "ERROR: Unexpected system date format: $DATE_VERSION" >&2
+    exit 1
 fi
+
+VERSION="${DATE_VERSION}.0"
+TAG="v$VERSION"
+MESSAGE="${1:-Prepare $TAG release}"
 
 if ! git rev-parse --show-toplevel >/dev/null 2>&1; then
     echo "ERROR: Run this script from inside the Calc Git repository." >&2
@@ -38,26 +41,6 @@ BRANCH="$(git branch --show-current)"
 
 if [[ -z "$BRANCH" ]]; then
     echo "ERROR: HEAD is detached." >&2
-    exit 1
-fi
-
-if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-    echo "ERROR: Invalid version '$VERSION'; expected MAJOR.MINOR.PATCH." >&2
-    exit 1
-fi
-
-if ! python3 - "$VERSION" <<'PY'
-import re
-import sys
-
-parts = sys.argv[1].split(".")
-if len(parts) != 3 or not all(re.fullmatch(r"[0-9]+", part) for part in parts):
-    raise SystemExit("Invalid semantic version.")
-
-if any(int(part) > 65535 for part in parts):
-    raise SystemExit("Version components must be in the range 0..65535.")
-PY
-then
     exit 1
 fi
 
@@ -97,48 +80,43 @@ if [[ -n "$REMOTE_TAGS" ]]; then
     exit 1
 fi
 
-BUILD="$(
-    sed -n -E \
-        's/^[[:space:]]*FILEVERSION[[:space:]]+[0-9]+,[0-9]+,[0-9]+,([0-9]+)[[:space:]]*$/\1/p' \
-        "$RC_FILE"
-)"
-
-if [[ ! "$BUILD" =~ ^[0-9]+$ ]] || (( BUILD > 65535 )); then
-    echo "ERROR: Could not read a valid fourth FILEVERSION component from $RC_FILE." >&2
-    exit 1
-fi
-
 echo
 echo "========================================"
 echo "Calc release"
 echo "========================================"
 echo "Repository : $ROOT"
 echo "Branch     : $BRANCH"
-echo "Version    : $VERSION.$BUILD"
+echo "Version    : $VERSION"
 echo "Tag        : $TAG"
 echo "Commit     : $MESSAGE"
 echo
 
-python3 - "$VERSION" "$BUILD" "$RC_FILE" "$CMAKE_FILE" <<'PY'
+python3 - "$VERSION" "$RC_FILE" "$CMAKE_FILE" <<'PY'
 import codecs
 import re
 import sys
+from datetime import datetime
 from pathlib import Path
 
-version, build, rc_name, cmake_name = sys.argv[1:]
-parts = version.split(".")
+version, rc_name, cmake_name = sys.argv[1:]
 
-if len(parts) != 3 or any(not re.fullmatch(r"[0-9]+", p) for p in parts):
+parts = version.split(".")
+if len(parts) != 4 or parts[3] != "0":
+    raise SystemExit("Expected a four-component YYYY.MM.DD.0 version.")
+
+if any(not re.fullmatch(r"[0-9]+", part) for part in parts):
     raise SystemExit("Invalid version.")
 
-if any(int(p) > 65535 for p in parts) or not re.fullmatch(r"[0-9]+", build):
+try:
+    datetime.strptime(".".join(parts[:3]), "%Y.%m.%d")
+except ValueError as error:
+    raise SystemExit(f"Invalid date in version {version}: {error}") from error
+
+if any(int(part) > 65535 for part in parts):
     raise SystemExit("Version components must be in the range 0..65535.")
 
-if int(build) > 65535:
-    raise SystemExit("The FILEVERSION build component must be in the range 0..65535.")
-
-full_version = f"{version}.{build}"
-numeric_version = ",".join((*parts, build))
+full_version = version
+numeric_version = ",".join(str(int(part)) for part in parts)
 
 
 def read_utf8(path: Path):
@@ -221,7 +199,7 @@ git diff --check
 git diff -- "$RC_FILE" "$CMAKE_FILE"
 
 if git diff --quiet -- "$RC_FILE" "$CMAKE_FILE"; then
-    echo "ERROR: The requested version is already present; no files changed." >&2
+    echo "ERROR: The current version is already present; no files changed." >&2
     exit 1
 fi
 
