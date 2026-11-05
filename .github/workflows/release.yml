@@ -1,0 +1,607 @@
+name: Cross-platform Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing release tag, for example v2.10.5"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  build-windows:
+    name: Windows / MSVC / ${{ matrix.arch }}
+    runs-on: windows-2025-vs2026
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86
+            platform: Win32
+            msvc_arch: x86
+            output_dir: win32
+
+          - arch: x64
+            platform: x64
+            msvc_arch: x64
+            output_dir: x64
+
+    steps:
+      - name: Checkout Calc
+        uses: actions/checkout@v6
+        with:
+          path: Calc
+          ref: ${{ inputs.tag || github.ref }}
+          fetch-depth: 1
+
+      - name: Checkout fast_float
+        uses: actions/checkout@v6
+        with:
+          repository: IRainman/fast_float
+          ref: main
+          path: fast_float
+          persist-credentials: false
+
+      - name: Checkout fmt
+        uses: actions/checkout@v6
+        with:
+          repository: IRainman/fmt
+          ref: main
+          path: fmt
+          persist-credentials: false
+
+      - name: Checkout zmij
+        uses: actions/checkout@v6
+        with:
+          repository: IRainman/zmij
+          ref: main
+          path: zmij
+          persist-credentials: false
+
+      - name: Setup MSVC environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ${{ matrix.msvc_arch }}
+
+      - name: Verify toolchain and dependencies
+        shell: pwsh
+        run: |
+          Write-Host "Compiler:"
+          cl
+
+          if ($LASTEXITCODE -ne 0) {
+            throw "MSVC compiler is not available."
+          }
+
+          Write-Host ""
+          Write-Host "MSBuild:"
+          msbuild -version
+
+          if ($LASTEXITCODE -ne 0) {
+            throw "MSBuild is not available."
+          }
+
+          $required = @(
+            "fast_float\include\fast_float\fast_float.h",
+            "fmt\include\fmt\compile.h",
+            "zmij\zmij.cc"
+          )
+
+          foreach ($file in $required) {
+            if (-not (Test-Path $file -PathType Leaf)) {
+              throw "Required dependency file was not found: $file"
+            }
+          }
+
+      - name: Build Calc
+        working-directory: Calc
+        shell: pwsh
+        env:
+          PLATFORM: ${{ matrix.platform }}
+        run: |
+          $arguments = @(
+            "/m",
+            "/p:Configuration=Release",
+            "/p:Platform=$env:PLATFORM",
+            "/p:BuildProjectReferences=true",
+            "/verbosity:minimal"
+          )
+
+          & msbuild Calc.sln @arguments
+
+          if ($LASTEXITCODE -ne 0) {
+            throw "MSBuild failed for $env:PLATFORM."
+          }
+
+      - name: Locate build outputs
+        id: outputs
+        working-directory: Calc
+        shell: pwsh
+        env:
+          OUTPUT_DIR: ${{ matrix.output_dir }}
+        run: |
+          $outputDir = Join-Path $PWD "out\$env:OUTPUT_DIR"
+          $exe = Join-Path $outputDir "Calc.exe"
+          $pdb = Join-Path $outputDir "Calc.pdb"
+
+          foreach ($file in @($exe, $pdb)) {
+            if (-not (Test-Path $file -PathType Leaf)) {
+              Get-ChildItem $outputDir -ErrorAction SilentlyContinue |
+                Sort-Object Name |
+                Format-Table Name, Length
+
+              throw "Required build output was not produced: $file"
+            }
+
+            $item = Get-Item $file
+            Write-Host "$($item.FullName) ($($item.Length) bytes)"
+          }
+
+          "exe=$exe" >> $env:GITHUB_OUTPUT
+          "pdb=$pdb" >> $env:GITHUB_OUTPUT
+
+      - name: Prepare Windows release archives
+        working-directory: Calc
+        shell: pwsh
+        env:
+          ARCH: ${{ matrix.arch }}
+          EXE_PATH: ${{ steps.outputs.outputs.exe }}
+          PDB_PATH: ${{ steps.outputs.outputs.pdb }}
+        run: |
+          $releaseDir = Join-Path $PWD "release"
+
+          if (Test-Path $releaseDir) {
+            Remove-Item $releaseDir -Recurse -Force
+          }
+
+          New-Item -ItemType Directory -Force -Path $releaseDir | Out-Null
+
+          $exeZip = Join-Path $releaseDir "Calc-Windows-$env:ARCH.exe.zip"
+          $pdbZip = Join-Path $releaseDir "Calc-Windows-$env:ARCH.pdb.zip"
+
+          Compress-Archive -Path $env:EXE_PATH -DestinationPath $exeZip -CompressionLevel Optimal
+          Compress-Archive -Path $env:PDB_PATH -DestinationPath $pdbZip -CompressionLevel Optimal
+
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+
+          foreach ($archivePath in @($exeZip, $pdbZip)) {
+            $archive = [System.IO.Compression.ZipFile]::OpenRead($archivePath)
+
+            try {
+              if ($archive.Entries.Count -ne 1) {
+                throw "Archive must contain exactly one file: $archivePath"
+              }
+
+              $entry = $archive.Entries[0]
+              $expectedName = if ($archivePath -eq $exeZip) {
+                "Calc.exe"
+              }
+              else {
+                "Calc.pdb"
+              }
+
+              if ($entry.Name -ne $expectedName) {
+                throw "Expected $expectedName in $archivePath; found $($entry.FullName)"
+              }
+
+              Write-Host "Verified $archivePath"
+              Write-Host "  $($entry.FullName), $($entry.Length) bytes"
+            }
+            finally {
+              $archive.Dispose()
+            }
+          }
+
+      - name: Prepare source and dependency archive
+        if: matrix.arch == 'x64'
+        shell: pwsh
+        run: |
+          $sourceRoot = Join-Path $env:GITHUB_WORKSPACE "source-package"
+          $sourceDir = Join-Path $sourceRoot "source"
+          $releaseDir = Join-Path $env:GITHUB_WORKSPACE "Calc\release"
+
+          if (Test-Path $sourceRoot) {
+            Remove-Item $sourceRoot -Recurse -Force
+          }
+
+          New-Item -ItemType Directory -Force -Path $sourceDir | Out-Null
+
+          $repositories = @(
+            @{
+              Name = "Calc"
+              Path = "Calc"
+              Prefix = "Calc/"
+            },
+            @{
+              Name = "fast_float"
+              Path = "fast_float"
+              Prefix = "fast_float/"
+            },
+            @{
+              Name = "fmt"
+              Path = "fmt"
+              Prefix = "fmt/"
+            },
+            @{
+              Name = "zmij"
+              Path = "zmij"
+              Prefix = "zmij/"
+            }
+          )
+
+          $manifest = [System.Collections.Generic.List[string]]::new()
+          $manifest.Add("Calc source package")
+          $manifest.Add("")
+          $manifest.Add("Exact repository revisions exported into this archive:")
+          $manifest.Add("")
+
+          foreach ($repository in $repositories) {
+            $name = $repository.Name
+            $path = $repository.Path
+            $prefix = $repository.Prefix
+
+            if (-not (Test-Path (Join-Path $path ".git"))) {
+              throw "Not a Git checkout: $path"
+            }
+
+            $sha = (git -C $path rev-parse HEAD).Trim()
+
+            if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($sha)) {
+              throw "Unable to determine the Git revision for $name."
+            }
+
+            $remote = (git -C $path remote get-url origin 2>$null).Trim()
+
+            if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($remote)) {
+              $remote = "(origin URL unavailable)"
+            }
+
+            $manifest.Add($name)
+            $manifest.Add("  Repository: $remote")
+            $manifest.Add("  Commit:     $sha")
+            $manifest.Add("")
+
+            $archive = Join-Path $env:RUNNER_TEMP "$name-source.zip"
+
+            if (Test-Path $archive) {
+              Remove-Item $archive -Force
+            }
+
+            git -C $path archive --format=zip "--prefix=$prefix" "--output=$archive" HEAD
+
+            if ($LASTEXITCODE -ne 0 -or -not (Test-Path $archive)) {
+              throw "Unable to export source from $name."
+            }
+
+            Expand-Archive -LiteralPath $archive -DestinationPath $sourceDir -Force
+            Remove-Item $archive -Force
+          }
+
+          $manifestPath = Join-Path $sourceDir "SOURCE-VERSIONS.txt"
+          [System.IO.File]::WriteAllText(
+            $manifestPath,
+            ($manifest -join [Environment]::NewLine) + [Environment]::NewLine,
+            [System.Text.UTF8Encoding]::new($false)
+          )
+
+          $sourceArchive = Join-Path $releaseDir "Calc-source.zip"
+
+          if (Test-Path $sourceArchive) {
+            Remove-Item $sourceArchive -Force
+          }
+
+          Compress-Archive -Path "$sourceDir\*" -DestinationPath $sourceArchive -CompressionLevel Optimal
+
+          if (-not (Test-Path $sourceArchive -PathType Leaf)) {
+            throw "Source archive was not created: $sourceArchive"
+          }
+
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $archive = [System.IO.Compression.ZipFile]::OpenRead($sourceArchive)
+
+          try {
+            foreach ($prefix in @("Calc/", "fast_float/", "fmt/", "zmij/")) {
+              $found = $archive.Entries |
+                Where-Object { $_.FullName.StartsWith($prefix) } |
+                Select-Object -First 1
+
+              if ($null -eq $found) {
+                throw "Source archive is missing $prefix"
+              }
+            }
+
+            if (-not ($archive.Entries | Where-Object {
+              $_.FullName -eq "SOURCE-VERSIONS.txt"
+            })) {
+              throw "Source archive is missing SOURCE-VERSIONS.txt"
+            }
+          }
+          finally {
+            $archive.Dispose()
+          }
+
+          Write-Host "Created source archive:"
+          Get-Item $sourceArchive |
+            Format-Table FullName, Length
+
+      - name: Upload Windows assets
+        uses: actions/upload-artifact@v6
+        with:
+          name: Calc-Windows-${{ matrix.arch }}
+          path: |
+            Calc/release/Calc-Windows-${{ matrix.arch }}.exe.zip
+            Calc/release/Calc-Windows-${{ matrix.arch }}.pdb.zip
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 30
+
+      - name: Upload source archive
+        if: matrix.arch == 'x64'
+        uses: actions/upload-artifact@v6
+        with:
+          name: Calc-source
+          path: Calc/release/Calc-source.zip
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 30
+
+  build-linux:
+    name: Linux / ${{ matrix.compiler }} / x86-64-v2
+    runs-on: ubuntu-24.04
+
+    container:
+      image: cachyos/cachyos:latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - compiler: gcc
+            configure_preset: linux-gcc-x64
+            build_preset: linux-gcc-x64-release
+
+          - compiler: clang
+            configure_preset: linux-clang-x64
+            build_preset: linux-clang-x64-release
+
+    steps:
+      - name: Checkout Calc
+        uses: actions/checkout@v6
+        with:
+          path: Calc
+          ref: ${{ inputs.tag || github.ref }}
+          fetch-depth: 1
+
+      - name: Checkout fast_float
+        uses: actions/checkout@v6
+        with:
+          repository: IRainman/fast_float
+          ref: main
+          path: fast_float
+          persist-credentials: false
+
+      - name: Checkout fmt
+        uses: actions/checkout@v6
+        with:
+          repository: IRainman/fmt
+          ref: main
+          path: fmt
+          persist-credentials: false
+
+      - name: Checkout zmij
+        uses: actions/checkout@v6
+        with:
+          repository: IRainman/zmij
+          ref: main
+          path: zmij
+          persist-credentials: false
+
+      - name: Install build tools
+        shell: bash
+        run: |
+          set -eux
+
+          pacman -Syu --noconfirm --needed \
+            cmake \
+            gcc \
+            git \
+            clang \
+            llvm \
+            lld \
+            ninja \
+            tar
+
+      - name: Verify toolchain and dependencies
+        shell: bash
+        run: |
+          set -eux
+
+          cmake --version
+          ninja --version
+
+          test -f fast_float/include/fast_float/fast_float.h
+          test -f fmt/include/fmt/compile.h
+          test -f zmij/zmij.cc
+
+      - name: Configure
+        working-directory: Calc
+        shell: bash
+        env:
+          PRESET: ${{ matrix.configure_preset }}
+        run: |
+          set -eux
+
+          cmake --preset "$PRESET"
+
+      - name: Build Release
+        working-directory: Calc
+        shell: bash
+        env:
+          BUILD_PRESET: ${{ matrix.build_preset }}
+        run: |
+          set -eux
+
+          cmake --build --preset "$BUILD_PRESET" --verbose
+
+      - name: Package Linux executable
+        shell: bash
+        env:
+          COMPILER: ${{ matrix.compiler }}
+          CONFIGURE_PRESET: ${{ matrix.configure_preset }}
+        run: |
+          set -eux
+
+          executable="Calc/out/build/$CONFIGURE_PRESET/Release/Calc"
+
+          test -f "$executable"
+          test -x "$executable"
+
+          package_dir="$RUNNER_TEMP/Calc-Linux-$COMPILER"
+          package="$GITHUB_WORKSPACE/Calc-Linux-$COMPILER-x86-64-v2.tar.gz"
+
+          rm -rf "$package_dir" "$package"
+          mkdir -p "$package_dir"
+
+          cp "$executable" "$package_dir/Calc"
+
+          {
+            printf 'Calc Linux release\n'
+            printf 'Compiler: %s\n' "$COMPILER"
+            printf 'Architecture: x86-64-v2\n'
+            printf 'Calc commit: %s\n' "$(git -C Calc rev-parse HEAD)"
+          } > "$package_dir/BUILD-INFO.txt"
+
+          tar -czf "$package" -C "$package_dir" Calc BUILD-INFO.txt
+
+          tar -tzf "$package" | grep -Fx 'Calc'
+          tar -tzf "$package" | grep -Fx 'BUILD-INFO.txt'
+
+          ls -lh "$package"
+
+      - name: Upload Linux executable
+        uses: actions/upload-artifact@v6
+        with:
+          name: Calc-Linux-${{ matrix.compiler }}
+          path: Calc-Linux-${{ matrix.compiler }}-x86-64-v2.tar.gz
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 30
+
+  release:
+    name: Publish GitHub Release
+    needs:
+      - build-windows
+      - build-linux
+
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Validate release tag
+        id: release
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          set -euo pipefail
+
+          if [[ ! "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Invalid release tag: $RELEASE_TAG" >&2
+            exit 1
+          fi
+
+          echo "tag=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
+          echo "Release tag: $RELEASE_TAG"
+
+      - name: Download Windows x86 assets
+        uses: actions/download-artifact@v6
+        with:
+          name: Calc-Windows-x86
+          path: release/windows-x86
+
+      - name: Download Windows x64 assets
+        uses: actions/download-artifact@v6
+        with:
+          name: Calc-Windows-x64
+          path: release/windows-x64
+
+      - name: Download source archive
+        uses: actions/download-artifact@v6
+        with:
+          name: Calc-source
+          path: release/source
+
+      - name: Download Linux GCC asset
+        uses: actions/download-artifact@v6
+        with:
+          name: Calc-Linux-gcc
+          path: release/linux-gcc
+
+      - name: Download Linux Clang asset
+        uses: actions/download-artifact@v6
+        with:
+          name: Calc-Linux-clang
+          path: release/linux-clang
+
+      - name: Verify release assets
+        shell: bash
+        run: |
+          set -eux
+
+          set -- \
+            release/windows-x86/Calc-Windows-x86.exe.zip \
+            release/windows-x86/Calc-Windows-x86.pdb.zip \
+            release/windows-x64/Calc-Windows-x64.exe.zip \
+            release/windows-x64/Calc-Windows-x64.pdb.zip \
+            release/source/Calc-source.zip \
+            release/linux-gcc/Calc-Linux-gcc-x86-64-v2.tar.gz \
+            release/linux-clang/Calc-Linux-clang-x86-64-v2.tar.gz
+
+          for asset do
+            test -s "$asset"
+            ls -lh "$asset"
+          done
+
+      - name: Create or update GitHub Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          set -euo pipefail
+
+          set -- \
+            "$GITHUB_WORKSPACE/release/windows-x86/Calc-Windows-x86.exe.zip" \
+            "$GITHUB_WORKSPACE/release/windows-x64/Calc-Windows-x64.exe.zip" \
+            "$GITHUB_WORKSPACE/release/windows-x86/Calc-Windows-x86.pdb.zip" \
+            "$GITHUB_WORKSPACE/release/windows-x64/Calc-Windows-x64.pdb.zip" \
+            "$GITHUB_WORKSPACE/release/source/Calc-source.zip" \
+            "$GITHUB_WORKSPACE/release/linux-gcc/Calc-Linux-gcc-x86-64-v2.tar.gz" \
+            "$GITHUB_WORKSPACE/release/linux-clang/Calc-Linux-clang-x86-64-v2.tar.gz"
+
+          for asset do
+            test -s "$asset"
+          done
+
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" "$@" --clobber
+          else
+            gh release create "$RELEASE_TAG" \
+              --verify-tag \
+              --title "Calc $RELEASE_TAG" \
+              --generate-notes \
+              "$@"
+          fi
+
+          gh release view "$RELEASE_TAG"
