@@ -10,6 +10,11 @@ if "%~1"=="" (
     exit /b 1
 )
 
+set "ROOT="
+set "BRANCH="
+set "DIRTY="
+set "REMOTE_TAG="
+set "BUILD="
 set "VERSION=%~1"
 set "TAG=v%VERSION%"
 set "MESSAGE=%~2"
@@ -132,7 +137,6 @@ if not defined BUILD (
     exit /b 1
 )
 
-set "BUILD_VALID="
 powershell.exe -NoProfile -Command ^
     "if ($env:BUILD -match '^[0-9]+$' -and [int64]$env:BUILD -le 65535) { exit 0 } else { exit 1 }"
 
