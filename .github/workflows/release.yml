@@ -620,7 +620,7 @@ jobs:
             release/linux-gcc/Calc-Linux-gcc-x86-64-v2.tar.gz \
             release/linux-clang/Calc-Linux-clang-x86-64-v2.tar.gz
 
-          for asset do
+          for asset in "$@"; do
             test -s "$asset"
             ls -lh "$asset"
           done
@@ -642,7 +642,7 @@ jobs:
             "$GITHUB_WORKSPACE/release/linux-gcc/Calc-Linux-gcc-x86-64-v2.tar.gz" \
             "$GITHUB_WORKSPACE/release/linux-clang/Calc-Linux-clang-x86-64-v2.tar.gz"
 
-          for asset do
+          for asset in "$@"; do
             test -s "$asset"
           done
 
