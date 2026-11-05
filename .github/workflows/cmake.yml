@@ -1,0 +1,250 @@
+name: CMake
+
+on:
+  push:
+    branches:
+      - master
+
+  pull_request:
+    branches:
+      - master
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linux:
+    name: Linux / ${{ matrix.compiler }} / x86-64-v2
+    runs-on: ubuntu-latest
+
+    container:
+      image: cachyos/cachyos:latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler:
+          - gcc
+          - clang
+
+    steps:
+      - name: Checkout Calc
+        uses: actions/checkout@v6
+        with:
+          path: Calc
+
+      - name: Checkout fast_float
+        uses: actions/checkout@v6
+        with:
+          repository: IRainman/fast_float
+          path: fast_float
+
+      - name: Checkout fmt
+        uses: actions/checkout@v6
+        with:
+          repository: IRainman/fmt
+          path: fmt
+
+      - name: Checkout zmij
+        uses: actions/checkout@v6
+        with:
+          repository: IRainman/zmij
+          path: zmij
+
+      - name: Install build tools
+        shell: bash
+        run: |
+          set -eux
+
+          pacman -Syu --noconfirm --needed \
+            cmake \
+            ninja \
+            gcc \
+            clang \
+            llvm \
+            lld \
+            binutils \
+            git
+
+      - name: Verify toolchain
+        shell: bash
+        run: |
+          set -eux
+
+          cmake --version
+          ninja --version
+
+          if [ "${{ matrix.compiler }}" = "clang" ]; then
+            clang --version
+            clang++ --version
+            ld.lld --version
+          else
+            gcc --version
+            g++ --version
+          fi
+
+      - name: Configure
+        working-directory: ${{ github.workspace }}/Calc
+        shell: bash
+        run: |
+          set -eux
+          cmake --preset linux-${{ matrix.compiler }}-x64
+
+      - name: Build Debug
+        working-directory: ${{ github.workspace }}/Calc
+        shell: bash
+        run: |
+          set -eux
+          cmake --build --preset linux-${{ matrix.compiler }}-x64-debug --parallel --verbose
+
+      - name: Build Release
+        working-directory: ${{ github.workspace }}/Calc
+        shell: bash
+        run: |
+          set -eux
+          cmake --build --preset linux-${{ matrix.compiler }}-x64-release --parallel --verbose
+
+      - name: Verify Release executable
+        working-directory: ${{ github.workspace }}/Calc
+        shell: bash
+        run: |
+          set -eux
+
+          executable="out/build/linux-${{ matrix.compiler }}-x64/Release/Calc"
+
+          test -f "$executable"
+          file "$executable"
+
+          readelf -h "$executable"
+          readelf -l "$executable"
+
+      - name: Upload Release executable
+        uses: actions/upload-artifact@v6
+        with:
+          name: Calc-CMake-Linux-${{ matrix.compiler }}-x86-64-v2
+          path: Calc/out/build/linux-${{ matrix.compiler }}-x64/Release/Calc
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+
+      - name: Upload CMake diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: Calc-CMake-Linux-Diagnostics-${{ matrix.compiler }}
+          path: |
+            Calc/out/build/linux-${{ matrix.compiler }}-x64/CMakeCache.txt
+            Calc/out/build/linux-${{ matrix.compiler }}-x64/CMakeFiles/CMakeError.log
+            Calc/out/build/linux-${{ matrix.compiler }}-x64/CMakeFiles/CMakeOutput.log
+          if-no-files-found: ignore
+          retention-days: 14
+
+  windows:
+    name: Windows / MSVC / ${{ matrix.arch }}
+    runs-on: windows-2025-vs2026
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x64
+            preset: windows-msvc-x64
+
+          - arch: Win32
+            preset: windows-msvc-win32
+
+    steps:
+      - name: Checkout Calc
+        uses: actions/checkout@v6
+        with:
+          path: Calc
+
+      - name: Checkout fast_float
+        uses: actions/checkout@v6
+        with:
+          repository: IRainman/fast_float
+          path: fast_float
+
+      - name: Checkout fmt
+        uses: actions/checkout@v6
+        with:
+          repository: IRainman/fmt
+          path: fmt
+
+      - name: Checkout zmij
+        uses: actions/checkout@v6
+        with:
+          repository: IRainman/zmij
+          path: zmij
+
+      - name: Verify toolchain
+        shell: pwsh
+        run: |
+          cmake --version
+          msbuild -version
+
+          Write-Host "Visual Studio:"
+          Write-Host "  $env:VisualStudioVersion"
+
+      - name: Configure
+        working-directory: ${{ github.workspace }}/Calc
+        shell: pwsh
+        run: |
+          cmake --preset ${{ matrix.preset }}
+
+      - name: Build Debug
+        working-directory: ${{ github.workspace }}/Calc
+        shell: pwsh
+        run: |
+          cmake --build --preset ${{ matrix.preset }}-debug --parallel --verbose
+
+      - name: Build Release
+        working-directory: ${{ github.workspace }}/Calc
+        shell: pwsh
+        run: |
+          cmake --build --preset ${{ matrix.preset }}-release --parallel --verbose
+
+      - name: Verify Release executable and symbols
+        working-directory: ${{ github.workspace }}/Calc
+        shell: pwsh
+        run: |
+          $output = "out/build/${{ matrix.preset }}/Release"
+          $exe = Join-Path $output "Calc.exe"
+          $pdb = Join-Path $output "Calc.pdb"
+
+          foreach ($path in @($exe, $pdb)) {
+            if (-not (Test-Path $path -PathType Leaf)) {
+              throw "Build output is missing: $path"
+            }
+
+            Get-Item $path | Format-List FullName, Length
+          }
+
+      - name: Upload Release executable and symbols
+        uses: actions/upload-artifact@v6
+        with:
+          name: Calc-CMake-Windows-${{ matrix.arch }}
+          path: |
+            Calc/out/build/${{ matrix.preset }}/Release/Calc.exe
+            Calc/out/build/${{ matrix.preset }}/Release/Calc.pdb
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+
+      - name: Upload CMake diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: Calc-CMake-Windows-Diagnostics-${{ matrix.arch }}
+          path: |
+            Calc/out/build/${{ matrix.preset }}/CMakeCache.txt
+            Calc/out/build/${{ matrix.preset }}/CMakeFiles/CMakeError.log
+            Calc/out/build/${{ matrix.preset }}/CMakeFiles/CMakeOutput.log
+          if-no-files-found: ignore
+          retention-days: 14
