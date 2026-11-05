@@ -176,23 +176,38 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -Command ^
     "$full = $version;" ^
     "if ([int64]$parts[3] -gt 65535) { throw 'Daily release counter must be in the range 0..65535.' };" ^
     "$numeric = '{0},{1},{2},{3}' -f [int]$parts[0], [int]$parts[1], [int]$parts[2], [int]$parts[3];" ^
-    "function Replace-One([string]$text, [string]$pattern, [string]$replacement, [string]$label) {" ^
-    "  $count = [regex]::Matches($text, $pattern).Count;" ^
-    "  if ($count -ne 1) { throw ('Expected exactly one ' + $label + ' field; found ' + $count + '.') };" ^
-    "  return [regex]::Replace($text, $pattern, $replacement, 1);" ^
+    "$utf8 = [System.Text.UTF8Encoding]::new($false, $true);" ^
+    "function Replace-One([byte[]]$data, [string]$pattern, [string]$replacement, [string]$label) {" ^
+    "  $offset = 0;" ^
+    "  if ($data.Length -ge 3 -and $data[0] -eq 0xEF -and $data[1] -eq 0xBB -and $data[2] -eq 0xBF) { $offset = 3 };" ^
+    "  $text = $utf8.GetString($data, $offset, $data.Length - $offset);" ^
+    "  $matches = [regex]::Matches($text, $pattern);" ^
+    "  if ($matches.Count -ne 1) { throw ('Expected exactly one ' + $label + ' field; found ' + $matches.Count + '.') };" ^
+    "  $match = $matches[0];" ^
+    "  $replacementText = $match.Groups[1].Value + $replacement + $match.Groups[2].Value;" ^
+    "  $start = $offset + $utf8.GetByteCount($text.Substring(0, $match.Index));" ^
+    "  $oldLength = $utf8.GetByteCount($match.Value);" ^
+    "  $replacementBytes = $utf8.GetBytes($replacementText);" ^
+    "  $result = New-Object byte[] ($data.Length - $oldLength + $replacementBytes.Length);" ^
+    "  [Array]::Copy($data, 0, $result, 0, $start);" ^
+    "  [Array]::Copy($replacementBytes, 0, $result, $start, $replacementBytes.Length);" ^
+    "  $tailStart = $start + $oldLength;" ^
+    "  $tailLength = $data.Length - $tailStart;" ^
+    "  [Array]::Copy($data, $tailStart, $result, $start + $replacementBytes.Length, $tailLength);" ^
+    "  return ,([byte[]]$result);" ^
     "};" ^
     "$rcPath = Join-Path (Get-Location) 'Calc\Calc.rc';" ^
     "$cmakePath = Join-Path (Get-Location) 'CMakeLists.txt';" ^
-    "$rc = [System.IO.File]::ReadAllText($rcPath);" ^
-    "$cmake = [System.IO.File]::ReadAllText($cmakePath);" ^
-    "$rc = Replace-One $rc '(?m)^([ \t]*FILEVERSION[ \t]+)\d+,\d+,\d+,\d+([ \t\r]*)$' ('$1' + $numeric + '$2') 'FILEVERSION';" ^
-    "$rc = Replace-One $rc '(?m)^([ \t]*PRODUCTVERSION[ \t]+)\d+,\d+,\d+,\d+([ \t\r]*)$' ('$1' + $numeric + '$2') 'PRODUCTVERSION';" ^
-    "$rc = Replace-One $rc '(VALUE[ \t]+\x22FileVersion\x22,[ \t]*\x22)\d+\.\d+\.\d+\.\d+(\x22)' ('$1' + $full + '$2') 'FileVersion';" ^
-    "$rc = Replace-One $rc '(VALUE[ \t]+\x22ProductVersion\x22,[ \t]*\x22)\d+\.\d+\.\d+\.\d+(\x22)' ('$1' + $full + '$2') 'ProductVersion';" ^
-    "$rc = Replace-One $rc '(CTEXT[ \t]+\x22Calc[ \t]+)\d+\.\d+\.\d+\.\d+(\x22)' ('$1' + $full + '$2') 'About-box version';" ^
-    "$cmake = Replace-One $cmake '(?m)^([ \t]*VERSION[ \t]+)\d+\.\d+\.\d+(\.\d+)?([ \t\r]*)$' ('$1' + $full + '$3') 'CMake project VERSION';" ^
-    "[System.IO.File]::WriteAllText($rcPath, $rc, [System.Text.UTF8Encoding]::new($true));" ^
-    "[System.IO.File]::WriteAllText($cmakePath, $cmake, [System.Text.UTF8Encoding]::new($false));" ^
+    "$rc = [System.IO.File]::ReadAllBytes($rcPath);" ^
+    "$cmake = [System.IO.File]::ReadAllBytes($cmakePath);" ^
+    "$rc = Replace-One $rc '(?m)^([ \t]*FILEVERSION[ \t]+)\d+,\d+,\d+,\d+([ \t\r]*)$' $numeric 'FILEVERSION';" ^
+    "$rc = Replace-One $rc '(?m)^([ \t]*PRODUCTVERSION[ \t]+)\d+,\d+,\d+,\d+([ \t\r]*)$' $numeric 'PRODUCTVERSION';" ^
+    "$rc = Replace-One $rc '(VALUE[ \t]+\x22FileVersion\x22,[ \t]*\x22)\d+\.\d+\.\d+\.\d+(\x22)' $full 'FileVersion';" ^
+    "$rc = Replace-One $rc '(VALUE[ \t]+\x22ProductVersion\x22,[ \t]*\x22)\d+\.\d+\.\d+\.\d+(\x22)' $full 'ProductVersion';" ^
+    "$rc = Replace-One $rc '(CTEXT[ \t]+\x22Calc[ \t]+)\d+\.\d+\.\d+\.\d+(\x22)' $full 'About-box version';" ^
+    "$cmake = Replace-One $cmake '(?m)^([ \t]*VERSION[ \t]+)\d+\.\d+\.\d+(\.\d+)?([ \t\r]*)$' $full 'CMake project VERSION';" ^
+    "[System.IO.File]::WriteAllBytes($rcPath, $rc);" ^
+    "[System.IO.File]::WriteAllBytes($cmakePath, $cmake);" ^
     "Write-Host ('Updated Calc.rc and CMakeLists.txt to ' + $full);"
 
 if errorlevel 1 (
