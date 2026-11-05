@@ -65,7 +65,7 @@ std::string tests() {
   std::string output;
   output.resize(
 #ifdef CALC_TESTS_DEV_ENABLED // Development
-      128 * 1024
+      maximum_user_input
 #else // Performance
       std::hardware_destructive_interference_size
 #endif

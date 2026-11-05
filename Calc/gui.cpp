@@ -53,7 +53,7 @@ class CalcApp {
     /// @see https://learn.microsoft.com/windows/win32/controls/em-limittext
     static constexpr UINT input_max_text_length =
 #ifdef WinHE_SUPPORT_SET_LIMIT_TEXT
-        128 * 1024;
+        Calc::maximum_user_input;
 #else
         // max is 32k symbols for Edit control and can't be changed:
         32 * 1024;
