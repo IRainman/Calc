@@ -34,7 +34,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: IRainman/fast_float
-          ref: ${{ needs.prepare-dependencies.outputs.fast_float_sha }}
+          ref: main
           path: fast_float
           persist-credentials: false
 
@@ -42,7 +42,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: IRainman/fmt
-          ref: ${{ needs.prepare-dependencies.outputs.fmt_sha }}
+          ref: main
           path: fmt
           persist-credentials: false
 
@@ -50,7 +50,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: IRainman/zmij
-          ref: ${{ needs.prepare-dependencies.outputs.zmij_sha }}
+          ref: main
           path: zmij
           persist-credentials: false
 
