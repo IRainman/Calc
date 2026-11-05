@@ -1,5 +1,5 @@
 @echo off
-setlocal EnableExtensions EnableDelayedExpansion
+setlocal EnableExtensions
 
 if "%~1"=="" (
     echo Usage: %~nx0 VERSION [COMMIT MESSAGE]
@@ -18,154 +18,203 @@ if "%MESSAGE%"=="" (
     set "MESSAGE=Prepare %TAG% release"
 )
 
-echo.
-echo ========================================
-echo Calc release
-echo ========================================
-echo Version : %VERSION%
-echo Tag     : %TAG%
-echo Message : %MESSAGE%
-echo.
-
 rem ----------------------------------------------------------------------
-rem Validate version: X.Y.Z
+rem Locate the repository root and verify the current branch.
 rem ----------------------------------------------------------------------
 
-echo %VERSION% | findstr /r /x "[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*" >nul
-if errorlevel 1 (
-    echo ERROR: Invalid version: %VERSION%
-    echo Expected format: X.Y.Z
+for /f "delims=" %%R in ('git rev-parse --show-toplevel 2^>nul') do set "ROOT=%%R"
+
+if not defined ROOT (
+    echo ERROR: Current directory is not inside a Git repository.
     exit /b 1
 )
 
-for /f "tokens=1-3 delims=." %%A in ("%VERSION%") do (
-    set "MAJOR=%%A"
-    set "MINOR=%%B"
-    set "PATCH=%%C"
-)
+cd /d "%ROOT%"
 
-rem ----------------------------------------------------------------------
-rem Check Git repository.
-rem ----------------------------------------------------------------------
+for /f "delims=" %%B in ('git branch --show-current 2^>nul') do set "BRANCH=%%B"
 
-git rev-parse --show-toplevel >nul 2>&1
-if errorlevel 1 (
-    echo ERROR: Current directory is not a Git repository.
-    exit /b 1
-)
-
-for /f "delims=" %%B in ('git branch --show-current') do set "BRANCH=%%B"
-
-if "!BRANCH!"=="" (
+if not defined BRANCH (
     echo ERROR: HEAD is detached.
     exit /b 1
 )
 
-echo Current branch: !BRANCH!
-echo.
-
 rem ----------------------------------------------------------------------
-rem Locate Calc.rc.
+rem Validate the version and required files.
 rem ----------------------------------------------------------------------
 
-if not exist "Calc\Calc.rc" (
-    echo ERROR: Calc\Calc.rc was not found.
-    echo Run this script from the repository root.
+set "RC_FILE=Calc\Calc.rc"
+set "CMAKE_FILE=CMakeLists.txt"
+
+if not exist "%RC_FILE%" (
+    echo ERROR: Required file was not found: %RC_FILE%
     exit /b 1
 )
 
-set "RC_FILE=Calc\Calc.rc"
+if not exist "%CMAKE_FILE%" (
+    echo ERROR: Required file was not found: %CMAKE_FILE%
+    exit /b 1
+)
+
+set "VERSION_VALID="
+powershell.exe -NoProfile -Command ^
+    "if ($env:VERSION -match '^[0-9]+\.[0-9]+\.[0-9]+$' -and @($env:VERSION.Split('.') | Where-Object { [int64]$_ -gt 65535 }).Count -eq 0) { exit 0 } else { exit 1 }"
+
+if errorlevel 1 (
+    echo ERROR: Invalid version "%VERSION%".
+    echo Expected MAJOR.MINOR.PATCH with each component in the range 0..65535.
+    exit /b 1
+)
 
 rem ----------------------------------------------------------------------
-rem Check that the release tag does not already exist.
+rem Require a clean working tree so unrelated changes are never committed.
 rem ----------------------------------------------------------------------
 
-git rev-parse "%TAG%" >nul 2>&1
+set "STATUS_FILE=%TEMP%\Calc-release-status-%RANDOM%.txt"
+git status --porcelain > "%STATUS_FILE%"
+
+if errorlevel 1 (
+    del "%STATUS_FILE%" >nul 2>&1
+    echo ERROR: Unable to inspect the Git working tree.
+    exit /b 1
+)
+
+for %%F in ("%STATUS_FILE%") do if %%~zF GTR 0 set "DIRTY=1"
+del "%STATUS_FILE%" >nul 2>&1
+
+if defined DIRTY (
+    echo ERROR: The working tree is not clean.
+    echo Commit, stash, or remove existing changes before preparing a release.
+    exit /b 1
+)
+
+rem ----------------------------------------------------------------------
+rem Check local and remote release tags.
+rem ----------------------------------------------------------------------
+
+git show-ref --verify --quiet "refs/tags/%TAG%"
 if not errorlevel 1 (
     echo ERROR: Tag %TAG% already exists locally.
     exit /b 1
 )
 
-git ls-remote --exit-code --tags origin "refs/tags/%TAG%" >nul 2>&1
-if not errorlevel 1 (
+git remote get-url origin >nul 2>&1
+if errorlevel 1 (
+    echo ERROR: Git remote "origin" is not configured.
+    exit /b 1
+)
+
+set "REMOTE_TAG_FILE=%TEMP%\Calc-release-tags-%RANDOM%.txt"
+git ls-remote --tags origin "refs/tags/%TAG%" > "%REMOTE_TAG_FILE%"
+
+if errorlevel 1 (
+    del "%REMOTE_TAG_FILE%" >nul 2>&1
+    echo ERROR: Unable to query tags from origin.
+    exit /b 1
+)
+
+for %%F in ("%REMOTE_TAG_FILE%") do if %%~zF GTR 0 set "REMOTE_TAG=1"
+del "%REMOTE_TAG_FILE%" >nul 2>&1
+
+if defined REMOTE_TAG (
     echo ERROR: Tag %TAG% already exists on origin.
     exit /b 1
 )
 
 rem ----------------------------------------------------------------------
-rem Read the current fourth version component from FILEVERSION.
-rem Example:
-rem     FILEVERSION 2,10,4,615
+rem Read the current fourth FILEVERSION component.
 rem ----------------------------------------------------------------------
 
 set "BUILD="
-for /f "tokens=4 delims=, " %%A in ('findstr /r /c:"^[ ]*FILEVERSION[ ]" "%RC_FILE%"') do (
-    set "BUILD=%%A"
-)
+for /f "tokens=4 delims=, " %%A in ('findstr /r /c:"^[ ]*FILEVERSION[ ]" "%RC_FILE%"') do set "BUILD=%%A"
 
-if "!BUILD!"=="" (
-    echo ERROR: Could not determine the fourth version component from %RC_FILE%.
+if not defined BUILD (
+    echo ERROR: Could not read the fourth FILEVERSION component from %RC_FILE%.
     exit /b 1
 )
 
-echo Resource version:
-echo   Current build component: !BUILD!
-echo   New version: %VERSION%.!BUILD!
+set "BUILD_VALID="
+powershell.exe -NoProfile -Command ^
+    "if ($env:BUILD -match '^[0-9]+$' -and [int64]$env:BUILD -le 65535) { exit 0 } else { exit 1 }"
+
+if errorlevel 1 (
+    echo ERROR: Invalid FILEVERSION build component: %BUILD%
+    exit /b 1
+)
+
+echo.
+echo ========================================
+echo Calc release
+echo ========================================
+echo Repository : %ROOT%
+echo Branch     : %BRANCH%
+echo Version    : %VERSION%.%BUILD%
+echo Tag        : %TAG%
+echo Commit     : %MESSAGE%
 echo.
 
 rem ----------------------------------------------------------------------
-rem Update Calc.rc.
-rem
-rem Updates:
-rem   FILEVERSION
-rem   PRODUCTVERSION
-rem   "FileVersion"
-rem   "ProductVersion"
-rem   About box "Calc X.Y.Z 2026"
+rem Update both the Windows resource version and CMake project version.
+rem The existing fourth FILEVERSION component is preserved.
 rem ----------------------------------------------------------------------
 
 powershell.exe -NoProfile -ExecutionPolicy Bypass -Command ^
-    "$path = [System.IO.Path]::GetFullPath('%RC_FILE%');" ^
-    "$text = [System.IO.File]::ReadAllText($path, [System.Text.UTF8Encoding]::new($false));" ^
-    "$build = '%BUILD%';" ^
-    "$version = '%VERSION%';" ^
-    "$numeric = $version.Replace('.', ',') + ',' + $build;" ^
+    "$ErrorActionPreference = 'Stop';" ^
+    "$version = $env:VERSION; $build = $env:BUILD;" ^
+    "$parts = $version.Split('.');" ^
     "$full = $version + '.' + $build;" ^
-    "$text = [regex]::Replace($text, '(?m)^(\s*FILEVERSION\s+)\d+,\d+,\d+,\d+(\s*)$', '${1}' + $numeric + '${2}');" ^
-    "$text = [regex]::Replace($text, '(?m)^(\s*PRODUCTVERSION\s+)\d+,\d+,\d+,\d+(\s*)$', '${1}' + $numeric + '${2}');" ^
-    "$text = [regex]::Replace($text, 'VALUE\s+""FileVersion"",\s*""\d+\.\d+\.\d+\.\d+""', 'VALUE ""FileVersion"", ""' + $full + '""');" ^
-    "$text = [regex]::Replace($text, 'VALUE\s+""ProductVersion"",\s*""\d+\.\d+\.\d+\.\d+""', 'VALUE ""ProductVersion"", ""' + $full + '""');" ^
-    "$text = [regex]::Replace($text, 'CTEXT\s+""Calc\s+\d+\.\d+\.\d+\s+2026""', 'CTEXT ""Calc ' + $version + ' 2026""');" ^
-    "[System.IO.File]::WriteAllText($path, $text, [System.Text.UTF8Encoding]::new($false))"
+    "$numeric = [string]::Join(',', @($parts) + @($build));" ^
+    "function Replace-One([string]$text, [string]$pattern, [string]$replacement, [string]$label) {" ^
+    "  $count = [regex]::Matches($text, $pattern).Count;" ^
+    "  if ($count -ne 1) { throw ('Expected exactly one ' + $label + ' field; found ' + $count + '.') };" ^
+    "  return [regex]::Replace($text, $pattern, $replacement, 1);" ^
+    "};" ^
+    "$rcPath = Join-Path (Get-Location) 'Calc\Calc.rc';" ^
+    "$cmakePath = Join-Path (Get-Location) 'CMakeLists.txt';" ^
+    "$rc = [System.IO.File]::ReadAllText($rcPath);" ^
+    "$cmake = [System.IO.File]::ReadAllText($cmakePath);" ^
+    "$rc = Replace-One $rc '(?m)^([ \t]*FILEVERSION[ \t]+)\d+,\d+,\d+,\d+([ \t]*)$' ('$1' + $numeric + '$2') 'FILEVERSION';" ^
+    "$rc = Replace-One $rc '(?m)^([ \t]*PRODUCTVERSION[ \t]+)\d+,\d+,\d+,\d+([ \t]*)$' ('$1' + $numeric + '$2') 'PRODUCTVERSION';" ^
+    "$rc = Replace-One $rc '(VALUE[ \t]+\x22FileVersion\x22,[ \t]*\x22)\d+\.\d+\.\d+\.\d+(\x22)' ('$1' + $full + '$2') 'FileVersion';" ^
+    "$rc = Replace-One $rc '(VALUE[ \t]+\x22ProductVersion\x22,[ \t]*\x22)\d+\.\d+\.\d+\.\d+(\x22)' ('$1' + $full + '$2') 'ProductVersion';" ^
+    "$rc = Replace-One $rc '(CTEXT[ \t]+\x22Calc[ \t]+)\d+\.\d+\.\d+\.\d+(\x22)' ('$1' + $full + '$2') 'About-box version';" ^
+    "$cmake = Replace-One $cmake '(?m)^([ \t]*VERSION[ \t]+)\d+\.\d+\.\d+(\.\d+)?([ \t]*)$' ('$1' + $full + '$3') 'CMake project VERSION';" ^
+    "[System.IO.File]::WriteAllText($rcPath, $rc, [System.Text.UTF8Encoding]::new($true));" ^
+    "[System.IO.File]::WriteAllText($cmakePath, $cmake, [System.Text.UTF8Encoding]::new($false));" ^
+    "Write-Host ('Updated Calc.rc and CMakeLists.txt to ' + $full);"
 
 if errorlevel 1 (
-    echo ERROR: Failed to update %RC_FILE%.
+    echo ERROR: Failed to update version files.
     exit /b 1
 )
 
-echo Updated %RC_FILE%:
-findstr /r /c:"^[ ]*FILEVERSION[ ]" /c:"^[ ]*PRODUCTVERSION[ ]" /c:"VALUE ""FileVersion""" /c:"VALUE ""ProductVersion""" /c:"CTEXT ""Calc " "%RC_FILE%"
+git diff --check
+if errorlevel 1 (
+    echo ERROR: git diff --check failed.
+    git restore --worktree -- "%RC_FILE%" "%CMAKE_FILE%"
+    exit /b 1
+)
+
+git diff -- "%RC_FILE%" "%CMAKE_FILE%"
+
+git diff --quiet -- "%RC_FILE%" "%CMAKE_FILE%"
+if not errorlevel 1 (
+    echo ERROR: The requested version is already present; no files changed.
+    exit /b 1
+)
 
 echo.
-
-rem ----------------------------------------------------------------------
-rem Check resulting Git diff.
-rem ----------------------------------------------------------------------
-
-git diff -- "%RC_FILE%"
-
-echo.
-choice /C YN /N /M "Continue with this release? [Y/N] "
+choice /C YN /N /M "Commit and push release %TAG%? [Y/N] "
 if errorlevel 2 (
-    echo Release cancelled.
+    git restore --worktree -- "%RC_FILE%" "%CMAKE_FILE%"
+    echo Release cancelled; version files restored.
     exit /b 1
 )
 
 rem ----------------------------------------------------------------------
-rem Commit all changes.
+rem Commit only the two version files.
 rem ----------------------------------------------------------------------
 
-git add -A
+git add -- "%RC_FILE%" "%CMAKE_FILE%"
 if errorlevel 1 (
     echo ERROR: git add failed.
     exit /b 1
@@ -178,20 +227,16 @@ if errorlevel 1 (
 )
 
 rem ----------------------------------------------------------------------
-rem Push branch.
+rem Push the release commit and then the annotated tag.
 rem ----------------------------------------------------------------------
 
 echo.
-echo Pushing branch !BRANCH!...
-git push origin "!BRANCH!"
+echo Pushing branch %BRANCH%...
+git push origin "%BRANCH%"
 if errorlevel 1 (
     echo ERROR: Branch push failed.
     exit /b 1
 )
-
-rem ----------------------------------------------------------------------
-rem Create annotated release tag.
-rem ----------------------------------------------------------------------
 
 echo.
 echo Creating tag %TAG%...
@@ -201,32 +246,21 @@ if errorlevel 1 (
     exit /b 1
 )
 
-rem ----------------------------------------------------------------------
-rem Push tag.
-rem ----------------------------------------------------------------------
-
 echo.
 echo Pushing tag %TAG%...
 git push origin "%TAG%"
 if errorlevel 1 (
-    echo ERROR: Tag push failed.
-    echo Removing local tag because the remote push failed...
+    echo ERROR: Tag push failed; deleting the local tag.
     git tag -d "%TAG%" >nul 2>&1
     exit /b 1
 )
 
 echo.
-echo ========================================
-echo Release %TAG% started successfully.
-echo ========================================
-echo.
-echo GitHub Actions will now:
-echo   - build Windows x86
-echo   - build Windows x64
-echo   - package Calc.exe
-echo   - package Calc.pdb
-echo   - package the source tree
-echo   - create the GitHub Release
+echo Release %TAG% was pushed successfully.
+echo GitHub Actions will build:
+echo   - Windows x86 and x64 (MSVC)
+echo   - Linux x86-64-v2 (GCC and Clang)
+echo   - source archive with exact dependency revisions
 echo.
 
 exit /b 0
