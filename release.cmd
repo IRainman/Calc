@@ -205,7 +205,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -Command ^
     "$rc = Replace-One $rc '(VALUE[ \t]+\x22FileVersion\x22,[ \t]*\x22)\d+\.\d+\.\d+\.\d+(\x22)' $full 'FileVersion';" ^
     "$rc = Replace-One $rc '(VALUE[ \t]+\x22ProductVersion\x22,[ \t]*\x22)\d+\.\d+\.\d+\.\d+(\x22)' $full 'ProductVersion';" ^
     "$rc = Replace-One $rc '(CTEXT[ \t]+\x22Calc[ \t]+)\d+\.\d+\.\d+\.\d+(\x22)' $full 'About-box version';" ^
-    "$cmake = Replace-One $cmake '(?m)^([ \t]*VERSION[ \t]+)\d+\.\d+\.\d+(\.\d+)?([ \t\r]*)$' $full 'CMake project VERSION';" ^
+    "$cmake = Replace-One $cmake '(?m)^([ \t]*VERSION[ \t]+)\d+\.\d+\.\d+(?:\.\d+)?([ \t\r]*)$' $full 'CMake project VERSION';" ^
     "[System.IO.File]::WriteAllBytes($rcPath, $rc);" ^
     "[System.IO.File]::WriteAllBytes($cmakePath, $cmake);" ^
     "Write-Host ('Updated Calc.rc and CMakeLists.txt to ' + $full);"
