@@ -616,6 +616,27 @@ int WINAPI WinMain(const GUI::HINSTANCE instance,
 
 // TODO Qt
 
+/**
+ * @brief Classifies whitespace and separator characters.
+ *
+ * Includes:
+ *   - ASCII control: tab, newline, etc
+ *   - ASCII space
+ *   - ANSI non-breaking space
+ *
+ * @param c Character to test
+ * @return true if c is a separator/whitespace character
+ */
+[[nodiscard]] inline static constexpr bool is_separator(const char c) noexcept {
+  return (c >= '\t' && c <= '\r' || // ASCII control characters
+          c == ' ' ||               // ASCII space
+          c == 0xA0 ||              // ANSI NO-BREAK SPACE
+  );
+}
+
+/**
+ * Calc entrypoint in CUI (console) mode
+ */
 [[noreturn]] int main(int /*argc*/, char ** /*argv[]*/) {
   std::cout << "Only CUI is currently implemented for this platform."
             << std::endl;
@@ -624,6 +645,14 @@ int WINAPI WinMain(const GUI::HINSTANCE instance,
   for (;;) {
     std::cout << "Enter expression: ";
     std::cin >> equasion;
+
+    // Replace all separators with ASCII space
+    for (auto &c : equasion) {
+      if (is_separator(c)) {
+        c = ' ';
+      }
+    }
+
     Calc::Token token [[indeterminate]];
     Calc::Lexer lexer(equasion);
     Calc::Parser parser(lexer);
