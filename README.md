@@ -244,7 +244,7 @@ bash release.sh "Prepare the Calc release"
 
 Both scripts update the four-component version in `Calc/Calc.rc` and the root
 `CMakeLists.txt`, then commit and push the current branch and annotated
-`vYYYY.MM.DD.0` tag. They only stage those two version files. Pushing the tag
+`vYYYY.MM.DD.N` tag. They only stage those two version files. Pushing the tag
 starts the cross-platform release workflow. It publishes Windows x86/x64
 executable and PDB archives, Linux GCC/Clang x86-64-v2 executable archives, and
 `Calc-source.zip`, which contains Calc, its three source dependencies, and
