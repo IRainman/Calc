@@ -174,13 +174,13 @@ cmake, cmake_bom = read_utf8(cmake_path)
 
 rc = replace_once(
     rc,
-    r'^([ \t]*FILEVERSION[ \t]+)\d+,\d+,\d+,\d+([ \t]*)$',
+    r'^([ \t]*FILEVERSION[ \t]+)\d+,\d+,\d+,\d+([ \t\r]*)$',
     numeric_version,
     "FILEVERSION",
 )
 rc = replace_once(
     rc,
-    r'^([ \t]*PRODUCTVERSION[ \t]+)\d+,\d+,\d+,\d+([ \t]*)$',
+    r'^([ \t]*PRODUCTVERSION[ \t]+)\d+,\d+,\d+,\d+([ \t\r]*)$',
     numeric_version,
     "PRODUCTVERSION",
 )
@@ -204,7 +204,7 @@ rc = replace_once(
 )
 cmake = replace_once(
     cmake,
-    r'^([ \t]*VERSION[ \t]+)\d+\.\d+\.\d+(?:\.\d+)?([ \t]*)$',
+    r'^([ \t]*VERSION[ \t]+)\d+\.\d+\.\d+(?:\.\d+)?([ \t\r]*)$',
     full_version,
     "CMake project VERSION",
 )
