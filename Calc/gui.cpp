@@ -617,50 +617,48 @@ int WINAPI WinMain(const GUI::HINSTANCE instance,
 // TODO Qt
 
 /**
- * @brief Classifies whitespace and separator characters.
+ * @brief Classifies printable ASCII characters.
  *
- * Includes:
- *   - ASCII control: tab, newline, etc
- *   - ASCII space
- *   - ANSI non-breaking space
+ * ASCII range 0x20-0x7E (' ' through '~') that can pass through unchanged.
  *
  * @param c Character to test
- * @return true if c is a separator/whitespace character
+ * @return true if c is in the printable ASCII range
  */
-[[nodiscard]] inline static constexpr bool is_separator(const char c) noexcept {
-  return (c >= '\t' && c <= '\r' || // ASCII control characters
-          c == ' ' ||               // ASCII space
-          c == 0xA0                 // ANSI NO-BREAK SPACE
-  );
+[[nodiscard]] inline static constexpr bool
+is_printable_ascii(const char c) noexcept {
+  return c >= 0x20 && c <= 0x7E;
 }
 
 /**
  * Calc entrypoint in CUI (console) mode
  */
 [[noreturn]] int main(int /*argc*/, char ** /*argv[]*/) {
-  std::cout << "Only CUI is currently implemented for this platform."
-            << std::endl;
+  fmt::print(FMT_COMPILE("Calc v2026.11.06.3 (CUI)\n"));
 
-  std::string equasion;
+  std::string input;
   for (;;) {
-    std::cout << "Enter expression: ";
-    std::cin >> equasion;
+    fmt::print(FMT_COMPILE("Enter expression: "));
+    std::cin >> input;
 
-    // Replace all separators with ASCII space
-    for (auto &c : equasion) {
-      if (is_separator(c)) {
+    fmt::print(FMT_COMPILE("Input: {}\n"), input);
+
+    // Replace all non-printable ASCII characters with ASCII space
+    for (auto &c : input) {
+      if (!is_printable_ascii(c)) {
         c = ' ';
       }
     }
 
+    fmt::print(FMT_COMPILE("Normalized: {}\n"), input);
+
     Calc::Token token [[indeterminate]];
-    Calc::Lexer lexer(equasion);
+    Calc::Lexer lexer(input);
     Calc::Parser parser(lexer);
     parser.result(token);
 
     Calc::Result text [[indeterminate]];
-    std::cout << std::string_view(text.data(), Calc::format(token, text))
-              << std::endl;
+    fmt::print(FMT_COMPILE("{}\n"),
+               std::string_view(text.data(), Calc::format(token, text)));
   }
 }
 
