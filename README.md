@@ -1,5 +1,5 @@
 # Calc
-[![Windows MSBuild](https://github.com/irainman/calc/actions/workflows/windows-msbuild.yml/badge.svg)](https://github.com/irainman/calc/actions/workflows/windows-msbuild.yml) [![CMake](https://github.com/irainman/calc/actions/workflows/cmake.yml/badge.svg)](https://github.com/irainman/calc/actions/workflows/cmake.yml) [![Release](https://github.com/irainman/calc/actions/workflows/release.yml/badge.svg)](https://github.com/irainman/calc/actions/workflows/release.yml) [![CodeFactor](https://www.codefactor.io/repository/github/irainman/calc/badge)](https://www.codefactor.io/repository/github/irainman/calc)
+ [![CMake](https://github.com/irainman/calc/actions/workflows/cmake.yml/badge.svg)](https://github.com/irainman/calc/actions/workflows/cmake.yml) [![Release](https://github.com/irainman/calc/actions/workflows/release.yml/badge.svg)](https://github.com/irainman/calc/actions/workflows/release.yml) [![CodeFactor](https://www.codefactor.io/repository/github/irainman/calc/badge)](https://www.codefactor.io/repository/github/irainman/calc)
 
 Plese give a star to this repo! 
 
