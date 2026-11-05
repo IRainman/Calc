@@ -1,5 +1,5 @@
 # Calc
-[![Windows MSBuild](https://github.com/irainman/calc/actions/workflows/windows-msbuild.yml/badge.svg)](https://github.com/irainman/calc/actions/workflows/windows-msbuild.yml) [![CodeFactor](https://www.codefactor.io/repository/github/irainman/calc/badge)](https://www.codefactor.io/repository/github/irainman/calc)
+[![Windows MSBuild](https://github.com/irainman/calc/actions/workflows/windows-msbuild.yml/badge.svg)](https://github.com/irainman/calc/actions/workflows/windows-msbuild.yml) [![CMake](https://github.com/irainman/calc/actions/workflows/cmake.yml/badge.svg)](https://github.com/irainman/calc/actions/workflows/cmake.yml) [![Release](https://github.com/irainman/calc/actions/workflows/release.yml/badge.svg)](https://github.com/irainman/calc/actions/workflows/release.yml) [![CodeFactor](https://www.codefactor.io/repository/github/irainman/calc/badge)](https://www.codefactor.io/repository/github/irainman/calc)
 
 Plese give a star to this repo! 
 
@@ -36,8 +36,8 @@ The repository expects the following local sibling layout because
 ```text
 <parent>/
 +-- Calc/
-¦   +-- CMakeLists.txt
-¦   L-- Calc/
+Â¦   +-- CMakeLists.txt
+Â¦   L-- Calc/
 +-- fast_float/include/fast_float/fast_float.h
 +-- fmt/include/fmt/compile.h
 L-- zmij/zmij.cc
@@ -47,7 +47,7 @@ Use the project forks in those sibling directories. No separately built
 third-party libraries are required; the headers/source are consumed through
 `pch.hpp`.
 
-## Windows — MSVC
+## Windows â€” MSVC
 
 Requirements:
 
@@ -75,7 +75,7 @@ The Visual Studio generator selects Microsoft's compiler and linker. The
 `Calc/Calc.rc` is compiled as a Windows resource and the executable uses the
 Windows GUI subsystem.
 
-## Linux — GCC
+## Linux â€” GCC
 
 Requirements: CMake 4.3+, GCC with C++23 support, and Ninja.
 
@@ -85,7 +85,7 @@ cmake --build --preset linux-gcc-x64-debug
 cmake --build --preset linux-gcc-x64-release
 ```
 
-## Linux — Clang
+## Linux â€” Clang
 
 Requirements: CMake 4.3+, Clang with C++23 support, LLD, and Ninja. LLD is
 selected explicitly so Clang LTO does not depend on the LLVMgold plugin for
@@ -97,7 +97,7 @@ cmake --build --preset linux-clang-x64-debug
 cmake --build --preset linux-clang-x64-release
 ```
 
-## Linux — 32-bit x86
+## Linux â€” 32-bit x86
 
 The x86 presets add `-m32` to compilation and executable linking. They require
 a complete 32-bit development environment (C++ standard library, startup
@@ -131,8 +131,8 @@ cmake --build --preset linux-clang-x86-release
 |---|---|---|
 | Optimization | `/Od` | `/O2`, `/Oi` |
 | Debug information | `/ZI` | `/Zi` |
-| Runtime checks | `/RTC1` | — |
-| Whole-program optimization | — | `/GL` + `/LTCG` |
+| Runtime checks | `/RTC1` | â€” |
+| Whole-program optimization | â€” | `/GL` + `/LTCG` |
 | Link optimization | incremental | `/OPT:REF`, `/OPT:ICF`, `/RELEASE` |
 
 The additional MSVC compile options preserve the project's intended settings:
@@ -149,10 +149,10 @@ The x64 calling convention is defined by the platform ABI, so no x86-only
 | Setting | Debug | Release |
 |---|---|---|
 | Optimization | `-O0` | `-O3` |
-| Debug information | `-g3` | — |
+| Debug information | `-g3` | â€” |
 | Frame pointers | retained | omitted |
-| LTO | — | `-flto` |
-| Section collection | — | function/data sections + `--gc-sections` |
+| LTO | â€” | `-flto` |
+| Section collection | â€” | function/data sections + `--gc-sections` |
 
 The x86-64 baseline is `-march=x86-64-v2` (SSE3, SSSE3, SSE4.1, SSE4.2). The
 32-bit baseline is `-march=prescott` (SSE3). RTTI is disabled on both platforms,
@@ -212,6 +212,27 @@ with a CMake 4.3 binary here; the actual Windows build and RC compilation must
 still be run on a Windows machine with the stated toolchain. The 32-bit Linux
 presets require multilib libraries that are not installed in this environment.
 
+## Preparing a release
+
+Start from a clean working tree on the branch that should receive the release
+commit. The scripts update the four-component version in both `Calc/Calc.rc`
+and the root `CMakeLists.txt`, then commit and push that branch and the
+annotated `vMAJOR.MINOR.PATCH` tag.
+
+```powershell
+release.cmd 2.10.5
+```
+
+```sh
+bash release.sh 2.10.5
+```
+
+The scripts preserve the existing fourth version component, validate the
+resource-version fields, and only stage the two version files. Pushing the tag
+starts the cross-platform release workflow. It publishes Windows x86/x64
+executable and PDB archives, Linux GCC/Clang x86-64-v2 executable archives, and
+`Calc-source.zip`, which contains Calc, its three source dependencies, and
+`SOURCE-VERSIONS.txt` with the exact exported Git revisions.
 ## TODO
 
 The project is currently in the moving stage from an old local SVN repo to GitHub.
