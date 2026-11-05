@@ -640,17 +640,6 @@ is_printable_ascii(const char c) noexcept {
     fmt::print(FMT_COMPILE("Enter expression: "));
     std::cin >> input;
 
-    fmt::print(FMT_COMPILE("Input: {}\n"), input);
-
-    // Replace all non-printable ASCII characters with ASCII space
-    for (auto &c : input) {
-      if (!is_printable_ascii(c)) {
-        c = ' ';
-      }
-    }
-
-    fmt::print(FMT_COMPILE("Normalized: {}\n"), input);
-
     Calc::Token token [[indeterminate]];
     Calc::Lexer lexer(input);
     Calc::Parser parser(lexer);
