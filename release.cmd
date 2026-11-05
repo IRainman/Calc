@@ -176,23 +176,32 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -Command ^
     "$full = $version;" ^
     "if ([int64]$parts[3] -gt 65535) { throw 'Daily release counter must be in the range 0..65535.' };" ^
     "$numeric = '{0},{1},{2},{3}' -f [int]$parts[0], [int]$parts[1], [int]$parts[2], [int]$parts[3];" ^
-    "$utf8 = [System.Text.UTF8Encoding]::new($false, $true);" ^
+    "$latin1 = [System.Text.Encoding]::GetEncoding(28591);" ^
     "$rcPath = Join-Path (Get-Location) 'Calc\Calc.rc';" ^
     "$cmakePath = Join-Path (Get-Location) 'CMakeLists.txt';" ^
-    "$rc = [pscustomobject]@{ Path = $rcPath; Bytes = [System.IO.File]::ReadAllBytes($rcPath) };" ^
-    "$cmake = [pscustomobject]@{ Path = $cmakePath; Bytes = [System.IO.File]::ReadAllBytes($cmakePath) };" ^
+    "$rc = [pscustomobject]@{ Path = $rcPath; Bytes = [System.IO.File]::ReadAllBytes($rcPath); Offset = 0; Encoding = $null };" ^
+    "$cmake = [pscustomobject]@{ Path = $cmakePath; Bytes = [System.IO.File]::ReadAllBytes($cmakePath); Offset = 0; Encoding = $null };" ^
+    "function Initialize-File([object]$file) {" ^
+    "  $data = [byte[]]$file.Bytes;" ^
+    "  if ($data.Length -ge 4 -and $data[0] -eq 0xFF -and $data[1] -eq 0xFE -and $data[2] -eq 0 -and $data[3] -eq 0) { $file.Offset = 4; $file.Encoding = [System.Text.UTF32Encoding]::new($false, $false, $true) }" ^
+    "  elseif ($data.Length -ge 4 -and $data[0] -eq 0 -and $data[1] -eq 0 -and $data[2] -eq 0xFE -and $data[3] -eq 0xFF) { $file.Offset = 4; $file.Encoding = [System.Text.UTF32Encoding]::new($true, $false, $true) }" ^
+    "  elseif ($data.Length -ge 2 -and $data[0] -eq 0xFF -and $data[1] -eq 0xFE) { $file.Offset = 2; $file.Encoding = [System.Text.Encoding]::Unicode }" ^
+    "  elseif ($data.Length -ge 2 -and $data[0] -eq 0xFE -and $data[1] -eq 0xFF) { $file.Offset = 2; $file.Encoding = [System.Text.Encoding]::BigEndianUnicode }" ^
+    "  elseif ($data.Length -ge 3 -and $data[0] -eq 0xEF -and $data[1] -eq 0xBB -and $data[2] -eq 0xBF) { $file.Offset = 3; $file.Encoding = $latin1 }" ^
+    "  else { $file.Offset = 0; $file.Encoding = $latin1 };" ^
+    "};" ^
+    "Initialize-File $rc;" ^
+    "Initialize-File $cmake;" ^
     "function Replace-One([object]$file, [string]$pattern, [string]$replacement, [string]$label) {" ^
     "  $data = [byte[]]$file.Bytes;" ^
-    "  $offset = 0;" ^
-    "  if ($data.Length -ge 3 -and $data[0] -eq 0xEF -and $data[1] -eq 0xBB -and $data[2] -eq 0xBF) { $offset = 3 };" ^
-    "  $text = $utf8.GetString($data, $offset, $data.Length - $offset);" ^
+    "  $text = $file.Encoding.GetString($data, $file.Offset, $data.Length - $file.Offset);" ^
     "  $matches = [regex]::Matches($text, $pattern);" ^
     "  if ($matches.Count -ne 1) { throw ('Expected exactly one ' + $label + ' field; found ' + $matches.Count + '.') };" ^
     "  $match = $matches[0];" ^
     "  $replacementText = $match.Groups[1].Value + $replacement + $match.Groups[2].Value;" ^
-    "  $start = $offset + $utf8.GetByteCount($text.Substring(0, $match.Index));" ^
-    "  $oldLength = $utf8.GetByteCount($match.Value);" ^
-    "  $replacementBytes = $utf8.GetBytes($replacementText);" ^
+    "  $start = $file.Offset + $file.Encoding.GetByteCount($text.Substring(0, $match.Index));" ^
+    "  $oldLength = $file.Encoding.GetByteCount($match.Value);" ^
+    "  $replacementBytes = $file.Encoding.GetBytes($replacementText);" ^
     "  $result = [byte[]]::new($data.Length - $oldLength + $replacementBytes.Length);" ^
     "  [Array]::Copy($data, 0, $result, 0, $start);" ^
     "  [Array]::Copy($replacementBytes, 0, $result, $start, $replacementBytes.Length);" ^
@@ -203,9 +212,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -Command ^
     "};" ^
     "function Get-Text([object]$file) {" ^
     "  $data = [byte[]]$file.Bytes;" ^
-    "  $offset = 0;" ^
-    "  if ($data.Length -ge 3 -and $data[0] -eq 0xEF -and $data[1] -eq 0xBB -and $data[2] -eq 0xBF) { $offset = 3 };" ^
-    "  return $utf8.GetString($data, $offset, $data.Length - $offset);" ^
+    "  return $file.Encoding.GetString($data, $file.Offset, $data.Length - $file.Offset);" ^
     "};" ^
     "Replace-One $rc '(?m)^([ \t]*FILEVERSION[ \t]+)\d+,\d+,\d+,\d+([ \t\r]*)$' $numeric 'FILEVERSION';" ^
     "Replace-One $rc '(?m)^([ \t]*PRODUCTVERSION[ \t]+)\d+,\d+,\d+,\d+([ \t\r]*)$' $numeric 'PRODUCTVERSION';" ^
