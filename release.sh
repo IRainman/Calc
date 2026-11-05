@@ -17,8 +17,11 @@ fi
 
 VERSION=$1
 TAG="v$VERSION"
-MESSAGE=$2
-if [ "$#" -lt 2 ] || [ -z "$MESSAGE" ]; then
+MESSAGE=
+if [ "$#" -ge 2 ]; then
+    MESSAGE=$2
+fi
+if [ -z "$MESSAGE" ]; then
     MESSAGE="Prepare $TAG release"
 fi
 
