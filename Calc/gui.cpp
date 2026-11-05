@@ -617,25 +617,13 @@ int WINAPI WinMain(const GUI::HINSTANCE instance,
 // TODO Qt
 
 /**
- * @brief Classifies printable ASCII characters.
- *
- * ASCII range 0x20-0x7E (' ' through '~') that can pass through unchanged.
- *
- * @param c Character to test
- * @return true if c is in the printable ASCII range
- */
-[[nodiscard]] inline static constexpr bool
-is_printable_ascii(const char c) noexcept {
-  return c >= 0x20 && c <= 0x7E;
-}
-
-/**
  * Calc entrypoint in CUI (console) mode
  */
 [[noreturn]] int main(int /*argc*/, char ** /*argv[]*/) {
-  fmt::print(FMT_COMPILE("Calc v2026.11.06.3 (CUI)\n"));
+  fmt::print(FMT_COMPILE("Calc v2026.11.06.4 (CUI)\n"));
 
   std::string input;
+  input.reserve(Calc::maximum_user_input);
   for (;;) {
     fmt::print(FMT_COMPILE("Enter expression: "));
     std::cin >> input;
