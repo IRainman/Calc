@@ -631,6 +631,8 @@ int WINAPI WinMain(const GUI::HINSTANCE instance,
   return (c >= '\t' && c <= '\r' || // ASCII control characters
           c == ' ' ||               // ASCII space
           c == 0xA0 ||              // ANSI NO-BREAK SPACE
+          // c >= 0x2000 && c <= 0x202F || // Unicode general punctuation
+          // c == 0x3000                   // Unicode fullwidth space
   );
 }
 
