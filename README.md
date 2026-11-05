@@ -233,6 +233,10 @@ starts the cross-platform release workflow. It publishes Windows x86/x64
 executable and PDB archives, Linux GCC/Clang x86-64-v2 executable archives, and
 `Calc-source.zip`, which contains Calc, its three source dependencies, and
 `SOURCE-VERSIONS.txt` with the exact exported Git revisions.
+
+The Linux script requires Python 3; both scripts require Git and a configured
+`origin` remote.
+
 ## TODO
 
 The project is currently in the moving stage from an old local SVN repo to GitHub.
