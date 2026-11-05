@@ -178,7 +178,12 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -Command ^
     "$numeric = '{0},{1},{2},{3}' -f [int]$parts[0], [int]$parts[1], [int]$parts[2], [int]$parts[3];" ^
     "# Replace only the matched UTF-8 byte ranges; preserve the BOM, line endings and all other bytes." ^
     "$utf8 = [System.Text.UTF8Encoding]::new($false, $true);" ^
-    "function Replace-One([byte[]]$data, [string]$pattern, [string]$replacement, [string]$label) {" ^
+    "$rcPath = Join-Path (Get-Location) 'Calc\Calc.rc';" ^
+    "$cmakePath = Join-Path (Get-Location) 'CMakeLists.txt';" ^
+    "$rc = [pscustomobject]@{ Path = $rcPath; Bytes = [System.IO.File]::ReadAllBytes($rcPath) };" ^
+    "$cmake = [pscustomobject]@{ Path = $cmakePath; Bytes = [System.IO.File]::ReadAllBytes($cmakePath) };" ^
+    "function Replace-One([object]$file, [string]$pattern, [string]$replacement, [string]$label) {" ^
+    "  $data = [byte[]]$file.Bytes;" ^
     "  $offset = 0;" ^
     "  if ($data.Length -ge 3 -and $data[0] -eq 0xEF -and $data[1] -eq 0xBB -and $data[2] -eq 0xBF) { $offset = 3 };" ^
     "  $text = $utf8.GetString($data, $offset, $data.Length - $offset);" ^
@@ -195,20 +200,30 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -Command ^
     "  $tailStart = $start + $oldLength;" ^
     "  $tailLength = $data.Length - $tailStart;" ^
     "  [Array]::Copy($data, $tailStart, $result, $start + $replacementBytes.Length, $tailLength);" ^
-    "  return ,([byte[]]$result);" ^
+    "  $file.Bytes = $result;" ^
     "};" ^
-    "$rcPath = Join-Path (Get-Location) 'Calc\Calc.rc';" ^
-    "$cmakePath = Join-Path (Get-Location) 'CMakeLists.txt';" ^
-    "$rc = [System.IO.File]::ReadAllBytes($rcPath);" ^
-    "$cmake = [System.IO.File]::ReadAllBytes($cmakePath);" ^
-    "$rc = Replace-One $rc '(?m)^([ \t]*FILEVERSION[ \t]+)\d+,\d+,\d+,\d+([ \t\r]*)$' $numeric 'FILEVERSION';" ^
-    "$rc = Replace-One $rc '(?m)^([ \t]*PRODUCTVERSION[ \t]+)\d+,\d+,\d+,\d+([ \t\r]*)$' $numeric 'PRODUCTVERSION';" ^
-    "$rc = Replace-One $rc '(VALUE[ \t]+\x22FileVersion\x22,[ \t]*\x22)\d+\.\d+\.\d+\.\d+(\x22)' $full 'FileVersion';" ^
-    "$rc = Replace-One $rc '(VALUE[ \t]+\x22ProductVersion\x22,[ \t]*\x22)\d+\.\d+\.\d+\.\d+(\x22)' $full 'ProductVersion';" ^
-    "$rc = Replace-One $rc '(CTEXT[ \t]+\x22Calc[ \t]+)\d+\.\d+\.\d+\.\d+(\x22)' $full 'About-box version';" ^
-    "$cmake = Replace-One $cmake '(?m)^([ \t]*VERSION[ \t]+)\d+\.\d+\.\d+(?:\.\d+)?([ \t\r]*)$' $full 'CMake project VERSION';" ^
-    "[System.IO.File]::WriteAllBytes($rcPath, $rc);" ^
-    "[System.IO.File]::WriteAllBytes($cmakePath, $cmake);" ^
+    "function Get-Text([object]$file) {" ^
+    "  $data = [byte[]]$file.Bytes;" ^
+    "  $offset = 0;" ^
+    "  if ($data.Length -ge 3 -and $data[0] -eq 0xEF -and $data[1] -eq 0xBB -and $data[2] -eq 0xBF) { $offset = 3 };" ^
+    "  return $utf8.GetString($data, $offset, $data.Length - $offset);" ^
+    "};" ^
+    "Replace-One $rc '(?m)^([ \t]*FILEVERSION[ \t]+)\d+,\d+,\d+,\d+([ \t\r]*)$' $numeric 'FILEVERSION';" ^
+    "Replace-One $rc '(?m)^([ \t]*PRODUCTVERSION[ \t]+)\d+,\d+,\d+,\d+([ \t\r]*)$' $numeric 'PRODUCTVERSION';" ^
+    "Replace-One $rc '(VALUE[ \t]+\x22FileVersion\x22,[ \t]*\x22)\d+\.\d+\.\d+\.\d+(\x22)' $full 'FileVersion';" ^
+    "Replace-One $rc '(VALUE[ \t]+\x22ProductVersion\x22,[ \t]*\x22)\d+\.\d+\.\d+\.\d+(\x22)' $full 'ProductVersion';" ^
+    "Replace-One $rc '(CTEXT[ \t]+\x22Calc[ \t]+)\d+\.\d+\.\d+\.\d+(\x22)' $full 'About-box version';" ^
+    "Replace-One $cmake '(?m)^([ \t]*VERSION[ \t]+)\d+\.\d+\.\d+(?:\.\d+)?([ \t\r]*)$' $full 'CMake project VERSION';" ^
+    "$rcText = Get-Text $rc;" ^
+    "$cmakeText = Get-Text $cmake;" ^
+    "if ([regex]::Matches($rcText, '(?m)^[ \t]*FILEVERSION[ \t]+' + [regex]::Escape($numeric) + '[ \t\r]*$').Count -ne 1) { throw 'FILEVERSION verification failed.' };" ^
+    "if ([regex]::Matches($rcText, '(?m)^[ \t]*PRODUCTVERSION[ \t]+' + [regex]::Escape($numeric) + '[ \t\r]*$').Count -ne 1) { throw 'PRODUCTVERSION verification failed.' };" ^
+    "if ([regex]::Matches($rcText, 'VALUE[ \t]+\x22FileVersion\x22,[ \t]*\x22' + [regex]::Escape($full) + '\x22').Count -ne 1) { throw 'FileVersion verification failed.' };" ^
+    "if ([regex]::Matches($rcText, 'VALUE[ \t]+\x22ProductVersion\x22,[ \t]*\x22' + [regex]::Escape($full) + '\x22').Count -ne 1) { throw 'ProductVersion verification failed.' };" ^
+    "if ([regex]::Matches($rcText, 'CTEXT[ \t]+\x22Calc[ \t]+' + [regex]::Escape($full) + '\x22').Count -ne 1) { throw 'About-box version verification failed.' };" ^
+    "if ([regex]::Matches($cmakeText, '(?m)^[ \t]*VERSION[ \t]+' + [regex]::Escape($full) + '[ \t\r]*$').Count -ne 1) { throw 'CMake project VERSION verification failed.' };" ^
+    "[System.IO.File]::WriteAllBytes($rcPath, [byte[]]$rc.Bytes);" ^
+    "[System.IO.File]::WriteAllBytes($cmakePath, [byte[]]$cmake.Bytes);" ^
     "Write-Host ('Updated Calc.rc and CMakeLists.txt to ' + $full);"
 
 if errorlevel 1 (
