@@ -258,7 +258,10 @@ if(MSVC)
     "$<$<CONFIG:Release>:/LARGEADDRESSAWARE:NO>"
   )
 
-  target_link_options(Calc PRIVATE /HIGHENTROPYVA:NO)
+  # High Entropy VA is only valid for 64-bit PE images.
+  if(CALC_TARGET_ARCH STREQUAL "x86-64")
+    target_link_options(Calc PRIVATE /HIGHENTROPYVA:NO)
+  endif()
 
   target_link_options(Calc PRIVATE /SAFESEH:NO)
 
