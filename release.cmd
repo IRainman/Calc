@@ -62,7 +62,7 @@ if not errorlevel 1 (
 )
 
 set "BUILD="
-for /f "tokens=4 delims=, " %%A in ('findstr /r /c:"^[ ]*FILEVERSION[ ]" "%RC_FILE%"') do set "BUILD=%%A"
+for /f "tokens=5 delims=, " %%A in ('findstr /r /c:"^[ ]*FILEVERSION[ ]" "%RC_FILE%"') do set "BUILD=%%A"
 if "!BUILD!"=="" (
     echo ERROR: Could not read FILEVERSION from %RC_FILE%.
     exit /b 1
