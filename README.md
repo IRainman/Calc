@@ -216,7 +216,11 @@ presets require multilib libraries that are not installed in this environment.
 
 Start from a clean working tree on the branch that should receive the release
 commit. The scripts read the local system date and generate a four-component
-version in `YYYY.MM.DD.0` format. The fourth component is always zero.
+version in `YYYY.MM.DD.N` format. The fourth component is a per-day release
+counter: it starts at `0` when the date changes and increments by one for each
+additional release on the same date. The counter is based on the current
+`FILEVERSION` in `Calc/Calc.rc` and must remain within the Windows resource
+version limit of `0..65535`.
 
 Run the script without a version argument:
 
