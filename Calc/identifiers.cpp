@@ -230,7 +230,7 @@ template <typename Fn, auto... Is>
 
 template <const auto N, WrappedFn<N> wrappedFn>
 [[nodiscard]] constexpr auto
-function_pointer_impl(std::span<auto> params) noexcept {
+function_pointer_impl(std::span<Value> params) noexcept {
   return call_fn(wrappedFn, params, std::make_index_sequence<N>());
 }
 
@@ -244,8 +244,7 @@ template <auto value>
   return value;
 }
 
-template <auto value>
-[[nodiscard]] consteval Fn constant() noexcept {
+template <auto value> [[nodiscard]] consteval Fn constant() noexcept {
   return {constant_impl<value>, {false, 0, 0}};
 }
 
