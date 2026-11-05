@@ -55,11 +55,10 @@ if not exist "%CMAKE_FILE%" (
     exit /b 1
 )
 
-set "VERSION_VALID="
 powershell.exe -NoProfile -Command ^
     "$parts = $env:VERSION.Split('.');" ^
-    "if ($env:VERSION -notmatch '^[0-9]+\.[0-9]+\.[0-9]+
-
+    "if ($env:VERSION -notmatch '^[0-9]+\.[0-9]+\.[0-9]+$') { exit 1 };" ^
+    "foreach ($part in $parts) { if ([int64]$part -gt 65535) { exit 1 } }"
 if errorlevel 1 (
     echo ERROR: Invalid version "%VERSION%".
     echo Expected MAJOR.MINOR.PATCH with each component in the range 0..65535.
