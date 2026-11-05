@@ -244,7 +244,7 @@ template <auto value>
   return static_cast<Value>(value);
 }
 
-template <const Value value> [[nodiscard]] consteval Fn constant() noexcept {
+template <auto value> [[nodiscard]] consteval Fn constant() noexcept {
   return {constant_impl<value>, {false, 0, 0}};
 }
 
