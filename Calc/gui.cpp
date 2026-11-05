@@ -612,6 +612,8 @@ int WINAPI WinMain(const GUI::HINSTANCE instance,
 
 #else
 
+} // namespace GUI
+
 // TODO Qt
 
 [[noreturn]] int main(int /*argc*/, char ** /*argv[]*/) {
