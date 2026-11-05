@@ -6,7 +6,8 @@ usage() {
     cat <<'EOF'
 Usage: ./release.sh [COMMIT MESSAGE]
 
-The release version is generated from the system date as YYYY.MM.DD.0.
+The release version is generated as YYYY.MM.DD.N:
+  N starts at 0 on a new date and increments for each release on that date.
 EOF
     exit 1
 }
@@ -15,19 +16,7 @@ if (( $# > 1 )); then
     usage
 fi
 
-DATE_VERSION="$(LC_ALL=C date +%Y.%m.%d)" || {
-    echo "ERROR: Unable to read the system date." >&2
-    exit 1
-}
-
-if [[ ! "$DATE_VERSION" =~ ^[0-9]{4}\.[0-9]{2}\.[0-9]{2}$ ]]; then
-    echo "ERROR: Unexpected system date format: $DATE_VERSION" >&2
-    exit 1
-fi
-
-VERSION="${DATE_VERSION}.0"
-TAG="v$VERSION"
-MESSAGE="${1:-Prepare $TAG release}"
+MESSAGE_ARGUMENT="${1:-}"
 
 if ! git rev-parse --show-toplevel >/dev/null 2>&1; then
     echo "ERROR: Run this script from inside the Calc Git repository." >&2
@@ -59,6 +48,43 @@ if [[ -n "$(git status --porcelain)" ]]; then
     echo "Commit, stash, or remove existing changes before preparing a release." >&2
     exit 1
 fi
+
+# Use FILEVERSION as the sequence source: increment on the same local
+# system date, otherwise reset the daily release counter to zero.
+VERSION="$(python3 - "$RC_FILE" <<'PY'
+import re
+import sys
+from datetime import date
+from pathlib import Path
+
+path = Path(sys.argv[1])
+text = path.read_text(encoding="utf-8-sig")
+matches = re.findall(
+    r"^[ \t]*FILEVERSION[ \t]+(\d+),(\d+),(\d+),(\d+)[ \t\r]*$",
+    text,
+    flags=re.MULTILINE,
+)
+if len(matches) != 1:
+    raise SystemExit(f"Expected exactly one FILEVERSION field in {path}; found {len(matches)}.")
+
+previous = tuple(map(int, matches[0]))
+if any(part > 65535 for part in previous):
+    raise SystemExit("Existing FILEVERSION components must be in the range 0..65535.")
+
+today = date.today()
+sequence = previous[3] + 1 if previous[:3] == (today.year, today.month, today.day) else 0
+if sequence > 65535:
+    raise SystemExit("The daily release counter exceeded the Windows version limit (65535).")
+
+print(f"{today:%Y.%m.%d}.{sequence}")
+PY
+)" || {
+    echo "ERROR: Unable to generate the date-based release version." >&2
+    exit 1
+}
+
+TAG="v$VERSION"
+MESSAGE="${MESSAGE_ARGUMENT:-Prepare $TAG release}"
 
 if git show-ref --verify --quiet "refs/tags/$TAG"; then
     echo "ERROR: Tag $TAG already exists locally." >&2
@@ -101,8 +127,8 @@ from pathlib import Path
 version, rc_name, cmake_name = sys.argv[1:]
 
 parts = version.split(".")
-if len(parts) != 4 or parts[3] != "0":
-    raise SystemExit("Expected a four-component YYYY.MM.DD.0 version.")
+if len(parts) != 4:
+    raise SystemExit("Expected a four-component YYYY.MM.DD.N version.")
 
 if any(not re.fullmatch(r"[0-9]+", part) for part in parts):
     raise SystemExit("Invalid version.")
