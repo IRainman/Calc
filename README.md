@@ -215,20 +215,36 @@ presets require multilib libraries that are not installed in this environment.
 ## Preparing a release
 
 Start from a clean working tree on the branch that should receive the release
-commit. The scripts update the four-component version in both `Calc/Calc.rc`
-and the root `CMakeLists.txt`, then commit and push that branch and the
-annotated `vMAJOR.MINOR.PATCH` tag.
+commit. The scripts read the local system date and generate a four-component
+version in `YYYY.MM.DD.N` format. The fourth component is a per-day release
+counter: it starts at `0` when the date changes and increments by one for each
+additional release on the same date. The counter is based on the current
+`FILEVERSION` in `Calc/Calc.rc` and must remain within the Windows resource
+version limit of `0..65535`.
+
+Run the script without a version argument:
 
 ```powershell
-release.cmd 2.10.5
+release.cmd
 ```
 
 ```sh
-bash release.sh 2.10.5
+bash release.sh
 ```
 
-The scripts preserve the existing fourth version component, validate the
-resource-version fields, and only stage the two version files. Pushing the tag
+An optional quoted argument overrides the default commit message:
+
+```powershell
+release.cmd "Prepare the Calc release"
+```
+
+```sh
+bash release.sh "Prepare the Calc release"
+```
+
+Both scripts update the four-component version in `Calc/Calc.rc` and the root
+`CMakeLists.txt`, then commit and push the current branch and annotated
+`vYYYY.MM.DD.N` tag. They only stage those two version files. Pushing the tag
 starts the cross-platform release workflow. It publishes Windows x86/x64
 executable and PDB archives, Linux GCC/Clang x86-64-v2 executable archives, and
 `Calc-source.zip`, which contains Calc, its three source dependencies, and

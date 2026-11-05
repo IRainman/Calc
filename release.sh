@@ -4,27 +4,19 @@ set -euo pipefail
 
 usage() {
     cat <<'EOF'
-Usage: ./release.sh VERSION [COMMIT MESSAGE]
+Usage: ./release.sh [COMMIT MESSAGE]
 
-Examples:
-  ./release.sh 2.10.5
-  ./release.sh 2.10.5 "Prepare v2.10.5 release"
-
-VERSION must have the form MAJOR.MINOR.PATCH.
+The release version is generated as YYYY.MM.DD.N:
+  N starts at 0 on a new date and increments for each release on that date.
 EOF
     exit 1
 }
 
-if (( $# < 1 || $# > 2 )); then
+if (( $# > 1 )); then
     usage
 fi
 
-VERSION="$1"
-TAG="v$VERSION"
-MESSAGE="Prepare $TAG release"
-if (( $# == 2 )); then
-    MESSAGE="$2"
-fi
+MESSAGE_ARGUMENT="${1:-}"
 
 if ! git rev-parse --show-toplevel >/dev/null 2>&1; then
     echo "ERROR: Run this script from inside the Calc Git repository." >&2
@@ -38,26 +30,6 @@ BRANCH="$(git branch --show-current)"
 
 if [[ -z "$BRANCH" ]]; then
     echo "ERROR: HEAD is detached." >&2
-    exit 1
-fi
-
-if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-    echo "ERROR: Invalid version '$VERSION'; expected MAJOR.MINOR.PATCH." >&2
-    exit 1
-fi
-
-if ! python3 - "$VERSION" <<'PY'
-import re
-import sys
-
-parts = sys.argv[1].split(".")
-if len(parts) != 3 or not all(re.fullmatch(r"[0-9]+", part) for part in parts):
-    raise SystemExit("Invalid semantic version.")
-
-if any(int(part) > 65535 for part in parts):
-    raise SystemExit("Version components must be in the range 0..65535.")
-PY
-then
     exit 1
 fi
 
@@ -76,6 +48,43 @@ if [[ -n "$(git status --porcelain)" ]]; then
     echo "Commit, stash, or remove existing changes before preparing a release." >&2
     exit 1
 fi
+
+# Use FILEVERSION as the sequence source: increment on the same local
+# system date, otherwise reset the daily release counter to zero.
+VERSION="$(python3 - "$RC_FILE" <<'PY'
+import re
+import sys
+from datetime import date
+from pathlib import Path
+
+path = Path(sys.argv[1])
+text = path.read_text(encoding="utf-8-sig")
+matches = re.findall(
+    r"^[ \t]*FILEVERSION[ \t]+(\d+),(\d+),(\d+),(\d+)[ \t\r]*$",
+    text,
+    flags=re.MULTILINE,
+)
+if len(matches) != 1:
+    raise SystemExit(f"Expected exactly one FILEVERSION field in {path}; found {len(matches)}.")
+
+previous = tuple(map(int, matches[0]))
+if any(part > 65535 for part in previous):
+    raise SystemExit("Existing FILEVERSION components must be in the range 0..65535.")
+
+today = date.today()
+sequence = previous[3] + 1 if previous[:3] == (today.year, today.month, today.day) else 0
+if sequence > 65535:
+    raise SystemExit("The daily release counter exceeded the Windows version limit (65535).")
+
+print(f"{today:%Y.%m.%d}.{sequence}")
+PY
+)" || {
+    echo "ERROR: Unable to generate the date-based release version." >&2
+    exit 1
+}
+
+TAG="v$VERSION"
+MESSAGE="${MESSAGE_ARGUMENT:-Prepare $TAG release}"
 
 if git show-ref --verify --quiet "refs/tags/$TAG"; then
     echo "ERROR: Tag $TAG already exists locally." >&2
@@ -97,48 +106,43 @@ if [[ -n "$REMOTE_TAGS" ]]; then
     exit 1
 fi
 
-BUILD="$(
-    sed -n -E \
-        's/^[[:space:]]*FILEVERSION[[:space:]]+[0-9]+,[0-9]+,[0-9]+,([0-9]+)[[:space:]]*$/\1/p' \
-        "$RC_FILE"
-)"
-
-if [[ ! "$BUILD" =~ ^[0-9]+$ ]] || (( BUILD > 65535 )); then
-    echo "ERROR: Could not read a valid fourth FILEVERSION component from $RC_FILE." >&2
-    exit 1
-fi
-
 echo
 echo "========================================"
 echo "Calc release"
 echo "========================================"
 echo "Repository : $ROOT"
 echo "Branch     : $BRANCH"
-echo "Version    : $VERSION.$BUILD"
+echo "Version    : $VERSION"
 echo "Tag        : $TAG"
 echo "Commit     : $MESSAGE"
 echo
 
-python3 - "$VERSION" "$BUILD" "$RC_FILE" "$CMAKE_FILE" <<'PY'
+python3 - "$VERSION" "$RC_FILE" "$CMAKE_FILE" <<'PY'
 import codecs
 import re
 import sys
+from datetime import datetime
 from pathlib import Path
 
-version, build, rc_name, cmake_name = sys.argv[1:]
-parts = version.split(".")
+version, rc_name, cmake_name = sys.argv[1:]
 
-if len(parts) != 3 or any(not re.fullmatch(r"[0-9]+", p) for p in parts):
+parts = version.split(".")
+if len(parts) != 4:
+    raise SystemExit("Expected a four-component YYYY.MM.DD.N version.")
+
+if any(not re.fullmatch(r"[0-9]+", part) for part in parts):
     raise SystemExit("Invalid version.")
 
-if any(int(p) > 65535 for p in parts) or not re.fullmatch(r"[0-9]+", build):
+try:
+    datetime.strptime(".".join(parts[:3]), "%Y.%m.%d")
+except ValueError as error:
+    raise SystemExit(f"Invalid date in version {version}: {error}") from error
+
+if any(int(part) > 65535 for part in parts):
     raise SystemExit("Version components must be in the range 0..65535.")
 
-if int(build) > 65535:
-    raise SystemExit("The FILEVERSION build component must be in the range 0..65535.")
-
-full_version = f"{version}.{build}"
-numeric_version = ",".join((*parts, build))
+full_version = version
+numeric_version = ",".join(str(int(part)) for part in parts)
 
 
 def read_utf8(path: Path):
@@ -221,7 +225,7 @@ git diff --check
 git diff -- "$RC_FILE" "$CMAKE_FILE"
 
 if git diff --quiet -- "$RC_FILE" "$CMAKE_FILE"; then
-    echo "ERROR: The requested version is already present; no files changed." >&2
+    echo "ERROR: The current version is already present; no files changed." >&2
     exit 1
 fi
 
