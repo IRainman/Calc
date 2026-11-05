@@ -212,25 +212,25 @@ namespace Calc {
 namespace Identifiers {
 template <const ParamCount> using WrappedFnImplArg = Value;
 
-template <std::size_t... Is>
+template <auto... Is>
 consteval auto WrappedFnImpl(std::index_sequence<Is...>) noexcept
     -> Value (*)(WrappedFnImplArg<Is>...) {
   // This function only returns a type, so the body can be empty.
   return nullptr;
 }
 
-template <const ParamCount N>
+template <auto N>
 using WrappedFn = decltype(WrappedFnImpl(std::make_index_sequence<N>()));
 
-template <typename Fn, std::size_t... Is>
+template <typename Fn, auto... Is>
 [[nodiscard]] constexpr auto call_fn(Fn fn, std::span<Value> params,
                                      std::index_sequence<Is...>) noexcept {
   return fn(params[Is]...);
 }
 
-template <const ParamCount N, WrappedFn<N> wrappedFn>
+template <const auto N, WrappedFn<N> wrappedFn>
 [[nodiscard]] constexpr auto
-function_pointer_impl(std::span<Value> params) noexcept {
+function_pointer_impl(std::span<auto> params) noexcept {
   return call_fn(wrappedFn, params, std::make_index_sequence<N>());
 }
 
@@ -240,11 +240,12 @@ template <const ParamCount N, WrappedFn<N> wrappedFn>
 }
 
 template <auto value>
-[[nodiscard]] constexpr Value constant_impl(std::span<Value>) {
-  return static_cast<Value>(value);
+[[nodiscard]] constexpr auto constant_impl(std::span<Value>) noexcept {
+  return value;
 }
 
-template <auto value> [[nodiscard]] consteval Fn constant() noexcept {
+template <auto value>
+[[nodiscard]] consteval Fn constant() noexcept {
   return {constant_impl<value>, {false, 0, 0}};
 }
 
@@ -682,12 +683,12 @@ distance(std::span<Value> params) noexcept {
              : pow(ex, 1.0 / params[0]);
 }
 
-[[nodiscard]] constexpr static Value dBm(Value mW) {
-  return static_cast<Value>(10.0 * log10(mW));
+[[nodiscard]] constexpr static auto dBm(Value mW) noexcept {
+  return 10.0 * log10(mW);
 }
 
-[[nodiscard]] constexpr static Value mW(Value dBm) {
-  return static_cast<Value>(pow(10.0, dBm / 10.0));
+[[nodiscard]] constexpr static auto mW(Value dBm) noexcept {
+  return pow(10.0, dBm / 10.0);
 }
 
 #ifdef CALC_TEST_EQUATION_SOLVER

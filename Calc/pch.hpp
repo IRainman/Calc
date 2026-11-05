@@ -186,7 +186,7 @@ using Value = std::float128_t;
 constexpr Value huge_value_precision = 1e33;
 constexpr Value small_value_precision = 1e-33;
 #else
-#if __STDCPP_FLOAT64_T__ == 1
+#if 0 // __STDCPP_FLOAT64_T__ == 1
 using Value = std::float64_t;
 #else
 using Value = double;
