@@ -212,7 +212,7 @@ namespace Calc {
 namespace Identifiers {
 template <const ParamCount> using WrappedFnImplArg = Value;
 
-template <const ParamCount... Is>
+template <std::size_t... Is>
 consteval auto WrappedFnImpl(std::index_sequence<Is...>) noexcept
     -> Value (*)(WrappedFnImplArg<Is>...) {
   // This function only returns a type, so the body can be empty.
