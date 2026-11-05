@@ -91,8 +91,7 @@ public:
    * @warning Behavior is undefined if the output buffer is too small.
    */
   constexpr explicit inline Normalizer(const __restrict LPCWSTR text,
-                                       const UINT length,
-                                       std::string &equasion) noexcept
+                                       const UINT length, std::string &equasion)
       : _equasion(equasion), _text(text), _length(length) {
     assert(_equasion.capacity() > _length * 4);
     _equasion.resize_and_overwrite(
@@ -352,8 +351,7 @@ private:
      * @note Processing stops at the first unsupported UTF-16 code unit and
      *       returns the successfully normalized prefix.
      */
-    [[nodiscard]] constexpr inline UINT operator()(char *__restrict buffer,
-                                                   UINT) noexcept {
+    [[nodiscard]] inline UINT operator()(char *__restrict buffer, UINT) {
       auto input = _begin;
 
       auto output = buffer;

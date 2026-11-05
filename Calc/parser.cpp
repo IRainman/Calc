@@ -41,9 +41,9 @@ void Parser::result(Token &result) noexcept {
   }
 }
 
-void Parser::advance() noexcept { _lexer.next(_current); }
+constexpr void Parser::advance() noexcept { _lexer.next(_current); }
 
-void Parser::expr_4(Token &result) noexcept {
+constexpr void Parser::expr_4(Token &result) noexcept {
   expr_3(result);
   while (true) {
     switch (_current.type) {
@@ -88,7 +88,7 @@ issue_expected_number:
   [[unlikely]] issue(result, Issue::expected_number);
 }
 
-void Parser::expr_3(Token &result) noexcept {
+constexpr void Parser::expr_3(Token &result) noexcept {
   expr_2(result);
   while (true) {
     switch (_current.type) {
@@ -133,7 +133,7 @@ issue_expected_number:
   [[unlikely]] issue(result, Issue::expected_number);
 }
 
-void Parser::expr_2(Token &result) noexcept {
+constexpr void Parser::expr_2(Token &result) noexcept {
   ParamCount count = 0;
   std::array<Token, std::numeric_limits<ParamCount>::max()> tokens
       [[indeterminate]]; // potential maximum: 2^16/(1+1) = 32768
@@ -183,7 +183,7 @@ void Parser::expr_2(Token &result) noexcept {
   }
 }
 
-void Parser::expr_1(Token &result) noexcept {
+constexpr void Parser::expr_1(Token &result) noexcept {
   switch (_current.type) {
   case Token::Type::SUB: {
     advance();
@@ -210,7 +210,7 @@ void Parser::expr_1(Token &result) noexcept {
   }
 }
 
-void Parser::expr_0(Token &result) noexcept {
+constexpr void Parser::expr_0(Token &result) noexcept {
   switch (_current.type) {
   case Token::Type::LPAREN: {
     subexpression(result);
@@ -235,7 +235,7 @@ void Parser::expr_0(Token &result) noexcept {
   }
 }
 
-void Parser::subexpression(Token &result) noexcept {
+constexpr void Parser::subexpression(Token &result) noexcept {
   advance();
   expr_4(result);
   if (_current.type == Token::Type::RPAREN) {
@@ -246,7 +246,7 @@ void Parser::subexpression(Token &result) noexcept {
   }
 }
 
-void Parser::constant(Token &result) noexcept {
+constexpr void Parser::constant(Token &result) noexcept {
   const auto &[caller, _] = _current.identifier->second;
   result.number = caller({});
   result.position = _current.position;
@@ -254,12 +254,12 @@ void Parser::constant(Token &result) noexcept {
   advance();
 }
 
-void Parser::number(Token &result) noexcept {
+constexpr void Parser::number(Token &result) noexcept {
   result = _current;
   advance();
 }
 
-void Parser::function(Token &result) noexcept {
+constexpr void Parser::function(Token &result) noexcept {
   result = _current;
   advance();
   if (_current.type == Token::Type::LPAREN) {

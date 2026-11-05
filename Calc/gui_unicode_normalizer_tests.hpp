@@ -30,7 +30,7 @@ namespace GUI {
  *
  * @see gui_tests()
  */
-static auto normalizer_tests = std::to_array< std::pair< std::string_view, std::pair< bool, std::string_view > > >({
+constinit static auto normalizer_tests = std::to_array< std::pair< std::string_view, std::pair< bool, std::string_view > > >({
     // Complex expressions
     { "½∜(7π÷2)", { false, "1/2qdrt(7pi/2)" }},
     { "½∜(7π÷3)R☉×c * (⅒+⅟₉)⏨₉  +ℯ⁶", { false ,"1/2qdrt(7pi/3)R_sun*c * (1/10+1/9)10^(9)  +e^(6)" }},

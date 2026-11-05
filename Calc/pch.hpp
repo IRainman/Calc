@@ -173,10 +173,8 @@ namespace Calc {
 /**
  * Types using for calculation.
  */
-// maximum 65535 symbols in the input equation, it's enough for any human input.
-// Unfortunately it's not enough for developmenet testing. For testing we use
-// larger input, but for production it's not needed.
-using EquationPosition = std::uint_fast16_t;
+using EquationPosition = std::uint_fast32_t;
+constexpr EquationPosition maximum_user_input = 128 * 1024;
 using ParamCount = std::uint_fast8_t;
 using Integer = std::int_fast64_t;
 using UInteger = std::uint_fast64_t;

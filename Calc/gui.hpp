@@ -225,6 +225,30 @@ constexpr static void set_extended_style(const HWND window,
 }
 #endif
 
+#ifdef WinHE_SUPPORT_LINK_WINDOW
+/**
+ * @brief Open link (url, file) in the default application.
+ *
+ * @param window the handle to the window.
+ * @param lParam the lParam parameter.
+ * @param        id The ID of the link control.
+ *
+ * @return TRUE if the link was opened, FALSE otherwise.
+ */
+[[nodiscard]] static constexpr BOOL
+open_link(const HWND window, const LPARAM lParam, const UINT id) noexcept {
+  const auto nm = reinterpret_cast<LPNMHDR>(lParam);
+  if (nm->idFrom == id && nm->code == NM_CLICK) {
+    const auto l = reinterpret_cast<PNMLINK>(lParam);
+    ShellExecuteW(window, L"open", l->item.szUrl, nullptr, nullptr,
+                  SW_SHOWNORMAL);
+    return TRUE;
+  } else {
+    return FALSE;
+  }
+}
+#endif
+
 /**
  * Set text to window. Shoul be zero terminated!
  * @see Edit
@@ -287,7 +311,6 @@ public:
 
   constexpr explicit EditView(const HWND edit) noexcept
       : _length(static_cast<UINT>(SendMessageA(edit, WM_GETTEXTLENGTH, 0, 0))) {
-    assert(_length);
     _handle = reinterpret_cast<HLOCAL>(SendMessageA(edit, EM_GETHANDLE, 0, 0));
     _text = static_cast<LPCWSTR>(LocalLock(_handle));
     assert(_handle && _text);

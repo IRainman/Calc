@@ -15,7 +15,7 @@ namespace Calc {
 [[nodiscard]] constexpr static Value bin(const std::string_view x) noexcept {
   UInteger bin_val;
   auto res = fast_float::from_chars(x.data(), x.data() + x.size(), bin_val, 2);
-  if (res.ec == std::errc{}) {
+  if (res.ec == std::errc{}) [[likely]] {
     return static_cast<Value>(bin_val);
   }
 
@@ -25,7 +25,7 @@ namespace Calc {
 [[nodiscard]] constexpr static Value hex(const std::string_view x) noexcept {
   UInteger hex_val;
   auto res = fast_float::from_chars(x.data(), x.data() + x.size(), hex_val, 16);
-  if (res.ec == std::errc{}) {
+  if (res.ec == std::errc{}) [[likely]] {
     return static_cast<Value>(hex_val);
   }
 
@@ -44,11 +44,12 @@ constexpr static auto binary_and_hex_parsing(char *ret) {
   return ret;
 }
 
+constexpr static std::string_view round_name(int const d) {
+// https://en.cppreference.com/w/cpp/numeric/fenv/fegetround
 #define CASE_RETURN_NAME(x)                                                    \
   case x:                                                                      \
     return #x
 
-constexpr static std::string_view round_name(int const d) {
   switch (d) {
     CASE_RETURN_NAME(FE_TONEAREST);
     CASE_RETURN_NAME(FE_DOWNWARD);
@@ -57,15 +58,8 @@ constexpr static std::string_view round_name(int const d) {
   default:
     std::unreachable();
   }
-}
-
 #undef CASE_RETURN_NAME
-
-/*
-static_assert(std::has_unique_object_representations_v<CalcWindowState>);
-static_assert(std::is_trivially_copyable_v<CalcWindowState>);
-static_assert(std::is_standard_layout_v<CalcWindowState>);
-*/
+}
 
 std::string tests() {
   std::string output;
@@ -100,9 +94,9 @@ std::string tests() {
       Result buffer_test [[indeterminate]];
 
       const std::string_view formated_value(buffer_value.data(),
-                                            value(token.number, buffer_value));
+                                            format(token.number, buffer_value));
       const std::string_view formated_test(buffer_test.data(),
-                                           value(expected, buffer_test));
+                                           format(expected, buffer_test));
 
       const auto is_error = is_issue && std::isnan(expected);
       const auto is_nan = std::isnan(token.number) && std::isnan(expected);
@@ -120,7 +114,7 @@ std::string tests() {
 
       Result buffer [[indeterminate]];
       const std::string_view formated_report(buffer.data(),
-                                             result(token, buffer));
+                                             format(token, buffer));
 
       // clang-format off
       output_end = fmt::format_to(output_end, FMT_COMPILE("Test {}: \"{}\"\n"
@@ -151,7 +145,7 @@ std::string tests() {
 #else // Performance
       Result buffer [[indeterminate]];
       [[maybe_unused]] const std::string_view formated(buffer.data(),
-                                                       result(token, buffer));
+                                                       format(token, buffer));
 #endif
     }
   }

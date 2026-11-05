@@ -43,13 +43,13 @@ constexpr static std::pair<Integer, Integer> decimalToFraction(Value number) {
  * Format Value.
  * @return the end of the formated Result.
  */
-char *value(const Value &value, Result &ret) noexcept {
-  auto end = ret.data();
+char *format(const Value value, Result &ret) noexcept {
+  char *end [[indeterminate]];
   // https://www.exploringbinary.com/decimal-precision-of-binary-floating-point-numbers/
   if (std::isnormal(value)) {
-    end = zmij::detail::write_general(end, value, output_precision);
+    end = zmij::detail::write_general(ret.data(), value, output_precision);
   } else {
-    end = zmij::detail::write(end, value);
+    end = zmij::detail::write(ret.data(), value);
   }
   return end;
 }
@@ -58,12 +58,12 @@ char *value(const Value &value, Result &ret) noexcept {
  * Format Token.
  * @return the end of the formated Result.
  */
-char *result(const Token &token, Result &ret) noexcept {
+char *format(const Token &token, Result &ret) {
   if (token.type == Token::Type::ISSUE) {
     return fmt::format_to(ret.data(), FMT_COMPILE("{}: {}\n"), token.position,
                           issue_text[static_cast<uint8_t>(token.index)]);
   } else {
-    return value(token.number, ret);
+    return format(token.number, ret);
   }
 }
 

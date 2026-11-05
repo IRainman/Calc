@@ -126,26 +126,30 @@ public:
     if (LOWORD(wP) == IDC_BUTTON_CALC && HIWORD(wP) == BN_CLICKED) {
       const EditView input(_layout.handle(0));
 
-      Calc::Token token [[indeterminate]];
+      try {
+        Calc::Token token [[indeterminate]];
 #ifdef CALC_SUPPORT_UNICODE_INPUT
-      Normalizer to_ascii(input.text(), input.length(), _equasion);
-      if (to_ascii.failed()) [[unlikely]] {
-        token.position = to_ascii.normalized();
-        issue(token, Calc::Issue::unparsable);
+        Normalizer to_ascii(input.text(), input.length(), _equasion);
+        if (to_ascii.failed()) [[unlikely]] {
+          token.position = to_ascii.normalized();
+          issue(token, Calc::Issue::unparsable);
 #else
-      input.read(_equasion);
-      if (input.length() != _equasion.length()) [[unlikely]] {
-        token.position = _equasion.length();
-        issue(token, Calc::Issue::unparsable);
+        input.read(_equasion);
+        if (input.length() != _equasion.length()) [[unlikely]] {
+          token.position = _equasion.length();
+          issue(token, Calc::Issue::unparsable);
 #endif
-      } else {
-        Calc::Lexer lexer(_equasion);
-        Calc::Parser parser(lexer);
-        parser.result(token);
-      }
+        } else {
+          Calc::Lexer lexer(_equasion);
+          Calc::Parser parser(lexer);
+          parser.result(token);
+        }
 
-      Calc::Result text [[indeterminate]];
-      set_result(text.data(), result(token, text));
+        Calc::Result text [[indeterminate]];
+        set_result(text.data(), Calc::format(token, text));
+      } catch (const std::exception &e) {
+        set_exception(e.what());
+      }
     }
 
     return TRUE;
@@ -186,10 +190,10 @@ public:
    * @see create()
    */
   [[nodiscard]] constexpr BOOL init(const HWND main_window,
-                                    const LPARAM lParam) {
+                                    const LPARAM lParam) noexcept {
     set_icons(main_window, reinterpret_cast<HINSTANCE>(lParam));
 
-    About::add_menu_to_system_menu(main_window);
+    About::add_to_system_menu(main_window);
 
     layout_init(main_window);
 #ifdef WinHE_SUPPORT_EXTENDENT_STYLES
@@ -199,12 +203,17 @@ public:
 #ifdef WinHE_SUPPORT_SET_LIMIT_TEXT
     set_text_limit(_layout.handle(0), cfg::input_max_text_length);
 #endif
-    // Allocate user input memory nearby
-    _equasion.reserve(cfg::input_max_text_length * 4);
+
+    try {
+      // Allocate user input memory nearby
+      _equasion.reserve(cfg::input_max_text_length * 4);
 #if defined(CALC_TESTS_ENABLED) && defined(CALC_SUPPORT_UNICODE_INPUT)
-    gui_tests();
+      gui_tests();
 #endif
-    load_program_data(main_window);
+      load_program_data(main_window);
+    } catch (const std::exception &e) {
+      set_exception(e.what());
+    }
 
     goto_end_of_text(_layout.handle(0));
 
@@ -332,6 +341,10 @@ private:
   /**
    *
    */
+  constexpr inline void set_exception(const char *text) const noexcept {
+    set_text(_layout.handle(1), text);
+  }
+
   constexpr inline void set_result(const char *text,
                                    const char *text_end) const noexcept {
     set_text(_layout.handle(1), text, text_end);
@@ -348,11 +361,11 @@ private:
   constexpr inline void load_program_data(const HWND main_window) {
     Edit input(_layout.handle(0), cfg::input_max_text_length);
     const RegRead reg(HKEY_CURRENT_USER, cfg::reg_key);
-#ifndef CALC_TESTS_ENABLED
-    input.set_size(reg.read("input", input.data(), input.size()));
-#else
+#ifdef CALC_TESTS_ENABLED
     const auto tests = Calc::tests();
-    input.write(tests.data(), static_cast<int>(tests.size()));
+    input.write(tests.data(), static_cast<UINT>(tests.size()));
+#else
+    input.set_size(reg.read("input", input.data(), input.size()));
 #endif
     const auto flags = reg.read("flags");
     const auto show = reg.read("showCmd");
@@ -441,7 +454,7 @@ private:
      * Add "About..." menu item to system menu for main window.
      */
     static constexpr inline void
-    add_menu_to_system_menu(const HWND main_window) noexcept {
+    add_to_system_menu(const HWND main_window) noexcept {
       const auto system_menu = GetSystemMenu(main_window, FALSE);
       AppendMenuA(system_menu, MF_SEPARATOR, FALSE, nullptr);
       AppendMenuA(system_menu, MF_STRING, IDM_ABOUTBOX, "&About...");
@@ -470,15 +483,7 @@ private:
      */
     [[nodiscard]] static constexpr BOOL
     open_homepage(const HWND about_window, const LPARAM lParam) noexcept {
-      const auto nm = reinterpret_cast<LPNMHDR>(lParam);
-      if (nm->idFrom == IDC_LINK_HOMEPAGE && nm->code == NM_CLICK) {
-        const auto l = reinterpret_cast<PNMLINK>(lParam);
-        ShellExecuteW(about_window, L"open", l->item.szUrl, nullptr, nullptr,
-                      SW_SHOWNORMAL);
-        return TRUE;
-      } else {
-        return FALSE;
-      }
+      return open_link(about_window, lParam, IDC_LINK_HOMEPAGE);
     }
 #endif
     /**
@@ -631,8 +636,8 @@ int WINAPI WinMain(const HINSTANCE instance, const HINSTANCE /*prev_instance*/,
 
 // TODO Qt
 
-[[noreturn]] int main(int /*argc*/, char ** /*argv[]*/) noexcept {
-  std::cerr << "Only CUI is currently implemented for this platform."
+[[noreturn]] int main(int /*argc*/, char ** /*argv[]*/) {
+  std::cout << "Only CUI is currently implemented for this platform."
             << std::endl;
 
   std::string equasion;
@@ -645,7 +650,7 @@ int WINAPI WinMain(const HINSTANCE instance, const HINSTANCE /*prev_instance*/,
     parser.result(token);
 
     Calc::Result text [[indeterminate]];
-    std::cout << std::string_view(text.data(), result(token, text))
+    std::cout << std::string_view(text.data(), Calc::format(token, text))
               << std::endl;
   }
 }

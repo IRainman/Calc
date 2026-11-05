@@ -80,7 +80,7 @@ struct Token {
 /**
  * Report a new issue.
  */
-inline void issue(Token &current, const Issue index) noexcept {
+constexpr inline void issue(Token &current, const Issue index) noexcept {
   current.type = Token::Type::ISSUE;
   current.index = index;
 }

@@ -9,9 +9,9 @@
 
 namespace Calc {
 
-char *value(const Value &value, Result &ret) noexcept;
+char *format(const Value value, Result &ret) noexcept;
 
-char *result(const Token &value, Result &ret) noexcept;
+char *format(const Token &token, Result &ret);
 
 } // namespace Calc
 

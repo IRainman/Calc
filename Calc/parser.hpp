@@ -37,7 +37,7 @@ public:
    *
    * parameters = expr_4 ( ',' expr_4 )* ')'
    */
-  explicit Parser(Lexer &lexer) noexcept : _lexer(lexer) {}
+  constexpr explicit Parser(Lexer &lexer) noexcept : _lexer(lexer) {}
 
   Parser() = delete;
   Parser(const Parser &) = delete;
@@ -52,25 +52,25 @@ private:
   /**
    * Move current position one token further.
    */
-  void advance() noexcept;
+  constexpr void advance() noexcept;
 
-  void expr_4(Token &result) noexcept;
+  constexpr void expr_4(Token &result) noexcept;
 
-  void expr_3(Token &result) noexcept;
+  constexpr void expr_3(Token &result) noexcept;
 
-  void expr_2(Token &result) noexcept;
+  constexpr void expr_2(Token &result) noexcept;
 
-  void expr_1(Token &result) noexcept;
+  constexpr void expr_1(Token &result) noexcept;
 
-  void expr_0(Token &result) noexcept;
+  constexpr void expr_0(Token &result) noexcept;
 
-  void number(Token &result) noexcept;
+  constexpr void number(Token &result) noexcept;
 
-  void function(Token &result) noexcept;
+  constexpr void function(Token &result) noexcept;
 
-  void constant(Token &result) noexcept;
+  constexpr void constant(Token &result) noexcept;
 
-  void subexpression(Token &result) noexcept;
+  constexpr void subexpression(Token &result) noexcept;
 
   [[no_unique_address]] Token _current [[indeterminate]];
   [[no_unique_address]] Lexer &_lexer;

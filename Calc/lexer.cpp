@@ -11,18 +11,18 @@ namespace {
 const auto &ids = Identifiers::get();
 };
 
-inline EquationPosition Lexer::position() const noexcept {
+constexpr inline EquationPosition Lexer::position() const noexcept {
   [[assume(_current - _begin >= 0 && _current < _end)]];
 
   return static_cast<EquationPosition>(_current - _begin);
 }
 
-inline void Lexer::return_unparsable(Token &current) const noexcept {
+constexpr inline void Lexer::return_unparsable(Token &current) const noexcept {
   current.position = position();
   issue(current, Issue::unparsable);
 }
 
-inline void Lexer::read_operator(Token &current) noexcept {
+constexpr inline void Lexer::read_operator(Token &current) noexcept {
   [[assume(_current - _begin >= 1 && _current < _end)]];
 
   current.position = position();
@@ -33,7 +33,7 @@ inline void Lexer::read_operator(Token &current) noexcept {
   [[assume(_current - _begin >= 1 && _current <= _end)]];
 }
 
-inline void Lexer::read_separator(Token & /*current*/) noexcept {
+constexpr inline void Lexer::read_separator(Token & /*current*/) noexcept {
   [[assume((_current - _begin >= 1 && _current < _end))]];
 #if 0
   current.position = position();
@@ -46,7 +46,7 @@ inline void Lexer::read_separator(Token & /*current*/) noexcept {
   [[assume(_current - _begin >= 1 && _current <= _end)]];
 }
 
-[[nodiscard]] inline void Lexer::read_number(Token &current) noexcept {
+constexpr inline void Lexer::read_number(Token &current) noexcept {
   [[assume(_current - _begin >= 1 && _current < _end)]];
 
   current.position = position();
@@ -75,7 +75,7 @@ inline void Lexer::read_separator(Token & /*current*/) noexcept {
   }
 }
 
-[[nodiscard]] inline void Lexer::read_ident(Token &current) noexcept {
+constexpr inline void Lexer::read_ident(Token &current) noexcept {
   [[assume(_current - _begin >= 1 && _current < _end)]];
 
   current.position = position();
@@ -100,12 +100,12 @@ inline void Lexer::read_separator(Token & /*current*/) noexcept {
   [[assume(_current - _begin >= 1 && _current <= _end)]];
 }
 
-inline void Lexer::return_result(Token &current) const noexcept {
+constexpr inline void Lexer::return_result(Token &current) const noexcept {
   current.position = position();
   current.type = Token::Type::RESULT;
 }
 
-[[nodiscard]] inline constexpr static bool
+[[nodiscard]] constexpr inline static bool
 implicit_mult_first(const Token::Type previous) noexcept {
   // clang-format off
   return previous == Token::Type::NUM ||
@@ -114,7 +114,7 @@ implicit_mult_first(const Token::Type previous) noexcept {
   // clang-format on
 }
 
-[[nodiscard]] inline constexpr static bool
+[[nodiscard]] constexpr inline static bool
 implicit_mult_second(const Token &current) noexcept {
   // clang-format off
   return current.type == Token::Type::NUM ||
