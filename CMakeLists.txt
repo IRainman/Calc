@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 4.3.0)
 
 project(Calc
-  VERSION 2026.11.05.1
+  VERSION 2026.11.05.2
   DESCRIPTION "Fast and power efficient scientific calculator"
   LANGUAGES CXX
 )
