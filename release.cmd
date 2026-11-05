@@ -176,7 +176,6 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -Command ^
     "$full = $version;" ^
     "if ([int64]$parts[3] -gt 65535) { throw 'Daily release counter must be in the range 0..65535.' };" ^
     "$numeric = '{0},{1},{2},{3}' -f [int]$parts[0], [int]$parts[1], [int]$parts[2], [int]$parts[3];" ^
-    "# Replace only the matched UTF-8 byte ranges; preserve the BOM, line endings and all other bytes." ^
     "$utf8 = [System.Text.UTF8Encoding]::new($false, $true);" ^
     "$rcPath = Join-Path (Get-Location) 'Calc\Calc.rc';" ^
     "$cmakePath = Join-Path (Get-Location) 'CMakeLists.txt';" ^
