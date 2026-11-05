@@ -6,7 +6,7 @@ project(Calc
   LANGUAGES CXX
 )
 
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 26)
 set(CMAKE_C_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -142,6 +142,7 @@ message(STATUS "Target architecture: ${CALC_ARCH_DESCRIPTION}")
 # script is added only on Windows.
 set(CALC_SOURCES
   Calc/gui.cpp
+  Calc/cmake_entry.cpp
   Calc/formatter.cpp
   Calc/identifiers.cpp
   Calc/lexer.cpp
@@ -159,7 +160,7 @@ endif()
 
 set_target_properties(Calc PROPERTIES
   OUTPUT_NAME "Calc"
-  CXX_STANDARD 23
+  CXX_STANDARD 26
   C_STANDARD 23
   CXX_STANDARD_REQUIRED ON
   C_STANDARD_REQUIRED ON
