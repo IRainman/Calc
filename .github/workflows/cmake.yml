@@ -131,10 +131,7 @@ jobs:
           test -n "$compiler_info"
           grep 'CMAKE_CXX_COMPILER_ID' "$compiler_info"
           grep 'CMAKE_CXX_COMPILER:' "$cache"
-          grep 'CMAKE_SIZEOF_VOID_P:' "$cache"
-
           grep -q "set(CMAKE_CXX_COMPILER_ID \"$EXPECTED_COMPILER\")" "$compiler_info"
-          grep -q 'CMAKE_SIZEOF_VOID_P:INTERNAL=8' "$cache"
 
       - name: Build Debug
         working-directory: Calc
@@ -169,7 +166,11 @@ jobs:
           test -f "$executable"
           test -x "$executable"
 
-          file "$executable"
+          description="$(file "$executable")"
+          printf '%s\n' "$description"
+
+          [[ "$description" == *"ELF 64-bit"* ]]
+          [[ "$description" == *"x86-64"* ]]
 
       - name: Upload executable
         uses: actions/upload-artifact@v6
