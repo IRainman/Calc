@@ -1,0 +1,455 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing release tag, for example v2026.11.5"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    name: Windows / MSVC / ${{ matrix.arch }}
+    runs-on: windows-2025-vs2026
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86
+            preset: windows-msvc-win32
+          - arch: x64
+            preset: windows-msvc-x64
+
+    steps:
+      - name: Checkout Calc
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+          path: Calc
+          fetch-depth: 1
+
+      - name: Checkout fast_float
+        uses: actions/checkout@v6
+        with:
+          repository: IRainman/fast_float
+          path: fast_float
+          fetch-depth: 1
+
+      - name: Checkout fmt
+        uses: actions/checkout@v6
+        with:
+          repository: IRainman/fmt
+          path: fmt
+          fetch-depth: 1
+
+      - name: Checkout zmij
+        uses: actions/checkout@v6
+        with:
+          repository: IRainman/zmij
+          path: zmij
+          fetch-depth: 1
+
+      - name: Verify toolchain
+        shell: pwsh
+        run: |
+          cmake --version
+          msbuild -version
+
+      - name: Configure
+        working-directory: ${{ github.workspace }}/Calc
+        shell: pwsh
+        run: cmake --preset ${{ matrix.preset }}
+
+      - name: Build Release
+        working-directory: ${{ github.workspace }}/Calc
+        shell: pwsh
+        run: cmake --build --preset ${{ matrix.preset }}-release --parallel --verbose
+
+      - name: Prepare executable and PDB archives
+        working-directory: ${{ github.workspace }}/Calc
+        shell: pwsh
+        run: |
+          Add-Type -AssemblyName System.IO.Compression
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+
+          $output = "out/build/${{ matrix.preset }}/Release"
+          $exe = Join-Path $output "Calc.exe"
+          $pdb = Join-Path $output "Calc.pdb"
+          $release = Join-Path $PWD "release"
+
+          foreach ($path in @($exe, $pdb)) {
+            if (-not (Test-Path $path -PathType Leaf)) {
+              throw "Required build output is missing: $path"
+            }
+          }
+
+          if (Test-Path $release) {
+            Remove-Item $release -Recurse -Force
+          }
+          New-Item -ItemType Directory -Force -Path $release | Out-Null
+
+          function New-SingleFileZip {
+            param(
+              [string] $Source,
+              [string] $Destination,
+              [string] $EntryName,
+              [System.IO.Compression.CompressionLevel] $Level
+            )
+
+            $archive = [System.IO.Compression.ZipFile]::Open($Destination, [System.IO.Compression.ZipArchiveMode]::Create)
+            try {
+              [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, $Source, $EntryName, $Level) | Out-Null
+            }
+            finally {
+              $archive.Dispose()
+            }
+          }
+
+          $arch = "${{ matrix.arch }}"
+
+          # Keep the executable uncompressed inside its ZIP archive.
+          New-SingleFileZip -Source $exe -Destination (Join-Path $release "Calc-Windows-$arch.exe.zip") -EntryName "Calc.exe" -Level ([System.IO.Compression.CompressionLevel]::NoCompression)
+
+          # Compress PDB files separately.
+          New-SingleFileZip -Source $pdb -Destination (Join-Path $release "Calc-Windows-$arch.pdb.zip") -EntryName "Calc.pdb" -Level ([System.IO.Compression.CompressionLevel]::Optimal)
+
+          Get-ChildItem $release -File | Sort-Object Name | Format-Table Name, Length
+
+      - name: Prepare source and dependency archive
+        if: matrix.arch == 'x64'
+        working-directory: ${{ github.workspace }}
+        shell: pwsh
+        run: |
+          $sourceRoot = Join-Path $env:RUNNER_TEMP "Calc-source-package"
+          $sourceDir = Join-Path $sourceRoot "source"
+          $releaseDir = Join-Path $PWD "Calc\release"
+
+          if (Test-Path $sourceRoot) {
+            Remove-Item $sourceRoot -Recurse -Force
+          }
+          New-Item -ItemType Directory -Force -Path $sourceDir | Out-Null
+
+          $repositories = @(
+            @{ Name = "Calc"; Path = "Calc"; Prefix = "Calc/" },
+            @{ Name = "fast_float"; Path = "fast_float"; Prefix = "fast_float/" },
+            @{ Name = "fmt"; Path = "fmt"; Prefix = "fmt/" },
+            @{ Name = "zmij"; Path = "zmij"; Prefix = "zmij/" }
+          )
+
+          $versions = [System.Collections.Generic.List[string]]::new()
+          $versions.Add("Calc source and dependency package")
+          $versions.Add("")
+          $versions.Add("Exact repository revisions used for this release:")
+          $versions.Add("")
+
+          foreach ($repository in $repositories) {
+            $name = $repository.Name
+            $path = $repository.Path
+            $prefix = $repository.Prefix
+
+            if (-not (Test-Path (Join-Path $path ".git"))) {
+              throw "Not a Git checkout: $path"
+            }
+
+            $sha = (git -C $path rev-parse HEAD).Trim()
+            if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($sha)) {
+              throw "Unable to determine Git revision for $name."
+            }
+
+            $remote = (git -C $path remote get-url origin 2>$null).Trim()
+            if ([string]::IsNullOrWhiteSpace($remote)) {
+              $remote = "(no origin remote)"
+            }
+
+            $versions.Add($name)
+            $versions.Add("  Repository: $remote")
+            $versions.Add("  Commit:     $sha")
+            $versions.Add("")
+
+            $archive = Join-Path $env:RUNNER_TEMP "$name-source.zip"
+            if (Test-Path $archive) {
+              Remove-Item $archive -Force
+            }
+
+            git -C $path archive --format=zip "--prefix=$prefix" "--output=$archive" HEAD
+            if ($LASTEXITCODE -ne 0 -or -not (Test-Path $archive)) {
+              throw "git archive failed for $name."
+            }
+
+            Expand-Archive -LiteralPath $archive -DestinationPath $sourceDir -Force
+            Remove-Item $archive -Force
+          }
+
+          $versions | Set-Content -Path (Join-Path $sourceDir "SOURCE-VERSIONS.txt") -Encoding utf8
+
+          $sourceArchive = Join-Path $releaseDir "Calc-Windows-source.zip"
+          Compress-Archive -Path "$sourceDir\*" -DestinationPath $sourceArchive -CompressionLevel Optimal
+
+          if (-not (Test-Path $sourceArchive)) {
+            throw "Source archive was not created."
+          }
+
+          Get-Item $sourceArchive | Format-List FullName, Length
+
+      - name: Verify release assets
+        working-directory: ${{ github.workspace }}/Calc
+        shell: pwsh
+        run: |
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+
+          $release = Join-Path $PWD "release"
+          $arch = "${{ matrix.arch }}"
+          $expected = @("Calc-Windows-$arch.exe.zip", "Calc-Windows-$arch.pdb.zip")
+          if ($arch -eq "x64") {
+            $expected += "Calc-Windows-source.zip"
+          }
+
+          foreach ($name in $expected) {
+            if (-not (Test-Path (Join-Path $release $name) -PathType Leaf)) {
+              throw "Missing release asset: $name"
+            }
+          }
+
+          $exeZip = Join-Path $release "Calc-Windows-$arch.exe.zip"
+          $archive = [System.IO.Compression.ZipFile]::OpenRead($exeZip)
+          try {
+            if ($archive.Entries.Count -ne 1 -or $archive.Entries[0].Name -ne "Calc.exe") {
+              throw "Executable archive must contain exactly Calc.exe."
+            }
+            if ($archive.Entries[0].CompressedLength -ne $archive.Entries[0].Length) {
+              throw "Calc.exe must be stored without compression."
+            }
+          }
+          finally {
+            $archive.Dispose()
+          }
+
+          $pdbZip = Join-Path $release "Calc-Windows-$arch.pdb.zip"
+          $archive = [System.IO.Compression.ZipFile]::OpenRead($pdbZip)
+          try {
+            if ($archive.Entries.Count -ne 1 -or $archive.Entries[0].Name -ne "Calc.pdb") {
+              throw "PDB archive must contain exactly Calc.pdb."
+            }
+          }
+          finally {
+            $archive.Dispose()
+          }
+
+          if ($arch -eq "x64") {
+            $sourceZip = Join-Path $release "Calc-Windows-source.zip"
+            $archive = [System.IO.Compression.ZipFile]::OpenRead($sourceZip)
+            try {
+              $required = @("Calc/", "fast_float/", "fmt/", "zmij/", "SOURCE-VERSIONS.txt")
+              foreach ($prefix in $required) {
+                $found = $false
+                foreach ($entry in $archive.Entries) {
+                  if ($entry.FullName -eq $prefix -or $entry.FullName.StartsWith($prefix)) {
+                    $found = $true
+                    break
+                  }
+                }
+                if (-not $found) {
+                  throw "Source archive is missing: $prefix"
+                }
+              }
+            }
+            finally {
+              $archive.Dispose()
+            }
+          }
+
+          $actual = @(Get-ChildItem $release -File | Select-Object -ExpandProperty Name | Sort-Object)
+          $expected = @($expected | Sort-Object)
+          $difference = Compare-Object $expected $actual
+          if ($null -ne $difference) {
+            Write-Host "Expected:"
+            $expected
+            Write-Host "Actual:"
+            $actual
+            throw "Unexpected Windows release asset set."
+          }
+
+          Get-ChildItem $release -File | Sort-Object Name | Format-Table Name, Length
+
+      - name: Upload Windows release assets
+        uses: actions/upload-artifact@v6
+        with:
+          name: Calc-Windows-${{ matrix.arch }}
+          path: Calc/release/*
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 7
+
+  linux:
+    name: Linux / ${{ matrix.compiler }} / x86-64-v2
+    runs-on: ubuntu-latest
+    container:
+      image: cachyos/cachyos:latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler:
+          - gcc
+          - clang
+
+    steps:
+      - name: Checkout Calc
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+          path: Calc
+          fetch-depth: 1
+
+      - name: Checkout fast_float
+        uses: actions/checkout@v6
+        with:
+          repository: IRainman/fast_float
+          path: fast_float
+
+      - name: Checkout fmt
+        uses: actions/checkout@v6
+        with:
+          repository: IRainman/fmt
+          path: fmt
+
+      - name: Checkout zmij
+        uses: actions/checkout@v6
+        with:
+          repository: IRainman/zmij
+          path: zmij
+
+      - name: Install build tools
+        shell: bash
+        run: |
+          set -eux
+          pacman -Syu --noconfirm --needed \
+            cmake ninja gcc clang llvm lld binutils git xz
+
+      - name: Verify toolchain
+        shell: bash
+        run: |
+          set -eux
+          cmake --version
+          ninja --version
+          if [ "${{ matrix.compiler }}" = "clang" ]; then
+            clang --version
+            clang++ --version
+            ld.lld --version
+          else
+            gcc --version
+            g++ --version
+          fi
+
+      - name: Configure
+        working-directory: ${{ github.workspace }}/Calc
+        shell: bash
+        run: cmake --preset linux-${{ matrix.compiler }}-x64
+
+      - name: Build Release
+        working-directory: ${{ github.workspace }}/Calc
+        shell: bash
+        run: cmake --build --preset linux-${{ matrix.compiler }}-x64-release --parallel --verbose
+
+      - name: Prepare Linux archive
+        working-directory: ${{ github.workspace }}/Calc
+        shell: bash
+        run: |
+          set -eux
+          output="out/build/linux-${{ matrix.compiler }}-x64/Release"
+          executable="$output/Calc"
+          archive="Calc-Linux-x86-64-v2-${{ matrix.compiler }}.tar.xz"
+
+          test -f "$executable"
+          file "$executable"
+
+          tar -cJf "$archive" -C "$output" Calc
+          tar -tJf "$archive" | grep -Fx Calc
+
+          mkdir -p release
+          mv "$archive" release/
+
+      - name: Upload Linux release assets
+        uses: actions/upload-artifact@v6
+        with:
+          name: Calc-Linux-${{ matrix.compiler }}
+          path: Calc/release/Calc-Linux-x86-64-v2-${{ matrix.compiler }}.tar.xz
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 7
+
+  release:
+    name: Publish GitHub Release
+    needs:
+      - windows
+      - linux
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download Windows x86 assets
+        uses: actions/download-artifact@v6
+        with:
+          name: Calc-Windows-x86
+          path: release/windows-x86
+
+      - name: Download Windows x64 assets
+        uses: actions/download-artifact@v6
+        with:
+          name: Calc-Windows-x64
+          path: release/windows-x64
+
+      - name: Download Linux GCC asset
+        uses: actions/download-artifact@v6
+        with:
+          name: Calc-Linux-gcc
+          path: release/linux-gcc
+
+      - name: Download Linux Clang asset
+        uses: actions/download-artifact@v6
+        with:
+          name: Calc-Linux-clang
+          path: release/linux-clang
+
+      - name: Create or update GitHub Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          INPUT_TAG: ${{ inputs.tag }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+
+          if [ -n "$INPUT_TAG" ]; then
+            tag="$INPUT_TAG"
+          else
+            tag="$REF_NAME"
+          fi
+
+          if [[ ! "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([.-].*)?$ ]]; then
+            echo "Invalid release tag: $tag" >&2
+            exit 1
+          fi
+
+          mapfile -t files < <(find release -type f -print | sort)
+          if [ "${#files[@]}" -ne 7 ]; then
+            printf 'Expected 7 release assets, found %s:\n' "${#files[@]}" >&2
+            printf '  %s\n' "${files[@]}" >&2
+            exit 1
+          fi
+
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" "${files[@]}" --clobber
+          else
+            gh release create "$tag" --title "Calc $tag" --generate-notes "${files[@]}"
+          fi
+
+          gh release view "$tag"
