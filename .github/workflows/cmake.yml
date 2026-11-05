@@ -198,9 +198,11 @@ jobs:
       matrix:
         include:
           - arch: x86
+            msvc_arch: x86
             configure_preset: windows-msvc-win32
 
           - arch: x64
+            msvc_arch: x64
             configure_preset: windows-msvc-x64
 
     steps:
@@ -232,6 +234,11 @@ jobs:
           ref: main
           path: zmij
           persist-credentials: false
+
+      - name: Setup MSVC environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ${{ matrix.msvc_arch }}
 
       - name: Verify toolchain
         shell: pwsh
