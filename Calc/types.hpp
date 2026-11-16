@@ -37,9 +37,8 @@
  */
 #ifdef _WIN32
 #define CALC_SUPPORT_UNICODE_INPUT
-#endif
-
 // TODO:
 // #define CALC_USED_SIMDUTF
+#endif
 //---------------------------------------------------------------------------
 #endif
