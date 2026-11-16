@@ -158,7 +158,7 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 // https://github.com/fastfloat/fast_float/pull/307
 // Tests time is: 48459ms.
 #define FASTFLOAT_ONLY_POSITIVE_C_NUMBER_WO_INF_NAN
-#define FASTFLOAT_ONLY_ROUNDS_TO_NEAREST_SUPPORTED
+#define FASTFLOAT_ROUNDS_TO_NEAREST
 #define FASTFLOAT_ISNOT_CHECKED_BOUNDS
 // Wo options Tests time is: 53278ms. Original Tests time is: 56140ms.
 // clang-format on
