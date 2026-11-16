@@ -125,7 +125,7 @@ implicit_mult_second(const Token &current) noexcept {
 }
 
 void Lexer::next(Token &current) noexcept {
-  if (_delayed.type != Token::Type::ISSUE) {
+  if (_delayed.type != Token::Type::ISSUE) [[unlikely]] {
     current = _delayed;
     _previous = _delayed.type;
     _delayed.type = Token::Type::ISSUE;
@@ -166,7 +166,7 @@ void Lexer::next(Token &current) noexcept {
     }
   valid_token_return:
     if (!is_separator && implicit_mult_first(_previous) &&
-        implicit_mult_second(current)) {
+        implicit_mult_second(current)) [[unlikely]] {
       _delayed = current;
       current.type = Token::Type::MUL;
     }
