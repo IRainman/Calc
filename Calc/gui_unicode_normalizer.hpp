@@ -377,7 +377,7 @@ private:
         UINT in_implicit_argument = 0;
 
         // Main processing loop - processes all input characters
-        for (; input != _end; ++input) {
+        for (; input != _end; ++input) [[likely]] {
           const auto &c = *input;
 
           // Exit superscript mode if encountering a non-superscript character
@@ -396,7 +396,7 @@ private:
           }
 
           // Pass through printable ASCII characters unchanged
-          if (is_printable_ascii(c)) {
+          if (is_printable_ascii(c)) [[likely]] {
             *output++ = static_cast<char>(c);
             continue;
           }
