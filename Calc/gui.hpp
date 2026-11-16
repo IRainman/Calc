@@ -14,54 +14,103 @@ namespace GUI {
 
 #ifdef _WIN32
 
+#include "targetver.h"
+
+/**
+ * Check Windows version support for WinHE GUI application. The minimal
+ * supported version is Windows 2000, but some features are not available in
+ * older versions.
+ */
+
+#if (_WIN32_WINNT < _WIN32_WINNT_WIN2K)
+#error                                                                         \
+    "WinHE framework is for the dialog based applications. Windows 2000 is the minimal possible version to compile."
+#endif
+
+#if (_WIN32_WINNT >= 0x0501)
+#define WinHE_SUPPORT_LINK_WINDOW // LinkWindow, NMLINK, ShellExecuteW
+#else
+#warning                                                                       \
+    "The link in windows working from XP, before it's not working at all because system API isn't exist"
+#endif
+
+#if (_WIN32_WINNT >= 0x0502)
+#define WinHE_SUPPORT_SET_LIMIT_TEXT // EM_LIMITTEXT message
+#else
+#warning                                                                       \
+    "From Windows XP 64 bit and Server 2003 you can use increased user input, before only 32k symbols is possible."
+#endif
+
+#if (_WIN32_WINNT >= 0x0600)
+#define WinHE_SUPPORT_DPI_CHANGES       // SetProcessDPIAware
+#define WinHE_SUPPORT_AUTO_RESTART      // RegisterApplicationRestart
+#define WinHE_SUPPORT_DEVIRTUALIZED_REG // REG_OPTION_DONT_VIRTUALIZE
+#else
+#warning                                                                       \
+    "Restart manager, DWM support and different DPI scaling supported from Vista and Server 2008."
+#endif
+
+#if (_WIN32_WINNT >= 0x0605)
+#define WinHE_SUPPORT_DPI_FOR_WINDOW // GetDpiForWindow
+/**
+ * WinHE_SUPPORT_DPI_CHANGES_WITHOUT_RESTART removed because it's very difficult
+ * to implement, and for Dialog applications it's completely over-engineering
+ * and overhead:
+ * WM_DPICHANGED signal, AdjustWindowRectExForDpi,
+ * SetProcessDpiAwarenessContext, WM_GETDPISCALEDSIZE signal
+ */
+#endif
+
+#if (_WIN32_WINNT >= 0x0A00)
+/**
+ * WinHE_SUPPORT_WINDOWS_VERSION_CHECK deprecated because it's overhead and the
+ * OS version checked only in compile time. Not fully implemented.
+ */
+#else
+#warning                                                                       \
+    "Since Windows 10 and Server 2016 the HiDPI supported and Dialog based applications resized automatically when DPI changed."
+#endif
+
+#if (NTDDI_VERSION >= NTDDI_WIN10_RS5)
+/**
+ * Allow any EOL for input because the Normalizer converts it to a space, this
+ * also speedup and cleanup formatting.
+ */
+#define WinHE_SUPPORT_EXTENDENT_STYLES // ES_EX_ALLOWEOL_ALL
+#else
+#warning "Extended styles supported since Windows 10 RS5."
+#endif
+
+#if (NTDDI_VERSION >= NTDDI_WIN10_19H1)
+/**
+ * Support dark mode for Windows 10 1903+.
+ */
+#define WinHE_SUPPORT_DARK_MODE
+#else
+#warning "Dark mode available since Windows 10 1903."
+#endif
+
+#ifdef _DEBUG
+/**
+ * For testing only, not for production, this code needs to be moved to it's own
+ * utility:
+ */
+// #define WinHE_SUPPORT_DARK_MODE_TEST_WIN32_HELPER_REALIZATION
+#endif
+
 /// Explicitely enable C++ support by Windows SDK to use Unicode on systems
 /// before Windows Vista or Server 2008
 #define WINDOWS_ENABLE_CPLUSPLUS
+
+/**
+ * WinHE_DISABLE_IME removed because now Unicode is converted by Edit and
+ * EditView.
+ */
 
 /// Speed up build time by excluding rarely-used stuff from Windows headers
 #define VC_EXTRALEAN
 #define WIN32_LEAN_AND_MEAN
 
-#include "targetver.h"
-
-/**
- * Check Windows version support for Calc GUI application. The minimal supported
- * version is Windows 2000, but some features are not available in older
- * versions below Windows 10 or Server 2016.
- */
-
-#if (_WIN32_WINNT < _WIN32_WINNT_WIN2K)
-#error                                                                         \
-    "Calc is the dialog based application. Windows 2000 is the minimal posiible version to compile."
-#endif
-
-#if (_WIN32_WINNT < _WIN32_WINNT_WINXP)
-#warning                                                                       \
-    "The homepage link in the about box working from XP, before it's not working at all because system API isn't exist"
-#endif
-
-#if (_WIN32_WINNT < _WIN32_WINNT_WS03)
-#warning                                                                       \
-    "From Windows XP 64 bit and Server 2003 we can use increased user input, before only 32k symbols is possible."
-#endif
-
-#if (_WIN32_WINNT < _WIN32_WINNT_WIN6)
-#warning                                                                       \
-    "Restart manager and different DPI scaling supported from Vista and Server 2008."
-#endif
-
-#if (_WIN32_WINNT < _WIN32_WINNT_WIN10)
-#warning                                                                       \
-    "In Windows 10 and Server 2016 the HiDPI supported and Dialog based applications resized automatically when DPI changed."
-#endif
-
-#if (NTDDI_VERSION < NTDDI_WIN10_19H1)
-#warning "Dark mode available from Windows 10 1903."
-#endif
-
-/**
- * Disable rarely-used stuff from Windows headers
- */
 #ifdef CALC_USED_SIMDUTF
 #define NOAPISET // MultiByteToWideChar, WideCharToMultiByte
 #endif
@@ -217,7 +266,7 @@ typedef INT_PTR CALLBACK DlgProc(HWND, UINT, WPARAM, LPARAM) noexcept;
 
 #ifdef WinHE_SUPPORT_EXTENDENT_STYLES
 /**
- * Set window extended styles.
+ * @brief Set window extended styles.
  */
 constexpr static void set_extended_style(const HWND window,
                                          const DWORD style) noexcept {
@@ -250,7 +299,7 @@ open_link(const HWND window, const LPARAM lParam, const UINT id) noexcept {
 #endif
 
 /**
- * Set text to window. Shoul be zero terminated!
+ * @brief Set text to window. Shoul be zero terminated!
  * @see Edit
  */
 constexpr static void set_text(const HWND window, LPCSTR const text) noexcept {
@@ -258,7 +307,9 @@ constexpr static void set_text(const HWND window, LPCSTR const text) noexcept {
 }
 
 /**
- * Set text to window (end is for C string terminator).
+ * @brief Set text to window
+ * @warning parameter text_end is for C string terminator.
+ *
  * @see Edit
  */
 constexpr static void set_text(const HWND window, LPCSTR const text,
@@ -268,7 +319,8 @@ constexpr static void set_text(const HWND window, LPCSTR const text,
 }
 
 /**
- * Set text to window.
+ * @brief Set text to window.
+ *
  * @see Edit
  */
 constexpr static void set_text(const HWND window, LPCSTR const text,
@@ -278,7 +330,8 @@ constexpr static void set_text(const HWND window, LPCSTR const text,
 
 #ifdef WinHE_SUPPORT_SET_LIMIT_TEXT
 /**
- * Set window text limit
+ * @brief Set window text limit
+ *
  * @see Edit
  */
 constexpr static void set_text_limit(const HWND window,
@@ -288,7 +341,7 @@ constexpr static void set_text_limit(const HWND window,
 #endif
 
 /**
- * Goto end of text in window and scroll caret to it
+ * @brief Goto end of text in window and scroll caret to it
  */
 constexpr static void goto_end_of_text(const HWND window) noexcept {
   PostMessageA(window, EM_SETSEL, 0, -1);

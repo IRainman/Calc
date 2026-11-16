@@ -38,21 +38,18 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 // Calc compile options:
 // clang-format off
 #ifdef _MSC_VER
-#pragma warning(disable : 4365) // signed/unsigned mismatch
+#pragma warning(disable : 4365) // 'x': conversion from 'u' to 's', signed/unsigned mismatch
 #pragma warning(disable : 4464) // relative include path contains '..'
-#pragma warning(disable : 4514) // unreferenced inline function has been removed
-#pragma warning(disable : 4623) // default constructor was implicitly defined as deleted
-#pragma warning(disable : 4625) // copy constructor was implicitly defined as deleted
-#pragma warning(disable : 4626) // assignment operator was implicitly defined as deleted
-#pragma warning(disable : 4668) // 'D' is not defined as a preprocessor macro, replacing with '0' for 'directives'
-#pragma warning(disable : 4710) // 'f': function not inlined
-#pragma warning(disable : 4711) // function 'f' selected for automatic inline expansion
+#pragma warning(disable : 4514) // 'x': unreferenced inline function has been removed
+#pragma warning(disable : 4623) // 'x': default constructor was implicitly defined as deleted
+#pragma warning(disable : 4625) // 'x': copy constructor was implicitly defined as deleted
+#pragma warning(disable : 4626) // 'x': assignment operator was implicitly defined as deleted
 #pragma warning(disable : 4820) // 'x': 'n' bytes padding added after data member 'y'
 #pragma warning(disable : 5026) // 'x': move constructor was implicitly defined as deleted
-#pragma warning(disable : 5027) // move assignment operator was implicitly defined as deleted
+#pragma warning(disable : 5027) // 'x': move assignment operator was implicitly defined as deleted
 #pragma warning(disable : 5030) // attribute 'a' is not recognized
-#pragma warning(disable : 5045) // warning for unsafe buffer usage
-#pragma warning(disable : 5222) // all unscoped attribute names are reserved for future standardization
+#pragma warning(disable : 5045) // Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified
+#pragma warning(disable : 5222) // 'x': all unscoped attribute names are reserved for future standardization
 #endif
 // clang-format on
 
@@ -83,6 +80,60 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 #ifdef CALC_TESTS_ENABLED
 #include <chrono>
 #endif
+
+//---------------------------------------------------------------------------
+namespace Calc {
+/**
+ * Types using for calculation.
+ */
+using EquationPosition = std::uint_fast32_t;
+constexpr EquationPosition maximum_user_input = 128 * 1024;
+using ParamCount = std::uint_fast8_t;
+using Integer = std::int_fast64_t;
+using UInteger = std::uint_fast64_t;
+
+#if _DEBUG && defined(__STDCPP_FLOAT128_T__) && __STDCPP_FLOAT128_T__ == 1
+#warning "WIP: Calc is using 64-bit double implementation in many places."
+using Value = std::float128_t;
+#define CALC_USED_128_BIT_FLOAT 1
+constexpr Value huge_value_precision = 1e33;
+constexpr Value small_value_precision = 1e-33;
+#else
+#if 0 // __STDCPP_FLOAT64_T__ == 1 // TODO fix me.
+using Value = std::float64_t;
+#else
+using Value = double;
+#endif
+
+#define CALC_USED_128_BIT_FLOAT 0
+constexpr Value huge_value_precision = 1e15;
+constexpr Value small_value_precision = 1e-15;
+constexpr uint8_t exponent_precision = 3;
+#endif
+constexpr uint8_t output_precision = std::numeric_limits<Value>::digits10;
+#ifdef CALC_TEST_EQUATION_SOLVER
+using Complex = std::complex<Value>;
+#endif
+//---------------------------------------------------------------------------
+/**
+ * Stack type for result formatting
+ */
+using Result = std::array<char,
+#ifdef CALC_TESTS_ENABLED
+                          1024
+#else
+                          std::max(1 /*sign*/ + 1 /*point*/ + output_precision +
+                                       1 /*exponent symbol*/ +
+                                       1 /*sign of exponent*/ +
+                                       exponent_precision,
+                                   25 /*maximum issue length*/ +
+                                       5 /*maximum issue position*/ +
+                                       2 /*text added by formatter*/) +
+                              1 /*potencial C terminator in the system API*/
+#endif
+                          >;
+//---------------------------------------------------------------------------
+} // namespace Calc
 
 //---------------------------------------------------------------------------
 // Zmij compile options:
@@ -169,57 +220,5 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 // TODO: add simdutf compile options here? Or make simdutf a shared library?
 #endif
 //---------------------------------------------------------------------------
-namespace Calc {
-/**
- * Types using for calculation.
- */
-using EquationPosition = std::uint_fast32_t;
-constexpr EquationPosition maximum_user_input = 128 * 1024;
-using ParamCount = std::uint_fast8_t;
-using Integer = std::int_fast64_t;
-using UInteger = std::uint_fast64_t;
-
-#if _DEBUG && __STDCPP_FLOAT128_T__ == 1
-#warning "WIP: Calc is using 64-bit double implementation in many places."
-using Value = std::float128_t;
-#define CALC_USED_128_BIT_FLOAT 1
-constexpr Value huge_value_precision = 1e33;
-constexpr Value small_value_precision = 1e-33;
-#else
-#if 0 // __STDCPP_FLOAT64_T__ == 1
-using Value = std::float64_t;
-#else
-using Value = double;
-#endif
-
-#define CALC_USED_128_BIT_FLOAT 0
-constexpr Value huge_value_precision = 1e15;
-constexpr Value small_value_precision = 1e-15;
-constexpr uint8_t exponent_precision = 3;
-#endif
-constexpr uint8_t output_precision = std::numeric_limits<Value>::digits10;
-#ifdef CALC_TEST_EQUATION_SOLVER
-using Complex = std::complex<Value>;
-#endif
-//---------------------------------------------------------------------------
-/**
- * Stack type for result formatting
- */
-using Result = std::array<char,
-#ifdef CALC_TESTS_ENABLED
-                          1024
-#else
-                          std::max(1 /*sign*/ + 1 /*point*/ + output_precision +
-                                       1 /*exponent symbol*/ +
-                                       1 /*sign of exponent*/ +
-                                       exponent_precision,
-                                   25 /*maximum issue length*/ +
-                                       5 /*maximum issue position*/ +
-                                       2 /*text added by formatter*/) +
-                              1 /*potencial C terminator in the system API*/
-#endif
-                          >;
-//---------------------------------------------------------------------------
-} // namespace Calc
 
 #endif
