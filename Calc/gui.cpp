@@ -320,17 +320,14 @@ private:
     const auto end = std::chrono::steady_clock::now();
 #ifdef CALC_TESTS_DEV_ENABLED // Development
     output_end = fmt::format_to(
-        output_end,
-        FMT_COMPILE("Tests:\n"
-                    " passed: {},\n failed: {}\n"
-                    " GUI time is {}µs per case."),
+        output_end, FMT_COMPILE("GUI {}/{}, t: {}µs/case"),
         normalizer_tests.size() - static_cast<size_t>(failed), failed,
         std::chrono::duration_cast<std::chrono::microseconds>(
             (end - start) / normalizer_tests.size())
             .count());
 #else // Performance
     output_end =
-        fmt::format_to(output_end, FMT_COMPILE("Norm. is {}ns per case."),
+        fmt::format_to(output_end, FMT_COMPILE("Normalizer is {}ns/case."),
                        std::chrono::duration_cast<std::chrono::nanoseconds>(
                            (end - start) / (normalizer_tests.size() * count))
                            .count());

@@ -159,7 +159,7 @@ std::string tests() {
       FMT_COMPILE("Tests:\n"
                   " fegetround() == {}\n"
                   " passed: {},\n failed: {}\n"
-                  " time is: {}ns per case."),
+                  " time is: {}ns/case."),
       round_name(std::fegetround()),
       static_cast<std::uint32_t>(test_equasions.size()) - failed, failed,
       std::chrono::duration_cast<std::chrono::nanoseconds>(
@@ -167,7 +167,7 @@ std::string tests() {
           .count());
 #else // Performance
   output_end = fmt::format_to(
-      output_end, FMT_COMPILE("Calc performance tests time is: {}ns per case."),
+      output_end, FMT_COMPILE("Calc performance tests time is: {}ns/case."),
       std::chrono::duration_cast<std::chrono::nanoseconds>(
           (end - start) / (test_equasions.size() * count))
           .count());
