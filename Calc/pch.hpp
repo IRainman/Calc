@@ -38,13 +38,17 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 // Calc compile options:
 // clang-format off
 #ifdef _MSC_VER
+
+// aligment, may be need for cache usage optimizations
+#pragma warning(disable : 4324) // 'x': structure was padded due to alignment specifier
+#pragma warning(disable : 4820) // 'x': 'n' bytes padding added after data member 'y'
+
 #pragma warning(disable : 4365) // 'x': conversion from 'u' to 's', signed/unsigned mismatch
 #pragma warning(disable : 4464) // relative include path contains '..'
 #pragma warning(disable : 4514) // 'x': unreferenced inline function has been removed
 #pragma warning(disable : 4623) // 'x': default constructor was implicitly defined as deleted
 #pragma warning(disable : 4625) // 'x': copy constructor was implicitly defined as deleted
 #pragma warning(disable : 4626) // 'x': assignment operator was implicitly defined as deleted
-#pragma warning(disable : 4820) // 'x': 'n' bytes padding added after data member 'y'
 #pragma warning(disable : 5026) // 'x': move constructor was implicitly defined as deleted
 #pragma warning(disable : 5027) // 'x': move assignment operator was implicitly defined as deleted
 #pragma warning(disable : 5030) // attribute 'a' is not recognized
@@ -147,14 +151,13 @@ using Result = std::array<char,
 #pragma warning(push)
 #pragma warning(disable : 4100) // unreferenced formal parameter
 #pragma warning(disable : 4189) // local variable is initialized but not referenced
-#pragma warning(disable : 4324) // structure was padded due to alignment specifier
-#pragma warning(disable : 4388) // 'operator': signed/unsigned mismatch
 #pragma warning(disable : 4242) // 'operator': conversion from 'type_x' to 'type_y', possible loss of data
 #pragma warning(disable : 4244) // conversion from 'type_x' to 'type_y', possible loss of data
-#pragma warning(disable : 4554) // 'operator': check operator precedence for possible error; use parentheses to...
+#pragma warning(disable : 4388) // 'operator': signed/unsigned mismatch
 #pragma warning(disable : 4390) // empty control statement has no effect
 #pragma warning(disable : 4456) // declaration of 'x' hides previous local declaration
 #pragma warning(disable : 4459) // declaration of 'x' hides global declaration
+#pragma warning(disable : 4554) // 'operator': check operator precedence for possible error; use parentheses to...
 #pragma warning(disable : 4804) // 'operator': unsafe use of type 'type_x' in operation
 #pragma warning(disable : 5245) // anonymous-namespace 'x': unreferenced function with internal linkage has been removed
 #endif
@@ -191,8 +194,11 @@ using Result = std::array<char,
 #ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4061) // enumerator 'x' in switch of enum 'y' is not explicitly handled by a case label
+#pragma warning(disable : 4244) // 'x': conversion from 'type_x' to 'type_y', possible loss of data
+#pragma warning(disable : 4390) // ';': empty controlled statement found; is this the intent?
 #pragma warning(disable : 4574) // 'x' is defined to be 'n': did you mean to use '#if x'?
 #pragma warning(disable : 4582) // constructor is not implicitly called
+#pragma warning(disable : 4804) // 'operator': unsafe use of type 'type_x' in operation
 #endif
 // clang-format on
 #include "../../fmt/include/fmt/compile.h"
