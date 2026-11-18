@@ -28,6 +28,8 @@ constexpr static const auto issue_text = std::to_array<std::string_view>(
 static_assert(static_cast<size_t>(Issue::_count) == issue_text.size());
 
 struct Token {
+  // potential maximum count after parsing:
+  // 2^16/(1+1) = 32768 or 2^16/(1+1)-1-1 = 32766
   enum class Type : ParamCount {
     // https://en.cppreference.com/w/cpp/language/ascii
     RESULT = 0x00,
@@ -55,21 +57,21 @@ struct Token {
   };
 
   union {
-    // If token is a number this is the value of it.
+    /// If token is a number this is the value of it.
     [[no_unique_address]] Value number [[indeterminate]];
 
-    // If token is a function or a constant, there is a pointer to it.
+    /// If token is a function or a constant, there is a pointer to it.
     [[no_unique_address]] Identifiers::map::const_pointer identifier
         [[indeterminate]];
 
-    // If token is an error, there is an index of the message for it.
+    /// If token is an error, there is an index of the message for it.
     [[no_unique_address]] Issue index [[indeterminate]];
   };
 
-  // Position of this token in the input string.
+  /// Position of this token in the input string.
   [[no_unique_address]] EquationPosition position [[indeterminate]];
 
-  // Type of this token.
+  /// Type of this token.
   [[no_unique_address]] Type type [[indeterminate]];
 
   constexpr inline Token(const Type t) noexcept : type(t) {}

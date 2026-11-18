@@ -54,7 +54,7 @@ private:
    */
   constexpr void advance() noexcept;
 
-  constexpr void expr_4(Token &result) noexcept;
+  void expr_4(Token &result) noexcept;
 
   constexpr void expr_3(Token &result) noexcept;
 

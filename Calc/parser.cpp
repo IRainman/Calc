@@ -33,7 +33,7 @@ void Parser::result(Token &result) noexcept {
     return;
   }
   default: {
-    // early exit when expression is incorrect
+    // early exit when expression or its part is fully incorrect
     result.position = _current.position;
     [[unlikely]] issue(result, Issue::expected_valid_expression);
     return;
@@ -43,7 +43,7 @@ void Parser::result(Token &result) noexcept {
 
 constexpr void Parser::advance() noexcept { _lexer.next(_current); }
 
-constexpr void Parser::expr_4(Token &result) noexcept {
+void Parser::expr_4(Token &result) noexcept {
   expr_3(result);
   while (true) {
     switch (_current.type) {
@@ -136,7 +136,7 @@ issue_expected_number:
 constexpr void Parser::expr_2(Token &result) noexcept {
   ParamCount count = 0;
   std::array<Token, std::numeric_limits<ParamCount>::max()> tokens
-      [[indeterminate]]; // potential maximum: 2^16/(1+1) = 32768
+      [[indeterminate]];
   do {
     expr_1(tokens[count]);
     if (_current.type == Token::Type::POW) {
@@ -267,7 +267,7 @@ constexpr void Parser::function(Token &result) noexcept {
     const auto &[caller, check] = result.identifier->second;
     ParamCount count = 0;
     std::array<Token, std::numeric_limits<ParamCount>::max()> parameters
-        [[indeterminate]]; // potential maximum: 2^16/(1+1)-1-1 = 32766
+        [[indeterminate]];
 
     do {
       expr_4(parameters[count]);
