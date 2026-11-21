@@ -8,7 +8,14 @@
 /**
  * gui.hpp : Contains wrapers and other usable helpers to work with GUI, process
  * user input, write program output, work with system database, etc.
+ *
+ * Uses WinHE framework (this file + targetver.h on Win32) for Windows GUI and
+ * Qt for cross-platform GUI
  */
+
+static_assert(__cplusplus >= 202302L,
+              "WinHE is C++ latest-edge standard framework");
+
 #ifdef _WIN32
 #include <optional> // RegRead
 #else
@@ -33,7 +40,7 @@ namespace GUI {
 #endif
 
 #if (_WIN32_WINNT >= 0x0501)
-#define WinHE_SUPPORT_LINK_WINDOW // LinkWindow, NMLINK, ShellExecuteW
+#define WinHE_SUPPORT_LINK_WINDOW // LinkWindow, NMLINK
 #else
 #warning                                                                       \
     "The link in windows working from XP, before it's not working at all because system API isn't exist"
@@ -912,10 +919,10 @@ public:
    * @param wPhdc The WPARAM value from WM_CTLCOLORSTATIC, which contains the
    *              device context handle (HBRUSH cast to WPARAM).
    * @return An INT_PTR representing the HBRUSH to use for the control
-   * background.
+   *         background.
    * @note Use this in WM_CTLCOLORSTATIC message handling. The returned brush
    *       paints the static control background, while text and background
-   * colors are set on the provided device context.
+   *       colors are set on the provided device context.
    * @see _dark_bakground_text_color, _dark_bakground_window_color
    */
   [[nodiscard]] constexpr auto
@@ -940,7 +947,7 @@ public:
    * @param wPhdc The WPARAM value from WM_CTLCOLOREDIT, which contains the
    *              device context handle (HBRUSH cast to WPARAM).
    * @return An INT_PTR representing the HBRUSH to use for the control
-   * background, or FALSE to use default light mode behavior.
+   *         background, or FALSE to use default light mode behavior.
    * @note Use this in WM_CTLCOLOREDIT message handling (e.g., for text input
    *       fields in the calculator display).
    * @see _dark_bakground_text_color, _dark_bakground_field_color
@@ -967,7 +974,7 @@ private:
    *
    * @param window The HWND of the window to theme.
    * @param dark The LPARAM indicating whether dark mode is enabled (non-zero
-   *             for dark, zero for light).
+   *        for dark, zero for light).
    * @return TRUE to continue enumeration of child windows.
    * @note This is a static callback function for use with EnumChildWindows().
    */
@@ -1205,11 +1212,11 @@ protected:
      * These margins form the basis for all future resize calculations.
      *
      * @param layout Pointer to the parent Layout instance (for querying
-     * dimensions)
+     *        dimensions)
      * @param index Zero-based index in the constraints arrays [0, elements)
      * @param handle The HWND of the child control being registered
      * @param client Reference to Rect containing the control's current position
-     *               and size in client coordinates relative to the parent
+     *        and size in client coordinates relative to the parent
      * @param anchor Anchor flags specifying how this control should resize
      *
      * @note This method should only be called by Layout::init_anchor()
@@ -1259,7 +1266,7 @@ public:
    * controls.
    *
    * @param window The HWND of the parent window whose client area dimensions
-   *               will be captured
+   *        will be captured
    *
    * @post _width and _height contain the current client dimensions
    * @note Call this before init_anchor() and resize()
@@ -1280,9 +1287,9 @@ public:
    *
    * @param window The HWND of the parent dialog window
    * @param min_width Minimum width in pixels (typically used in
-   * WM_GETMINMAXINFO)
+   *        WM_GETMINMAXINFO)
    * @param min_height Minimum height in pixels (typically used in
-   * WM_GETMINMAXINFO)
+   *        WM_GETMINMAXINFO)
    *
    * @post _min_width and _min_height are set for later reference
    * @note These values are stored but not enforced by the Layout class;
@@ -1315,7 +1322,7 @@ public:
    *
    * @param parent The HWND of the parent dialog window
    * @param index Zero-based index for this control in the constraints arrays
-   *              Must be < elements
+   *        Must be < elements
    * @param id The dialog control ID (passed to GetDlgItem)
    * @param anchor Combination of Anchor flags specifying resize behavior
    *
@@ -1332,6 +1339,7 @@ public:
   constexpr void init_anchor(const HWND parent, const BYTE index, const int id,
                              const Anchor anchor) noexcept {
     assert(index < elements);
+    [[assume(index < elements)]];
     // Retrieve the control's window handle from the dialog
     const auto handle = GetDlgItem(parent, id);
 
@@ -1395,7 +1403,7 @@ public:
     auto hdwp = BeginDeferWindowPos(static_cast<int>(_constraints.handles.size()));
     
     // Process each registered control
-    for (BYTE i = 0; i != _constraints.handles.size(); ++i) {
+    for (BYTE i = 0; i != _constraints.handles.size(); ++i) [[likely]] {
       Rect rect [[indeterminate]];
 
       // Calculate new horizontal position based on anchor flags
