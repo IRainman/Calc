@@ -66,6 +66,7 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 // add headers that you want to pre-compile here:
 
 #include <array>         // Calc, WinHE Layout
+#include <cstdint>       // Calc
 #include <limits>        // Calc
 #include <new>           // Calc Formatter, GUI Normalizer
 #include <numbers>       // Calc

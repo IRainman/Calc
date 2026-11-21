@@ -16,6 +16,7 @@
 static_assert(__cplusplus >= 202302L,
               "WinHE is C++ latest-edge standard framework");
 
+#include <cstdint>
 #ifdef _WIN32
 #include <optional> // RegRead
 #else
