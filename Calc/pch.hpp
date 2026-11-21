@@ -18,7 +18,7 @@
 static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 
 //---------------------------------------------------------------------------
-// My fast-float fork and Zmij uses those instructions:
+// My fast-float fork, Zmij and fmt uses those instructions:
 #if defined(_M_IX86) || defined(__i686__) || defined(__i386__) ||              \
     defined(__i386) || defined(__X86__) || defined(_M_X64) ||                  \
     defined(__x86_64__) || defined(__amd64__)
@@ -193,6 +193,7 @@ using Result = std::array<char,
 #ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4061) // enumerator 'x' in switch of enum 'y' is not explicitly handled by a case label
+#pragma warning(disable : 4189) // local variable is initialized but not referenced
 #pragma warning(disable : 4244) // 'x': conversion from 'type_x' to 'type_y', possible loss of data
 #pragma warning(disable : 4390) // ';': empty controlled statement found; is this the intent?
 #pragma warning(disable : 4574) // 'x' is defined to be 'n': did you mean to use '#if x'?
