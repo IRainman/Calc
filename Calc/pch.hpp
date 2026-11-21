@@ -43,6 +43,10 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 #pragma warning(disable : 4324) // 'x': structure was padded due to alignment specifier
 #pragma warning(disable : 4820) // 'x': 'n' bytes padding added after data member 'y'
 
+// inlining, may be need for performance optimizations
+#pragma warning(disable : 4710) // 'x': function not inlined
+#pragma warning(disable : 4711) // function 'x' selected for automatic inline expansion
+
 #pragma warning(disable : 4365) // 'x': conversion from 'u' to 's', signed/unsigned mismatch
 #pragma warning(disable : 4464) // relative include path contains '..'
 #pragma warning(disable : 4514) // 'x': unreferenced inline function has been removed
@@ -62,15 +66,15 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 // add headers that you want to pre-compile here:
 
 #ifdef _WIN32
-#include <optional> // Win32 GUI (RegRead)
-#include <string>   // Win32 GUI (CalcApp, Normalizer)
+#include <optional> // WinHE RegRead
+#include <string>   // GUI CalcApp, Normalizer
 #else
 #include <iostream> // Simple CUI for non-Windows platforms
 #endif
 
-#include <array>         // Calc and Win32 GUI (Layout)
+#include <array>         // Calc, WinHE Layout
 #include <limits>        // Calc
-#include <new>           // Calc Formatter and Win32 GUI (Normalizer)
+#include <new>           // Calc Formatter, GUI Normalizer
 #include <numbers>       // Calc
 #include <numeric>       // Calc
 #include <ranges>        // Calc
@@ -96,7 +100,8 @@ using ParamCount = std::uint_fast8_t;
 using Integer = std::int_fast64_t;
 using UInteger = std::uint_fast64_t;
 
-#if _DEBUG && defined(__STDCPP_FLOAT128_T__) && __STDCPP_FLOAT128_T__ == 1
+#if defined(_DEBUG) && defined(__STDCPP_FLOAT128_T__) &&                       \
+    __STDCPP_FLOAT128_T__ == 1
 #warning "WIP: Calc is using 64-bit double implementation in many places."
 using Value = std::float128_t;
 #define CALC_USED_128_BIT_FLOAT 1
