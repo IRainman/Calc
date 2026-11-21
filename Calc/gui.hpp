@@ -930,15 +930,13 @@ public:
   [[nodiscard]] constexpr auto
   static_control(const WPARAM wPhdc) const noexcept {
     auto hdc = reinterpret_cast<HDC>(wPhdc);
-    if (is_dark_mode()) {
-      SetTextColor(hdc, _dark_bakground_text_color);
-      SetBkColor(hdc, _dark_bakground_window_color);
-      return reinterpret_cast<INT_PTR>(_dark_bakground_window_brush);
-    } else {
-      SetTextColor(hdc, GetSysColor(COLOR_WINDOWTEXT));
-      SetBkColor(hdc, GetSysColor(COLOR_WINDOW));
-      return reinterpret_cast<INT_PTR>(GetSysColorBrush(COLOR_WINDOW));
-    }
+    SetTextColor(hdc, is_dark_mode() ? _dark_bakground_text_color
+                                     : GetSysColor(COLOR_WINDOWTEXT));
+    SetBkColor(hdc, is_dark_mode() ? _dark_bakground_window_color
+                                   : GetSysColor(COLOR_WINDOW));
+    return reinterpret_cast<INT_PTR>(is_dark_mode()
+                                         ? _dark_bakground_window_brush
+                                         : GetSysColorBrush(COLOR_WINDOW));
   }
 
   /**
