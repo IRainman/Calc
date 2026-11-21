@@ -16,9 +16,11 @@
 static_assert(__cplusplus >= 202302L,
               "WinHE is C++ latest-edge standard framework");
 
-#include <cstdint>
+#include <cstdint>  // types
 #ifdef _WIN32
+#include <array>    // Layout
 #include <optional> // RegRead
+#include <string>   // Edit, EditView
 #else
 // TODO: add Qt headers here
 #endif
