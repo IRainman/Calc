@@ -177,22 +177,42 @@ constinit static auto normalizer_tests = std::to_array< std::pair< std::string_v
 
         // Superscript grouping:
         // every supported superscript digit, letter, operator and parenthesis.
-        "x⁰¹²³⁴⁵⁶⁷⁸⁹ⁱⁿ⁺⁻"
+        "x⁰¹²³⁴⁵⁶⁷⁸⁹"
+#ifdef CALC_TEST_EQUATION_SOLVER
+        "ⁱⁿ"
+#endif
+        "⁺⁻"
 #ifdef CALC_USED_EQUALS_OPERATORS
         "⁼"
 #endif
         "⁽⁾ "
-        "x²³¹ⁱⁿ⁺⁻"
+        "x²³¹"
+#ifdef CALC_TEST_EQUATION_SOLVER
+        "ⁱⁿ"
+#endif
+        "⁺⁻"
 #ifdef CALC_USED_EQUALS_OPERATORS
         "⁼"
 #endif
         "⁽⁾ "
-        "²³¹⁰⁴⁵⁶⁷⁸⁹ⁱⁿ⁺⁻"
+        "²³¹⁰⁴⁵⁶⁷⁸⁹"
+#ifdef CALC_TEST_EQUATION_SOLVER
+        "ⁱⁿ"
+#endif
+        "⁺⁻"
 #ifdef CALC_USED_EQUALS_OPERATORS
         "⁼"
 #endif
         "⁽⁾ "
-        "x²+1 x³ xⁱ xⁿ x⁺ x⁻ "
+        "x²+1 x³ x"
+#ifdef CALC_TEST_EQUATION_SOLVER
+        "ⁱ"
+#endif
+        " x"
+#ifdef CALC_TEST_EQUATION_SOLVER
+        "ⁿ"
+#endif
+        " x⁺ x⁻ "
 #ifdef CALC_USED_EQUALS_OPERATORS
         "x⁼ "
 #endif
@@ -286,22 +306,42 @@ constinit static auto normalizer_tests = std::to_array< std::pair< std::string_v
           "sqrt(x) "
 
           // Superscripts.
-          "x^(0123456789in+-"
+          "x^(0123456789"
+#ifdef CALC_TEST_EQUATION_SOLVER
+        "in"
+#endif
+        "+-"
 #ifdef CALC_USED_EQUALS_OPERATORS
           "="
 #endif
           "()) "
-          "x^(231in+-"
+          "x^(231"
+#ifdef CALC_TEST_EQUATION_SOLVER
+        "in"
+#endif
+        "+-"
 #ifdef CALC_USED_EQUALS_OPERATORS
           "="
 #endif
           "()) "
-          "^(2310456789in+-"
+          "^(2310456789"
+#ifdef CALC_TEST_EQUATION_SOLVER
+        "in"
+#endif
+        "+-"
 #ifdef CALC_USED_EQUALS_OPERATORS
           "="
 #endif
           "()) "
-          "x^(2)+1 x^(3) x^(i) x^(n) x^(+) x^(-) "
+          "x^(2)+1 x^(3) x"
+#ifdef CALC_TEST_EQUATION_SOLVER
+        "^(i)"
+#endif
+        " x"
+#ifdef CALC_TEST_EQUATION_SOLVER
+        "^(n)"
+#endif
+        " x^(+) x^(-) "
 #ifdef CALC_USED_EQUALS_OPERATORS
           "x^(=) "
 #endif
@@ -398,8 +438,10 @@ constinit static auto normalizer_tests = std::to_array< std::pair< std::string_v
     { "x⁷", { false, "x^(7)" }},
     { "x⁸", { false, "x^(8)" }},
     { "x⁹", { false, "x^(9)" }},
+#ifdef CALC_TEST_EQUATION_SOLVER
     { "xⁱ", { false, "x^(i)" }},
     { "xⁿ", { false, "x^(n)" }},
+#endif
     { "x⁺", { false, "x^(+)" }},
     { "x⁻", { false, "x^(-)" }},
 #ifdef CALC_USED_EQUALS_OPERATORS
@@ -409,7 +451,9 @@ constinit static auto normalizer_tests = std::to_array< std::pair< std::string_v
     // Superscript grouping/state machine
     { "x²³", { false, "x^(23)" }},
     { "x¹²³⁴⁵⁶⁷⁸⁹", { false, "x^(123456789)" }},
+#ifdef CALC_TEST_EQUATION_SOLVER
     { "xⁱⁿ", { false, "x^(in)" }},
+#endif
 #ifdef CALC_USED_EQUALS_OPERATORS
     { "x²⁺⁻⁼", { false, "x^(2+-=)" }},
 #endif
@@ -418,14 +462,18 @@ constinit static auto normalizer_tests = std::to_array< std::pair< std::string_v
     { "x² y", { false, "x^(2) y" }},
     // Only superscript mode
     { "²", { false, "2" }},
+#ifdef CALC_TEST_EQUATION_SOLVER
     { "ⁿ", { false, "n" }},
+#endif
     { "¹²³⁴⁵⁶⁷⁸⁹⁰", { false, "1234567890" }},
     // Superscript parentheses
     { "⁽", { false, "(" }},
     { "⁾", { false, ")" }},
     { "⁽⁾", { false, "()" }},
     { "x⁽⁾", { false, "x^(())" }},
+#ifdef CALC_TEST_EQUATION_SOLVER
     { "x⁽ⁿ⁾", { false, "x^((n))" }},
+#endif
     { "¹²³⁴⁵⁶⁷⁸⁹⁰ ¹²³⁴⁵⁶⁷⁸⁹⁰", { false, "1234567890 ^(1234567890)" }}, // only_superscript -> !is_superscript() -> in_superscript
     
     // Combinations of normalization features

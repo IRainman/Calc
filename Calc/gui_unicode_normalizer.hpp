@@ -49,7 +49,7 @@ namespace GUI {
  *
  * Usage:
  * ```cpp
- * EditView view(....);
+ * EditView view(...);
  * std::string equation(input_text.length() * 4);
  * auto normalizer = Normalizer(view.text(), view.length() equation);
  * if (normalizer.failed()) {
@@ -58,9 +58,12 @@ namespace GUI {
  * // equation now contains normalized ASCII representation
  * ```
  *
- * @see EditView
+ * @see std::string::resize_and_overwrite()
  */
-class Normalizer {
+template <typename CharT, typename Length> class Normalizer {
+  static_assert(sizeof(CharT) == sizeof(char16_t));
+  static_assert(std::is_integral_v<CharT>);
+
 public:
   Normalizer() = delete;
   Normalizer(Normalizer const &) = delete;
@@ -77,21 +80,24 @@ public:
    * @param text Pointer to the UTF-16 text that needs to be normalized.
    * @param length Number of UTF-16 chars in text.
    * @param equasion Reference to a std::string buffer that will contain the
-   * normalized output
+   *        normalized output
    *
    * @pre equasion.capacity() must be large enough for the complete expanded
    *      ASCII result. For the current mappings, length * 12 is a sufficient
    *      worst-case bound. The implementation currently asserts only
    *      capacity() > length * 4.
+   *
    * @post equasion contains the normalized ASCII representation up to the
-   * failed character or end of input if successful
+   *       failed character or end of input if successful
    *
    * @note The constructor performs the actual normalization work through
    *       resize_and_overwrite.
+   *
    * @warning Behavior is undefined if the output buffer is too small.
    */
-  constexpr explicit inline Normalizer(const __restrict LPCWSTR text,
-                                       const UINT length, std::string &equasion)
+  constexpr explicit inline Normalizer(const CharT *const text,
+                                       const Length length,
+                                       std::string &equasion)
       : _equasion(equasion), _text(text), _length(length) {
     assert(_equasion.capacity() > _length * 4);
     _equasion.resize_and_overwrite(
@@ -129,11 +135,11 @@ private:
   /// Reference to output ASCII buffer
   [[no_unique_address]] std::string &_equasion;
   /// Pointer to the UTF-16 input text
-  [[no_unique_address]] __restrict LPCWSTR const _text;
+  [[no_unique_address]] const CharT *const _text;
   /// Count of the UTF-16 input text chars
-  [[no_unique_address]] const UINT _length;
+  [[no_unique_address]] const Length _length;
   /// Count of succesfully normalized UTF-16 input chars
-  [[no_unique_address]] UINT _normalized;
+  [[no_unique_address]] Length _normalized;
 
   /**
    * @struct Operation
@@ -161,11 +167,11 @@ private:
    */
   struct Operation {
     /// Reference to counter of succesfully normalized input chars
-    UINT &_normalized;
+    Length &_normalized;
     /// UTF-16 input string pointer
-    __restrict LPCWSTR const _begin;
+    const CharT *const _begin;
     /// UTF-16 input end string pointer
-    __restrict LPCWSTR const _end;
+    const CharT *const _end;
 
     /**
      * @brief Copies a string literal to the output buffer and returns new
@@ -202,7 +208,7 @@ private:
      * @return true if c is in the superscript Unicode range
      */
     [[nodiscard]] inline static constexpr bool
-    is_superscript(const WCHAR c) noexcept {
+    is_superscript(const CharT c) noexcept {
       return (c == 0xB2 || c == 0xB3 || c == 0xB9 || // ANSI ²³¹
               c >= 0x2070 && c <= 0x207F             // Unicode ⁰ⁱ⁴⁵⁶⁷⁸⁹⁺⁻⁼⁽⁾ⁿ
       );
@@ -221,12 +227,13 @@ private:
      * @return true if c is a separator/whitespace character
      */
     [[nodiscard]] inline static constexpr bool
-    is_separator(const WCHAR c) noexcept {
-      return (c >= L'\t' && c <= L'\r' ||   // ASCII control characters
-              c == L' ' ||                  // ASCII space
-              c == 0xA0 ||                  // ANSI NO-BREAK SPACE
-              c >= 0x2000 && c <= 0x202F || // Unicode general punctuation
-              c == 0x3000                   // Unicode fullwidth space
+    is_separator(const CharT c) noexcept {
+      return (
+          c >= CharT('\t') && c <= CharT('\r') || // ASCII control characters
+          c == CharT(' ') ||                      // ASCII space
+          c == 0xA0 ||                            // ANSI NO-BREAK SPACE
+          c >= 0x2000 && c <= 0x202F ||           // Unicode general punctuation
+          c == 0x3000                             // Unicode fullwidth space
       );
     }
 
@@ -242,10 +249,10 @@ private:
      *       functions.
      */
     [[nodiscard]] inline static constexpr bool
-    is_operator(const WCHAR c) noexcept {
-      return (c == L'+' || c == L'-' || c == L'*' || c == L'/' || // ASCII
-              c == L',' ||                                        // ASCII
-              c == 0xB7 || c == 0xD7 || c == 0xF7 ||              // ANSI
+    is_operator(const CharT c) noexcept {
+      return (c == CharT('+') || c == CharT('-') || c == CharT('*') || // ASCII
+              c == CharT('/') || c == CharT(',') ||                    // ASCII
+              c == 0xB7 || c == 0xD7 || c == 0xF7 ||                   // ANSI
               c >= 0x2200 && c <= 0x2219 || // Unicode before roots
               c >= 0x221E && c <= 0x22FF    // Unicode after roots
       );
@@ -260,10 +267,10 @@ private:
      * @return true if c is a parenthesis
      */
     [[nodiscard]] inline static constexpr bool
-    is_parentesis(const WCHAR c) noexcept {
-      return (c == L'(' || c == L')' ||     // ASCII
-              c == 0x208D || c == 0x208E || // Unicode ₍ ₎
-              c == 0xFE59 || c == 0xFE5A    // Unicode﹙﹚
+    is_parentesis(const CharT c) noexcept {
+      return (c == CharT('(') || c == CharT(')') || // ASCII
+              c == 0x208D || c == 0x208E ||         // Unicode ₍ ₎
+              c == 0xFE59 || c == 0xFE5A            // Unicode﹙﹚
       );
     }
 
@@ -276,7 +283,7 @@ private:
      * @return true if c is in the printable ASCII range
      */
     [[nodiscard]] inline static constexpr bool
-    is_printable_ascii(const WCHAR c) noexcept {
+    is_printable_ascii(const CharT c) noexcept {
       return c >= 0x20 && c <= 0x7E;
     }
 
@@ -296,7 +303,7 @@ private:
      * @return true if c marks the end of an implicit argument
      */
     [[nodiscard]] inline static constexpr bool
-    is_implicit_argument_end(const WCHAR c) noexcept {
+    is_implicit_argument_end(const CharT c) noexcept {
       return is_separator(c) || is_operator(c) || is_parentesis(c);
     }
 
@@ -327,7 +334,7 @@ private:
      *   Activated by superscripts after ordinary input, generating a "^(...)"
      *   wrapper. Closed when a non-superscript character is encountered.
      *
-     * - **Implicit argument mode (UINT in_implicit_argument):**
+     * - **Implicit argument mode (uint_fast16_t in_implicit_argument):**
      *   Counts implicit argument parentheses opened by sqrt, etc or
      *   parenthesized the decimal-exponent ⏨ after a ')'. It is decremented
      *   when a separator, operator, or parenthesis ends the implicit argument.
@@ -351,7 +358,8 @@ private:
      * @note Processing stops at the first unsupported UTF-16 code unit and
      *       returns the successfully normalized prefix.
      */
-    [[nodiscard]] inline UINT operator()(char *__restrict buffer, UINT) {
+    [[nodiscard]] inline auto operator()(char *__restrict buffer,
+                                             size_t) {
       auto input = _begin;
 
       auto output = buffer;
@@ -374,7 +382,7 @@ private:
         bool in_superscript = false;
 
         // Tracks nesting depth of implicit argument parentheses
-        UINT in_implicit_argument = 0;
+        uint_fast16_t in_implicit_argument = 0;
 
         // Main processing loop - processes all input characters
         for (; input != _end; ++input) [[likely]] {
@@ -466,6 +474,10 @@ private:
             output = append(output, "!=");
             break;
 
+          case 0x2261: // ≡
+            output = append(output, "==");
+            break;
+
           case 0x2264: // ≤
             output = append(output, "<=");
             break;
@@ -474,18 +486,11 @@ private:
             output = append(output, ">=");
             break;
 
-          case 0x2261: // ≡
-            output = append(output, "==");
-            break;
-
-          case 0x2248: // ≈
           case 0x2243: // ≃
           case 0x2245: // ≅
+          case 0x2248: // ≈
             output = append(output, "~=");
             break;
-
-            // case PLUS-MINUS SIGN' (U+00B1) ±
-            // case MINUS-OR-PLUS SIGN' (U+2213) ∓
 #endif
           // Fractions - ANSI
           case 0xBC: // ¼
@@ -663,7 +668,7 @@ private:
             break;
 
 #define START_IMPLICIT_ARGUMENT                                                \
-  if ((input + 1) != _end && *(input + 1) != L'(') {                           \
+  if ((input + 1) != _end && *(input + 1) != CharT('(')) {                     \
     ++in_implicit_argument;                                                    \
     *output++ = '(';                                                           \
   }
@@ -672,11 +677,11 @@ private:
             if (_begin == input) [[unlikely]] {
               if (input + 1 == _end) {
                 output = append(output, "10");
-              } else [[unlikely]] {
+              } else {
                 output = append(output, "10^");
                 START_IMPLICIT_ARGUMENT
               }
-            } else if (_begin < (input - 1) && *(input - 1) == L')')
+            } else if (_begin < (input - 1) && *(input - 1) == CharT(')'))
                 [[unlikely]] {
               output = append(output, "10^");
               START_IMPLICIT_ARGUMENT
@@ -684,7 +689,14 @@ private:
               *output++ = 'e';
             }
             break;
-
+#ifdef CALC_USED_EQUALS_OPERATORS
+            // TODO: we need function to handle this.
+          case 0xB1:   // ± PLUS-MINUS SIGN
+          case 0x2213: // ∓ MINUS-OR-PLUS SIGN
+            output = append(output, "PM");
+            START_IMPLICIT_ARGUMENT
+            break;
+#endif
           // Unicode mathematical function symbols
           case 0x221A: // √ SQUARE ROOT
           case 0x23B7: // ⎷ RADICAL SYMBOL BOTTOM
@@ -797,13 +809,13 @@ private:
             START_SUPERSCRIPT
             *output++ = '1';
             break;
-
+#ifdef CALC_TEST_EQUATION_SOLVER
           // Superscript Unicode letter
           case 0x2071: // ⁱ SUPERSCRIPT LATIN SMALL LETTER I
             START_SUPERSCRIPT
             *output++ = 'i';
             break;
-
+#endif
           // case 0x2072: // not assigened.
           // case 0x2073: // not assigened.
 
@@ -845,12 +857,13 @@ private:
             START_SUPERSCRIPT
             *output++ = ')';
             break;
-
+#ifdef CALC_TEST_EQUATION_SOLVER
           // Superscript Unicode letter
           case 0x207F: // ⁿ SUPERSCRIPT LATIN SMALL LETTER N
             START_SUPERSCRIPT
             *output++ = 'n';
             break;
+#endif
 
 #undef START_SUPERSCRIPT
 
@@ -871,8 +884,8 @@ private:
       }
 
     fast_processing_end:
-      _normalized = static_cast<UINT>(input - _begin);
-      return static_cast<UINT>(output - buffer);
+      _normalized = static_cast<Length>(input - _begin);
+      return static_cast<size_t>(output - buffer);
     }
   };
 };
