@@ -71,7 +71,7 @@ public:
    * @warning Should be called before WinMain!
    * @see create(), init()
    */
-  constexpr explicit CalcApp() noexcept {
+  constexpr explicit inline CalcApp() noexcept {
 #ifdef _DEBUG
     _setup_crt_leak_check();
 #endif
@@ -100,7 +100,7 @@ public:
   CalcApp &operator=(CalcApp const &) = delete;
   CalcApp(CalcApp &&) = delete;
 
-  constexpr ~CalcApp() noexcept = default;
+  constexpr inline ~CalcApp() noexcept = default;
 
   /**
    * Perform calculation from the GUI
@@ -327,7 +327,7 @@ private:
             .count());
 #else // Performance
     output_end =
-        fmt::format_to(output_end, FMT_COMPILE("Normalizer is {}ns/case."),
+        fmt::format_to(output_end, FMT_COMPILE("Normalizer {}ns/case."),
                        std::chrono::duration_cast<std::chrono::nanoseconds>(
                            (end - start) / (normalizer_tests.size() * count))
                            .count());
@@ -530,12 +530,6 @@ constexpr static INT_PTR CALLBACK about_proc(const HWND about_window,
                                              const WPARAM wParam,
                                              const LPARAM lParam) noexcept {
   switch (message) {
-  case WM_COMMAND:
-    return gui.about().close(about_window, wParam);
-#ifdef WinHE_SUPPORT_LINK_WINDOW
-  case WM_NOTIFY:
-    return gui.about().open_homepage(about_window, lParam);
-#endif
 #ifdef WinHE_SUPPORT_DARK_MODE
   case WM_INITDIALOG:
     gui.theme().apply(about_window);
@@ -548,6 +542,12 @@ constexpr static INT_PTR CALLBACK about_proc(const HWND about_window,
     gui.theme().apply(about_window, true);
     return TRUE;
 #endif
+#ifdef WinHE_SUPPORT_LINK_WINDOW
+  case WM_NOTIFY:
+    return gui.about().open_homepage(about_window, lParam);
+#endif
+  case WM_COMMAND:
+    return gui.about().close(about_window, wParam);
   default:
     return FALSE;
   }
@@ -561,23 +561,10 @@ constexpr static INT_PTR CALLBACK main_proc(const HWND main_window,
                                             const WPARAM wParam,
                                             const LPARAM lParam) noexcept {
   switch (message) {
-  case WM_COMMAND:
-    return gui.calc(wParam);
-  case WM_SYSCOMMAND:
-    return gui.about().create(main_window, wParam, about_proc);
   case WM_GETMINMAXINFO:
     return gui.minmaxinfo(lParam);
   case WM_SIZE:
     return gui.resize(lParam);
-  case WM_INITDIALOG:
-#ifdef WinHE_SUPPORT_DARK_MODE
-    gui.theme().init(main_window);
-#endif
-    return gui.init(main_window, lParam);
-#ifdef WinHE_SUPPORT_AUTO_RESTART
-  case WM_ENDSESSION:
-    return TRUE;
-#endif
 #ifdef WinHE_SUPPORT_DARK_MODE
   case WM_CTLCOLORDLG:
     return gui.theme().dialog_background();
@@ -587,6 +574,19 @@ constexpr static INT_PTR CALLBACK main_proc(const HWND main_window,
     return gui.theme().static_control(wParam);
   case WM_SYSCOLORCHANGE:
     gui.theme().apply(main_window, true, true);
+    return TRUE;
+#endif
+  case WM_COMMAND:
+    return gui.calc(wParam);
+  case WM_SYSCOMMAND:
+    return gui.about().create(main_window, wParam, about_proc);
+  case WM_INITDIALOG:
+#ifdef WinHE_SUPPORT_DARK_MODE
+    gui.theme().init(main_window);
+#endif
+    return gui.init(main_window, lParam);
+#ifdef WinHE_SUPPORT_AUTO_RESTART
+  case WM_ENDSESSION:
     return TRUE;
 #endif
   case WM_CLOSE:
