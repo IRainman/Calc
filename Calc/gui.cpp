@@ -82,7 +82,7 @@ public:
     /**
      * Calc is system DPI aware. It for the DPI value once at start. If the DPI
      * changes application will be automatically scaled up or down by the
-     * system. #ifdef WinHE_SUPPORT_DPI_FOR_WINDOW
+     * system. Analog to
      * SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
      */
     SetProcessDPIAware();
@@ -614,26 +614,10 @@ int WINAPI WinMain(const GUI::HINSTANCE instance,
 // TODO Qt
 
 /**
- * Calc entrypoint in CUI (console) mode
+ * Calc entrypoint in Qt mode
  */
 [[noreturn]] int main(int /*argc*/, char ** /*argv[]*/) {
-  fmt::print(FMT_COMPILE("Calc v2026.11.06.4 (CUI)\n"));
-
-  std::string input;
-  input.reserve(Calc::maximum_user_input);
-  for (;;) {
-    fmt::print(FMT_COMPILE("Enter expression: "));
-    std::cin >> input;
-
-    Calc::Token token [[indeterminate]];
-    Calc::Lexer lexer(input);
-    Calc::Parser parser(lexer);
-    parser.result(token);
-
-    Calc::Result text [[indeterminate]];
-    fmt::print(FMT_COMPILE("{}\n"),
-               std::string_view(text.data(), Calc::format(token, text)));
-  }
+  fmt::print(FMT_COMPILE("Calc doesn't support your platform yet.\n"));
 }
 
 #endif

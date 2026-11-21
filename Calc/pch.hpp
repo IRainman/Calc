@@ -65,13 +65,6 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 #include "types.hpp"
 // add headers that you want to pre-compile here:
 
-#ifdef _WIN32
-#include <optional> // WinHE RegRead
-#include <string>   // GUI CalcApp, Normalizer
-#else
-#include <iostream> // Simple CUI for non-Windows platforms
-#endif
-
 #include <array>         // Calc, WinHE Layout
 #include <limits>        // Calc
 #include <new>           // Calc Formatter, GUI Normalizer
@@ -80,6 +73,7 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 #include <ranges>        // Calc
 #include <span>          // Calc
 #include <stdfloat>      // Calc
+#include <string>        // GUI CalcApp, Normalizer
 #include <string_view>   // Calc
 #include <unordered_map> // Calc
 #ifdef CALC_TEST_EQUATION_SOLVER
@@ -226,10 +220,6 @@ using Result = std::array<char,
 // clang-format on
 #include "../../fast_float/include/fast_float/fast_float.h"
 
-//---------------------------------------------------------------------------
-#ifdef CALC_USED_SIMDUTF
-// TODO: add simdutf compile options here? Or make simdutf a shared library?
-#endif
 //---------------------------------------------------------------------------
 
 #endif

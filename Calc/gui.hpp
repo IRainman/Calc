@@ -9,6 +9,11 @@
  * gui.hpp : Contains wrapers and other usable helpers to work with GUI, process
  * user input, write program output, work with system database, etc.
  */
+#ifdef _WIN32
+#include <optional> // RegRead
+#else
+// TODO: add Qt headers here
+#endif
 
 namespace GUI {
 
@@ -111,9 +116,7 @@ namespace GUI {
 #define VC_EXTRALEAN
 #define WIN32_LEAN_AND_MEAN
 
-#ifdef CALC_USED_SIMDUTF
-#define NOAPISET // MultiByteToWideChar, WideCharToMultiByte
-#endif
+// #define NOAPISET // MultiByteToWideChar, WideCharToMultiByte
 #define NODDEMLSPY
 #define NO_COMMCTRL_DA
 #define NOWINBASEINTERLOCK
@@ -213,6 +216,22 @@ namespace GUI {
 #define NOTOOLTIPS
 #define NOREBAR
 
+// Disable warnings for GUI code:
+// clang-format off
+#pragma warning(disable : 4267) // 'argument': conversion from 'x' to 'y', possible loss of data
+#pragma warning(disable : 4865) // the underlying type of 'x' will change when '/Zc:enumTypes' is specified on the command line
+#pragma warning(disable : 5039) // 'x': pointer or reference to potentially throwing function passed to 'extern "C"' function under -EHc. Undefined behavior may occur if this function throws an exception.
+// clang-format on
+#include <windows.h>
+#ifdef WinHE_SUPPORT_LINK_WINDOW
+#include <commctrl.h>
+#include <shellapi.h>
+#endif
+#ifdef WinHE_SUPPORT_DARK_MODE
+#include <dwmapi.h>
+#include <uxtheme.h>
+#endif
+
 #ifdef _DEBUG
 #define _CRTDBG_MAP_ALLOC
 #include <crtdbg.h>
@@ -241,22 +260,6 @@ static void __cdecl _setup_crt_leak_check() noexcept {
   _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
   _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_DEBUG);
 }
-#endif
-
-// Disable warnings for GUI code:
-// clang-format off
-#pragma warning(disable : 4267) // 'argument': conversion from 'x' to 'y', possible loss of data
-#pragma warning(disable : 4865) // the underlying type of 'x' will change when '/Zc:enumTypes' is specified on the command line
-#pragma warning(disable : 5039) // 'x': pointer or reference to potentially throwing function passed to 'extern "C"' function under -EHc. Undefined behavior may occur if this function throws an exception.
-// clang-format on
-#include <windows.h>
-#ifdef WinHE_SUPPORT_LINK_WINDOW
-#include <commctrl.h>
-#include <shellapi.h>
-#endif
-#ifdef WinHE_SUPPORT_DARK_MODE
-#include <dwmapi.h>
-#include <uxtheme.h>
 #endif
 
 /**
@@ -389,13 +392,9 @@ public:
   constexpr void read(std::string &output) const noexcept {
     assert(length() <= output.capacity());
     output.resize(output.capacity());
-#ifdef CALC_USED_SIMDUTF
-    // TODO use simdutf::convert_utf16_to_utf8 in the shared library.
-#else
     output.resize(WideCharToMultiByte(CP_UTF8, 0, text(), length(),
                                       output.data(), output.capacity(), NULL,
                                       NULL));
-#endif
   }
 
   /**
@@ -496,12 +495,8 @@ public:
   constexpr void write(LPCSTR const new_text,
                        const UINT new_length) const noexcept {
     assert(new_length <= length());
-#ifdef CALC_USED_SIMDUTF
-    // TODO use simdutf::convert_utf8_to_utf16 in the shared library.
-#else
     set_length(MultiByteToWideChar(CP_UTF8, 0, new_text, new_length, text(),
                                    length()));
-#endif
   }
 
   /**
@@ -532,13 +527,9 @@ public:
   constexpr auto &read(std::string &output) const noexcept {
     assert(length() <= output.capacity());
     output.resize(output.capacity());
-#ifdef CALC_USED_SIMDUTF
-    // TODO use simdutf::convert_utf16_to_utf8 in the shared library.
-#else
     output.resize(WideCharToMultiByte(CP_UTF8, 0, text(), length(),
                                       output.data(), output.capacity(), nullptr,
                                       nullptr));
-#endif
     return output;
   }
 
