@@ -59,7 +59,7 @@ char *format(const Value value, Result &ret) noexcept {
  * @return the end of the formated Result.
  */
 char *format(const Token &token, Result &ret) {
-  if (token.type == Token::Type::ISSUE) {
+  if (token.type == Token::Type::ISSUE) [[unlikely]] {
     return fmt::format_to(ret.data(), FMT_COMPILE("{}: {}\n"), token.position,
                           issue_text[static_cast<uint8_t>(token.index)]);
   } else {
