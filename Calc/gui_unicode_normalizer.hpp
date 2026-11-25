@@ -259,19 +259,48 @@ private:
     }
 
     /**
-     * @brief Classifies parenthesis and bracket characters.
+     * @brief Classifies left parenthesis characters.
      *
-     * Includes ASCII, Unicode subscript, Unicode small.
+     * Includes ASCII, Unicode subscript, Unicode small and Unicode fullwidth.
+     *
+     * @param c Character to test
+     * @return true if c is a left parenthesis
+     */
+    [[nodiscard]] inline static constexpr bool
+    is_left_parenthesis(const CharT c) noexcept {
+      return (c == CharT('(') ||
+              c == 0x208D || // U+208D ₍ SUBSCRIPT LEFT PARENTHESIS
+              c == 0xFE59 || // U+FE59 ﹙ SMALL LEFT PARENTHESIS
+              c == 0xFF08    // U+FF08 （ FULLWIDTH LEFT PARENTHESIS
+      );
+    }
+
+    /**
+     * @brief Classifies right parenthesis characters.
+     *
+     * Includes ASCII, Unicode subscript, Unicode small and Unicode fullwidth.
+     *
+     * @param c Character to test
+     * @return true if c is a right parenthesis
+     */
+    [[nodiscard]] inline static constexpr bool
+    is_right_parenthesis(const CharT c) noexcept {
+      return (c == CharT(')') ||
+              c == 0x208E || // U+208E ₎ SUBSCRIPT RIGHT PARENTHESIS
+              c == 0xFE5A || // U+FE5A ﹚ SMALL RIGHT PARENTHESIS
+              c == 0xFF09    // U+FF09 ） FULLWIDTH RIGHT PARENTHESIS
+      );
+    }
+
+    /**
+     * @brief Classifies any parenthesis character (left or right).
      *
      * @param c Character to test
      * @return true if c is a parenthesis
      */
     [[nodiscard]] inline static constexpr bool
-    is_parentesis(const CharT c) noexcept {
-      return (c == CharT('(') || c == CharT(')') || // ASCII
-              c == 0x208D || c == 0x208E ||         // Unicode ₍ ₎
-              c == 0xFE59 || c == 0xFE5A            // Unicode﹙﹚
-      );
+    is_parenthesis(const CharT c) noexcept {
+      return is_left_parenthesis(c) || is_right_parenthesis(c);
     }
 
     /**
@@ -285,6 +314,29 @@ private:
     [[nodiscard]] inline static constexpr bool
     is_printable_ascii(const CharT c) noexcept {
       return c >= 0x20 && c <= 0x7E;
+    }
+
+    /**
+     * @brief Inserts an opening parenthesis for an implicit argument.
+     *
+     * This function is called when a function symbol like "sqrt" is detected
+     * and the next character is not a left parenthesis. It increments the
+     * implicit argument depth counter and appends '(' to the output buffer.
+     *
+     * @param input Pointer to the current input character
+     * @param end Pointer to the end of the input string
+     * @param output Reference to the current output buffer position
+     * @param depth Reference to the implicit argument depth counter
+     */
+    inline static void start_implicit_argument(const CharT *const input,
+                                               const CharT *const end,
+                                               char *&output,
+                                               uint_fast16_t &depth) noexcept {
+
+      if (input + 1 != end && !is_left_parenthesis(input[1])) {
+        ++depth;
+        *output++ = '(';
+      }
     }
 
     /**
@@ -304,7 +356,53 @@ private:
      */
     [[nodiscard]] inline static constexpr bool
     is_implicit_argument_end(const CharT c) noexcept {
-      return is_separator(c) || is_operator(c) || is_parentesis(c);
+      return is_separator(c) || is_operator(c) || is_parenthesis(c);
+    }
+
+    /**
+     * @brief Classifies decimal exponent sign characters.
+     *
+     * Recognizes:
+     *   - ASCII plus and minus
+     *   - Unicode minus
+     *
+     * @param c Character to test
+     * @param previous Character immediately preceding c
+     * @return true if c is a valid decimal exponent sign following ⏨
+     */
+    [[nodiscard]] inline static constexpr bool
+    is_decimal_exponent_sign(const CharT c, const CharT previous) noexcept {
+      return ((c == CharT('+') || // U+002B + PLUS SIGN
+               c == CharT('-') || // U+002D - HYPHEN-MINUS
+               c == 0x2212) &&    // U+2212 − MINUS SIGN
+              previous == 0x23E8  // U+23E8 ⏨ DECIMAL EXPONENT SYMBOL
+      );
+    }
+
+    /**
+     * @brief Classifies decimal exponent digit characters.
+     *
+     * Recognizes:
+     *   - ASCII digits 0-9
+     *   - Unicode subscript digits ₀-₉
+     *   - Unicode superscript digits ⁰⁴⁵⁶⁷⁸⁹
+     *   - Unicode fullwidth digits ０-９
+     *
+     * @param c Character to test
+     * @return true if c is a valid decimal exponent digit following ⏨
+     */
+    [[nodiscard]] inline static constexpr bool
+    is_decimal_exponent_digit(const CharT c) noexcept {
+      return (
+          c >= CharT('0') && c <= CharT('9') ||
+          c >= 0x2080 && c <= 0x2089 || // U+2080-U+2089 ₀-₉ SUBSCRIPT DIGITS
+          c == 0x2070 ||                // U+2070 ⁰ SUPERSCRIPT ZERO
+          c >= 0x2074 && c <= 0x2079 || // U+2074-U+2079 ⁴-⁹ SUPERSCRIPT DIGITS
+          c == 0x00B2 ||                // U+00B2 ² SUPERSCRIPT TWO
+          c == 0x00B3 ||                // U+00B3 ³ SUPERSCRIPT THREE
+          c == 0x00B9 ||                // U+00B9 ¹ SUPERSCRIPT ONE
+          c >= 0xFF10 && c <= 0xFF19    // U+FF10-U+FF19 ０-９ FULLWIDTH DIGITS
+      );
     }
 
     /**
@@ -358,8 +456,7 @@ private:
      * @note Processing stops at the first unsupported UTF-16 code unit and
      *       returns the successfully normalized prefix.
      */
-    [[nodiscard]] inline auto operator()(char *__restrict buffer,
-                                             size_t) {
+    [[nodiscard]] inline auto operator()(char *__restrict buffer, size_t) {
       auto input = _begin;
 
       auto output = buffer;
@@ -386,7 +483,7 @@ private:
 
         // Main processing loop - processes all input characters
         for (; input != _end; ++input) [[likely]] {
-          const auto &c = *input;
+          const auto &c = input[0];
 
           // Exit superscript mode if encountering a non-superscript character
           if (only_superscript && !is_superscript(c)) [[unlikely]] {
@@ -397,8 +494,8 @@ private:
           }
 
           // Exit implicit argument mode when encountering argument boundary
-          if (in_implicit_argument && is_implicit_argument_end(c))
-              [[unlikely]] {
+          if (in_implicit_argument && is_implicit_argument_end(c) &&
+              !is_decimal_exponent_sign(c, input[-1])) [[unlikely]] {
             --in_implicit_argument;
             *output++ = ')';
           }
@@ -421,13 +518,13 @@ private:
             continue;
           }
 
-          // Map subscript letters (ₐₑₒₓ!ₕₖₗₘₙₚₛₜ) via lookup table
+          // Map subscript letters (ₐₑₒₓ?ₕₖₗₘₙₚₛₜ) via lookup table
           if (c >= 0x2090 && c <= 0x209C && c != 0x2094) {
-            *output++ = "aeox!hklmnpst"[c - 0x2090];
+            *output++ = "aeox?hklmnpst"[c - 0x2090];
             continue;
           }
 
-          // Map fullwidth forms (U+FF01-U+FF5E) directly to ASCII (0x21-0x7E)
+          // Map fullwidth forms directly to ASCII
           if (c >= 0xFF01 && c <= 0xFF5E) {
             *output++ = static_cast<char>(c - 0xFEE0);
             continue;
@@ -468,7 +565,8 @@ private:
             *output++ = '*';
             break;
 #ifdef CALC_USED_EQUALS_OPERATORS
-          // TODO https://www.fileformat.info/info/unicode/category/Sm/list.htm
+          // TODO
+          // https://www.fileformat.info/info/unicode/category/Sm/list.htm
           // Relational Operators
           case 0x2260: // ≠
             output = append(output, "!=");
@@ -667,11 +765,6 @@ private:
             output = append(output, "epsilon");
             break;
 
-#define START_IMPLICIT_ARGUMENT                                                \
-  if ((input + 1) != _end && *(input + 1) != CharT('(')) {                     \
-    ++in_implicit_argument;                                                    \
-    *output++ = '(';                                                           \
-  }
           // Special case
           case 0x23E8: // ⏨ DECIMAL EXPONENT SYMBOL
             if (_begin == input) [[unlikely]] {
@@ -679,12 +772,13 @@ private:
                 output = append(output, "10");
               } else {
                 output = append(output, "10^");
-                START_IMPLICIT_ARGUMENT
+                start_implicit_argument(input, _end, output,
+                                        in_implicit_argument);
               }
-            } else if (_begin < (input - 1) && *(input - 1) == CharT(')'))
-                [[unlikely]] {
+            } else if (is_right_parenthesis(input[-1])) [[unlikely]] {
               output = append(output, "10^");
-              START_IMPLICIT_ARGUMENT
+              start_implicit_argument(input, _end, output,
+                                      in_implicit_argument);
             } else [[likely]] {
               *output++ = 'e';
             }
@@ -694,38 +788,36 @@ private:
           case 0xB1:   // ± PLUS-MINUS SIGN
           case 0x2213: // ∓ MINUS-OR-PLUS SIGN
             output = append(output, "PM");
-            START_IMPLICIT_ARGUMENT
+            start_implicit_argument(input, _end, output, in_implicit_argument);
             break;
 #endif
           // Unicode mathematical function symbols
           case 0x221A: // √ SQUARE ROOT
           case 0x23B7: // ⎷ RADICAL SYMBOL BOTTOM
             output = append(output, "sqrt");
-            START_IMPLICIT_ARGUMENT
+            start_implicit_argument(input, _end, output, in_implicit_argument);
             break;
 
           case 0x221B: // ∛ CUBE ROOT
             output = append(output, "cbrt");
-            START_IMPLICIT_ARGUMENT
+            start_implicit_argument(input, _end, output, in_implicit_argument);
             break;
 
           case 0x221C: // ∜ FOURTH ROOT
             output = append(output, "qdrt");
-            START_IMPLICIT_ARGUMENT
+            start_implicit_argument(input, _end, output, in_implicit_argument);
             break;
 
           // CJK compatibility functions - Square symbol notations
           case 0x33D1: // ㏑ SQUARE LN
             output = append(output, "ln");
-            START_IMPLICIT_ARGUMENT
+            start_implicit_argument(input, _end, output, in_implicit_argument);
             break;
 
           case 0x33D2: // ㏒ SQUARE LOG
             output = append(output, "log");
-            START_IMPLICIT_ARGUMENT
+            start_implicit_argument(input, _end, output, in_implicit_argument);
             break;
-
-#undef START_IMPLICIT_ARGUMENT
 
           // Astronomical symbols - Planets and celestial bodies
           case 0x2609: // ☉ SUN
