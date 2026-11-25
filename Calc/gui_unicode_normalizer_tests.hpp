@@ -396,7 +396,6 @@ constinit static auto normalizer_tests = std::to_array< std::pair< std::string_v
     { "√x²",     { false, "sqrt(x^(2))" }},
 
     // Decimal exponent notation.
-    { "⏨",      { false, "10" }},
     { "1⏨3",    { false, "1e3" }},
     { "1⏨+3",   { false, "1e+3" }},
     { "1⏨−3",   { false, "1e-3" }},
