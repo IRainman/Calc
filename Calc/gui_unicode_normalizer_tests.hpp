@@ -28,7 +28,7 @@ namespace GUI {
  * UTF-16 code unit. The expected output therefore contains only the portion
  * successfully normalized before that character.
  *
- * @see gui_tests()
+ * @see Normalizer, gui_tests()
  */
 constinit static auto normalizer_tests = std::to_array< std::pair< std::string_view, std::pair< bool, std::string_view > > >({
     // Complex expressions
@@ -348,7 +348,7 @@ constinit static auto normalizer_tests = std::to_array< std::pair< std::string_v
 
           // Decimal exponent.
           "1e3 1e-3 7e9 2e3 "
-          "(2)10^(3) (2)10^(3) (2)10^()-3 "
+          "(2)10^(3) (2)10^(3) (2)10^(-3) "
 
           // Boundaries.
           "sqrt(x) cbrt(y) qdrt(z) ln(q) log(r)  "
@@ -396,14 +396,18 @@ constinit static auto normalizer_tests = std::to_array< std::pair< std::string_v
     { "√x²",     { false, "sqrt(x^(2))" }},
 
     // Decimal exponent notation.
-    { "⏨", { false, "10" }},
-    { "1⏨3", { false, "1e3" }},
-    { "1⏨−3", { false, "1e-3" }},
-    { "⏨₉", { false, "10^(9)" }},
-    { "⏨³", { false, "10^(3)" }},
-    { "2⏨³", { false, "2e3" }},
-    { "(2)⏨3", { false, "(2)10^(3)" }},
-    { "(2)⏨(3)", { false, "(2)10^(3)" }},
+    { "⏨",      { false, "10" }},
+    { "1⏨3",    { false, "1e3" }},
+    { "1⏨−3",   { false, "1e-3" }},
+    { "⏨₉",     { false, "10^(9)" }},
+    { "⏨³",     { false, "10^(3)" }},
+    { "2⏨³",    { false, "2e3" }},
+    { "(2)⏨3",  { false, "(2)10^(3)" }},
+    { "(2)⏨(3)",{ false, "(2)10^(3)" }},
+    { "(2)⏨−3", { false, "(2)10^(-3)" }},
+    { "(2)⏨+3", { false, "(2)10^(+3)" }},
+    { "(2)⏨₋₃", { false, "(2)10^(-3)" }},
+    { "2⏨−3",   { false, "2e-3" }},
 
     // Astronomical symbols.
     { "♁", { false, "_earth" }},
@@ -494,21 +498,25 @@ constinit static auto normalizer_tests = std::to_array< std::pair< std::string_v
     { "abcₔdef", { true, "abc" }}, // U+2094 is explicitly excluded from the subscript-letter lookup
     { "abc⁲def", { true, "abc" }},
     { "|—J│Оa╓Чn", { true, "| J" }},
+#ifndef CALC_USED_EQUALS_OPERATORS
     { "±", { true, "" }},
+#endif
     { "x²😀", { true, "x^(2)" }},
     { "ₔ", { true, "" }}, // U+2094 is explicitly excluded from the subscript-letter lookup
     { "√😀", { true, "sqrt(" }}, // Should be fast exit without correctnes of state machines
-#ifdef CALC_USED_EQUALS_OPERATORS
-	// TODO: user constants and variables support:
+
+    // TODO: user constants and variables support:
 	// Also I ask ChatGPT https://chatgpt.com/c/6a89e39f-5610-83eb-8182-d914dc425042
 	// Which syntax we should use?
 	{ "x=2π;", { false, "x=2pi;" }},
-	// Intervals needed:
-	{ "[0...π]", { false, "[0...pi]" }},
-	{ "[0...π, step]", { false, "[0...pi, step]" }},
+#ifdef CALC_USED_EQUALS_OPERATORS
+    // Intervals needed:
+	{ "[0…π]", { false, "[0???pi]" }}, // How exactly? 
+	{ "[0…π, step]", { false, "[0???pi, step]" }}, // How exactly?
 	// blocks?
 	{ "{x= 150 ⁄ 12 + 1 }", { false, "{x= 150 / 12 + 1 }" }},
 	// TODO: equation support, for input test https://xrjunque.nom.es/AllInOne:
+    { "±", { false, "?" }}, // what exactly? I think we should use function, because it is more flexible and can be extended to other symbols.
 	{ "{x=((−b ± √(b²−4⋅a⋅c))⁄(2a))π}", { false, "{x=((-b ? sqrt(b^(2)-4*a*c))/(2a))pi}" }},
 #endif
 });
