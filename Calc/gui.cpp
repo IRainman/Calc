@@ -209,6 +209,7 @@ public:
       _equasion.reserve(cfg::input_max_text_length * 4);
 #if defined(CALC_TESTS_ENABLED) && defined(CALC_SUPPORT_UNICODE_INPUT)
       gui_tests();
+      goto_end_of_text(_layout.handle(1));
 #endif
       load_program_data(main_window);
     } catch (const std::exception &e) {
@@ -286,7 +287,7 @@ private:
       const auto &test_text = test.first;
 #ifdef CALC_TESTS_DEV_ENABLED // Development
       {
-        Edit input(_layout.handle(0), test_text.length());
+        Edit input(_layout.handle(0), cfg::input_max_text_length);
 
         // Write UTF-8 text to the input Edit
         input.write(test_text.data(), test_text.size());
@@ -298,11 +299,11 @@ private:
       // Convert UTF-16 text to ASCII representation
       Normalizer normalizer(input.text(), input.length(), _equasion);
 
-      const auto &[test_failed, test_equasion] = test.second;
+      const auto &[expected_failed, expected_equasion] = test.second;
 
       // If result unexpected:
-      if (test_failed != normalizer.failed() || test_equasion != _equasion) {
-        set_result(_equasion.data(), _equasion.size());
+      if (expected_failed != normalizer.failed() ||
+          expected_equasion != _equasion) {
         ++failed;
       }
 #else

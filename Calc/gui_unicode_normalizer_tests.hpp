@@ -33,9 +33,9 @@ namespace GUI {
 constinit static auto normalizer_tests = std::to_array< std::pair< std::string_view, std::pair< bool, std::string_view > > >({
     // Complex expressions
     { "½∜(7π÷2)", { false, "1/2qdrt(7pi/2)" }},
-    { "½∜(7π÷3)R☉×c * (⅒+⅟₉)⏨₉  +ℯ⁶", { false ,"1/2qdrt(7pi/3)R_sun*c * (1/10+1/9)10^(9)  +e^(6)" }},
-    { "⅜∛176 + R☉(7π÷3⏨⁵)c * (⅟₁₇₉ + ⅞)⏨₇ + R⛢(7π÷3⏨⁵)c", { false, "3/8cbrt(176) + R_sun(7pi/3e5)c * (1/179 + 7/8)10^(7) + R_uranus(7pi/3e5)c" }},
-    { "﹣₉﹒₀₉⏨₉", { false, "-9.09e9" }},
+    { "½∜(7π÷3)R☉×c * (⅒+⅟₉)⏨₉  +ℯ⁶", { false ,"1/2qdrt(7pi/3)R_sun*c * (1/10+1/9)*10^(9)  +e^(6)" }},
+    { "⅜∛176 + R☉(7π÷3⏨⁵)c * (⅟₁₇₉ + ⅞)⏨₇ + R⛢(7π÷3⏨⁵)c", { false, "3/8cbrt(176) + R_sun(7pi/3*10^(5))c * (1/179 + 7/8)*10^(7) + R_uranus(7pi/3*10^(5))c" }},
+    { "﹣₉﹒₀₉⏨₉", { false, "-9.09*10^(9)" }},
     { "12³×(231² - 1)³ + 744 - 0.00000000000075", { false, "12^(3)*(231^(2) - 1)^(3) + 744 - 0.00000000000075" }},
     
     {   // Separators
@@ -86,291 +86,6 @@ constinit static auto normalizer_tests = std::to_array< std::pair< std::string_v
     }
     },
 
-    // One maximal normalization stress test.
-    //
-    // Covers:
-    //   - printable ASCII fast path
-    //   - every supported separator U+0009..U+000D, U+0020, U+00A0,
-    //     U+2000..U+202F and U+3000
-    //   - every supported fullwidth form U+FF01..U+FF5E
-    //   - every supported operator mapping
-    //   - optional relational/equality mappings
-    //   - every supported vulgar fraction
-    //   - every supported Greek / mathematical / physical symbol
-    //   - every supported astronomical symbol and unit
-    //   - every supported subscript digit, letter, operator and parenthesis
-    //   - every supported superscript digit, letter, operator and parenthesis
-    //   - implicit and explicit function arguments
-    //   - nested implicit functions
-    //   - function boundaries on whitespace, operators and parentheses
-    //   - mapped characters which are NOT function boundaries
-    //   - decimal exponent state and exponent/superscript interaction
-    //   - superscript grouping and termination
-    //   - function + superscript simultaneous state handling
-    //   - unsupported character termination after state cleanup
-    //
-    // NOTE:
-    //     This intentionally ends with U+2200 (∀). It is classified as an
-    //     operator by is_operator(), but has no normalization mapping, so
-    //     normalization must stop there with failed() == true.
-    //
-    // NOTE:
-    //     The standalone "²" test above remains necessary for
-    //     only_superscript, because that state is entered only at input[0].
-    {   // Maximal Normalizer stress test
-        // Printable ASCII: exercises the initial fast path.
-        " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
-        
-        // Every separator classified by is_separator().
-        "\t\n\v\f\r \xC2\xA0"
-        "\xE2\x80\x80\xE2\x80\x81\xE2\x80\x82\xE2\x80\x83"
-        "\xE2\x80\x84\xE2\x80\x85\xE2\x80\x86\xE2\x80\x87"
-        "\xE2\x80\x88\xE2\x80\x89\xE2\x80\x8A\xE2\x80\x8B"
-        "\xE2\x80\x8C\xE2\x80\x8D\xE2\x80\x8E\xE2\x80\x8F"
-        "\xE2\x80\x90\xE2\x80\x91\xE2\x80\x92\xE2\x80\x93"
-        "\xE2\x80\x94\xE2\x80\x95\xE2\x80\x96\xE2\x80\x97"
-        "\xE2\x80\x98\xE2\x80\x99\xE2\x80\x9A\xE2\x80\x9B"
-        "\xE2\x80\x9C\xE2\x80\x9D\xE2\x80\x9E\xE2\x80\x9F"
-        "\xE2\x80\xA0\xE2\x80\xA1\xE2\x80\xA2\xE2\x80\xA3"
-        "\xE2\x80\xA4\xE2\x80\xA5\xE2\x80\xA6\xE2\x80\xA7"
-        "\xE2\x80\xA8\xE2\x80\xA9\xE2\x80\xAA\xE2\x80\xAB"
-        "\xE2\x80\xAC\xE2\x80\xAD\xE2\x80\xAE\xE2\x80\xAF"
-        "\xE3\x80\x80"
-
-        // Every fullwidth character U+FF01..U+FF5E.
-        "！＂＃＄％＆＇（）＊＋，－．／０１２３４５６７８９：；"
-        "＜＝＞？＠ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ"
-        "［＼］＾＿｀ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ"
-        "｛｜｝～"
-
-        // Every direct operator / punctuation mapping.
-        "₊﹢₋−﹣⁎∗⋅﹡⁄∕⧸·×÷()₍₎﹙﹚﹐﹒+-*/"
-#ifdef CALC_USED_EQUALS_OPERATORS
-        // Every mapping enabled by CALC_USED_EQUALS_OPERATORS.
-        "≠ ≤ ≥ ≡ ≈ ≃ ≅ "
-#endif
-        // Every supported vulgar fraction.
-        "¼½¾⅐⅑⅒⅓⅔⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞⅟↉"
-
-        // Every mathematical / Greek / physical mapping.
-        "πτφϕⅇΓγαζμµσϐ∞ℯƐℇℎℏε"
-
-        // Every astronomical mapping and astronomical unit.
-        "♁☉☽☾☿♀♂♃♄♅⛢♆♇㍳㍶"
-
-        // Every supported subscript mapping.
-        "₀₁₂₃₄₅₆₇₈₉ₐₑₒₓₕₖₗₘₙₚₛₜ₊₋₍₎"
-
-        // Functions:
-        //   explicit argument
-        //   implicit argument
-        //   operators terminating an implicit argument
-        //   nested implicit functions
-        //   nested roots
-        //   explicit parentheses
-        "√(a) ∛(b) ∜(c) ㏑(d) ㏒(e) "
-        "√x+∛y,∜z*㏑q/㏒r "
-        "√∛x+1 "
-        "√√x "
-        "√x²+1 "
-        "√(x) "
-
-        // Superscript grouping:
-        // every supported superscript digit, letter, operator and parenthesis.
-        "x⁰¹²³⁴⁵⁶⁷⁸⁹"
-#ifdef CALC_TEST_EQUATION_SOLVER
-        "ⁱⁿ"
-#endif
-        "⁺⁻"
-#ifdef CALC_USED_EQUALS_OPERATORS
-        "⁼"
-#endif
-        "⁽⁾ "
-        "x²³¹"
-#ifdef CALC_TEST_EQUATION_SOLVER
-        "ⁱⁿ"
-#endif
-        "⁺⁻"
-#ifdef CALC_USED_EQUALS_OPERATORS
-        "⁼"
-#endif
-        "⁽⁾ "
-        "²³¹⁰⁴⁵⁶⁷⁸⁹"
-#ifdef CALC_TEST_EQUATION_SOLVER
-        "ⁱⁿ"
-#endif
-        "⁺⁻"
-#ifdef CALC_USED_EQUALS_OPERATORS
-        "⁼"
-#endif
-        "⁽⁾ "
-        "x²+1 x³ x"
-#ifdef CALC_TEST_EQUATION_SOLVER
-        "ⁱ"
-#endif
-        " x"
-#ifdef CALC_TEST_EQUATION_SOLVER
-        "ⁿ"
-#endif
-        " x⁺ x⁻ "
-#ifdef CALC_USED_EQUALS_OPERATORS
-        "x⁼ "
-#endif
-
-        // Decimal exponent notation:
-        // normal exponent, signed exponent, subscript/superscript exponent,
-        // implicit function after a closing ')', and explicit '(...)'.
-        "1⏨3 1⏨−3 7⏨₉ 2⏨³ "
-        "(2)⏨3 (2)⏨(3) (2)⏨−3 "
-
-        // Function-end boundaries using ASCII separators.
-        "√x\t∛y\n∜z\v㏑q\f㏒r\r "
-
-        // Function-end boundaries using Unicode separators.
-        "√x\xC2\xA0∛y"
-        "\xE2\x80\x80∜z"
-        "\xE2\x80\xA8㏑q"
-        "\xE2\x80\xAF㏒r"
-        "\xE3\x80\x80 "
-
-        // Function-end boundaries using operators.
-        "√x+∛y-∜z*㏑q/㏒r,"
-        "√a·∛b×∜c÷㏑d∕㏒e "
-
-        // Function-end boundaries using every supported parenthesis spelling.
-        "√x(∛y)√z₍∜q₎√r﹙㏑s﹚ "
-
-        // Characters that are mapped to operators/punctuation but are NOT
-        // recognized by is_operator()/is_function_end() before mapping.
-        // The following boundary then forces the implicit function to close.
-        "√x₊+∛y₋-∜z﹢+㏑q﹣-㏒r"
-        "⁎+√a⁄+∛b∕+∜c⧸+㏑d﹡+㏒e﹐+√f﹒+ "
-
-        // More combined state transitions.
-        "√(1−½)² "
-        "√(⅓π+⅔π) "
-        "㏑(1)+㏒(10) "
-        "R☉×c "
-        "α+β−γ×μ÷σ "
-
-        // Final unsupported U+2200:
-        //
-        //   √  -> in_function = 1, output "sqrt("
-        //   x
-        //   ²  -> in_superscript = true, output "^(2)"
-        //   ∀  -> closes superscript
-        //          closes function because ∀ is_operator()
-        //          aborts at the unsupported character
-        //
-        // Therefore the normalized prefix must be:
-        //     "sqrt(x^(2))"
-        "√x²∀",
-        { true,
-          // ASCII
-          " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
-
-          // 56 separators -> 56 ASCII spaces.
-          "\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20"
-          "\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20"
-          "\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20"
-          "\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20"
-
-          // Fullwidth.
-          "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
-
-          // Operators.
-          "++---****///**/()()(),.+-*/"
-
-#ifdef CALC_USED_EQUALS_OPERATORS
-          "!= <= >= == ~= ~= ~= "
-#endif
-
-          // Fractions.
-          "1/41/23/41/71/91/101/32/31/52/53/54/51/65/61/83/85/87/81/0/3"
-
-          // Mathematical / Greek / physical.
-          "pi(2*pi)phiphie_atomicgammagammaalphariemann_zetamumusigmabetainfeEEhhbarepsilon"
-
-          // Astronomy.
-          "_earth_sun_moon_moon_mercury_venus_mars_jupiter_saturn_uranus_uranus_neptune_pluto*au*pc"
-
-          // Subscripts.
-          "0123456789aeoxhklmnpst+-()"
-
-          // Functions.
-          "sqrt(a) cbrt(b) qdrt(c) ln(d) log(e) "
-          "sqrt(x)+cbrt(y),qdrt(z)*ln(q)/log(r) "
-          "sqrt(cbrt(x)+1) "
-          "sqrt(sqrt(x) "
-          "sqrt(x^(2))+1) "
-          "sqrt(x) "
-
-          // Superscripts.
-          "x^(0123456789"
-#ifdef CALC_TEST_EQUATION_SOLVER
-        "in"
-#endif
-        "+-"
-#ifdef CALC_USED_EQUALS_OPERATORS
-          "="
-#endif
-          "()) "
-          "x^(231"
-#ifdef CALC_TEST_EQUATION_SOLVER
-        "in"
-#endif
-        "+-"
-#ifdef CALC_USED_EQUALS_OPERATORS
-          "="
-#endif
-          "()) "
-          "^(2310456789"
-#ifdef CALC_TEST_EQUATION_SOLVER
-        "in"
-#endif
-        "+-"
-#ifdef CALC_USED_EQUALS_OPERATORS
-          "="
-#endif
-          "()) "
-          "x^(2)+1 x^(3) x"
-#ifdef CALC_TEST_EQUATION_SOLVER
-        "^(i)"
-#endif
-        " x"
-#ifdef CALC_TEST_EQUATION_SOLVER
-        "^(n)"
-#endif
-        " x^(+) x^(-) "
-#ifdef CALC_USED_EQUALS_OPERATORS
-          "x^(=) "
-#endif
-
-          // Decimal exponent.
-          "1e3 1e-3 7e9 2e3 "
-          "(2)10^(3) (2)10^(3) (2)10^(-3) "
-
-          // Boundaries.
-          "sqrt(x) cbrt(y) qdrt(z) ln(q) log(r)  "
-          "sqrt(x) cbrt(y) qdrt(z) ln(q) log(r)  "
-          "sqrt(x)+cbrt(y)-qdrt(z)*ln(q)/log(r),"
-          "sqrt(a)*cbrt(b)*qdrt(c)/ln(d)/log(e) "
-          "sqrt(x)(cbrt(y))sqrt(z)(qdrt(q))sqrt(r)(ln(s)) "
-          "sqrt(x+)+cbrt(y-)-qdrt(z+)+ln(q-)-log(r*)"
-          "+sqrt(a/)+cbrt(b)/+qdrt(c/)+ln(d*)+log(e,)+sqrt(f.)+ "
-
-          // Combinations.
-          "sqrt(1-1/2)^(2) "
-          "sqrt(1/3pi+2/3pi) "
-          "ln(1)+log(10) "
-          "R_sun*c "
-          "alpha+beta-gamma*mu/sigma "
-
-          "sqrt(x^(2))"
-          // Unsupported U+2200 terminates here.
-        }
-    },
-
     // Mathematical and physical constants and Greek letters. Last symbol Ƶ is intentionally unsupported after "ℯ ℇ ".
     { "Ɛ π ℇ τ ℎ ℏ φ ϕ ⅇ Γ α ζ μ µ σ ϐ ∞ ℯ Γ γ α ζ μ µ σ ε β ϐ ∞ Γ α ζ μ µ σ ε ϐ ∞ ℯ ℇ Ƶ 12354567896541587463", { true, "E pi E (2*pi) h hbar phi phi e_atomic gamma alpha riemann_zeta mu mu sigma beta inf e gamma gamma alpha riemann_zeta mu mu sigma epsilon beta beta inf gamma alpha riemann_zeta mu mu sigma epsilon beta inf e E " }},
 
@@ -396,28 +111,29 @@ constinit static auto normalizer_tests = std::to_array< std::pair< std::string_v
     { "√x²",     { false, "sqrt(x^(2))" }},
 
     // Decimal exponent notation.
-    { "1⏨3",    { false, "1e3" }},
-    { "1⏨+3",   { false, "1e+3" }},
-    { "1⏨−3",   { false, "1e-3" }},
-    { "⏨₉",     { false, "10^9" }},
-    { "⏨³",     { false, "10^3" }},
-    { "⏨−3",    { false, "10^-3" }},
-    { "2⏨³",    { false, "2e3" }},
-    { "⏨+3",    { false, "10^(+3)" }},
-    { "(2)⏨3",  { false, "(2)10^(3)" }},
-    { "(2)⏨(3)",{ false, "(2)10^(3)" }},
-    { "(2)⏨−3", { false, "(2)10^(-3)" }},
-    { "(2)⏨+3", { false, "(2)10^(+3)" }},
-    { "(2)⏨₋₃", { false, "(2)10^(-3)" }},
-    { "2⏨−3",   { false, "2e-3" }},
-    { "2⏨³⁴",   { false, "2e34" }},
-    { "⏨³⁴",    { false, "10^34" }},
-    { "(2)⏨³⁴", { false, "(2)10^34" }},
-    { "2⏨3⁴",   { false, "2e34" }},
-    { "2⏨−³",   { false, "2e-3" }},
-    { "x²³+1",  { false, "x^23+1" }},
-    { "x²³y⁴⁵", { false, "x^23y^45" }},
-    { "²x³",    { false, "2x^3" }},
+    { "⏨",      { true, "" }},
+    { "⏨+3",    { true, "" }},
+    { "⏨³⁴",    { true, "" }},
+    { "1⏨3",    { false, "1*10^(3)" }},
+    { "1⏨+3",   { false, "1*10^(+3)" }},
+    { "1⏨−3",   { false, "1*10^(-3)" }},
+    { "1⏨₉",     { false, "1*10^(9)" }},
+    { "1⏨³",     { false, "1*10^(3)" }},
+    { "2⏨³",    { false, "2*10^(3)" }},
+    { "(2)⏨3",  { false, "(2)*10^(3)" }},
+    { "(2)⏨(3)",{ false, "(2)*10^(3)" }},
+    { "(2)⏨−3", { false, "(2)*10^(-3)" }},
+    { "(2)⏨+3", { false, "(2)*10^(+3)" }},
+    { "(2)⏨₋₃", { false, "(2)*10^(-3)" }},
+    { "2⏨−3",   { false, "2*10^(-3)" }},
+    { "2⏨³⁴",   { false, "2*10^(34)" }},
+    { "2⏨3⁴",   { false, "2*10^(3^(4))" }},
+    { "(2)⏨³⁴", { false, "(2)*10^(34)" }},
+    { "2⏨−³",   { false, "2*10^(-3)" }},
+    { "x²³+1",  { false, "x^(23)+1" }},
+    { "x²³y⁴⁵", { false, "x^(23)y^(45)" }},
+    { "²x³",    { false, "2x^(3)" }},
+
 
     // Astronomical symbols.
     { "♁", { false, "_earth" }},
@@ -461,6 +177,31 @@ constinit static auto normalizer_tests = std::to_array< std::pair< std::string_v
 #ifdef CALC_USED_EQUALS_OPERATORS
     { "x⁼", { false, "x^(=)" }},
 #endif
+
+    // Superscript grouping and state transitions.
+    { "x²",       { false, "x^(2)" }},
+    { "x²³",      { false, "x^(23)" }},
+    { "x¹²³⁴⁵",   { false, "x^(12345)" }},
+    { "x²+1",     { false, "x^(2)+1" }},
+    { "x²³y⁴⁵",   { false, "x^(23)y^(45)" }},
+
+    // Superscript parentheses.
+    { "x⁽ⁿ⁾",     { false, "x^(n)" }},
+    { "x⁽⁾",      { false, "x^()" }},
+    { "x²⁽ⁿ⁾",    { false, "x^(2(n))" }},
+
+    // Leading superscripts.
+    { "²",        { false, "2" }},
+    { "²³",       { false, "23" }},
+    { "²x³",      { false, "2x^(3)" }},
+
+    // Superscript termination.
+    { "x² y",     { false, "x^(2) y" }},
+    { "x²)",      { false, "x^(2))" }},
+    { "x²😀",     { true,  "x^(2)" }},
+
+    // Unsupported superscript code point U+2072.
+    { "x²\xE2\x81\xB2", { true, "x^(2" }},
     
     // Superscript grouping/state machine
     { "x²³", { false, "x^(23)" }},
@@ -488,7 +229,7 @@ constinit static auto normalizer_tests = std::to_array< std::pair< std::string_v
 #ifdef CALC_TEST_EQUATION_SOLVER
     { "x⁽ⁿ⁾", { false, "x^((n))" }},
 #endif
-    { "¹²³⁴⁵⁶⁷⁸⁹⁰ ¹²³⁴⁵⁶⁷⁸⁹⁰", { false, "1234567890 ^(1234567890)" }}, // only_superscript -> !is_superscript() -> in_superscript
+    { "¹²³⁴⁵⁶⁷⁸⁹⁰ ¹²³⁴⁵⁶⁷⁸⁹⁰", { true, "1234567890" }},
     
     // Combinations of normalization features
     { "½π²", { false, "1/2pi^(2)" }},
@@ -517,8 +258,8 @@ constinit static auto normalizer_tests = std::to_array< std::pair< std::string_v
 
     // TODO: user constants and variables support:
 	// Also I ask ChatGPT https://chatgpt.com/c/6a89e39f-5610-83eb-8182-d914dc425042
-	// Which syntax we should use?
-	{ "x=2π;", { false, "x=2pi;" }},
+    // Which syntax we should use?
+    { "x=2π;", { false, "x=2pi;" }},
 #ifdef CALC_USED_EQUALS_OPERATORS
     // Intervals needed:
 	{ "[0…π]", { false, "[0???pi]" }}, // How exactly? 

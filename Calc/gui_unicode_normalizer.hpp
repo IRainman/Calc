@@ -487,7 +487,7 @@ private:
 
           // Exit superscript mode if encountering a non-superscript character
           if (only_superscript && !is_superscript(c)) [[unlikely]] {
-            only_superscript = false;
+            [[unlikely]] goto fast_processing_end;
           } else if (in_superscript && !is_superscript(c)) [[unlikely]] {
             in_superscript = false;
             *output++ = ')';
@@ -768,23 +768,15 @@ private:
           // Special case
           case 0x23E8: // ⏨ DECIMAL EXPONENT SYMBOL
             if (_begin == input) [[unlikely]] {
-              if (input + 1 == _end) {
-                [[unlikely]] goto fast_processing_end;
-              } else {
-                output = append(output, "10^");
-                start_implicit_argument(input, _end, output,
-                                        in_implicit_argument);
-              }
-            } else if (is_right_parenthesis(input[-1])) [[unlikely]] {
-              output = append(output, "10^");
+              [[unlikely]] goto fast_processing_end;
+            } else {
+              output = append(output, "*10^");
               start_implicit_argument(input, _end, output,
                                       in_implicit_argument);
-            } else [[likely]] {
-              *output++ = 'e';
             }
             break;
 #ifdef CALC_USED_EQUALS_OPERATORS
-            // TODO: we need function to handle this.
+            // TODO: do we need function to handle this?
           case 0xB1:   // ± PLUS-MINUS SIGN
           case 0x2213: // ∓ MINUS-OR-PLUS SIGN
             output = append(output, "PM");
