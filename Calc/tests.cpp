@@ -79,7 +79,7 @@ std::string tests() {
   std::uint32_t failed = 0;
 #else // Performance
   constexpr std::uint32_t count = 100'000;
-  for (std::uint32_t i = count; --i != 0;)
+  for (std::uint32_t i = count + 1; --i != 0;)
 #endif
   {
     for (const auto &[input, expected] : test_equasions) {
