@@ -769,7 +769,7 @@ private:
           case 0x23E8: // ⏨ DECIMAL EXPONENT SYMBOL
             if (_begin == input) [[unlikely]] {
               if (input + 1 == _end) {
-                output = append(output, "10");
+                [[unlikely]] goto fast_processing_end;
               } else {
                 output = append(output, "10^");
                 start_implicit_argument(input, _end, output,
