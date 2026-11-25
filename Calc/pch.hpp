@@ -62,19 +62,20 @@ static_assert(__cplusplus >= 202302L, "Calc is C++ latest-edge standard app");
 // clang-format on
 
 //---------------------------------------------------------------------------
-#include "types.hpp"
+#include "types.hpp" // types used by Calc and HE_GUI_FRAMEWORK
 // add headers that you want to pre-compile here:
 
-#include <array>         // Calc, WinHE Layout
-#include <cstdint>       // Calc, WinHE
+#include <array>         // Calc | HE_GUI_FRAMEWORK
+#include <cstdint>       // Calc | HE_GUI_FRAMEWORK
 #include <limits>        // Calc
-#include <new>           // Calc Formatter, GUI Normalizer
+#include <new>           // Calc Formatter | GUI Normalizer
 #include <numbers>       // Calc
 #include <numeric>       // Calc
+#include <optional>      // HE_GUI_FRAMEWORK
 #include <ranges>        // Calc
 #include <span>          // Calc
 #include <stdfloat>      // Calc
-#include <string>        // GUI CalcApp, Normalizer
+#include <string>        // GUI CalcApp, Normalizer | HE_GUI_FRAMEWORK
 #include <string_view>   // Calc
 #include <unordered_map> // Calc
 #ifdef CALC_TEST_EQUATION_SOLVER

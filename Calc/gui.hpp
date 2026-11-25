@@ -9,77 +9,97 @@
  * gui.hpp : Contains wrapers and other usable helpers to work with GUI, process
  * user input, write program output, work with system database, etc.
  *
- * Uses WinHE framework (this file + targetver.h on Win32) for Windows GUI and
- * Qt for cross-platform GUI
+ * Uses HE_GUI_FRAMEWORK framework (this file + targetver.h on Win32) for
+ * Windows GUI and... TODO: Qt Widgets or what Qt is best? for cross-platform GUI.
  */
 
 static_assert(__cplusplus >= 202302L,
-              "WinHE is C++ latest-edge standard framework");
+              "HE_GUI_FRAMEWORK is C++ latest-edge standard framework");
 
-#include <cstdint>  // types
+//---------------------------------------------------------------------------
+
+#include <cstdint> // types
 #ifdef _WIN32
 #include <array>    // Layout
 #include <optional> // RegRead
 #include <string>   // Edit, EditView
 #else
-// TODO: add Qt headers here
+// TODO: add Qt headers here?
 #endif
 
 namespace GUI {
 
 #ifdef _WIN32
 
-#include "targetver.h"
-
-/**
- * Check Windows version support for WinHE GUI application. The minimal
- * supported version is Windows 2000, but some features are not available in
- * older versions.
- */
-
-#if (_WIN32_WINNT < _WIN32_WINNT_WIN2K)
+#ifdef NTDDI_VERSION
 #error                                                                         \
-    "WinHE framework is for the dialog based applications. Windows 2000 is the minimal possible version to compile."
+    "Incorrect Windows SDK initialization. If you want to set version of OS supported by HE_GUI_FRAMEWORK please do this in targetver.h file before including sdkddkver.h otherwise the resource compiler will not see the correct version."
 #endif
 
-#if (_WIN32_WINNT >= 0x0501)
-#define WinHE_SUPPORT_LINK_WINDOW // LinkWindow, NMLINK
+#include "targetver.h"
+
+#ifndef NTDDI_VERSION
+#error                                                                         \
+    "Incorrect Windows SDK initialization. If you want to set version of OS supported by HE_GUI_FRAMEWORK please do this in targetver.h file before including sdkddkver.h otherwise the resource compiler will not see the correct version."
+#endif
+
+//---------------------------------------------------------------------------
+
+/**
+ * Check Windows version support for HE_GUI_FRAMEWORK GUI application. The
+ * minimal supported version is Windows 2000, but some features are not
+ * available in older versions.
+ */
+
+/**
+ * HE_GUI_FRAMEWORK_DISABLE_IME removed because Unicode is used by Edit
+ * and EditView.
+ */
+
+#if (NTDDI_VERSION < NTDDI_WIN2K)
+#error                                                                         \
+    "HE_GUI_FRAMEWORK framework is for the dialog based applications. Windows 2000 is the minimal possible version to compile."
+#endif
+
+#if (NTDDI_VERSION >= NTDDI_WINXP)
+#define HE_GUI_FRAMEWORK_SUPPORT_LINK_WINDOW // LinkWindow, NMLINK
 #else
 #warning                                                                       \
     "The link in windows working from XP, before it's not working at all because system API isn't exist"
 #endif
 
-#if (_WIN32_WINNT >= 0x0502)
-#define WinHE_SUPPORT_SET_LIMIT_TEXT // EM_LIMITTEXT message
+#if (NTDDI_VERSION >= NTDDI_WS03)
+#define HE_GUI_FRAMEWORK_SUPPORT_SET_LIMIT_TEXT // EM_LIMITTEXT message
 #else
 #warning                                                                       \
     "From Windows XP 64 bit and Server 2003 you can use increased user input, before only 32k symbols is possible."
 #endif
 
-#if (_WIN32_WINNT >= 0x0600)
-#define WinHE_SUPPORT_DPI_CHANGES       // SetProcessDPIAware
-#define WinHE_SUPPORT_AUTO_RESTART      // RegisterApplicationRestart
-#define WinHE_SUPPORT_DEVIRTUALIZED_REG // REG_OPTION_DONT_VIRTUALIZE
+#if (NTDDI_VERSION >= NTDDI_VISTA)
+#define HE_GUI_FRAMEWORK_SUPPORT_DPI_CHANGES       // SetProcessDPIAware
+#define HE_GUI_FRAMEWORK_SUPPORT_AUTO_RESTART      // RegisterApplicationRestart
+#define HE_GUI_FRAMEWORK_SUPPORT_DEVIRTUALIZED_REG // REG_OPTION_DONT_VIRTUALIZE
 #else
 #warning                                                                       \
     "Restart manager, DWM support and different DPI scaling supported from Vista and Server 2008."
 #endif
 
-#if (_WIN32_WINNT >= 0x0605)
-#define WinHE_SUPPORT_DPI_FOR_WINDOW // GetDpiForWindow
+#if (NTDDI_VERSION >= NTDDI_WIN10)
+#define HE_GUI_FRAMEWORK_SUPPORT_DPI_FOR_WINDOW // GetDpiForWindow
 /**
- * WinHE_SUPPORT_DPI_CHANGES_WITHOUT_RESTART removed because it's very difficult
- * to implement, and for Dialog applications it's completely over-engineering
- * and overhead:
- * WM_DPICHANGED signal, AdjustWindowRectExForDpi,
- * SetProcessDpiAwarenessContext, WM_GETDPISCALEDSIZE signal
+ * HE_GUI_FRAMEWORK_SUPPORT_DPI_CHANGES_WITHOUT_RESTART removed because it's
+ * very difficult to implement, and for Dialog applications it's completely
+ * over-engineering and overhead: WM_DPICHANGED signal,
+ * AdjustWindowRectExForDpi, SetProcessDpiAwarenessContext, WM_GETDPISCALEDSIZE
+ * signal
  */
 #endif
 
-#if (_WIN32_WINNT >= 0x0A00)
+#if (NTDDI_VERSION >= NTDDI_WINTHRESHOLD)
 /**
- * WinHE_SUPPORT_WINDOWS_VERSION_CHECK deprecated because it's overhead and the
- * OS version checked only in compile time. Not fully implemented.
+ * HE_GUI_FRAMEWORK_SUPPORT_WINDOWS_VERSION_CHECK deprecated because it's
+ * overhead and the OS version checked only in compile time. Not fully
+ * implemented.
  */
 #else
 #warning                                                                       \
@@ -91,7 +111,7 @@ namespace GUI {
  * Allow any EOL for input because the Normalizer converts it to a space, this
  * also speedup and cleanup formatting.
  */
-#define WinHE_SUPPORT_EXTENDENT_STYLES // ES_EX_ALLOWEOL_ALL
+#define HE_GUI_FRAMEWORK_SUPPORT_EXTENDENT_STYLES // ES_EX_ALLOWEOL_ALL
 #else
 #warning "Extended styles supported since Windows 10 RS5."
 #endif
@@ -100,27 +120,26 @@ namespace GUI {
 /**
  * Support dark mode for Windows 10 1903+.
  */
-#define WinHE_SUPPORT_DARK_MODE
+#define HE_GUI_FRAMEWORK_SUPPORT_DARK_MODE
 #else
 #warning "Dark mode available since Windows 10 1903."
 #endif
+
+//---------------------------------------------------------------------------
 
 #ifdef _DEBUG
 /**
  * For testing only, not for production, this code needs to be moved to it's own
  * utility:
  */
-// #define WinHE_SUPPORT_DARK_MODE_TEST_WIN32_HELPER_REALIZATION
+#define HE_GUI_FRAMEWORK_SUPPORT_DARK_MODE_TEST_WIN32_HELPER_REALIZATION
 #endif
+
+//---------------------------------------------------------------------------
 
 /// Explicitely enable C++ support by Windows SDK to use Unicode on systems
 /// before Windows Vista or Server 2008
 #define WINDOWS_ENABLE_CPLUSPLUS
-
-/**
- * WinHE_DISABLE_IME removed because now Unicode is converted by Edit and
- * EditView.
- */
 
 /// Speed up build time by excluding rarely-used stuff from Windows headers
 #define VC_EXTRALEAN
@@ -139,7 +158,7 @@ namespace GUI {
 #define NONCMESSAGES
 #define NOMDI
 #define NOSYSPARAMSINFO
-#ifndef WinHE_SUPPORT_DPI_CHANGES
+#ifndef HE_GUI_FRAMEWORK_SUPPORT_DPI_CHANGES
 #define NOWINABLE
 #endif
 #define NO_STATE_FLAGS
@@ -158,12 +177,13 @@ namespace GUI {
 #define OEMRESOURCE -OEM Resource values
 #define NOATOM -Atom Manager routines
 #define NOCLIPBOARD -Clipboard routines
-#ifndef WinHE_SUPPORT_DARK_MODE
+#ifndef HE_GUI_FRAMEWORK_SUPPORT_DARK_MODE
 #define NOCOLOR -Screen colors
 #endif
 //  #define NOCTLMGR -Control and Dialog routines
 #define NODRAWTEXT -DrawText() and DT_ *
-#if !defined(WinHE_SUPPORT_DARK_MODE) && !defined(WinHE_SUPPORT_DPI_CHANGES)
+#if !defined(HE_GUI_FRAMEWORK_SUPPORT_DARK_MODE) &&                            \
+    !defined(HE_GUI_FRAMEWORK_SUPPORT_DPI_CHANGES)
 #define NOGDI -All GDI defines and routines
 #endif
 #define NOKERNEL -All KERNEL defines and routines
@@ -197,7 +217,7 @@ namespace GUI {
 #define NOPROGRESS Progress gas gauge.
 #define NOHOTKEY HotKey control
 #define NOHEADER Header bar control.
-#ifndef WinHE_SUPPORT_DARK_MODE
+#ifndef HE_GUI_FRAMEWORK_SUPPORT_DARK_MODE
 #define NOIMAGEAPIS ImageList apis.
 #endif
 #define NOLISTVIEW ListView control.
@@ -206,7 +226,7 @@ namespace GUI {
 #define NOANIMATE Animate control.
 #define NOBUTTON Button control.
 #define NOSTATIC Static control.
-#ifndef WinHE_SUPPORT_EXTENDENT_STYLES
+#ifndef HE_GUI_FRAMEWORK_SUPPORT_EXTENDENT_STYLES
 #define NOEDIT Edit control.
 #endif
 #define NOLISTBOX Listbox control.
@@ -226,22 +246,24 @@ namespace GUI {
 #define NOTOOLTIPS
 #define NOREBAR
 
-// Disable warnings for GUI code:
+//---------------------------------------------------------------------------
 // clang-format off
+/// Disable warnings for GUI code:
 #pragma warning(disable : 4267) // 'argument': conversion from 'x' to 'y', possible loss of data
 #pragma warning(disable : 4865) // the underlying type of 'x' will change when '/Zc:enumTypes' is specified on the command line
 #pragma warning(disable : 5039) // 'x': pointer or reference to potentially throwing function passed to 'extern "C"' function under -EHc. Undefined behavior may occur if this function throws an exception.
 // clang-format on
+//---------------------------------------------------------------------------
 #include <windows.h>
-#ifdef WinHE_SUPPORT_LINK_WINDOW
+#ifdef HE_GUI_FRAMEWORK_SUPPORT_LINK_WINDOW
 #include <commctrl.h>
 #include <shellapi.h>
 #endif
-#ifdef WinHE_SUPPORT_DARK_MODE
+#ifdef HE_GUI_FRAMEWORK_SUPPORT_DARK_MODE
 #include <dwmapi.h>
 #include <uxtheme.h>
 #endif
-
+//---------------------------------------------------------------------------
 #ifdef _DEBUG
 #define _CRTDBG_MAP_ALLOC
 #include <crtdbg.h>
@@ -271,13 +293,13 @@ static void __cdecl _setup_crt_leak_check() noexcept {
   _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_DEBUG);
 }
 #endif
-
+//---------------------------------------------------------------------------
 /**
  * Dialog procedure type.
  */
 typedef INT_PTR CALLBACK DlgProc(HWND, UINT, WPARAM, LPARAM) noexcept;
 
-#ifdef WinHE_SUPPORT_EXTENDENT_STYLES
+#ifdef HE_GUI_FRAMEWORK_SUPPORT_EXTENDENT_STYLES
 /**
  * @brief Set window extended styles.
  */
@@ -287,7 +309,7 @@ constexpr static void set_extended_style(const HWND window,
 }
 #endif
 
-#ifdef WinHE_SUPPORT_LINK_WINDOW
+#ifdef HE_GUI_FRAMEWORK_SUPPORT_LINK_WINDOW
 /**
  * @brief Open link (url, file) in the default application.
  *
@@ -341,7 +363,7 @@ constexpr static void set_text(const HWND window, LPCSTR const text,
   set_text(window, text, text + size);
 }
 
-#ifdef WinHE_SUPPORT_SET_LIMIT_TEXT
+#ifdef HE_GUI_FRAMEWORK_SUPPORT_SET_LIMIT_TEXT
 /**
  * @brief Set window text limit
  *
@@ -401,6 +423,7 @@ public:
    */
   constexpr void read(std::string &output) const noexcept {
     assert(length() <= output.capacity());
+    [[assume(length() <= output.capacity())]];
     output.resize(output.capacity());
     output.resize(WideCharToMultiByte(CP_UTF8, 0, text(), length(),
                                       output.data(), output.capacity(), NULL,
@@ -487,6 +510,7 @@ public:
    */
   constexpr void set_text_end(LPCWSTR const text_end) const noexcept {
     assert(text_end >= _text && UINT(text_end - _text) <= length());
+    [[assume(text_end >= _text && UINT(text_end - _text) <= length())]];
     *const_cast<LPWSTR>(text_end) = L'\0'; // because of C string
   }
 
@@ -496,6 +520,7 @@ public:
    */
   constexpr void set_length(const UINT new_length) const noexcept {
     assert(new_length <= length());
+    [[assume(new_length <= length())]];
     set_text_end(_text + new_length);
   }
 
@@ -536,6 +561,7 @@ public:
    */
   constexpr auto &read(std::string &output) const noexcept {
     assert(length() <= output.capacity());
+    [[assume(length() <= output.capacity())]];
     output.resize(output.capacity());
     output.resize(WideCharToMultiByte(CP_UTF8, 0, text(), length(),
                                       output.data(), output.capacity(), nullptr,
@@ -584,7 +610,7 @@ struct RegWrite {
   constexpr explicit RegWrite(const HKEY root, const char *subkey) noexcept {
     RegCreateKeyExA(root, subkey, FALSE, nullptr,
                     REG_OPTION_NON_VOLATILE
-#ifdef WinHE_SUPPORT_DEVIRTUALIZED_REG
+#ifdef HE_GUI_FRAMEWORK_SUPPORT_DEVIRTUALIZED_REG
                         | REG_OPTION_DONT_VIRTUALIZE
 #endif
                     ,
@@ -654,12 +680,12 @@ private:
   HKEY key;
 };
 
-#ifdef WinHE_SUPPORT_DPI_CHANGES
+#ifdef HE_GUI_FRAMEWORK_SUPPORT_DPI_CHANGES
 /**
  * @return dpi for window
  */
 [[nodiscard]] constexpr static auto dpi(const HWND window) noexcept {
-#ifdef WinHE_SUPPORT_DPI_FOR_WINDOW
+#ifdef HE_GUI_FRAMEWORK_SUPPORT_DPI_FOR_WINDOW
   // Use per-window DPI
   return GetDpiForWindow(window);
 #else
@@ -693,7 +719,7 @@ private:
 };
 #endif
 
-#ifdef WinHE_SUPPORT_DARK_MODE
+#ifdef HE_GUI_FRAMEWORK_SUPPORT_DARK_MODE
 // clang-format off
 /**
  * Dynamic colors API for Windows 10 1903+.
@@ -1499,6 +1525,7 @@ public:
    */
   [[nodiscard]] constexpr auto handle(const BYTE index) const noexcept {
     assert(index < elements);
+    [[assume(index < elements)]];
     return _constraints.handles[index];
   }
 
@@ -1521,7 +1548,7 @@ private:
   [[no_unique_address]] Constraints<elements> _constraints [[indeterminate]];
 };
 
-#ifdef WinHE_SUPPORT_DARK_MODE_TEST_WIN32_HELPER_REALIZATION
+#ifdef HE_GUI_FRAMEWORK_SUPPORT_DARK_MODE_TEST_WIN32_HELPER_REALIZATION
 namespace Colors {
 
 /**
@@ -1726,7 +1753,7 @@ argb_to_colorref(const DWORD value) noexcept {
 
 } // namespace Colors
 
-#ifdef WinHE_SUPPORT_WINDOWS_VERSION_CHECK
+#ifdef HE_GUI_FRAMEWORK_SUPPORT_WINDOWS_VERSION_CHECK
 constexpr static... check_system_version(...) noexcept {
   auto ntdll = GetModuleHandleA("ntdll.dll");
   // clang-format off
@@ -1774,20 +1801,22 @@ constexpr static... check_system_version(...) noexcept {
     "/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #endif
 
-#ifdef WinHE_SUPPORT_LINK_WINDOW
+#ifdef HE_GUI_FRAMEWORK_SUPPORT_LINK_WINDOW
 #pragma comment(lib, "comctl32.lib")
 #endif
 
 #pragma comment(lib, "user32.lib")
 
-#ifdef WinHE_SUPPORT_DARK_MODE
+#ifdef HE_GUI_FRAMEWORK_SUPPORT_DARK_MODE
 #pragma comment(lib, "dwmapi.lib")
 #pragma comment(lib, "uxtheme.lib")
 #endif
 
 #else
 
-// TODO Qt
+// TODO: add Qt headers here?
+
+// TODO: Implement Qt GUI support
 
 #endif
 

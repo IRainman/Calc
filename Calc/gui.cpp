@@ -52,7 +52,7 @@ class CalcApp {
 
     /// @see https://learn.microsoft.com/windows/win32/controls/em-limittext
     static constexpr UINT input_max_text_length =
-#ifdef WinHE_SUPPORT_SET_LIMIT_TEXT
+#ifdef HE_GUI_FRAMEWORK_SUPPORT_SET_LIMIT_TEXT
         Calc::maximum_user_input;
 #else
         // max is 32k symbols for Edit control and can't be changed:
@@ -75,10 +75,10 @@ public:
 #ifdef _DEBUG
     _setup_crt_leak_check();
 #endif
-#ifdef WinHE_SUPPORT_DARK_MODE
+#ifdef HE_GUI_FRAMEWORK_SUPPORT_DARK_MODE
     init_uxtheme_callers();
 #endif
-#ifdef WinHE_SUPPORT_DPI_CHANGES
+#ifdef HE_GUI_FRAMEWORK_SUPPORT_DPI_CHANGES
     /**
      * Calc is system DPI aware. It for the DPI value once at start. If the DPI
      * changes application will be automatically scaled up or down by the
@@ -87,7 +87,7 @@ public:
      */
     SetProcessDPIAware();
 #endif
-#ifdef WinHE_SUPPORT_AUTO_RESTART
+#ifdef HE_GUI_FRAMEWORK_SUPPORT_AUTO_RESTART
     /**
      * Calc automatically restarted after a crash, system shutdown or reboot or
      * user session end.
@@ -196,11 +196,11 @@ public:
     About::add_to_system_menu(main_window);
 
     layout_init(main_window);
-#ifdef WinHE_SUPPORT_EXTENDENT_STYLES
+#ifdef HE_GUI_FRAMEWORK_SUPPORT_EXTENDENT_STYLES
     set_extended_style(_layout.handle(1), ES_EX_ALLOWEOL_ALL);
     set_extended_style(_layout.handle(0), ES_EX_ALLOWEOL_ALL);
 #endif
-#ifdef WinHE_SUPPORT_SET_LIMIT_TEXT
+#ifdef HE_GUI_FRAMEWORK_SUPPORT_SET_LIMIT_TEXT
     set_text_limit(_layout.handle(0), cfg::input_max_text_length);
 #endif
 
@@ -244,7 +244,7 @@ public:
    */
   constexpr inline void layout_init(const HWND main_window) noexcept {
     // clang-format off
-#ifdef WinHE_SUPPORT_DPI_CHANGES
+#ifdef HE_GUI_FRAMEWORK_SUPPORT_DPI_CHANGES
     _dpi = dpi(main_window);
 
     _layout.init_min_sizes(main_window, physical(cfg::min_width, _dpi), physical(cfg::min_height, _dpi));
@@ -258,7 +258,7 @@ public:
                        static_assert(3 == cfg::elements);
     // clang-format on
   }
-#ifdef WinHE_SUPPORT_DARK_MODE
+#ifdef HE_GUI_FRAMEWORK_SUPPORT_DARK_MODE
   [[nodiscard]] constexpr inline auto &theme() noexcept { return _theme; }
 #endif
   [[nodiscard]] constexpr inline auto &about() noexcept { return _about; }
@@ -371,7 +371,7 @@ private:
     const auto top = reg.read("top");
     const auto right = reg.read("right");
     const auto bottom = reg.read("bottom");
-#ifdef WinHE_SUPPORT_DPI_CHANGES
+#ifdef HE_GUI_FRAMEWORK_SUPPORT_DPI_CHANGES
     const auto saved_dpi = reg.read("savedDpi");
 #endif
     WINDOWPLACEMENT wp [[indeterminate]];
@@ -381,7 +381,7 @@ private:
 
     if (left && top && right && bottom) {
       // -> use saved position
-#ifdef WinHE_SUPPORT_DPI_CHANGES
+#ifdef HE_GUI_FRAMEWORK_SUPPORT_DPI_CHANGES
       if (saved_dpi) {
         // -> use with saved dpi
         const auto dpi = *saved_dpi;
@@ -396,12 +396,12 @@ private:
         wp.rcNormalPosition.top = *top;
         wp.rcNormalPosition.right = *right;
         wp.rcNormalPosition.bottom = *bottom;
-#ifdef WinHE_SUPPORT_DPI_CHANGES
+#ifdef HE_GUI_FRAMEWORK_SUPPORT_DPI_CHANGES
       }
 #endif
     } else {
       // -> use default position
-#ifdef WinHE_SUPPORT_DPI_CHANGES
+#ifdef HE_GUI_FRAMEWORK_SUPPORT_DPI_CHANGES
       const auto shift = physical(cfg::default_shift, _dpi);
 #else
       const auto &shift = cfg::default_shift;
@@ -429,7 +429,7 @@ private:
     GetWindowPlacement(main_window, &wp);
     reg.write("flags", wp.flags);
     reg.write("showCmd", wp.showCmd);
-#ifdef WinHE_SUPPORT_DPI_CHANGES
+#ifdef HE_GUI_FRAMEWORK_SUPPORT_DPI_CHANGES
     reg.write("left", logical(wp.rcNormalPosition.left, _dpi));
     reg.write("top", logical(wp.rcNormalPosition.top, _dpi));
     reg.write("right", logical(wp.rcNormalPosition.right, _dpi));
@@ -474,7 +474,7 @@ private:
         return FALSE;
       }
     }
-#ifdef WinHE_SUPPORT_LINK_WINDOW
+#ifdef HE_GUI_FRAMEWORK_SUPPORT_LINK_WINDOW
     /**
      * Open homepage of the Calc
      */
@@ -512,10 +512,10 @@ private:
   [[no_unique_address]] std::string _equasion [[indeterminate]];
 
   [[no_unique_address]] Layout<cfg::elements> _layout [[indeterminate]];
-#ifdef WinHE_SUPPORT_DARK_MODE
+#ifdef HE_GUI_FRAMEWORK_SUPPORT_DARK_MODE
   [[no_unique_address]] Theme _theme [[indeterminate]];
 #endif
-#ifdef WinHE_SUPPORT_DPI_CHANGES
+#ifdef HE_GUI_FRAMEWORK_SUPPORT_DPI_CHANGES
   [[no_unique_address]] UINT _dpi [[indeterminate]];
 #endif
 };
@@ -530,7 +530,7 @@ constexpr static INT_PTR CALLBACK about_proc(const HWND about_window,
                                              const WPARAM wParam,
                                              const LPARAM lParam) noexcept {
   switch (message) {
-#ifdef WinHE_SUPPORT_DARK_MODE
+#ifdef HE_GUI_FRAMEWORK_SUPPORT_DARK_MODE
   case WM_INITDIALOG:
     gui.theme().apply(about_window);
     return TRUE;
@@ -542,7 +542,7 @@ constexpr static INT_PTR CALLBACK about_proc(const HWND about_window,
     gui.theme().apply(about_window, true);
     return TRUE;
 #endif
-#ifdef WinHE_SUPPORT_LINK_WINDOW
+#ifdef HE_GUI_FRAMEWORK_SUPPORT_LINK_WINDOW
   case WM_NOTIFY:
     return gui.about().open_homepage(about_window, lParam);
 #endif
@@ -565,7 +565,7 @@ constexpr static INT_PTR CALLBACK main_proc(const HWND main_window,
     return gui.minmaxinfo(lParam);
   case WM_SIZE:
     return gui.resize(lParam);
-#ifdef WinHE_SUPPORT_DARK_MODE
+#ifdef HE_GUI_FRAMEWORK_SUPPORT_DARK_MODE
   case WM_CTLCOLORDLG:
     return gui.theme().dialog_background();
   case WM_CTLCOLOREDIT:
@@ -581,11 +581,11 @@ constexpr static INT_PTR CALLBACK main_proc(const HWND main_window,
   case WM_SYSCOMMAND:
     return gui.about().create(main_window, wParam, about_proc);
   case WM_INITDIALOG:
-#ifdef WinHE_SUPPORT_DARK_MODE
+#ifdef HE_GUI_FRAMEWORK_SUPPORT_DARK_MODE
     gui.theme().init(main_window);
 #endif
     return gui.init(main_window, lParam);
-#ifdef WinHE_SUPPORT_AUTO_RESTART
+#ifdef HE_GUI_FRAMEWORK_SUPPORT_AUTO_RESTART
   case WM_ENDSESSION:
     return TRUE;
 #endif
