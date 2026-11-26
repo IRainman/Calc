@@ -33,9 +33,13 @@ constexpr inline void Lexer::read_operator(Token &current) noexcept {
   [[assume(_current - _begin >= 1 && _current <= _end)]];
 }
 
-constexpr inline void Lexer::read_separator(Token & /*current*/) noexcept {
+constexpr inline void Lexer::read_separator(Token &
+#ifdef CALC_USED_SEPARATOR
+                                                current
+#endif
+                                            ) noexcept {
   [[assume((_current - _begin >= 1 && _current < _end))]];
-#if 0
+#ifdef CALC_USED_SEPARATOR
   current.position = position();
   current.type = static_cast<Token::Type>(*_current);
 #endif
@@ -65,7 +69,7 @@ constexpr inline void Lexer::read_number(Token &current) noexcept {
     [[assume(current.number >= 0 &&
              current.number <= std::numeric_limits<Value>::max())]];
 
-    current.type = Token::Type::NUM;
+    current.type = Token::Type::NUMBER;
     _current = res.ptr;
 
     [[assume(_current - _begin >= 1 && _current <= _end)]];
@@ -93,7 +97,8 @@ constexpr inline void Lexer::read_ident(Token &current) noexcept {
       identifier != ids.end()) {
     const auto &[_, p] = identifier->second;
     current.identifier = &(*identifier);
-    current.type = p.is_function() ? Token::Type::FUNCT : Token::Type::CONST;
+    current.type =
+        p.is_function() ? Token::Type::FUNCTION : Token::Type::CONSTANT;
   } else [[unlikely]] {
     return_unparsable(current);
   }
@@ -108,19 +113,19 @@ constexpr inline void Lexer::return_result(Token &current) const noexcept {
 [[nodiscard]] constexpr inline static bool
 implicit_mult_first(const Token::Type previous) noexcept {
   // clang-format off
-  return previous == Token::Type::NUM ||
-         previous == Token::Type::CONST ||
-         previous == Token::Type::RPAREN;
+  return previous == Token::Type::NUMBER ||
+         previous == Token::Type::CONSTANT ||
+         previous == Token::Type::RIGHT_PARENTHESIS;
   // clang-format on
 }
 
 [[nodiscard]] constexpr inline static bool
 implicit_mult_second(const Token &current) noexcept {
   // clang-format off
-  return current.type == Token::Type::NUM ||
-         current.type == Token::Type::FUNCT ||
-         current.type == Token::Type::CONST ||
-         current.type == Token::Type::LPAREN;
+  return current.type == Token::Type::NUMBER ||
+         current.type == Token::Type::FUNCTION ||
+         current.type == Token::Type::CONSTANT ||
+         current.type == Token::Type::LEFT_PARENTHESIS;
   // clang-format on
 }
 
@@ -168,7 +173,7 @@ void Lexer::next(Token &current) noexcept {
     if (!is_separator && implicit_mult_first(_previous) &&
         implicit_mult_second(current)) [[unlikely]] {
       _delayed = current;
-      current.type = Token::Type::MUL;
+      current.type = Token::Type::MULTIPLICATION;
     }
     _previous = current.type;
     return;

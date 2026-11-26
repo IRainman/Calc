@@ -24,16 +24,16 @@ public:
    * expr_1 = expr_0 | '-' expr_0 | expr_0;
    *
    * expr_0 = '(' expr_4 ')'
-   *        | NUM
-   *        | CONST
-   *        | FUNCT
+   *        | NUMBER
+   *        | CONSTANT
+   *        | FUNCTION
    *        ;
    *
    * subexpression
    *
    * constant
    *
-   * function = FUNCT '(' parameters ')'
+   * function = FUNCTION '(' parameters ')'
    *
    * parameters = expr_4 ( ',' expr_4 )* ')'
    */

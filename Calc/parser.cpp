@@ -47,12 +47,12 @@ void Parser::expr_4(Token &result) noexcept {
   expr_3(result);
   while (true) {
     switch (_current.type) {
-    case Token::Type::ADD: {
-      if (result.type == Token::Type::NUM) {
+    case Token::Type::ADDITION: {
+      if (result.type == Token::Type::NUMBER) {
         advance();
         Token number;
         expr_3(number);
-        if (number.type == Token::Type::NUM) {
+        if (number.type == Token::Type::NUMBER) {
           result.number += number.number;
           break;
         } else {
@@ -63,12 +63,12 @@ void Parser::expr_4(Token &result) noexcept {
         goto issue_expected_number;
       }
     }
-    case Token::Type::SUB: {
-      if (result.type == Token::Type::NUM) {
+    case Token::Type::SUBSTRACTION: {
+      if (result.type == Token::Type::NUMBER) {
         advance();
         Token number;
         expr_3(number);
-        if (number.type == Token::Type::NUM) {
+        if (number.type == Token::Type::NUMBER) {
           result.number -= number.number;
           break;
         } else {
@@ -92,12 +92,12 @@ constexpr void Parser::expr_3(Token &result) noexcept {
   expr_2(result);
   while (true) {
     switch (_current.type) {
-    case Token::Type::MUL: {
-      if (result.type == Token::Type::NUM) {
+    case Token::Type::MULTIPLICATION: {
+      if (result.type == Token::Type::NUMBER) {
         advance();
         Token number;
         expr_2(number);
-        if (number.type == Token::Type::NUM) {
+        if (number.type == Token::Type::NUMBER) {
           result.number *= number.number;
           break;
         } else {
@@ -108,12 +108,12 @@ constexpr void Parser::expr_3(Token &result) noexcept {
         goto issue_expected_number;
       }
     }
-    case Token::Type::DIV: {
-      if (result.type == Token::Type::NUM) {
+    case Token::Type::DIVISION: {
+      if (result.type == Token::Type::NUMBER) {
         advance();
         Token number;
         expr_2(number);
-        if (number.type == Token::Type::NUM) {
+        if (number.type == Token::Type::NUMBER) {
           result.number /= number.number;
           break;
         } else {
@@ -139,7 +139,7 @@ constexpr void Parser::expr_2(Token &result) noexcept {
       [[indeterminate]];
   do {
     expr_1(tokens[count]);
-    if (_current.type == Token::Type::POW) {
+    if (_current.type == Token::Type::POWER) {
       advance();
     } else {
       break;
@@ -154,10 +154,10 @@ constexpr void Parser::expr_2(Token &result) noexcept {
   result = tokens[count];
 
   switch (result.type) {
-  case Token::Type::NUM: {
+  case Token::Type::NUMBER: {
     while (--count != static_cast<ParamCount>(-1)) {
       switch (tokens[count].type) {
-      case Token::Type::NUM: {
+      case Token::Type::NUMBER: {
         result.number = Identifiers::pow(tokens[count].number, result.number);
         break;
       }
@@ -185,11 +185,11 @@ constexpr void Parser::expr_2(Token &result) noexcept {
 
 constexpr void Parser::expr_1(Token &result) noexcept {
   switch (_current.type) {
-  case Token::Type::SUB: {
+  case Token::Type::SUBSTRACTION: {
     advance();
     expr_0(result);
     switch (result.type) {
-    case Token::Type::NUM: {
+    case Token::Type::NUMBER: {
       result.number = -result.number;
       return;
     }
@@ -212,19 +212,19 @@ constexpr void Parser::expr_1(Token &result) noexcept {
 
 constexpr void Parser::expr_0(Token &result) noexcept {
   switch (_current.type) {
-  case Token::Type::LPAREN: {
+  case Token::Type::LEFT_PARENTHESIS: {
     subexpression(result);
     return;
   }
-  case Token::Type::NUM: {
+  case Token::Type::NUMBER: {
     number(result);
     return;
   }
-  case Token::Type::FUNCT: {
+  case Token::Type::FUNCTION: {
     function(result);
     return;
   }
-  case Token::Type::CONST: {
+  case Token::Type::CONSTANT: {
     constant(result);
     return;
   }
@@ -238,7 +238,7 @@ constexpr void Parser::expr_0(Token &result) noexcept {
 constexpr void Parser::subexpression(Token &result) noexcept {
   advance();
   expr_4(result);
-  if (_current.type == Token::Type::RPAREN) {
+  if (_current.type == Token::Type::RIGHT_PARENTHESIS) {
     advance();
   } else {
     result.position = _current.position;
@@ -250,7 +250,7 @@ constexpr void Parser::constant(Token &result) noexcept {
   const auto &[caller, _] = _current.identifier->second;
   result.number = caller({});
   result.position = _current.position;
-  result.type = Token::Type::NUM;
+  result.type = Token::Type::NUMBER;
   advance();
 }
 
@@ -262,7 +262,7 @@ constexpr void Parser::number(Token &result) noexcept {
 constexpr void Parser::function(Token &result) noexcept {
   result = _current;
   advance();
-  if (_current.type == Token::Type::LPAREN) {
+  if (_current.type == Token::Type::LEFT_PARENTHESIS) {
     advance();
     const auto &[caller, check] = result.identifier->second;
     ParamCount count = 0;
@@ -273,12 +273,12 @@ constexpr void Parser::function(Token &result) noexcept {
       expr_4(parameters[count]);
       ++count;
       switch (_current.type) {
-      case Token::Type::RPAREN: {
+      case Token::Type::RIGHT_PARENTHESIS: {
         advance();
         if (check.params_count_is_valid(count)) {
           std::array<Value, parameters.size()> values [[indeterminate]];
           for (ParamCount i = 0; i != count; ++i) {
-            if (parameters[i].type == Token::Type::NUM) {
+            if (parameters[i].type == Token::Type::NUMBER) {
               values[i] = parameters[i].number;
             } else {
               result.position = parameters[i].position;
@@ -287,7 +287,7 @@ constexpr void Parser::function(Token &result) noexcept {
             }
           }
           result.number = caller({values.begin(), values.begin() + count});
-          result.type = Token::Type::NUM;
+          result.type = Token::Type::NUMBER;
           return;
         } else {
           [[unlikely]] issue(result, Issue::incorrect_parameters_count);

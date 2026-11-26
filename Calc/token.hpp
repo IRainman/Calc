@@ -33,25 +33,27 @@ struct Token {
   enum class Type : ParamCount {
     // https://en.cppreference.com/w/cpp/language/ascii
     RESULT = 0x00,
+#ifdef CALC_USED_SEPARATOR
+    SEPARATOR = ' ',
+#endif
+    ADDITION = '+',
+    SUBSTRACTION = '-',
 
-    ADD = '+',
-    SUB = '-',
+    MULTIPLICATION = '*',
+    DIVISION = '/',
 
-    MUL = '*',
-    DIV = '/',
+    POWER = '^',
 
-    POW = '^',
-
-    LPAREN = '(',
-    RPAREN = ')',
+    LEFT_PARENTHESIS = '(',
+    RIGHT_PARENTHESIS = ')',
 
     COMA = ',',
 
-    NUM = '0',
+    NUMBER = '0',
 
-    FUNCT = 'A',
+    FUNCTION = 'A',
 
-    CONST = '_',
+    CONSTANT = '_',
 
     ISSUE = 0x7F,
   };

@@ -26,6 +26,7 @@
 #ifdef CALC_USED_CONDITIONS
 // CALC_USED_EQUALS_OPERATORS // WIP
 // CALC_USED_CYCLES
+// CALC_USED_SEPARATOR
 #endif
 //---------------------------------------------------------------------------
 #endif
