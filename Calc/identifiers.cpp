@@ -249,8 +249,9 @@ template <auto value> [[nodiscard]] consteval Fn constant() noexcept {
 }
 
 [[nodiscard]] static constexpr bool is_unsigned_integer(Value x) noexcept {
-  return std::isfinite(x) && std::trunc(x) == x && x >= 0 &&
-         x <= static_cast<Value>(std::numeric_limits<Integer>::max());
+  return std::isfinite(x) && std::trunc(x) == x &&
+         x >= static_cast<Value>(std::numeric_limits<UInteger>::min()) &&
+         x <= static_cast<Value>(std::numeric_limits<UInteger>::max());
 }
 
 [[nodiscard]] static constexpr bool is_integer(Value x) noexcept {
@@ -450,15 +451,16 @@ radians_to_degrees(const Value x) noexcept {
 [[nodiscard]] static constexpr Value permutation(const Value n,
                                                  const Value r) noexcept {
   if (is_integer(n) && is_integer(r)) {
-    auto num = std::lrint(n);
-    auto den = std::lrint(r);
+    Integer num = std::llrint(n);
+    Integer den = std::llrint(r);
     Value result = 1.0;
-    if (0.0 <= num && 0.0 <= den && den <= num && num == n && den == r) {
-      while (den > 0.0) {
+    if (0 <= num && 0 <= den && den <= num && static_cast<Value>(num) == n &&
+        static_cast<Value>(den) == r) {
+      while (den > 0) {
         if (!std::isfinite(result)) {
           break;
         }
-        result = result * num;
+        result = result * static_cast<Value>(num);
         --num;
         --den;
       }
@@ -471,17 +473,18 @@ radians_to_degrees(const Value x) noexcept {
 [[nodiscard]] static constexpr Value combination(const Value n,
                                                  const Value r) noexcept {
   if (is_integer(n) && is_integer(r)) {
-    auto num = std::lrint(n);
-    auto den = std::lrint(r);
+    Integer num = std::llrint(n);
+    Integer den = std::llrint(r);
     Value res1 = 1.0;
     Value res2 = 1.0;
-    if (0 <= num && 0 <= den && den <= num && num == n && den == r) {
+    if (0 <= num && 0 <= den && den <= num && static_cast<Value>(num) == n &&
+        static_cast<Value>(den) == r) {
       while (den > 0) {
         if (!std::isfinite(res1)) {
           break;
         }
-        res1 = res1 * num;
-        res2 = res2 * den;
+        res1 = res1 * static_cast<Value>(num);
+        res2 = res2 * static_cast<Value>(den);
         --num;
         --den;
       }
@@ -534,7 +537,7 @@ accumulate(std::span<Value> params) noexcept {
   if (std::isnormal(value)) {
     // upgrade to significant nearest values
     constexpr auto sqrt2_over_2 =
-        std::numbers::sqrt2_v<Value> / static_cast<Value>(2);
+        std::numbers::sqrt2_v<Value> / static_cast<Value>(2.0);
     for (const auto &v :
          {static_cast<Value>(-1.0), -sqrt2_over_2, static_cast<Value>(-0.5),
           static_cast<Value>(0.0), static_cast<Value>(0.5), sqrt2_over_2,
@@ -666,19 +669,19 @@ assoc_laguerre(Value degree, Value order, Value value) noexcept {
 [[nodiscard]] /*constexpr*/ static Value
 distance(std::span<Value> params) noexcept {
   Value ex = 0.0;
-  Value min_d = std::numeric_limits<Value>::infinity();
-  Value max_d = -std::numeric_limits<Value>::infinity();
+  Value min = std::numeric_limits<Value>::infinity();
+  Value max = -std::numeric_limits<Value>::infinity();
   for (size_t i = 1; i != params.size(); ++i) {
-    params[i] = std::abs(params[i]);
-    ex += pow(params[i], params[0]);
-    min_d = std::min(min_d, params[i]);
-    max_d = std::max(max_d, params[i]);
+    const Value current = std::abs(params[i]);
+    ex += pow(current, params[0]);
+    min = std::min(min, current);
+    max = std::max(max, current);
   }
 
   return std::isnan(ex)                                  ? ex
-         : !std::isnormal(ex) && std::signbit(params[0]) ? min_d
+         : !std::isnormal(ex) && std::signbit(params[0]) ? min
          : !std::isnormal(ex) && !std::signbit(params[0])
-             ? max_d
+             ? max
              : pow(ex, 1.0 / params[0]);
 }
 
@@ -779,16 +782,20 @@ static const map ids = {
     //---------------------------------------------------------------------------
     /// added for optimization, reduce code size and speedup float parsing
     {"inf", constant<std::numeric_limits<Value>::infinity()>()},
+
     //---------------------------------------------------------------------------
     /// C++20 https://en.cppreference.com/w/cpp/numeric/constants :
 
     /// Archimedes' constant π
     /// https://en.wikipedia.org/wiki/Pi_(mathematical_constant)
     {"pi", constant<std::numbers::pi_v<Value>>()},
+
     /// https://en.wikipedia.org/wiki/E_(mathematical_constant)
     {"e", constant<std::numbers::e_v<Value>>()},
+
     /// https://en.wikipedia.org/wiki/Golden_ratio
     {"phi", constant<std::numbers::phi_v<Value>>()},
+
     /// https://en.wikipedia.org/wiki/Euler%27s_constant
     {"E", constant<std::numbers::egamma_v<Value>>()},
 
