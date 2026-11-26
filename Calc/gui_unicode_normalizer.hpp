@@ -46,19 +46,15 @@ namespace GUI {
  * [[no_unique_address]].
  *
  * @note Non-copyable and non-default-constructible utility class.
- * @note The current mappings have a maximum expansion of 12 ASCII bytes per
- *       input UTF-16 code unit (ζ → "riemann_zeta"). A capacity based on
- *       input.length() * 12 is therefore sufficient for the currently supported
- *       mappings, although the constructor assertion currently checks only
- *       input.length() * 4.
  *
  * Usage:
  * ```cpp
  * EditView view(...);
+ * // Preallocate enough space for normalized output
  * std::string equation(input_text.length() * 4);
- * auto normalizer = Normalizer(view.text(), view.length() equation);
+ * Normalizer normalizer(view.text(), view.length(), equation);
  * if (normalizer.failed()) {
- *     // Handle unsupported character
+ *     // Handle unsupported input or an incomplete implicit argument
  * }
  * // equation now contains normalized ASCII representation
  * ```
@@ -101,9 +97,9 @@ public:
   constexpr explicit inline Normalizer(const CharT *const text,
                                        const Length length,
                                        std::string &equasion)
-      : _equasion(equasion), _text(text), _length(length) {
-    _equasion.resize_and_overwrite(
-        _equasion.capacity(), Operation{_normalized, _text, _text + _length});
+      : _length(length) {
+    equasion.resize_and_overwrite(equasion.capacity(),
+                                  Operation{_normalized, text, text + _length});
   }
 
   constexpr inline ~Normalizer() noexcept = default;
@@ -134,10 +130,6 @@ public:
   }
 
 private:
-  /// Reference to output ASCII buffer
-  [[no_unique_address]] std::string &_equasion;
-  /// Pointer to the UTF-16 input text
-  [[no_unique_address]] const CharT *const _text;
   /// Count of the UTF-16 input text chars
   [[no_unique_address]] const Length _length;
   /// Count of succesfully normalized UTF-16 input chars
@@ -246,8 +238,11 @@ private:
           c >= CharT('\t') && c <= CharT('\r') || // ASCII control characters
           c == CharT(' ') ||                      // ASCII space
           c == 0xA0 ||                            // ANSI NO-BREAK SPACE
-          c >= 0x2000 && c <= 0x202F ||           // Unicode general punctuation
-          c == 0x3000                             // Unicode fullwidth space
+          c == 0x2028 ||                          // LINE SEPARATOR
+          c == 0x2029 ||                          // PARAGRAPH SEPARATOR
+          c == 0x202F ||                          // NARROW NO-BREAK SPACE
+          c == 0x205F ||                          // MEDIUM MATHEMATICAL SPACE
+          c == 0x3000                             // IDEOGRAPHIC SPACE
       );
     }
 
@@ -447,7 +442,7 @@ private:
                c == 0xFF0D    // U+FF0D － FULLWIDTH HYPHEN-MINUS
                ));
     }
-
+#if 0
     /**
      * @brief Classifies decimal exponent digit characters.
      *
@@ -473,6 +468,7 @@ private:
           c >= 0xFF10 && c <= 0xFF19    // U+FF10-U+FF19 ０-９ FULLWIDTH DIGITS
       );
     }
+#endif
 
     /**
      * @brief Checks whether the current character immediately follows
@@ -521,7 +517,7 @@ private:
      *   Tracks ownership of an automatically generated opening parenthesis.
      *   Explicit superscript parentheses do not require an additional wrapper.
      *
-     * - **Implicit argument mode (uint_fast16_t in_implicit_argument):**
+     * - **Implicit argument mode (Length in_implicit_argument):**
      *   Counts implicit argument parentheses opened by sqrt, etc or
      *   parenthesized the decimal-exponent ⏨ after a ')'. It is decremented
      *   when a separator, operator, or parenthesis ends the implicit argument.
@@ -571,7 +567,7 @@ private:
         bool close_superscript = false;
 
         // Tracks nesting depth of implicit argument parentheses
-        uint_fast16_t in_implicit_argument = 0;
+        Length in_implicit_argument = 0;
 
         // Main processing loop - processes all input characters
         for (; input != _end; ++input) [[likely]] {
@@ -598,8 +594,10 @@ private:
               !is_decimal_exponent_sign(c, input[-1]) &&
               !is_unary_sign_after_implicit_function(c, input[-1]))
               [[unlikely]] {
-            --in_implicit_argument;
-            *output++ = ')';
+            do {
+              --in_implicit_argument;
+              *output++ = ')';
+            } while (in_implicit_argument);
           }
 
           // Pass through printable ASCII characters unchanged
@@ -916,6 +914,8 @@ private:
             output = append(output, "log");
             START_IMPLICIT_ARGUMENT
             break;
+
+#undef START_IMPLICIT_ARGUMENT
 
           // Astronomical symbols - Planets and celestial bodies
           case 0x2609: // ☉ SUN

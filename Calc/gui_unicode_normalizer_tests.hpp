@@ -220,20 +220,36 @@ constinit static auto normalizer_tests = std::to_array< std::pair< std::string_v
     {"² ³", {true, "2"}},
     {"¹²³⁴⁵⁶⁷⁸⁹⁰ ¹²³⁴⁵⁶⁷⁸⁹⁰", {true, "1234567890"}},
 
-    // Superscript-only input followed by an unsupported superscript.
+    // Superscript-only input followed by an unsupported superscript
     {"²⁲", {true, "2"}},
 
-    // Unary signs at the start of implicit function arguments.
+    // Unary signs at the start of implicit function arguments
     {"√−1", {false, "sqrt(-1)"}},
-    {"1⏨-1", {false, "1*10^(-1)"}},
+    {"√-1", {false, "sqrt(-1)"}},
+    {"√+1", {false, "sqrt(+1)"}},
+    {"√−1+2", {false, "sqrt(-1)+2"}},
+    {"√−1-2", {false, "sqrt(-1)-2"}},
+    {"∛−8", {false, "cbrt(-8)"}},
+    {"√−(1)", {false, "sqrt(-)(1)"}}, // it's ok
 
-    // Implicit argument at end-of-input.
+    // Decimal exponent signs
+    {"1⏨-1", {false, "1*10^(-1)"}},
+    {"1⏨+1", {false, "1*10^(+1)"}},
+    {"1⏨−1", {false, "1*10^(-1)"}},
+
+    // Implicit argument at end-of-input
     {"√", {true, "sqrt"}},
     {"1⏨", {true, "1*10^"}},
     {"∛", {true, "cbrt"}},
     {"∜", {true, "qdrt"}},
     {"㏑", {true, "ln"}},
     {"㏒", {true, "log"}},
+
+    // Nested implicit arguments and boundaries
+    {"√√x+1", {false, "sqrt(sqrt(x))+1"}},
+    {"√√x y", {false, "sqrt(sqrt(x)) y"}},
+    {"√∛x−1", {false, "sqrt(cbrt(x))-1"}},
+    {"√√x,y", {false, "sqrt(sqrt(x)),y"}},
 
     // Combinations of normalization features
     {"½π²", {false, "1/2pi^(2)"}},
@@ -252,9 +268,12 @@ constinit static auto normalizer_tests = std::to_array< std::pair< std::string_v
     {"abc©def", {true, "abc"}},
     {"abcₔdef", {true, "abc"}}, // U+2094 is explicitly excluded from the subscript-letter lookup
     {"abc⁲def", {true, "abc"}},
-    {"|—J│Оa╓Чn", {true, "| J"}},
+    {"|—J│Оa╓Чn", {true, "|"}},
 #ifndef CALC_USED_EQUALS_OPERATORS
     {"±", {true, ""}},
+    {"x⁼", {true, "x"}},
+    {"xⁱ", {true, "x"}},
+    {"xⁿ", {true, "x"}},
 #endif
     {"x²😀", {true, "x^(2)"}},
     {"ₔ", {true, ""}}, // U+2094 is explicitly excluded from the subscript-letter lookup
@@ -268,6 +287,11 @@ constinit static auto normalizer_tests = std::to_array< std::pair< std::string_v
     // Intervals needed:
     {"[0…π]", {false, "[0???pi]"}},             // How exactly?
     {"[0…π, step]", {false, "[0???pi, step]"}}, // How exactly?
+#else
+    {"[0…π]", {true, "[0"}},
+    {"[0…π, step]", {true, "[0"}},
+#endif
+#ifdef CALC_USED_EQUALS_OPERATORS
     // blocks?
     {"{x= 150 ⁄ 12 + 1 }", {false, "{x= 150 / 12 + 1 }"}},
     // TODO: equation support, for input test https://xrjunque.nom.es/AllInOne:
