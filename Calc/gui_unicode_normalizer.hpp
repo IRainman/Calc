@@ -445,9 +445,8 @@ private:
     is_decimal_exponent_continuation(const CharT *const input,
                                      const CharT *const begin) noexcept {
 
-      return ((input[-1] == CharT(0x23E8) || // U+23E8 ⏨ DECIMAL EXPONENT SYMBOL
-               (input - begin >= 2 &&
-                is_decimal_exponent_sign(input[-1], input[-2]))));
+      return input[-1] == CharT(0x23E8) || // U+23E8 ⏨ DECIMAL EXPONENT SYMBOL
+             is_decimal_exponent_sign(input[-1], input[-2]);
     }
 
     /**
@@ -828,13 +827,11 @@ private:
 
           // Special case
           case 0x23E8: // ⏨ DECIMAL EXPONENT SYMBOL
-            if (_begin == input) [[unlikely]] {
+            if (_begin == input) {
               [[unlikely]] goto fast_processing_end;
-            } else {
-              output = append(output, "*10^");
-              start_implicit_argument(input, _end, output,
-                                      in_implicit_argument);
             }
+            output = append(output, "*10^");
+            start_implicit_argument(input, _end, output, in_implicit_argument);
             break;
 #ifdef CALC_USED_EQUALS_OPERATORS
             // TODO: do we need function to handle this?
@@ -935,7 +932,7 @@ private:
     close_superscript = false;                                                 \
     if (_begin == input) [[unlikely]] {                                        \
       only_superscript = true;                                                 \
-    } else if (input[-1] != 0x23E8 /* ⏨ DECIMAL EXPONENT SYMBOL */) {          \
+    } else if (!is_decimal_exponent_continuation(input, _begin)) {             \
       *output++ = '^';                                                         \
       if (c != 0x207D /* ⁽ SUPERSCRIPT LEFT PARENTHESIS */) {                  \
         *output++ = '(';                                                       \

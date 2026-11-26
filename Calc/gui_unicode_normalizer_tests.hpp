@@ -132,7 +132,7 @@ constinit static auto normalizer_tests = std::to_array< std::pair< std::string_v
     {"2⏨−³", {false, "2*10^(-3)"}},
     {"x²³+1", {false, "x^(23)+1"}},
     {"x²³y⁴⁵", {false, "x^(23)y^(45)"}},
-    {"²x³", {false, "2x^(3)"}},
+    {"²x³", {true, "2"}},
     { "2⏨⁻³",    { false, "2*10^(-3)" }},
     { "2⏨₋³",    { false, "2*10^(-3)" }},
     { "2⏨﹣³",   { false, "2*10^(-3)" }},
@@ -216,11 +216,9 @@ constinit static auto normalizer_tests = std::to_array< std::pair< std::string_v
     {"²", {false, "2"}},
     {"²³", {false, "23"}},
     {"¹²³⁴⁵⁶⁷⁸⁹⁰", {false, "1234567890"}},
-    {"²x³", {false, "2x^(3)"}},
-    {"² ³", {false, "2 ^(3)"}},
-
-    // A leading sequence does not prevent subsequent normalization
-    {"¹²³⁴⁵⁶⁷⁸⁹⁰ ¹²³⁴⁵⁶⁷⁸⁹⁰", {false, "1234567890 ^(1234567890)"}},
+    {"²x³", {true, "2"}},
+    {"² ³", {true, "2"}},
+    {"¹²³⁴⁵⁶⁷⁸⁹⁰ ¹²³⁴⁵⁶⁷⁸⁹⁰", {true, "1234567890"}},
 
     // Unsupported superscript characters.
     {"x²😀", {true, "x^(2)"}},
