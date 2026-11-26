@@ -44,8 +44,13 @@ constinit static auto normalizer_tests = std::to_array<NormalizerTest>({
     { "﹣₉﹒₀₉⏨₉", false, "-9.09*10^(9)" },
     { "12³×(231² - 1)³ + 744 - 0.00000000000075", false, "12^(3)*(231^(2) - 1)^(3) + 744 - 0.00000000000075" },
 
+    {"\xE2\x80\x80\xE2\x80\x81\xE2\x80\x82\xE2\x80\x83"
+ "\xE2\x80\x84\xE2\x80\x85\xE2\x80\x86\xE2\x80\x87"
+ "\xE2\x80\x88\xE2\x80\x89\xE2\x80\x8A",
+ false, "           "},
+
     {   // Separators
-        "\t\n\v\f\r \xC2\xA0 \xE3\x80\x80 \xE2\x80\x80 \xE2\x80\x81 \xE2\x80\xAF"
+        "\t\n\v\f\r \xC2\xA0"
 
         // Fullwidth forms
         "ＡＢＣＸＹＺａｂｃｘｙｚ０１２３４５６７８９＋－＊／（）＝＜＞＠＃％＆"
@@ -68,7 +73,7 @@ constinit static auto normalizer_tests = std::to_array<NormalizerTest>({
         "  abc\tdef\nxyz ",
         false,
         // Separators
-        "               "
+        "       "
 
         // Fullwidth forms
         "ABCXYZabcxyz0123456789+-*/()=<>@#%&"
@@ -197,6 +202,9 @@ constinit static auto normalizer_tests = std::to_array<NormalizerTest>({
 
 #ifdef CALC_TEST_EQUATION_SOLVER
     {"xⁱⁿ", false, "x^(in)"},
+#else
+    {"xⁱ", true, "x"},
+    {"xⁿ", true, "x"},
 #endif
 
 #ifdef CALC_USED_EQUALS_OPERATORS
@@ -301,6 +309,18 @@ constinit static auto normalizer_tests = std::to_array<NormalizerTest>({
 #else
     {"[0…π]", true, "[0"},
     {"[0…π, step]", true, "[0"},
+#endif
+#ifdef CALC_USED_EQUALS_OPERATORS
+    {"±", true, "PM"},
+    {"±1", false, "PM(1)"},
+    {"∓1", false, "PM(1)"},
+#else
+    {"±", true, ""},
+#endif
+
+#ifndef CALC_TEST_EQUATION_SOLVER
+    {"xⁱ", true, "x"},
+    {"xⁿ", true, "x"},
 #endif
 #ifdef CALC_USED_EQUALS_OPERATORS
     // blocks?
