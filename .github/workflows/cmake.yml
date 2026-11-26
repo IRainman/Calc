@@ -63,7 +63,7 @@ jobs:
       - name: Checkout zmij
         uses: actions/checkout@v6
         with:
-          repository: IRainman/zmij
+          repository: vitaut/zmij
           ref: main
           path: zmij
           persist-credentials: false
@@ -225,7 +225,7 @@ jobs:
       - name: Checkout zmij
         uses: actions/checkout@v6
         with:
-          repository: IRainman/zmij
+          repository: vitaut/zmij
           ref: main
           path: zmij
           persist-credentials: false

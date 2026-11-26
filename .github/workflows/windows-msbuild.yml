@@ -80,7 +80,7 @@ jobs:
             },
             @{
               Name = "zmij"
-              Repository = "https://github.com/IRainman/zmij.git"
+              Repository = "https://github.com/vitaut/zmij.git"
               Branch = "main"
             }
           )
