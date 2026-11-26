@@ -247,15 +247,36 @@ private:
     }
 
     /**
-     * @brief Classifies characters that terminate an implicit function
-     *        argument.
+     * @brief Classifies additive sign characters.
      *
-     * Includes ASCII, ANSI and Unicode mathematical-operators.
+     * Includes ASCII, Unicode subscript, Unicode superscript, Unicode small
+     * and Unicode fullwidth variants.
      *
      * @param c Character to test
-     * @return true if c is an operator
-     * @note roots are excluded from these ranges because they are handled as
-     *       functions.
+     * @return true if c is an additive sign character
+     */
+    [[nodiscard]] inline static constexpr bool
+    is_additive_sign(const CharT c) noexcept {
+      return (c == CharT('+') || c == CharT('-') || c == 0x2212 || // MINUS SIGN
+              c == 0x208A || // SUBSCRIPT PLUS
+              c == 0x208B || // SUBSCRIPT MINUS
+              c == 0x207A || // SUPERSCRIPT PLUS
+              c == 0x207B || // SUPERSCRIPT MINUS
+              c == 0xFE62 || // SMALL PLUS
+              c == 0xFE63 || // SMALL HYPHEN-MINUS
+              c == 0xFF0B || // FULLWIDTH PLUS
+              c == 0xFF0D    // FULLWIDTH HYPHEN-MINUS
+      );
+    }
+
+    /**
+     * @brief Classifies operator characters.
+     *
+     * Includes ASCII, ANSI and Unicode variants of common mathematical
+     * operators.
+     *
+     * @param c Character to test
+     * @return true if c is an operator character
      */
     [[nodiscard]] inline static constexpr bool
     is_operator(const CharT c) noexcept {
@@ -263,7 +284,13 @@ private:
               c == CharT('/') || c == CharT(',') ||                    // ASCII
               c == 0xB7 || c == 0xD7 || c == 0xF7 ||                   // ANSI
               c >= 0x2200 && c <= 0x2219 || // Unicode before roots
-              c >= 0x221E && c <= 0x22FF    // Unicode after roots
+              c >= 0x221E && c <= 0x22FF || // Unicode after roots
+              c == 0x208A ||                // SUBSCRIPT PLUS
+              c == 0x208B ||                // SUBSCRIPT MINUS
+              c == 0xFE62 ||                // SMALL PLUS
+              c == 0xFE63 ||                // SMALL HYPHEN-MINUS
+              c == 0xFF0B ||                // FULLWIDTH PLUS
+              c == 0xFF0D                   // FULLWIDTH HYPHEN-MINUS
       );
     }
 
@@ -371,6 +398,29 @@ private:
     }
 
     /**
+     * @brief Classifies characters that start an implicit function.
+     *
+     * Recognizes Unicode root symbols and the square root symbol.
+     *
+     * @param c Character to test
+     * @return true if c is an implicit function symbol
+     */
+    [[nodiscard]] inline static constexpr bool
+    is_implicit_function(const CharT c) noexcept {
+      return (c == 0x221A || // √
+              c == 0x23B7 || // ⎷
+              c == 0x221B || // ∛
+              c == 0x221C || // ∜
+              c == 0x33D1 || // ㏑
+              c == 0x33D2    // ㏒
+#ifdef CALC_USED_EQUALS_OPERATORS
+              || c == 0x00B1 // ±
+              || c == 0x2213 // ∓
+#endif
+      );
+    }
+
+    /**
      * @brief Classifies unary sign characters that follow an implicit function.
      *
      * Recognizes ASCII and Unicode minus/plus signs.
@@ -383,33 +433,7 @@ private:
     [[nodiscard]] inline static constexpr bool
     is_unary_sign_after_implicit_function(const CharT c,
                                           const CharT previous) noexcept {
-      return (c == CharT('+') || // U+002B + PLUS SIGN
-              c == CharT('-') || // U+002D - HYPHEN-MINUS
-              c == 0x2212 ||     // U+2212 − MINUS SIGN
-
-              c == 0x208A || // U+208A ₊ SUBSCRIPT PLUS SIGN
-              c == 0x208B || // U+208B ₋ SUBSCRIPT MINUS SIGN
-
-              c == 0x207A || // U+207A ⁺ SUPERSCRIPT PLUS SIGN
-              c == 0x207B || // U+207B ⁻ SUPERSCRIPT MINUS SIGN
-
-              c == 0xFE62 || // U+FE62 ﹢ SMALL PLUS SIGN
-              c == 0xFE63 || // U+FE63 ﹣ SMALL HYPHEN-MINUS
-
-              c == 0xFF0B || // U+FF0B ＋ FULLWIDTH PLUS SIGN
-              c == 0xFF0D    // U+FF0D － FULLWIDTH HYPHEN-MINUS
-              ) &&
-             (previous == 0x221A || // √ SQUARE ROOT
-              previous == 0x23B7 || // ⎷ RADICAL SYMBOL BOTTOM
-              previous == 0x221B || // ∛ CUBE ROOT
-              previous == 0x221C || // ∜ FOURTH ROOT
-              previous == 0x33D1 || // ㏑ SQUARE LN
-              previous == 0x33D2    // ㏒ SQUARE LOG
-#ifdef CALC_USED_EQUALS_OPERATORS
-              || previous == 0x00B1 // ± PLUS-MINUS SIGN
-              || previous == 0x2213 // ∓ MINUS-OR-PLUS SIGN
-#endif
-             );
+      return is_additive_sign(c) && is_implicit_function(previous);
     }
 
     /**
@@ -424,51 +448,8 @@ private:
      */
     [[nodiscard]] inline static constexpr bool
     is_decimal_exponent_sign(const CharT c, const CharT previous) noexcept {
-      return (previous == 0x23E8 && // U+23E8 ⏨ DECIMAL EXPONENT SYMBOL
-              (c == CharT('+') ||   // U+002B + PLUS SIGN
-               c == CharT('-') ||   // U+002D - HYPHEN-MINUS
-               c == 0x2212 ||       // U+2212 − MINUS SIGN
-
-               c == 0x208A || // U+208A ₊ SUBSCRIPT PLUS SIGN
-               c == 0x208B || // U+208B ₋ SUBSCRIPT MINUS SIGN
-
-               c == 0x207A || // U+207A ⁺ SUPERSCRIPT PLUS SIGN
-               c == 0x207B || // U+207B ⁻ SUPERSCRIPT MINUS SIGN
-
-               c == 0xFE62 || // U+FE62 ﹢ SMALL PLUS SIGN
-               c == 0xFE63 || // U+FE63 ﹣ SMALL HYPHEN-MINUS
-
-               c == 0xFF0B || // U+FF0B ＋ FULLWIDTH PLUS SIGN
-               c == 0xFF0D    // U+FF0D － FULLWIDTH HYPHEN-MINUS
-               ));
+      return previous == 0x23E8 && is_additive_sign(c);
     }
-#if 0
-    /**
-     * @brief Classifies decimal exponent digit characters.
-     *
-     * Recognizes:
-     *   - ASCII digits 0-9
-     *   - Unicode subscript digits ₀-₉
-     *   - Unicode superscript digits ⁰⁴⁵⁶⁷⁸⁹
-     *   - Unicode fullwidth digits ０-９
-     *
-     * @param c Character to test
-     * @return true if c is a valid decimal exponent digit following ⏨
-     */
-    [[nodiscard]] inline static constexpr bool
-    is_decimal_exponent_digit(const CharT c) noexcept {
-      return (
-          c >= CharT('0') && c <= CharT('9') ||
-          c >= 0x2080 && c <= 0x2089 || // U+2080-U+2089 ₀-₉ SUBSCRIPT DIGITS
-          c == 0x2070 ||                // U+2070 ⁰ SUPERSCRIPT ZERO
-          c >= 0x2074 && c <= 0x2079 || // U+2074-U+2079 ⁴-⁹ SUPERSCRIPT DIGITS
-          c == 0x00B2 ||                // U+00B2 ² SUPERSCRIPT TWO
-          c == 0x00B3 ||                // U+00B3 ³ SUPERSCRIPT THREE
-          c == 0x00B9 ||                // U+00B9 ¹ SUPERSCRIPT ONE
-          c >= 0xFF10 && c <= 0xFF19    // U+FF10-U+FF19 ０-９ FULLWIDTH DIGITS
-      );
-    }
-#endif
 
     /**
      * @brief Checks whether the current character immediately follows
@@ -980,7 +961,8 @@ private:
     close_superscript = false;                                                 \
     if (_begin == input) [[unlikely]] {                                        \
       only_superscript = true;                                                 \
-    } else if (!is_decimal_exponent_continuation(input, _begin)) {             \
+    } else if (!is_decimal_exponent_continuation(input, _begin) &&             \
+               !is_unary_sign_after_implicit_function(c, input[-1])) {         \
       *output++ = '^';                                                         \
       if (c != 0x207D /* ⁽ SUPERSCRIPT LEFT PARENTHESIS */) {                  \
         *output++ = '(';                                                       \

@@ -284,13 +284,12 @@ private:
     for (unsigned int i = count; --i != 0;)
 #endif
     for (const auto &test : normalizer_tests) {
-      const auto &test_text = test.first;
 #ifdef CALC_TESTS_DEV_ENABLED // Development
       {
         Edit input(_layout.handle(0), cfg::input_max_text_length);
 
         // Write UTF-8 text to the input Edit
-        input.write(test_text.data(), test_text.size());
+        input.write(test.input);
       }
 
       // Read UTF-16 text from the input EditView
@@ -299,17 +298,14 @@ private:
       // Convert UTF-16 text to ASCII representation
       Normalizer normalizer(input.text(), input.length(), _equasion);
 
-      const auto &[expected_failed, expected_equasion] = test.second;
-
       // If result unexpected:
-      if (expected_failed != normalizer.failed() ||
-          expected_equasion != _equasion) {
+      if (test.failed != normalizer.failed() || test.output != _equasion) {
         ++failed;
       }
 #else
         // Convert UTF-8 text to the UTF-16 text for the test
         const UINT length = static_cast<UINT>(MultiByteToWideChar(
-            CP_UTF8, 0, test_text.data(), test_text.length(),
+            CP_UTF8, 0, test.input.data(), test.input.length(),
             wide_string.data(), cfg::input_max_text_length));
 
         // Convert UTF-16 text to ASCII representation with normalization
