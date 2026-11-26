@@ -24,9 +24,14 @@ namespace GUI {
  *     ㏑ → "ln", ㏒ → "log"
  *   - Vulgar fractions: ¼, ½, ¾ and the supported Unicode fraction forms
  *   - Selected Greek letters: α, β, γ/Γ, ε, ζ, μ/µ and σ
- *   - Superscripts: supported digits/operators/letters are grouped as "^(...)"
- *     after ordinary input; a superscript-only leading input is emitted
- *     without the wrapper
+ *   - Superscripts: consecutive supported superscript characters are grouped
+ *     as "^(...)" after ordinary input. An explicitly supplied superscript
+ *     left parenthesis (⁽) replaces the automatically inserted opening
+ *     parenthesis. A leading superscript sequence is emitted without the
+ *     generated wrapper.
+ *   - Decimal exponent notation: ⏨ is normalized to "*10^" after an existing
+ *     expression. Its exponent is handled as an implicit argument, unless an
+ *     explicit opening parenthesis is already present.
  *   - Subscripts: ₀₋₉ and the supported Unicode subscript letters
  *   - Operators and punctuation: common Unicode variants normalized to ASCII
  *   - Fullwidth forms: U+FF01-U+FF5E mapped directly to U+0021-U+007E
@@ -195,22 +200,34 @@ private:
     }
 
     /**
-     * @brief Classifies whether a character belongs to the supported
-     *        superscript code-point set.
+     * @brief Classifies supported superscript characters.
      *
-     * Used by the superscript state machine to determine if the current
-     * character should continue the superscript sequence or trigger its
-     * closure.
-     *
-     * Recognized ANSI and Unicode superscripts.
+     * Recognized characters are explicitly listed in the implementation.
+     * Unassigned and conditionally unsupported code points are excluded.
      *
      * @param c Character to test
-     * @return true if c is in the superscript Unicode range
+     * @return true if c is a supported superscript character
      */
     [[nodiscard]] inline static constexpr bool
     is_superscript(const CharT c) noexcept {
-      return (c == 0xB2 || c == 0xB3 || c == 0xB9 || // ANSI ²³¹
-              c >= 0x2070 && c <= 0x207F             // Unicode ⁰ⁱ⁴⁵⁶⁷⁸⁹⁺⁻⁼⁽⁾ⁿ
+      return (c == 0x00B2 || // U+00B2 ² SUPERSCRIPT TWO
+              c == 0x00B3 || // U+00B3 ³ SUPERSCRIPT THREE
+              c == 0x00B9 || // U+00B9 ¹ SUPERSCRIPT ONE
+              c == 0x2070 || // U+2070 ⁰ SUPERSCRIPT ZERO
+#ifdef CALC_TEST_EQUATION_SOLVER
+              c == 0x2071 || // U+2071 ⁱ SUPERSCRIPT LATIN SMALL LETTER I
+#endif
+              // case 0x2072: // not assigned.
+              // case 0x2073: // not assigned.
+              c >= 0x2074 && c <= 0x207B || // U+2074-U+207B ⁴-⁹⁺⁻
+#ifdef CALC_USED_EQUALS_OPERATORS
+              c == 0x207C || // U+207C ⁼ SUPERSCRIPT EQUALS SIGN
+#endif
+              c == 0x207D || // U+207D ⁽ SUPERSCRIPT LEFT PARENTHESIS
+              c == 0x207E    // U+207E ⁾ SUPERSCRIPT RIGHT PARENTHESIS
+#ifdef CALC_TEST_EQUATION_SOLVER
+              || c == 0x207F // U+207F ⁿ SUPERSCRIPT LATIN SMALL LETTER N
+#endif
       );
     }
 
@@ -362,21 +379,32 @@ private:
     /**
      * @brief Classifies decimal exponent sign characters.
      *
-     * Recognizes:
-     *   - ASCII plus and minus
-     *   - Unicode minus
+     * Recognizes ASCII, Unicode, subscript, superscript, small
+     * and fullwidth plus/minus signs.
      *
      * @param c Character to test
      * @param previous Character immediately preceding c
-     * @return true if c is a valid decimal exponent sign following ⏨
+     * @return true if c is a sign immediately following ⏨
      */
     [[nodiscard]] inline static constexpr bool
     is_decimal_exponent_sign(const CharT c, const CharT previous) noexcept {
-      return ((c == CharT('+') || // U+002B + PLUS SIGN
-               c == CharT('-') || // U+002D - HYPHEN-MINUS
-               c == 0x2212) &&    // U+2212 − MINUS SIGN
-              previous == 0x23E8  // U+23E8 ⏨ DECIMAL EXPONENT SYMBOL
-      );
+      return (previous == 0x23E8 && // U+23E8 ⏨ DECIMAL EXPONENT SYMBOL
+              (c == CharT('+') ||   // U+002B + PLUS SIGN
+               c == CharT('-') ||   // U+002D - HYPHEN-MINUS
+               c == 0x2212 ||       // U+2212 − MINUS SIGN
+
+               c == 0x208A || // U+208A ₊ SUBSCRIPT PLUS SIGN
+               c == 0x208B || // U+208B ₋ SUBSCRIPT MINUS SIGN
+
+               c == 0x207A || // U+207A ⁺ SUPERSCRIPT PLUS SIGN
+               c == 0x207B || // U+207B ⁻ SUPERSCRIPT MINUS SIGN
+
+               c == 0xFE62 || // U+FE62 ﹢ SMALL PLUS SIGN
+               c == 0xFE63 || // U+FE63 ﹣ SMALL HYPHEN-MINUS
+
+               c == 0xFF0B || // U+FF0B ＋ FULLWIDTH PLUS SIGN
+               c == 0xFF0D    // U+FF0D － FULLWIDTH HYPHEN-MINUS
+               ));
     }
 
     /**
@@ -406,6 +434,23 @@ private:
     }
 
     /**
+     * @brief Checks whether the current character immediately follows
+     *        a decimal exponent marker or its sign.
+     *
+     * @param input Current input position
+     * @param begin Beginning of input
+     * @return true if the current position continues a decimal exponent prefix
+     */
+    [[nodiscard]] inline static constexpr bool
+    is_decimal_exponent_continuation(const CharT *const input,
+                                     const CharT *const begin) noexcept {
+
+      return ((input[-1] == CharT(0x23E8) || // U+23E8 ⏨ DECIMAL EXPONENT SYMBOL
+               (input - begin >= 2 &&
+                is_decimal_exponent_sign(input[-1], input[-2]))));
+    }
+
+    /**
      * @brief Normalization functor - the main processing engine.
      *
      * Processes the entire input string character-by-character, performing
@@ -431,6 +476,10 @@ private:
      * - **Superscript mode (bool in_superscript):**
      *   Activated by superscripts after ordinary input, generating a "^(...)"
      *   wrapper. Closed when a non-superscript character is encountered.
+     *
+     * - **Superscript parenthesis tracking (bool close_superscript):**
+     *   Tracks ownership of an automatically generated opening parenthesis.
+     *   Explicit superscript parentheses do not require an additional wrapper.
      *
      * - **Implicit argument mode (uint_fast16_t in_implicit_argument):**
      *   Counts implicit argument parentheses opened by sqrt, etc or
@@ -472,11 +521,14 @@ private:
       }
       //
       if (input != _end) [[unlikely]] {
-        // Tracks if we have input started from superscript
+        // Tracks whether the input starts with a superscript sequence
         bool only_superscript = false;
 
-        // Tracks if we are currently in a superscript block
+        // Tracks whether we are processing a superscript sequence
         bool in_superscript = false;
+
+        // Tracks superscript automatic parenthesis
+        bool close_superscript = false;
 
         // Tracks nesting depth of implicit argument parentheses
         uint_fast16_t in_implicit_argument = 0;
@@ -485,12 +537,20 @@ private:
         for (; input != _end; ++input) [[likely]] {
           const auto &c = input[0];
 
-          // Exit superscript mode if encountering a non-superscript character
+          // Exit leading superscript-only mode when encountering ordinary input
           if (only_superscript && !is_superscript(c)) [[unlikely]] {
             [[unlikely]] goto fast_processing_end;
-          } else if (in_superscript && !is_superscript(c)) [[unlikely]] {
+          }
+
+          // Exit superscript mode when encountering a non-superscript
+          // character.
+          if (in_superscript && !is_superscript(c)) [[unlikely]] {
             in_superscript = false;
-            *output++ = ')';
+
+            if (close_superscript) {
+              *output++ = ')';
+              close_superscript = false;
+            }
           }
 
           // Exit implicit argument mode when encountering argument boundary
@@ -518,8 +578,9 @@ private:
             continue;
           }
 
-          // Map subscript letters (ₐₑₒₓ?ₕₖₗₘₙₚₛₜ) via lookup table
-          if (c >= 0x2090 && c <= 0x209C && c != 0x2094) {
+          // Map subscript letters (ₐₑₒₓₔₕₖₗₘₙₚₛₜ) via lookup table
+          if (c >= 0x2090 && c <= 0x209C &&
+              c != 0x2094 /* ₔ LATIN SUBSCRIPT SMALL LETTER SCHWA */) {
             *output++ = "aeox?hklmnpst"[c - 0x2090];
             continue;
           }
@@ -870,11 +931,16 @@ private:
             // Superscript - ANSI and Unicode
 #define START_SUPERSCRIPT                                                      \
   if (!in_superscript) {                                                       \
+    in_superscript = true;                                                     \
+    close_superscript = false;                                                 \
     if (_begin == input) [[unlikely]] {                                        \
       only_superscript = true;                                                 \
-    } else if (!only_superscript && *(input - 1) != 0x23E8 /*⏨*/) {            \
-      in_superscript = true;                                                   \
-      output = append(output, "^(");                                           \
+    } else if (input[-1] != 0x23E8 /* ⏨ DECIMAL EXPONENT SYMBOL */) {          \
+      *output++ = '^';                                                         \
+      if (c != 0x207D /* ⁽ SUPERSCRIPT LEFT PARENTHESIS */) {                  \
+        *output++ = '(';                                                       \
+        close_superscript = true;                                              \
+      }                                                                        \
     }                                                                          \
   }
 
@@ -958,7 +1024,8 @@ private:
         }
 
         // Close any unclosed parentheses from active state machines
-        if (in_superscript) [[unlikely]] {
+
+        if (close_superscript) [[unlikely]] {
           *output++ = ')';
         }
         while (in_implicit_argument) [[unlikely]] {

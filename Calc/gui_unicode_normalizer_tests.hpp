@@ -86,189 +86,183 @@ constinit static auto normalizer_tests = std::to_array< std::pair< std::string_v
     }
     },
 
-    // Mathematical and physical constants and Greek letters. Last symbol Ƶ is intentionally unsupported after "ℯ ℇ ".
+    // Mathematical and physical constants and Greek letters. Last symbol Ƶ is intentionally unsupported after "ℯ ℇ "
     { "Ɛ π ℇ τ ℎ ℏ φ ϕ ⅇ Γ α ζ μ µ σ ϐ ∞ ℯ Γ γ α ζ μ µ σ ε β ϐ ∞ Γ α ζ μ µ σ ε ϐ ∞ ℯ ℇ Ƶ 12354567896541587463", { true, "E pi E (2*pi) h hbar phi phi e_atomic gamma alpha riemann_zeta mu mu sigma beta inf e gamma gamma alpha riemann_zeta mu mu sigma epsilon beta beta inf gamma alpha riemann_zeta mu mu sigma epsilon beta inf e E " }},
 
-    // Mathematical functions.
-    { "√x",      { false, "sqrt(x)" }},
-    { "∛x",      { false, "cbrt(x)" }},
-    { "∜x",      { false, "qdrt(x)" }},
-    { "√(x)",    { false, "sqrt(x)" }},
-    { "∛(x)",    { false, "cbrt(x)" }},
-    { "∜(x)",    { false, "qdrt(x)" }},
-    { "√x+1",    { false, "sqrt(x)+1" }},
-    { "∛x−1",    { false, "cbrt(x)-1" }},
-    { "∜x×2",    { false, "qdrt(x)*2" }},
-    { "√x y",    { false, "sqrt(x) y" }},
-    { "√x,y",    { false, "sqrt(x),y" }},
-    { "⎷x",      { false, "sqrt(x)" }},
-    { "√√x",     { false, "sqrt(sqrt(x))" }},
-    { "√∛x",     { false, "sqrt(cbrt(x))" }},
-    { "∛∜x",     { false, "cbrt(qdrt(x))" }},
-    { "㏑x",     { false, "ln(x)" }},
-    { "㏒x",     { false, "log(x)" }},
-    { "㏑x+㏒y", { false, "ln(x)+log(y)" }},
-    { "√x²",     { false, "sqrt(x^(2))" }},
+    // Mathematical functions
+    {"√x", {false, "sqrt(x)"}},
+    {"∛x", {false, "cbrt(x)"}},
+    {"∜x", {false, "qdrt(x)"}},
+    {"√(x)", {false, "sqrt(x)"}},
+    {"∛(x)", {false, "cbrt(x)"}},
+    {"∜(x)", {false, "qdrt(x)"}},
+    {"√x+1", {false, "sqrt(x)+1"}},
+    {"∛x−1", {false, "cbrt(x)-1"}},
+    {"∜x×2", {false, "qdrt(x)*2"}},
+    {"√x y", {false, "sqrt(x) y"}},
+    {"√x,y", {false, "sqrt(x),y"}},
+    {"⎷x", {false, "sqrt(x)"}},
+    {"√√x", {false, "sqrt(sqrt(x))"}},
+    {"√∛x", {false, "sqrt(cbrt(x))"}},
+    {"∛∜x", {false, "cbrt(qdrt(x))"}},
+    {"㏑x", {false, "ln(x)"}},
+    {"㏒x", {false, "log(x)"}},
+    {"㏑x+㏒y", {false, "ln(x)+log(y)"}},
+    {"√x²", {false, "sqrt(x^(2))"}},
 
-    // Decimal exponent notation.
-    { "⏨",      { true, "" }},
-    { "⏨+3",    { true, "" }},
-    { "⏨³⁴",    { true, "" }},
-    { "1⏨3",    { false, "1*10^(3)" }},
-    { "1⏨+3",   { false, "1*10^(+3)" }},
-    { "1⏨−3",   { false, "1*10^(-3)" }},
-    { "1⏨₉",     { false, "1*10^(9)" }},
-    { "1⏨³",     { false, "1*10^(3)" }},
-    { "2⏨³",    { false, "2*10^(3)" }},
-    { "(2)⏨3",  { false, "(2)*10^(3)" }},
-    { "(2)⏨(3)",{ false, "(2)*10^(3)" }},
-    { "(2)⏨−3", { false, "(2)*10^(-3)" }},
-    { "(2)⏨+3", { false, "(2)*10^(+3)" }},
-    { "(2)⏨₋₃", { false, "(2)*10^(-3)" }},
-    { "2⏨−3",   { false, "2*10^(-3)" }},
-    { "2⏨³⁴",   { false, "2*10^(34)" }},
-    { "2⏨3⁴",   { false, "2*10^(3^(4))" }},
-    { "(2)⏨³⁴", { false, "(2)*10^(34)" }},
-    { "2⏨−³",   { false, "2*10^(-3)" }},
-    { "x²³+1",  { false, "x^(23)+1" }},
-    { "x²³y⁴⁵", { false, "x^(23)y^(45)" }},
-    { "²x³",    { false, "2x^(3)" }},
+    // Decimal exponent notation
+    {"⏨", {true, ""}},
+    {"⏨+3", {true, ""}},
+    {"⏨³⁴", {true, ""}},
+    {"1⏨3", {false, "1*10^(3)"}},
+    {"1⏨+3", {false, "1*10^(+3)"}},
+    {"1⏨−3", {false, "1*10^(-3)"}},
+    {"1⏨₉", {false, "1*10^(9)"}},
+    {"1⏨³", {false, "1*10^(3)"}},
+    {"2⏨³", {false, "2*10^(3)"}},
+    {"(2)⏨3", {false, "(2)*10^(3)"}},
+    {"(2)⏨(3)", {false, "(2)*10^(3)"}},
+    {"(2)⏨−3", {false, "(2)*10^(-3)"}},
+    {"(2)⏨+3", {false, "(2)*10^(+3)"}},
+    {"(2)⏨₋₃", {false, "(2)*10^(-3)"}},
+    {"2⏨−3", {false, "2*10^(-3)"}},
+    {"2⏨³⁴", {false, "2*10^(34)"}},
+    {"2⏨3⁴", {false, "2*10^(3^(4))"}},
+    {"(2)⏨³⁴", {false, "(2)*10^(34)"}},
+    {"2⏨−³", {false, "2*10^(-3)"}},
+    {"x²³+1", {false, "x^(23)+1"}},
+    {"x²³y⁴⁵", {false, "x^(23)y^(45)"}},
+    {"²x³", {false, "2x^(3)"}},
+    { "2⏨⁻³",    { false, "2*10^(-3)" }},
+    { "2⏨₋³",    { false, "2*10^(-3)" }},
+    { "2⏨﹣³",   { false, "2*10^(-3)" }},
+    { "2⏨＋³",   { false, "2*10^(+3)" }},
 
+    // Astronomical symbols
+    {"♁", {false, "_earth"}},
+    {"☉", {false, "_sun"}},
+    {"☽☾", {false, "_moon_moon"}},
+    {"☿", {false, "_mercury"}},
+    {"♀", {false, "_venus"}},
+    {"♂", {false, "_mars"}},
+    {"♃", {false, "_jupiter"}},
+    {"♄", {false, "_saturn"}},
+    {"♅⛢", {false, "_uranus_uranus"}},
+    {"♆", {false, "_neptune"}},
+    {"♇", {false, "_pluto"}},
+    {"㍳", {false, "*au"}},
+    {"㍶", {false, "*pc"}},
+    {"R☉×c", {false, "R_sun*c"}},
 
-    // Astronomical symbols.
-    { "♁", { false, "_earth" }},
-    { "☉", { false, "_sun" }},
-    { "☽☾", { false, "_moon_moon" }},
-    { "☿", { false, "_mercury" }},
-    { "♀", { false, "_venus" }},
-    { "♂", { false, "_mars" }},
-    { "♃", { false, "_jupiter" }},
-    { "♄", { false, "_saturn" }},
-    { "♅⛢", { false, "_uranus_uranus" }},
-    { "♆", { false, "_neptune" }},
-    { "♇", { false, "_pluto" }},
-    { "㍳", { false, "*au" }},
-    { "㍶", { false, "*pc" }},
-    { "R☉×c", { false, "R_sun*c" }},
-
-    // Subscript digits and letters.
-    { "₀₁₂₃₄₅₆₇₈₉", { false, "0123456789" }},
-    { "ₐₑₒₓₕₖₗₘₙₚₛₜ", { false, "aeoxhklmnpst" }},
-    { "x₂₃₄₅₆₇₈₉", { false, "x23456789" }},
-    { "₊₋₍₎", { false, "+-()" }},
+    // Subscript digits and letters
+    {"₀₁₂₃₄₅₆₇₈₉", {false, "0123456789"}},
+    {"ₐₑₒₓₕₖₗₘₙₚₛₜ", {false, "aeoxhklmnpst"}},
+    {"x₂₃₄₅₆₇₈₉", {false, "x23456789"}},
+    {"₊₋₍₎", {false, "+-()"}},
 
     // Superscripts: individual characters
-    { "x⁰", { false, "x^(0)" }},
-    { "x¹", { false, "x^(1)" }},
-    { "x²", { false, "x^(2)" }},
-    { "x³", { false, "x^(3)" }},
-    { "x⁴", { false, "x^(4)" }},
-    { "x⁵", { false, "x^(5)" }},
-    { "x⁶", { false, "x^(6)" }},
-    { "x⁷", { false, "x^(7)" }},
-    { "x⁸", { false, "x^(8)" }},
-    { "x⁹", { false, "x^(9)" }},
+    {"x⁰", {false, "x^(0)"}},
+    {"x¹", {false, "x^(1)"}},
+    {"x²", {false, "x^(2)"}},
+    {"x³", {false, "x^(3)"}},
+    {"x⁴", {false, "x^(4)"}},
+    {"x⁵", {false, "x^(5)"}},
+    {"x⁶", {false, "x^(6)"}},
+    {"x⁷", {false, "x^(7)"}},
+    {"x⁸", {false, "x^(8)"}},
+    {"x⁹", {false, "x^(9)"}},
+
 #ifdef CALC_TEST_EQUATION_SOLVER
-    { "xⁱ", { false, "x^(i)" }},
-    { "xⁿ", { false, "x^(n)" }},
+    {"xⁱ", {false, "x^(i)"}},
+    {"xⁿ", {false, "x^(n)"}},
 #endif
-    { "x⁺", { false, "x^(+)" }},
-    { "x⁻", { false, "x^(-)" }},
+
+    {"x⁺", {false, "x^(+)"}},
+    {"x⁻", {false, "x^(-)"}},
+
 #ifdef CALC_USED_EQUALS_OPERATORS
-    { "x⁼", { false, "x^(=)" }},
+    {"x⁼", {false, "x^(=)"}},
 #endif
 
-    // Superscript grouping and state transitions.
-    { "x²",       { false, "x^(2)" }},
-    { "x²³",      { false, "x^(23)" }},
-    { "x¹²³⁴⁵",   { false, "x^(12345)" }},
-    { "x²+1",     { false, "x^(2)+1" }},
-    { "x²³y⁴⁵",   { false, "x^(23)y^(45)" }},
+    // Superscript grouping.
+    {"x²³", {false, "x^(23)"}},
+    {"x¹²³⁴⁵⁶⁷⁸⁹", {false, "x^(123456789)"}},
 
-    // Superscript parentheses.
-    { "x⁽ⁿ⁾",     { false, "x^(n)" }},
-    { "x⁽⁾",      { false, "x^()" }},
-    { "x²⁽ⁿ⁾",    { false, "x^(2(n))" }},
-
-    // Leading superscripts.
-    { "²",        { false, "2" }},
-    { "²³",       { false, "23" }},
-    { "²x³",      { false, "2x^(3)" }},
-
-    // Superscript termination.
-    { "x² y",     { false, "x^(2) y" }},
-    { "x²)",      { false, "x^(2))" }},
-    { "x²😀",     { true,  "x^(2)" }},
-
-    // Unsupported superscript code point U+2072.
-    { "x²\xE2\x81\xB2", { true, "x^(2" }},
-    
-    // Superscript grouping/state machine
-    { "x²³", { false, "x^(23)" }},
-    { "x¹²³⁴⁵⁶⁷⁸⁹", { false, "x^(123456789)" }},
 #ifdef CALC_TEST_EQUATION_SOLVER
-    { "xⁱⁿ", { false, "x^(in)" }},
+    {"xⁱⁿ", {false, "x^(in)"}},
 #endif
+
 #ifdef CALC_USED_EQUALS_OPERATORS
-    { "x²⁺⁻⁼", { false, "x^(2+-=)" }},
+    {"x²⁺⁻⁼", {false, "x^(2+-=)"}},
 #endif
-    { "x²+1", { false, "x^(2)+1" }},
-    { "x²)", { false, "x^(2))" }},
-    { "x² y", { false, "x^(2) y" }},
-    // Only superscript mode
-    { "²", { false, "2" }},
+
+    {"x²+1", {false, "x^(2)+1"}},
+    {"x²)", {false, "x^(2))"}},
+    {"x² y", {false, "x^(2) y"}},
+    {"x²y³", {false, "x^(2)y^(3)"}},
+    {"x²³y⁴⁵", {false, "x^(23)y^(45)"}},
+
+    // Explicit superscript parentheses.
+    {"x⁽⁾", {false, "x^()"}},
+    {"x⁽²⁾", {false, "x^(2)"}},
+    {"x²⁽⁾", {false, "x^(2())"}},
+
 #ifdef CALC_TEST_EQUATION_SOLVER
-    { "ⁿ", { false, "n" }},
+    {"x⁽ⁿ⁾", {false, "x^(n)"}},
+    {"x²⁽ⁿ⁾", {false, "x^(2(n))"}},
 #endif
-    { "¹²³⁴⁵⁶⁷⁸⁹⁰", { false, "1234567890" }},
-    // Superscript parentheses
-    { "⁽", { false, "(" }},
-    { "⁾", { false, ")" }},
-    { "⁽⁾", { false, "()" }},
-    { "x⁽⁾", { false, "x^(())" }},
-#ifdef CALC_TEST_EQUATION_SOLVER
-    { "x⁽ⁿ⁾", { false, "x^((n))" }},
-#endif
-    { "¹²³⁴⁵⁶⁷⁸⁹⁰ ¹²³⁴⁵⁶⁷⁸⁹⁰", { true, "1234567890" }},
-    
+
+    // Leading superscript sequences.
+    {"²", {false, "2"}},
+    {"²³", {false, "23"}},
+    {"¹²³⁴⁵⁶⁷⁸⁹⁰", {false, "1234567890"}},
+    {"²x³", {false, "2x^(3)"}},
+    {"² ³", {false, "2 ^(3)"}},
+
+    // A leading sequence does not prevent subsequent normalization
+    {"¹²³⁴⁵⁶⁷⁸⁹⁰ ¹²³⁴⁵⁶⁷⁸⁹⁰", {false, "1234567890 ^(1234567890)"}},
+
+    // Unsupported superscript characters.
+    {"x²😀", {true, "x^(2)"}},
+
     // Combinations of normalization features
-    { "½π²", { false, "1/2pi^(2)" }},
-    { "(½π)²", { false, "(1/2pi)^(2)" }},
-    { "α+β−γ×μ÷σ", { false, "alpha+beta-gamma*mu/sigma" }},
-    { "√(1−½)²", { false, "sqrt(1-1/2)^(2)" }},
-    { "⅓×π+⅔×π", { false, "1/3*pi+2/3*pi" }},
-    { "⅓π+⅔π", { false, "1/3pi+2/3pi" }},
-    { "R☉=c×ℏ", { false, "R_sun=c*hbar" }},
-    { "㏑(1)+㏒(10)", { false, "ln(1)+log(10)" }},
-    { "１２３．４５６", { false, "123.456" }},
-    { "﹣９﹒０９", { false, "-9.09" }},
+    {"½π²", {false, "1/2pi^(2)"}},
+    {"(½π)²", {false, "(1/2pi)^(2)"}},
+    {"α+β−γ×μ÷σ", {false, "alpha+beta-gamma*mu/sigma"}},
+    {"√(1−½)²", {false, "sqrt(1-1/2)^(2)"}},
+    {"⅓×π+⅔×π", {false, "1/3*pi+2/3*pi"}},
+    {"⅓π+⅔π", {false, "1/3pi+2/3pi"}},
+    {"R☉=c×ℏ", {false, "R_sun=c*hbar"}},
+    {"㏑(1)+㏒(10)", {false, "ln(1)+log(10)"}},
+    {"１２３．４５６", {false, "123.456"}},
+    {"﹣９﹒０９", {false, "-9.09"}},
 
     // Unsupported characters: normalization must stop at the first unsupported UTF-16 code unit
-    { "A😀B", { true, "A" }},
-    { "abc©def", { true, "abc" }},
-    { "abcₔdef", { true, "abc" }}, // U+2094 is explicitly excluded from the subscript-letter lookup
-    { "abc⁲def", { true, "abc" }},
-    { "|—J│Оa╓Чn", { true, "| J" }},
+    {"A😀B", {true, "A"}},
+    {"abc©def", {true, "abc"}},
+    {"abcₔdef", {true, "abc"}}, // U+2094 is explicitly excluded from the subscript-letter lookup
+    {"abc⁲def", {true, "abc"}},
+    {"|—J│Оa╓Чn", {true, "| J"}},
 #ifndef CALC_USED_EQUALS_OPERATORS
-    { "±", { true, "" }},
+    {"±", {true, ""}},
 #endif
-    { "x²😀", { true, "x^(2)" }},
-    { "ₔ", { true, "" }}, // U+2094 is explicitly excluded from the subscript-letter lookup
-    { "√😀", { true, "sqrt(" }}, // Should be fast exit without correctnes of state machines
+    {"x²😀", {true, "x^(2)"}},
+    {"ₔ", {true, ""}}, // U+2094 is explicitly excluded from the subscript-letter lookup
+    {"√😀", {true, "sqrt("}}, // Should be fast exit without correctnes of state machines
 
     // TODO: user constants and variables support:
-	// Also I ask ChatGPT https://chatgpt.com/c/6a89e39f-5610-83eb-8182-d914dc425042
+    // Also I ask ChatGPT https://chatgpt.com/c/6a89e39f-5610-83eb-8182-d914dc425042
     // Which syntax we should use?
-    { "x=2π;", { false, "x=2pi;" }},
+    {"x=2π;", {false, "x=2pi;"}},
 #ifdef CALC_USED_EQUALS_OPERATORS
     // Intervals needed:
-	{ "[0…π]", { false, "[0???pi]" }}, // How exactly? 
-	{ "[0…π, step]", { false, "[0???pi, step]" }}, // How exactly?
-	// blocks?
-	{ "{x= 150 ⁄ 12 + 1 }", { false, "{x= 150 / 12 + 1 }" }},
-	// TODO: equation support, for input test https://xrjunque.nom.es/AllInOne:
-    { "±", { false, "?" }}, // what exactly? I think we should use function, because it is more flexible and can be extended to other symbols.
-	{ "{x=((−b ± √(b²−4⋅a⋅c))⁄(2a))π}", { false, "{x=((-b ? sqrt(b^(2)-4*a*c))/(2a))pi}" }},
+    {"[0…π]", {false, "[0???pi]"}},             // How exactly?
+    {"[0…π, step]", {false, "[0???pi, step]"}}, // How exactly?
+    // blocks?
+    {"{x= 150 ⁄ 12 + 1 }", {false, "{x= 150 / 12 + 1 }"}},
+    // TODO: equation support, for input test https://xrjunque.nom.es/AllInOne:
+    {"±", {false, "?"}}, // what exactly? I think we should use function, because it is more flexible and can be extended to other symbols
+    {"{x=((−b ± √(b²−4⋅a⋅c))⁄(2a))π}", {false, "{x=((-b ? sqrt(b^(2)-4*a*c))/(2a))pi}"}},
 #endif
 });
 // clang-format on
