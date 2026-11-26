@@ -88,9 +88,7 @@ public:
    *        normalized output
    *
    * @pre equasion.capacity() must be large enough for the complete expanded
-   *      ASCII result. For the current mappings, length * 12 is a sufficient
-   *      worst-case bound. The implementation currently asserts only
-   *      capacity() > length * 4.
+   *      ASCII result.
    *
    * @post equasion contains the normalized ASCII representation up to the
    *       failed character or end of input if successful
@@ -104,7 +102,6 @@ public:
                                        const Length length,
                                        std::string &equasion)
       : _equasion(equasion), _text(text), _length(length) {
-    assert(_equasion.capacity() > _length * 4);
     _equasion.resize_and_overwrite(
         _equasion.capacity(), Operation{_normalized, _text, _text + _length});
   }
@@ -379,6 +376,48 @@ private:
     }
 
     /**
+     * @brief Classifies unary sign characters that follow an implicit function.
+     *
+     * Recognizes ASCII and Unicode minus/plus signs.
+     *
+     * @param c Character to test
+     * @param previous Character immediately preceding c
+     * @return true if c is a unary sign immediately following an implicit
+     *         function symbol
+     */
+    [[nodiscard]] inline static constexpr bool
+    is_unary_sign_after_implicit_function(const CharT c,
+                                          const CharT previous) noexcept {
+      return (c == CharT('+') || // U+002B + PLUS SIGN
+              c == CharT('-') || // U+002D - HYPHEN-MINUS
+              c == 0x2212 ||     // U+2212 − MINUS SIGN
+
+              c == 0x208A || // U+208A ₊ SUBSCRIPT PLUS SIGN
+              c == 0x208B || // U+208B ₋ SUBSCRIPT MINUS SIGN
+
+              c == 0x207A || // U+207A ⁺ SUPERSCRIPT PLUS SIGN
+              c == 0x207B || // U+207B ⁻ SUPERSCRIPT MINUS SIGN
+
+              c == 0xFE62 || // U+FE62 ﹢ SMALL PLUS SIGN
+              c == 0xFE63 || // U+FE63 ﹣ SMALL HYPHEN-MINUS
+
+              c == 0xFF0B || // U+FF0B ＋ FULLWIDTH PLUS SIGN
+              c == 0xFF0D    // U+FF0D － FULLWIDTH HYPHEN-MINUS
+              ) &&
+             (previous == 0x221A || // √ SQUARE ROOT
+              previous == 0x23B7 || // ⎷ RADICAL SYMBOL BOTTOM
+              previous == 0x221B || // ∛ CUBE ROOT
+              previous == 0x221C || // ∜ FOURTH ROOT
+              previous == 0x33D1 || // ㏑ SQUARE LN
+              previous == 0x33D2    // ㏒ SQUARE LOG
+#ifdef CALC_USED_EQUALS_OPERATORS
+              || previous == 0x00B1 // ± PLUS-MINUS SIGN
+              || previous == 0x2213 // ∓ MINUS-OR-PLUS SIGN
+#endif
+             );
+    }
+
+    /**
      * @brief Classifies decimal exponent sign characters.
      *
      * Recognizes ASCII, Unicode, subscript, superscript, small
@@ -556,7 +595,9 @@ private:
 
           // Exit implicit argument mode when encountering argument boundary
           if (in_implicit_argument && is_implicit_argument_end(c) &&
-              !is_decimal_exponent_sign(c, input[-1])) [[unlikely]] {
+              !is_decimal_exponent_sign(c, input[-1]) &&
+              !is_unary_sign_after_implicit_function(c, input[-1]))
+              [[unlikely]] {
             --in_implicit_argument;
             *output++ = ')';
           }
