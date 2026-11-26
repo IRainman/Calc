@@ -42,8 +42,7 @@ namespace GUI {
  *   - Physical constants/symbols: ℏ → "hbar", ℎ → "h", Ɛ/ℇ → "E"
  *
  * Normalization is a single-pass runtime operation used through
- * std::string::resize_and_overwrite(). References are stored with
- * [[no_unique_address]].
+ * std::string::resize_and_overwrite().
  *
  * @note Non-copyable and non-default-constructible utility class.
  *
