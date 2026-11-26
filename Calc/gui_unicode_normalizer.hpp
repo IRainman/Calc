@@ -48,23 +48,31 @@ namespace GUI {
  *
  * Usage:
  * ```cpp
- * u16string_view(...);
- * std::string equation [[indeterminate]];
- * // Preallocate enough space for normalized output
- * equation.reserve(view.length() * 4);
- * Normalizer normalizer(view.data(), view.length(), equation);
- * if (normalizer.failed()) {
- *     // Handle unsupported input or an incomplete implicit argument
- * }
- * // equation now contains normalized ASCII representation
+#include <cstddef>
+#include <string>
+#include <string_view>
+
+const std::u16string_view view = u"½∜(7π÷2)";
+
+std::string equation;
+equation.reserve(view.size() * 4);
+
+GUI::Normalizer<char16_t, std::size_t> normalizer(
+    view.data(), view.size(), equation);
+
+if (normalizer.failed()) {
+    // Handle unsupported input or an incomplete expression.
+}
+
+// equation contains the normalized ASCII expression.
  * ```
  *
  * @see std::string::resize_and_overwrite()
  */
-template <typename Char, typename Length> class Normalizer {
-  static_assert(sizeof(Char) == sizeof(char16_t), "Char must be 16-bit");
-  static_assert(std::is_integral_v<Char>, "Char must be integral");
-  static_assert(std::is_unsigned_v<Char>, "Char must be unsigned");
+template <typename C, typename Length> class Normalizer {
+  static_assert(sizeof(C) == sizeof(char16_t), "C must be 16-bit");
+  static_assert(std::is_integral_v<C>, "C must be integral");
+  static_assert(std::is_unsigned_v<C>, "C must be unsigned");
   static_assert(std::is_integral_v<Length>, "Length must be integral");
   static_assert(std::is_unsigned_v<Length>, "Length must be unsigned");
 
@@ -99,8 +107,7 @@ public:
    *
    * @see normalizer_tests, std::string::resize_and_overwrite()
    */
-  constexpr explicit inline Normalizer(const Char *const text,
-                                       const Length length,
+  constexpr explicit inline Normalizer(const C *const text, const Length length,
                                        std::string &equasion)
       : _length(length) {
     equasion.resize_and_overwrite(equasion.capacity(),
@@ -126,9 +133,10 @@ public:
   }
 
   /**
-   * @brief Returns the count of successfully normalized characters.
+   * @brief Returns the number of successfully normalized UTF-16 code units.
    *
-   * @return Number of input characters that were successfully normalized
+   * @return Number of UTF-16 code units consumed before the first unsupported
+   *         code unit, or the complete input length if normalization succeeded.
    */
   [[nodiscard]] constexpr inline auto normalized() const noexcept {
     return _normalized;
@@ -168,9 +176,9 @@ private:
     /// Reference to counter of succesfully normalized input chars
     Length &_normalized;
     /// UTF-16 input string pointer
-    const Char *const _begin;
+    const C *const _begin;
     /// UTF-16 input end string pointer
-    const Char *const _end;
+    const C *const _end;
 
     /**
      * @brief Copies a string literal to the output buffer and returns new
@@ -203,24 +211,24 @@ private:
      * @return true if c is a supported superscript character
      */
     [[nodiscard]] inline static constexpr bool
-    is_superscript(const Char c) noexcept {
-      return (c == 0x00B2 || // U+00B2 ² SUPERSCRIPT TWO
-              c == 0x00B3 || // U+00B3 ³ SUPERSCRIPT THREE
-              c == 0x00B9 || // U+00B9 ¹ SUPERSCRIPT ONE
-              c == 0x2070 || // U+2070 ⁰ SUPERSCRIPT ZERO
+    is_superscript(const C c) noexcept {
+      return (c == 0xB2 ||   // ² SUPERSCRIPT TWO
+              c == 0xB3 ||   // ³ SUPERSCRIPT THREE
+              c == 0xB9 ||   // ¹ SUPERSCRIPT ONE
+              c == 0x2070 || // ⁰ SUPERSCRIPT ZERO
 #ifdef CALC_TEST_EQUATION_SOLVER
-              c == 0x2071 || // U+2071 ⁱ SUPERSCRIPT LATIN SMALL LETTER I
+              c == 0x2071 || // ⁱ SUPERSCRIPT LATIN SMALL LETTER I
 #endif
               // case 0x2072: // not assigned.
               // case 0x2073: // not assigned.
-              c >= 0x2074 && c <= 0x207B || // U+2074-U+207B ⁴-⁹⁺⁻
+              c >= 0x2074 && c <= 0x207B || // ⁴-⁹⁺⁻
 #ifdef CALC_USED_EQUALS_OPERATORS
-              c == 0x207C || // U+207C ⁼ SUPERSCRIPT EQUALS SIGN
+              c == 0x207C || // ⁼ SUPERSCRIPT EQUALS SIGN
 #endif
-              c == 0x207D || // U+207D ⁽ SUPERSCRIPT LEFT PARENTHESIS
-              c == 0x207E    // U+207E ⁾ SUPERSCRIPT RIGHT PARENTHESIS
+              c == 0x207D || // ⁽ SUPERSCRIPT LEFT PARENTHESIS
+              c == 0x207E    // ⁾ SUPERSCRIPT RIGHT PARENTHESIS
 #ifdef CALC_TEST_EQUATION_SOLVER
-              || c == 0x207F // U+207F ⁿ SUPERSCRIPT LATIN SMALL LETTER N
+              || c == 0x207F // ⁿ SUPERSCRIPT LATIN SMALL LETTER N
 #endif
       );
     }
@@ -238,16 +246,16 @@ private:
      * @return true if c is a separator/whitespace character
      */
     [[nodiscard]] inline static constexpr bool
-    is_separator(const Char c) noexcept {
-      return (c >= Char('\t') && c <= Char('\r') || // ASCII control characters
-              c == Char(' ') ||                     // ASCII space
-              c == 0xA0 ||                          // ANSI NO-BREAK SPACE
-              c >= 0x2000 && c <= 0x200A || // EN QUAD through HAIR SPACE
-              c == 0x2028 ||                // LINE SEPARATOR
-              c == 0x2029 ||                // PARAGRAPH SEPARATOR
-              c == 0x202F ||                // NARROW NO-BREAK SPACE
-              c == 0x205F ||                // MEDIUM MATHEMATICAL SPACE
-              c == 0x3000                   // IDEOGRAPHIC SPACE
+    is_separator(const C c) noexcept {
+      return (c >= C('\t') && c <= C('\r') || // ASCII control characters
+              c == C(' ') ||                  // ASCII space
+              c == 0xA0 ||                    // ANSI NO-BREAK SPACE
+              c >= 0x2000 && c <= 0x200A ||   // EN QUAD through HAIR SPACE
+              c == 0x2028 ||                  // LINE SEPARATOR
+              c == 0x2029 ||                  // PARAGRAPH SEPARATOR
+              c == 0x202F ||                  // NARROW NO-BREAK SPACE
+              c == 0x205F ||                  // MEDIUM MATHEMATICAL SPACE
+              c == 0x3000                     // IDEOGRAPHIC SPACE
       );
     }
 
@@ -261,8 +269,10 @@ private:
      * @return true if c is an additive sign character
      */
     [[nodiscard]] inline static constexpr bool
-    is_additive_sign(const Char c) noexcept {
-      return (c == Char('+') || c == Char('-') || c == 0x2212 || // MINUS SIGN
+    is_additive_sign(const C c) noexcept {
+      return (c == C('+') || // ASCII
+              c == C('-') || // ASCII
+              c == 0x2212 || // MINUS SIGN
               c == 0x208A || // SUBSCRIPT PLUS
               c == 0x208B || // SUBSCRIPT MINUS
               c == 0x207A || // SUPERSCRIPT PLUS
@@ -283,11 +293,10 @@ private:
      * @param c Character to test
      * @return true if c is an operator character
      */
-    [[nodiscard]] inline static constexpr bool
-    is_operator(const Char c) noexcept {
-      return (c == Char('+') || c == Char('-') || c == Char('*') || // ASCII
-              c == Char('/') || c == Char(',') ||                   // ASCII
-              c == 0xB7 || c == 0xD7 || c == 0xF7 ||                // ANSI
+    [[nodiscard]] inline static constexpr bool is_operator(const C c) noexcept {
+      return (c == C('+') || c == C('-') || c == C('*') || // ASCII
+              c == C('/') || c == C(',') ||                // ASCII
+              c == 0xB7 || c == 0xD7 || c == 0xF7 ||       // ANSI
               c >= 0x2200 && c <= 0x2219 || // Unicode before roots
               c >= 0x221F && c <= 0x22FF || // Unicode after roots
               c == 0x208A ||                // SUBSCRIPT PLUS
@@ -308,8 +317,8 @@ private:
      * @return true if c is a left parenthesis
      */
     [[nodiscard]] inline static constexpr bool
-    is_left_parenthesis(const Char c) noexcept {
-      return (c == Char('(') ||
+    is_left_parenthesis(const C c) noexcept {
+      return (c == C('(') || // ASCII
               c == 0x208D || // U+208D ₍ SUBSCRIPT LEFT PARENTHESIS
               c == 0xFE59 || // U+FE59 ﹙ SMALL LEFT PARENTHESIS
               c == 0xFF08    // U+FF08 （ FULLWIDTH LEFT PARENTHESIS
@@ -325,8 +334,8 @@ private:
      * @return true if c is a right parenthesis
      */
     [[nodiscard]] inline static constexpr bool
-    is_right_parenthesis(const Char c) noexcept {
-      return (c == Char(')') ||
+    is_right_parenthesis(const C c) noexcept {
+      return (c == C(')') || // ASCII
               c == 0x208E || // U+208E ₎ SUBSCRIPT RIGHT PARENTHESIS
               c == 0xFE5A || // U+FE5A ﹚ SMALL RIGHT PARENTHESIS
               c == 0xFF09    // U+FF09 ） FULLWIDTH RIGHT PARENTHESIS
@@ -340,7 +349,7 @@ private:
      * @return true if c is a parenthesis
      */
     [[nodiscard]] inline static constexpr bool
-    is_parenthesis(const Char c) noexcept {
+    is_parenthesis(const C c) noexcept {
       return is_left_parenthesis(c) || is_right_parenthesis(c);
     }
 
@@ -353,7 +362,7 @@ private:
      * @return true if c is in the printable ASCII range
      */
     [[nodiscard]] inline static constexpr bool
-    is_printable_ascii(const Char c) noexcept {
+    is_printable_ascii(const C c) noexcept {
       return c >= 0x20 && c <= 0x7E;
     }
 
@@ -370,7 +379,7 @@ private:
      * @param depth Reference to the implicit argument depth counter
      */
     [[nodiscard]] inline static constexpr bool
-    start_implicit_argument(const Char *const input, const Char *const end,
+    start_implicit_argument(const C *const input, const C *const end,
                             char *&output, Length &depth) noexcept {
       if (input + 1 == end) {
         return false;
@@ -398,20 +407,23 @@ private:
      * @return true if c marks the end of an implicit argument
      */
     [[nodiscard]] inline static constexpr bool
-    is_implicit_argument_end(const Char c) noexcept {
+    is_implicit_argument_end(const C c) noexcept {
       return is_separator(c) || is_operator(c) || is_parenthesis(c);
     }
 
     /**
      * @brief Classifies characters that start an implicit function.
      *
-     * Recognizes Unicode root symbols and the square root symbol.
+     * Recognizes Unicode root symbols (√, ⎷, ∛, ∜) and CJK compatibility
+     * logarithm symbols (㏑, ㏒).
+     *
+     * When CALC_USED_EQUALS_OPERATORS is enabled, also recognizes ± and ∓.
      *
      * @param c Character to test
      * @return true if c is an implicit function symbol
      */
     [[nodiscard]] inline static constexpr bool
-    is_implicit_function(const Char c) noexcept {
+    is_implicit_function(const C c) noexcept {
       return (c == 0x221A || // √
               c == 0x23B7 || // ⎷
               c == 0x221B || // ∛
@@ -436,8 +448,8 @@ private:
      *         function symbol
      */
     [[nodiscard]] inline static constexpr bool
-    is_unary_sign_after_implicit_function(const Char c,
-                                          const Char previous) noexcept {
+    is_unary_sign_after_implicit_function(const C c,
+                                          const C previous) noexcept {
       return is_additive_sign(c) && is_implicit_function(previous);
     }
 
@@ -452,7 +464,7 @@ private:
      * @return true if c is a sign immediately following ⏨
      */
     [[nodiscard]] inline static constexpr bool
-    is_decimal_exponent_sign(const Char c, const Char previous) noexcept {
+    is_decimal_exponent_sign(const C c, const C previous) noexcept {
       return previous == 0x23E8 && is_additive_sign(c);
     }
 
@@ -465,9 +477,9 @@ private:
      * @return true if the current position continues a decimal exponent prefix
      */
     [[nodiscard]] inline static constexpr bool
-    is_decimal_exponent_continuation(const Char *const input,
-                                     const Char *const begin) noexcept {
-      return input[-1] == Char(0x23E8) || // U+23E8 ⏨ DECIMAL EXPONENT SYMBOL
+    is_decimal_exponent_continuation(const C *const input,
+                                     const C *const begin) noexcept {
+      return input[-1] == C(0x23E8) || // U+23E8 ⏨ DECIMAL EXPONENT SYMBOL
              (input - begin >= 2 &&
               is_decimal_exponent_sign(input[-1], input[-2]));
     }
@@ -504,17 +516,16 @@ private:
      *   Explicit superscript parentheses do not require an additional wrapper.
      *
      * - **Implicit argument mode (Length in_implicit_argument):**
-     *   Counts implicit argument parentheses opened by sqrt, etc or
-     *   parenthesized the decimal-exponent ⏨ after a ')'. It is decremented
-     *   when a separator, operator, or parenthesis ends the implicit argument.
+     *   Tracks automatically inserted parentheses for implicit functions
+     *   and decimal-exponent arguments.
      *
      * **Performance Characteristics:**
-     * - Single-pass algorithm: O(n) where n = input length
-     * - No backtracking or lookahead (except ±1 check for implicit argument and
-     *   superscript)
-     * - Direct character-by-character output: minimal memory operations
-     * - Uses switch statement (compiler jump table vs if-chain)
-     * - memcpy for multi-character replacements
+     * - Single-pass algorithm: O(n) where n is input length.
+     * - No rescanning or arbitrary backtracking.
+     * - Bounded local lookahead/lookbehind for parentheses, unary signs,
+     *   and decimal-exponent context.
+     * - Direct character-by-character output.
+     * - Uses lookup tables and memcpy for multi-character replacements.
      *
      * @param buffer Output buffer for normalized ASCII string
      * @return Length of normalized output in bytes
