@@ -289,7 +289,7 @@ private:
               c == Char('/') || c == Char(',') ||                   // ASCII
               c == 0xB7 || c == 0xD7 || c == 0xF7 ||                // ANSI
               c >= 0x2200 && c <= 0x2219 || // Unicode before roots
-              c >= 0x221E && c <= 0x22FF || // Unicode after roots
+              c >= 0x221F && c <= 0x22FF || // Unicode after roots
               c == 0x208A ||                // SUBSCRIPT PLUS
               c == 0x208B ||                // SUBSCRIPT MINUS
               c == 0xFE62 ||                // SMALL PLUS
@@ -419,8 +419,8 @@ private:
               c == 0x33D1 || // ㏑
               c == 0x33D2    // ㏒
 #ifdef CALC_USED_EQUALS_OPERATORS
-              || c == 0x00B1 // ±
-              || c == 0x2213 // ∓
+              || c == 0x00B1 || // ±
+              c == 0x2213       // ∓
 #endif
       );
     }

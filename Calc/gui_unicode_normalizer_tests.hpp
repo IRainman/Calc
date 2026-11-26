@@ -253,6 +253,9 @@ constinit static auto normalizer_tests = std::to_array<NormalizerTest>({
     {"√−1-2", "sqrt(-1)-2", false},
     {"∛−8", "cbrt(-8)", false},
     {"√−(1)", "sqrt(-)(1)", false}, // it's ok
+    {"√∞", "sqrt(inf)", false},
+    {"√−∞", "sqrt(-inf)", false},
+    {"∛∞", "cbrt(inf)", false},
 
     // Decimal exponent signs
     {"1⏨-1", "1*10^(-1)", false},
