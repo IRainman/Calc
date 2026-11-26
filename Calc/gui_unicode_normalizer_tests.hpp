@@ -227,11 +227,16 @@ constinit static auto normalizer_tests = std::to_array< std::pair< std::string_v
 
     // Unary signs at the start of implicit function arguments.
     {"√−1", {false, "sqrt(-1)"}},
-    {"√-1", {false, "sqrt(-1)"}},
+    {"1⏨-1", {true, "1*10^(-1)"}},
 
     // Implicit argument at end-of-input.
     {"√", {true, "sqrt"}},
     {"1⏨", {true, "1*10^"}},
+    {"√", {true, "sqrt"}},
+    {"∛", {true, "cbrt"}},
+    {"∜", {true, "qdrt"}},
+    {"㏑", {true, "ln"}},
+    {"㏒", {true, "log"}},
 
     // Combinations of normalization features
     {"½π²", {false, "1/2pi^(2)"}},
