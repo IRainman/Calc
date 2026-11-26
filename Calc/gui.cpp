@@ -281,7 +281,7 @@ private:
     std::wstring wide_string [[indeterminate]];
     wide_string.resize(cfg::input_max_text_length);
     constexpr unsigned int count = 1'000'000;
-    for (unsigned int i = count; --i != 0;)
+    for (unsigned int i = count + 1; --i != 0;)
 #endif
     for (const auto &test : normalizer_tests) {
 #ifdef CALC_TESTS_DEV_ENABLED // Development

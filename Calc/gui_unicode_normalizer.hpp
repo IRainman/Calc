@@ -237,6 +237,7 @@ private:
           c >= CharT('\t') && c <= CharT('\r') || // ASCII control characters
           c == CharT(' ') ||                      // ASCII space
           c == 0xA0 ||                            // ANSI NO-BREAK SPACE
+          c >= 0x2000 && c <= 0x200A ||           // EN QUAD through HAIR SPACE
           c == 0x2028 ||                          // LINE SEPARATOR
           c == 0x2029 ||                          // PARAGRAPH SEPARATOR
           c == 0x202F ||                          // NARROW NO-BREAK SPACE
@@ -365,7 +366,7 @@ private:
      */
     [[nodiscard]] inline static constexpr bool
     start_implicit_argument(const CharT *const input, const CharT *const end,
-                            char *&output, uint_fast16_t &depth) noexcept {
+                            char *&output, Length &depth) noexcept {
       if (input + 1 == end) {
         return false;
       }

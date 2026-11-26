@@ -37,68 +37,57 @@ struct NormalizerTest {
  * @see Normalizer, gui_tests()
  */
 constinit static auto normalizer_tests = std::to_array<NormalizerTest>({
-    // Complex expressions
-    { "½∜(7π÷2)", false, "1/2qdrt(7pi/2)" },
-    { "½∜(7π÷3)R☉×c * (⅒+⅟₉)⏨₉  +ℯ⁶", false ,"1/2qdrt(7pi/3)R_sun*c * (1/10+1/9)*10^(9)  +e^(6)" },
-    { "⅜∛176 + R☉(7π÷3⏨⁵)c * (⅟₁₇₉ + ⅞)⏨₇ + R⛢(7π÷3⏨⁵)c", false, "3/8cbrt(176) + R_sun(7pi/3*10^(5))c * (1/179 + 7/8)*10^(7) + R_uranus(7pi/3*10^(5))c" },
-    { "﹣₉﹒₀₉⏨₉", false, "-9.09*10^(9)" },
-    { "12³×(231² - 1)³ + 744 - 0.00000000000075", false, "12^(3)*(231^(2) - 1)^(3) + 744 - 0.00000000000075" },
-
-    {"\xE2\x80\x80\xE2\x80\x81\xE2\x80\x82\xE2\x80\x83"
- "\xE2\x80\x84\xE2\x80\x85\xE2\x80\x86\xE2\x80\x87"
- "\xE2\x80\x88\xE2\x80\x89\xE2\x80\x8A",
- false, "           "},
-
-    {   // Separators
-        "\t\n\v\f\r \xC2\xA0"
-
-        // Fullwidth forms
-        "ＡＢＣＸＹＺａｂｃｘｙｚ０１２３４５６７８９＋－＊／（）＝＜＞＠＃％＆"
-        "！＂＃＄％＆＇（）＊＋，－．／０１２３４５６７８９：；＜＝＞？＠ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ［＼］＾＿｀ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ｛｜｝～"
-        "！＂＃＄％＆＇（）＊＋，－．／"
-        "０１２３４５６７８９：；＜＝＞？＠"
-        "ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ"
-        "ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ"
-        "［＼］＾＿｀｛｜｝～"
-
-        // Operators, parentheses and punctuation
-        "₊﹢₋−﹣⁎∗⋅﹡⁄∕⧸·×÷()₍₎﹙﹚﹐﹒+-*/"
-
-        // Fractions
-        "¼½¾⅐⅑⅒⅓⅔⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞⅟↉3⅟₉" // Does we need additional logic here? This logic can be apply or not?
-
-        // ASCII pass-through and separator boundaries needs to be converted to the ASCII space
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" 
-        "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~" 
-        "  abc\tdef\nxyz ",
-        false,
-        // Separators
-        "       "
-
-        // Fullwidth forms
-        "ABCXYZabcxyz0123456789+-*/()=<>@#%&"
-        "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
-        "!\"#$%&'()*+,-./"
-        "0123456789:;<=>?@"
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        "abcdefghijklmnopqrstuvwxyz"
-        "[\\]^_`{|}~"
-
-        // Operators, parentheses and punctuation
-        "++---****///**/()()(),.+-*/"
-
-        // Fractions
-        "1/41/23/41/71/91/101/32/31/52/53/54/51/65/61/83/85/87/81/0/331/9" // Does we need additional logic here? This logic can be apply or not?
-
-        // ASCII pass-through and separator boundaries needs to be converted to the ASCII space
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-        "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
-        "  abc def xyz "
+    // Separators
+    { "\t\n\v\f\r \xC2\xA0",
+      false,
+      "       "
     },
-
+    // Separators
+    { "\xE2\x80\x80\xE2\x80\x81\xE2\x80\x82\xE2\x80\x83\xE2\x80\x84\xE2\x80\x85\xE2\x80\x86\xE2\x80\x87\xE2\x80\x88\xE2\x80\x89\xE2\x80\x8A",
+      false,
+      "           "
+    },
+    // Fullwidth forms
+    { "ＡＢＣＸＹＺａｂｃｘｙｚ０１２３４５６７８９＋－＊／（）＝＜＞＠＃％＆"
+      "！＂＃＄％＆＇（）＊＋，－．／０１２３４５６７８９：；＜＝＞？＠ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ［＼］＾＿｀ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ｛｜｝～"
+      "！＂＃＄％＆＇（）＊＋，－．／"
+      "０１２３４５６７８９：；＜＝＞？＠"
+      "ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ"
+      "ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ"
+      "［＼］＾＿｀｛｜｝～",
+      false,
+      "ABCXYZabcxyz0123456789+-*/()=<>@#%&"
+      "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
+      "!\"#$%&'()*+,-./"
+      "0123456789:;<=>?@"
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+      "abcdefghijklmnopqrstuvwxyz"
+      "[\\]^_`{|}~"
+    },
+    // Operators, parentheses and punctuation
+    { "₊﹢₋−﹣⁎∗⋅﹡⁄∕⧸·×÷()₍₎﹙﹚﹐﹒+-*/",
+      false,
+      "++---****///**/()()(),.+-*/"
+    },
+    // Fractions
+    { "¼½¾⅐⅑⅒⅓⅔⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞⅟↉3⅟₉", // Does we need additional logic here? This logic can be apply or not?
+      false,
+      "1/41/23/41/71/91/101/32/31/52/53/54/51/65/61/83/85/87/81/0/331/9"
+    },
+    // ASCII pass-through and separator boundaries needs to be converted to the ASCII space
+    { "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" 
+      "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~" 
+      "  abc\tdef\nxyz ",
+      false,
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+      "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
+      "  abc def xyz "
+    },
     // Mathematical and physical constants and Greek letters. Last symbol Ƶ is intentionally unsupported after "ℯ ℇ "
-    { "Ɛ π ℇ τ ℎ ℏ φ ϕ ⅇ Γ α ζ μ µ σ ϐ ∞ ℯ Γ γ α ζ μ µ σ ε β ϐ ∞ Γ α ζ μ µ σ ε ϐ ∞ ℯ ℇ Ƶ 12354567896541587463", true, "E pi E (2*pi) h hbar phi phi e_atomic gamma alpha riemann_zeta mu mu sigma beta inf e gamma gamma alpha riemann_zeta mu mu sigma epsilon beta beta inf gamma alpha riemann_zeta mu mu sigma epsilon beta inf e E " },
-
+    { "Ɛ π ℇ τ ℎ ℏ φ ϕ ⅇ Γ α ζ μ µ σ ϐ ∞ ℯ Γ γ α ζ μ µ σ ε β ϐ ∞ Γ α ζ μ µ σ ε ϐ ∞ ℯ ℇ Ƶ 12354567896541587463",
+      true,
+      "E pi E (2*pi) h hbar phi phi e_atomic gamma alpha riemann_zeta mu mu sigma beta inf e gamma gamma alpha riemann_zeta mu mu sigma epsilon beta beta inf gamma alpha riemann_zeta mu mu sigma epsilon beta inf e E "
+    },
     // Mathematical functions
     {"√x", false, "sqrt(x)"},
     {"∛x", false, "cbrt(x)"},
@@ -119,6 +108,8 @@ constinit static auto normalizer_tests = std::to_array<NormalizerTest>({
     {"㏒x", false, "log(x)"},
     {"㏑x+㏒y", false, "ln(x)+log(y)"},
     {"√x²", false, "sqrt(x^(2))"},
+    {"√√(x+1)", false, "sqrt(sqrt(x+1))"},
+    {"∛∜(x+1)", false, "cbrt(qdrt(x+1))"},
 
     // Decimal exponent notation
     {"⏨", true, ""},
@@ -272,7 +263,7 @@ constinit static auto normalizer_tests = std::to_array<NormalizerTest>({
     {"√⁻1", false, "sqrt(-1)"},
     {"√⁺1", false, "sqrt(+1)"},
 
-    // Combinations of normalization features
+    // Combinations of normalization features and other complex expressions
     {"½π²", false, "1/2pi^(2)"},
     {"(½π)²", false, "(1/2pi)^(2)"},
     {"α+β−γ×μ÷σ", false, "alpha+beta-gamma*mu/sigma"},
@@ -283,6 +274,11 @@ constinit static auto normalizer_tests = std::to_array<NormalizerTest>({
     {"㏑(1)+㏒(10)", false, "ln(1)+log(10)"},
     {"１２３．４５６", false, "123.456"},
     {"﹣９﹒０９", false, "-9.09"},
+    { "½∜(7π÷2)", false, "1/2qdrt(7pi/2)" },
+    { "½∜(7π÷3)R☉×c * (⅒+⅟₉)⏨₉  +ℯ⁶", false ,"1/2qdrt(7pi/3)R_sun*c * (1/10+1/9)*10^(9)  +e^(6)" },
+    { "⅜∛176 + R☉(7π÷3⏨⁵)c * (⅟₁₇₉ + ⅞)⏨₇ + R⛢(7π÷3⏨⁵)c", false, "3/8cbrt(176) + R_sun(7pi/3*10^(5))c * (1/179 + 7/8)*10^(7) + R_uranus(7pi/3*10^(5))c" },
+    { "﹣₉﹒₀₉⏨₉", false, "-9.09*10^(9)" },
+    { "12³×(231² - 1)³ + 744 - 0.00000000000075", false, "12^(3)*(231^(2) - 1)^(3) + 744 - 0.00000000000075" },
 
     // Unsupported characters: normalization must stop at the first unsupported UTF-16 code unit
     {"A😀B", true, "A"},
