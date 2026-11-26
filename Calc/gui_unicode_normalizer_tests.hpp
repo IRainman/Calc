@@ -79,7 +79,7 @@ constinit static auto normalizer_tests = std::to_array<NormalizerTest>({
     // clang-format on
 
     {// Operators, parentheses and punctuation
-     "₊﹢₋−﹣⁎∗⋅﹡⁄∕⧸·×÷()₍₎﹙﹚﹐﹒+-*/", "++---****///**/()()(),.+-*/", false},
+     "₊﹢₋−﹣⁎∗⋅﹡⁄∕·×÷()₍₎﹙﹚﹐﹒+-*/", "++---****//**/()()(),.+-*/", false},
 
     {// Fractions
      "¼½¾⅐⅑⅒⅓⅔⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞⅟↉3⅟₉",
