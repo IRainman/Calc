@@ -222,6 +222,16 @@ constinit static auto normalizer_tests = std::to_array< std::pair< std::string_v
 
     // Unsupported superscript characters.
     {"x²😀", {true, "x^(2)"}},
+    // Superscript-only input followed by an unsupported superscript.
+    {"²⁲", {true, "2"}},
+
+    // Unary signs at the start of implicit function arguments.
+    {"√−1", {false, "sqrt(-1)"}},
+    {"√-1", {false, "sqrt(-1)"}},
+
+    // Implicit argument at end-of-input.
+    {"√", {true, "sqrt"}},
+    {"1⏨", {true, "1*10^"}},
 
     // Combinations of normalization features
     {"½π²", {false, "1/2pi^(2)"}},

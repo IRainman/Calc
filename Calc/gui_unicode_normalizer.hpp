@@ -345,15 +345,17 @@ private:
      * @param output Reference to the current output buffer position
      * @param depth Reference to the implicit argument depth counter
      */
-    inline static void start_implicit_argument(const CharT *const input,
-                                               const CharT *const end,
-                                               char *&output,
-                                               uint_fast16_t &depth) noexcept {
-
-      if (input + 1 != end && !is_left_parenthesis(input[1])) {
+    [[nodiscard]] inline static constexpr bool
+    start_implicit_argument(const CharT *const input, const CharT *const end,
+                            char *&output, uint_fast16_t &depth) noexcept {
+      if (input + 1 == end) {
+        return false;
+      }
+      if (!is_left_parenthesis(input[1])) {
         ++depth;
         *output++ = '(';
       }
+      return true;
     }
 
     /**
@@ -444,9 +446,9 @@ private:
     [[nodiscard]] inline static constexpr bool
     is_decimal_exponent_continuation(const CharT *const input,
                                      const CharT *const begin) noexcept {
-
       return input[-1] == CharT(0x23E8) || // U+23E8 ⏨ DECIMAL EXPONENT SYMBOL
-             is_decimal_exponent_sign(input[-1], input[-2]);
+             (input - begin >= 2 &&
+              is_decimal_exponent_sign(input[-1], input[-2]));
     }
 
     /**
@@ -825,48 +827,53 @@ private:
             output = append(output, "epsilon");
             break;
 
+#define START_IMPLICIT_ARGUMENT                                                \
+  if (!start_implicit_argument(input, _end, output, in_implicit_argument)) {   \
+    [[unlikely]] goto fast_processing_end;                                     \
+  }
+
           // Special case
           case 0x23E8: // ⏨ DECIMAL EXPONENT SYMBOL
             if (_begin == input) {
               [[unlikely]] goto fast_processing_end;
             }
             output = append(output, "*10^");
-            start_implicit_argument(input, _end, output, in_implicit_argument);
+            START_IMPLICIT_ARGUMENT
             break;
 #ifdef CALC_USED_EQUALS_OPERATORS
             // TODO: do we need function to handle this?
           case 0xB1:   // ± PLUS-MINUS SIGN
           case 0x2213: // ∓ MINUS-OR-PLUS SIGN
             output = append(output, "PM");
-            start_implicit_argument(input, _end, output, in_implicit_argument);
+            START_IMPLICIT_ARGUMENT
             break;
 #endif
           // Unicode mathematical function symbols
           case 0x221A: // √ SQUARE ROOT
           case 0x23B7: // ⎷ RADICAL SYMBOL BOTTOM
             output = append(output, "sqrt");
-            start_implicit_argument(input, _end, output, in_implicit_argument);
+            START_IMPLICIT_ARGUMENT
             break;
 
           case 0x221B: // ∛ CUBE ROOT
             output = append(output, "cbrt");
-            start_implicit_argument(input, _end, output, in_implicit_argument);
+            START_IMPLICIT_ARGUMENT
             break;
 
           case 0x221C: // ∜ FOURTH ROOT
             output = append(output, "qdrt");
-            start_implicit_argument(input, _end, output, in_implicit_argument);
+            START_IMPLICIT_ARGUMENT
             break;
 
           // CJK compatibility functions - Square symbol notations
           case 0x33D1: // ㏑ SQUARE LN
             output = append(output, "ln");
-            start_implicit_argument(input, _end, output, in_implicit_argument);
+            START_IMPLICIT_ARGUMENT
             break;
 
           case 0x33D2: // ㏒ SQUARE LOG
             output = append(output, "log");
-            start_implicit_argument(input, _end, output, in_implicit_argument);
+            START_IMPLICIT_ARGUMENT
             break;
 
           // Astronomical symbols - Planets and celestial bodies
