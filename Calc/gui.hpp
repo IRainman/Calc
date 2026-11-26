@@ -133,7 +133,7 @@ namespace GUI {
  * For testing only, not for production, this code needs to be moved to it's own
  * utility:
  */
-#define HE_GUI_FRAMEWORK_SUPPORT_DARK_MODE_TEST_WIN32_HELPER_REALIZATION
+// #define HE_GUI_FRAMEWORK_SUPPORT_DARK_MODE_TEST_WIN32_HELPER_REALIZATION
 #endif
 
 //---------------------------------------------------------------------------
@@ -300,9 +300,36 @@ static void __cdecl _setup_crt_leak_check() noexcept {
  */
 typedef INT_PTR CALLBACK DlgProc(HWND, UINT, WPARAM, LPARAM) noexcept;
 
+/**
+ * @brief Set application icons (small and big).
+ *
+ * @param main_window Handle to the application window.
+ *
+ * @param instance Handle to the application instance.
+ *
+ * @param small_icon_name Name of small icon resource.
+ *
+ * @param big_icon_name Name of big icon resource.
+ *
+ * @see MAKEINTRESOURCEA
+ */
+constexpr static void
+set_application_icons(const HWND main_window, const HINSTANCE instance,
+                      const LPCSTR small_icon_name,
+                      const LPCSTR big_icon_name) noexcept {
+  // clang-format off
+  PostMessageA(main_window, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(LoadIconA(instance, small_icon_name)));
+  PostMessageA(main_window, WM_SETICON, ICON_BIG,   reinterpret_cast<LPARAM>(LoadIconA(instance, big_icon_name)));
+  // clang-format on
+}
+
 #ifdef HE_GUI_FRAMEWORK_SUPPORT_EXTENDENT_STYLES
 /**
  * @brief Set window extended styles.
+ *
+ * @param window Handle to window.
+ *
+ * @param style The extended style(s) to set.
  */
 constexpr static void set_extended_style(const HWND window,
                                          const DWORD style) noexcept {
@@ -315,8 +342,10 @@ constexpr static void set_extended_style(const HWND window,
  * @brief Open link (url, file) in the default application.
  *
  * @param window the handle to the window.
+ *
  * @param lParam the lParam parameter.
- * @param        id The ID of the link control.
+ *
+ * @param id The ID of the link control.
  *
  * @return TRUE if the link was opened, FALSE otherwise.
  */
@@ -335,7 +364,11 @@ open_link(const HWND window, const LPARAM lParam, const UINT id) noexcept {
 #endif
 
 /**
- * @brief Set text to window. Shoul be zero terminated!
+ * @brief Set text to window. Should be zero terminated!
+ *
+ * @param window Handle to window.
+ *
+ * @param text Pointer to the ANSI text to set.
  *
  * @see Edit
  */
@@ -346,7 +379,11 @@ constexpr static void set_text(const HWND window, LPCSTR const text) noexcept {
 /**
  * @brief Set text to window
  *
- * @param text_end is for C string terminator.
+ * @param window Handle to window.
+ *
+ * @param text Pointer to the ANSI text to set.
+ *
+ * @param text_end Pointer to the end of the text (for C string terminator).
  *
  * @see Edit
  */
@@ -359,6 +396,12 @@ constexpr static void set_text(const HWND window, LPCSTR const text,
 /**
  * @brief Set text to window.
  *
+ * @param window Handle to window.
+ *
+ * @param text Pointer to the ANSI text to set.
+ *
+ * @param size Size of the text in bytes.
+ *
  * @see Edit
  */
 constexpr static void set_text(const HWND window, LPCSTR const text,
@@ -370,6 +413,10 @@ constexpr static void set_text(const HWND window, LPCSTR const text,
 /**
  * @brief Set window text limit
  *
+ * @param window Handle to window.
+ *
+ * @param limit Maximum number of characters the user can enter.
+ *
  * @see Edit
  */
 constexpr static void set_text_limit(const HWND window,
@@ -378,9 +425,7 @@ constexpr static void set_text_limit(const HWND window,
 }
 #endif
 
-/**
- * @brief Goto end of text in window and scroll caret to it
- */
+/// @brief Goto end of text in window and scroll caret to it
 constexpr static void goto_end_of_text(const HWND window) noexcept {
   PostMessageA(window, EM_SETSEL, 0, -1);
   PostMessageA(window, EM_SCROLLCARET, 0, 0);
@@ -742,6 +787,8 @@ private:
 };
 #endif
 
+//---------------------------------------------------------------------------
+
 #ifdef HE_GUI_FRAMEWORK_SUPPORT_DARK_MODE
 // clang-format off
 /**
@@ -1086,6 +1133,8 @@ private:
   }
 };
 #endif
+
+//---------------------------------------------------------------------------
 
 /// @brief Helper to work with points in Layout
 struct Point final : tagPOINT {
@@ -1618,6 +1667,8 @@ private:
   [[no_unique_address]] Constraints<elements> _constraints [[indeterminate]];
 };
 
+//---------------------------------------------------------------------------
+
 #ifdef HE_GUI_FRAMEWORK_SUPPORT_DARK_MODE_TEST_WIN32_HELPER_REALIZATION
 namespace Colors {
 
@@ -1814,6 +1865,8 @@ argb_to_colorref(const DWORD value) noexcept {
 } // namespace Colors
 
 #endif
+
+//---------------------------------------------------------------------------
 
 #if defined _M_IX86
 #pragma comment(                                                               \
