@@ -30,14 +30,15 @@ namespace GUI {
 #include "resource.h" // GUI symbols
 
 /**
- * @brief Calc GUI window also it's application itself.
+ * @brief Calc GUI window and also it's application itself.
  *
  * @warning [[indeterminate]] is used because before init window isn't usable.
  *          That is the system API requirements.
  */
 class CalcApp {
   /**
-   * Calc GUI configuration: matches RC and system internals for correct work.
+   * @brief Calc GUI configuration.
+   * Matches RC and system internals for correct work.
    */
   struct CalcConfiguration {
     static constexpr const char *reg_key = "Software\\HedgehogInTheCPP\\Calc";
@@ -48,7 +49,7 @@ class CalcApp {
 
     static constexpr LONG default_shift = 100;
 
-    static constexpr BYTE elements = 3;
+    static constexpr uint8_t elements = 3;
 
     /// @see https://learn.microsoft.com/windows/win32/controls/em-limittext
     static constexpr UINT input_max_text_length =
@@ -66,9 +67,10 @@ class CalcApp {
 
 public:
   /*
-   * This is the basic initialization of the application.
+   * @brief This is the basic initialization of the application.
    *
    * @warning Should be called before WinMain!
+   *
    * @see create(), init()
    */
   constexpr explicit inline CalcApp() noexcept {
@@ -103,7 +105,7 @@ public:
   constexpr inline ~CalcApp() noexcept = default;
 
   /**
-   * Perform calculation from the GUI
+   * @brief Perform calculation from the GUI
    *      System UTF-16 input (EditView)
    *              ↓
    *      Unicode normalizer (Normalizer)
@@ -157,7 +159,7 @@ public:
 
   // clang-format off
   /**
-   * Close Calc GUI and save program data.
+   * @brief Close Calc GUI and save program data.
    */
   [[nodiscard]] constexpr auto close(const HWND window) const noexcept {
     save_program_data(window);
@@ -167,9 +169,10 @@ public:
   // clang-format on
 
   /**
-   * Create Calc GUI.
+   * @brief Create Calc GUI.
    *
    * @warning call init before any usage of any functionality!
+   *
    * @see init()
    */
   [[nodiscard]] constexpr static auto create(const HINSTANCE instance,
@@ -184,9 +187,10 @@ public:
   }
 
   /**
-   * Initialize Calc GUI and load user data into it.
+   * @brief Initialize Calc GUI and load user data into it.
    *
    * @warning call create first!
+   *
    * @see create()
    */
   [[nodiscard]] constexpr BOOL init(const HWND main_window,
@@ -222,7 +226,7 @@ public:
   }
 
   /**
-   * Resize Calc window.
+   * @brief Resize Calc window.
    */
   [[nodiscard]] constexpr BOOL resize(const LPARAM lParam) noexcept {
     _layout.resize(LOWORD(lParam), HIWORD(lParam));
@@ -230,7 +234,7 @@ public:
   }
 
   /**
-   * Return to the system minimal sizes for Calc window.
+   * @brief Set system minimal sizes for Calc window.
    */
   [[nodiscard]] constexpr inline BOOL
   minmaxinfo(const LPARAM lParam) const noexcept {
@@ -241,7 +245,7 @@ public:
   }
 
   /**
-   * Initialize layout helper for resizing.
+   * @brief Initialize layout helper for resizing.
    */
   constexpr inline void layout_init(const HWND main_window) noexcept {
     // clang-format off
@@ -267,6 +271,10 @@ public:
 private:
 #if defined(CALC_TESTS_ENABLED) && defined(CALC_SUPPORT_UNICODE_INPUT)
   /**
+   * @brief Run tests for Unicode normalizer and HE_GUI_FRAMEWORK
+   *
+   * @return Tests result to the result Edit
+   *
    * @see normalizer_tests, Normalizer, Edit, EditView
    */
   constexpr inline void gui_tests() {
@@ -285,22 +293,22 @@ private:
 #endif
     for (const auto &test : normalizer_tests) {
 #ifdef CALC_TESTS_DEV_ENABLED // Development
+      // Write UTF-8 text to the input Edit
       {
         Edit input(_layout.handle(0), cfg::input_max_text_length);
-
-        // Write UTF-8 text to the input Edit
         input.write(test.input);
       }
-
       // Read UTF-16 text from the input EditView
-      const EditView input(_layout.handle(0));
+      {
+        const EditView input(_layout.handle(0));
 
-      // Convert UTF-16 text to ASCII representation
-      Normalizer normalizer(input.text(), input.length(), _equasion);
+        // Convert UTF-16 text to ASCII representation
+        Normalizer normalizer(input.text(), input.length(), _equasion);
 
-      // If result unexpected:
-      if (test.failed != normalizer.failed() || test.output != _equasion) {
-        ++failed;
+        // If result unexpected:
+        if (test.failed != normalizer.failed() || test.output != _equasion) {
+          ++failed;
+        }
       }
 #else
         // Convert UTF-8 text to the UTF-16 text for the test
@@ -333,24 +341,30 @@ private:
   }
 #endif
   /**
-   *
+   * @brief Set exception text to the result Edit
    */
   constexpr inline void set_exception(const char *text) const noexcept {
     set_text(_layout.handle(1), text);
   }
 
+  /**
+   * @brief Set result text to the result Edit
+   */
   constexpr inline void set_result(const char *text,
                                    const char *text_end) const noexcept {
     set_text(_layout.handle(1), text, text_end);
   }
 
+  /**
+   * @brief Set result text to the result Edit
+   */
   constexpr inline void set_result(const char *text,
                                    const UINT size) const noexcept {
     set_text(_layout.handle(1), text, size);
   }
 
   /**
-   * Load Calc data from the system database
+   * @brief Load Calc data from the system database
    */
   constexpr inline void load_program_data(const HWND main_window) {
     Edit input(_layout.handle(0), cfg::input_max_text_length);
@@ -412,7 +426,7 @@ private:
   }
 
   /**
-   * Save Calc data to the system database
+   * @brief Save Calc data to the system database
    */
   constexpr inline void
   save_program_data(const HWND main_window) const noexcept {
@@ -441,12 +455,10 @@ private:
   }
 
   /**
-   * About window helpers
+   * @brief About window helpers
    */
   struct About {
-    /**
-     * Add "About..." menu item to system menu for main window.
-     */
+    /// @brief Add "About..." menu item to system menu for main window.
     static constexpr inline void
     add_to_system_menu(const HWND main_window) noexcept {
       const auto system_menu = GetSystemMenu(main_window, FALSE);
@@ -454,9 +466,7 @@ private:
       AppendMenuA(system_menu, MF_STRING, IDM_ABOUTBOX, "&About...");
     }
 
-    /**
-     * Create about window
-     */
+    /// @brief Create about window
     [[nodiscard]] static constexpr BOOL
     create(const HWND main_window, WPARAM wParam, DlgProc about_proc) noexcept {
       // IDM_ABOUTBOX must be in the system command range.
@@ -472,17 +482,13 @@ private:
       }
     }
 #ifdef HE_GUI_FRAMEWORK_SUPPORT_LINK_WINDOW
-    /**
-     * Open homepage of the Calc
-     */
+    /// @brief Open homepage of the Calc
     [[nodiscard]] static constexpr BOOL
     open_homepage(const HWND about_window, const LPARAM lParam) noexcept {
       return open_link(about_window, lParam, IDC_LINK_HOMEPAGE);
     }
 #endif
-    /**
-     * Close about window
-     */
+    /// @brief Close about window
     [[nodiscard]] static constexpr BOOL close(const HWND about_window,
                                               const WPARAM wParam) noexcept {
       if (LOWORD(wParam) == IDCANCEL) {
@@ -496,13 +502,18 @@ private:
   static constexpr About _about [[indeterminate]];
 
   /**
-   * Set window icons (small and big).
+   * @brief Set Calc icons (small and big)
+   *
+   * @param main_window Handle to the application window.
+   *
+   * @param instance Handle to the application instance.
    */
   static constexpr inline void set_icons(const HWND main_window,
                                          const HINSTANCE instance) noexcept {
     // clang-format off
-    PostMessageA(main_window, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(LoadIconA(instance, MAKEINTRESOURCEA(IDR_MAINFRAME_SMALL))));
-    PostMessageA(main_window, WM_SETICON, ICON_BIG,   reinterpret_cast<LPARAM>(LoadIconA(instance, MAKEINTRESOURCEA(IDR_MAINFRAME_BIG))));
+    set_application_icons(main_window, instance,
+        MAKEINTRESOURCEA(IDR_MAINFRAME_SMALL),
+        MAKEINTRESOURCEA(IDR_MAINFRAME_BIG));
     // clang-format on
   }
 
@@ -519,9 +530,7 @@ private:
 
 static CalcApp gui;
 
-/**
- * About dialog callback processing (resource-based).
- */
+/// @brief About dialog callback processing (resource-based).
 constexpr static INT_PTR CALLBACK about_proc(const HWND about_window,
                                              const UINT message,
                                              const WPARAM wParam,
@@ -550,9 +559,7 @@ constexpr static INT_PTR CALLBACK about_proc(const HWND about_window,
   }
 }
 
-/**
- * Calc dialog callback processing (resource-based).
- */
+/// @brief dialog callback processing (resource-based).
 constexpr static INT_PTR CALLBACK main_proc(const HWND main_window,
                                             const UINT message,
                                             const WPARAM wParam,
@@ -595,9 +602,7 @@ constexpr static INT_PTR CALLBACK main_proc(const HWND main_window,
 
 } // namespace GUI
 
-/**
- * Calc entrypoint in Win32 GUI
- */
+/// @brief Calc entrypoint in Win32 GUI
 int WINAPI WinMain(const GUI::HINSTANCE instance,
                    const GUI::HINSTANCE /*prev_instance*/,
                    const GUI::LPSTR /*cmd_line*/, const int /*cmd_show*/) {
@@ -610,9 +615,7 @@ int WINAPI WinMain(const GUI::HINSTANCE instance,
 
 // TODO Qt
 
-/**
- * Calc entrypoint in Qt mode
- */
+/// @brief Calc entrypoint in Qt mode
 [[noreturn]] int main(int /*argc*/, char ** /*argv[]*/) {
   fmt::print(FMT_COMPILE("Calc doesn't support your platform yet.\n"));
 }
