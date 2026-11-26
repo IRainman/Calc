@@ -48,10 +48,11 @@ namespace GUI {
  *
  * Usage:
  * ```cpp
- * EditView view(...);
+ * u16string_view(...);
+ * std::string equation [[indeterminate]];
  * // Preallocate enough space for normalized output
- * std::string equation(input_text.length() * 4);
- * Normalizer normalizer(view.text(), view.length(), equation);
+ * equation.reserve(view.length() * 4);
+ * Normalizer normalizer(view.data(), view.length(), equation);
  * if (normalizer.failed()) {
  *     // Handle unsupported input or an incomplete implicit argument
  * }
@@ -60,9 +61,12 @@ namespace GUI {
  *
  * @see std::string::resize_and_overwrite()
  */
-template <typename CharT, typename Length> class Normalizer {
-  static_assert(sizeof(CharT) == sizeof(char16_t));
-  static_assert(std::is_integral_v<CharT>);
+template <typename Char, typename Length> class Normalizer {
+  static_assert(sizeof(Char) == sizeof(char16_t), "Char must be 16-bit");
+  static_assert(std::is_integral_v<Char>, "Char must be integral");
+  static_assert(std::is_unsigned_v<Char>, "Char must be unsigned");
+  static_assert(std::is_integral_v<Length>, "Length must be integral");
+  static_assert(std::is_unsigned_v<Length>, "Length must be unsigned");
 
 public:
   Normalizer() = delete;
@@ -75,25 +79,27 @@ public:
    *
    * Initiates the normalization process by calling the Operation functor
    * with the equation buffer. The normalization is performed immediately
-   * within the constructor via resize_and_overwrite.
+   * within the constructor.
    *
    * @param text Pointer to the UTF-16 text that needs to be normalized.
    * @param length Number of UTF-16 chars in text.
    * @param equasion Reference to a std::string buffer that will contain the
-   *        normalized output
+   *                 normalized output.
    *
    * @pre equasion.capacity() must be large enough for the complete expanded
    *      ASCII result.
    *
    * @post equasion contains the normalized ASCII representation up to the
-   *       failed character or end of input if successful
+   *       failed character or end of input if successful.
    *
    * @note The constructor performs the actual normalization work through
    *       resize_and_overwrite.
    *
    * @warning Behavior is undefined if the output buffer is too small.
+   *
+   * @see normalizer_tests, std::string::resize_and_overwrite()
    */
-  constexpr explicit inline Normalizer(const CharT *const text,
+  constexpr explicit inline Normalizer(const Char *const text,
                                        const Length length,
                                        std::string &equasion)
       : _length(length) {
@@ -143,28 +149,28 @@ private:
    * normalized ASCII output. It handles multiple parsing states:
    *
    *   - **Superscript mode**: Tracks when superscript characters are
-   * encountered and wraps them in "^(...)" notation
+   *     encountered and wraps them in "^(...)" notation
    *   - **Function mode**: Automatically inserts parentheses for function
-   * symbols like sqrt, cbrt, etc., tracking nesting depth
+   *     symbols like sqrt, cbrt, etc., tracking nesting depth
    *
    * The normalization logic uses a combination of:
-   *   - Direct ASCII pass-through for printable ASCII (0x21-0x7E)
+   *   - Printable ASCII pass-through
    *   - Lookup tables for subscript/superscript mappings
    *   - Comprehensive switch statement for many Unicode and ANSI mappings
    *   - Inline helper functions for character classification
    *
    * @note Uses [[nodiscard]] on all classification methods to prevent
-   * accidental misuse
+   *       accidental misuse
    * @note The operator() is designed for single-pass processing with no
-   * backtracking
+   *       backtracking
    */
   struct Operation {
     /// Reference to counter of succesfully normalized input chars
     Length &_normalized;
     /// UTF-16 input string pointer
-    const CharT *const _begin;
+    const Char *const _begin;
     /// UTF-16 input end string pointer
-    const CharT *const _end;
+    const Char *const _end;
 
     /**
      * @brief Copies a string literal to the output buffer and returns new
@@ -197,7 +203,7 @@ private:
      * @return true if c is a supported superscript character
      */
     [[nodiscard]] inline static constexpr bool
-    is_superscript(const CharT c) noexcept {
+    is_superscript(const Char c) noexcept {
       return (c == 0x00B2 || // U+00B2 ² SUPERSCRIPT TWO
               c == 0x00B3 || // U+00B3 ³ SUPERSCRIPT THREE
               c == 0x00B9 || // U+00B9 ¹ SUPERSCRIPT ONE
@@ -232,17 +238,16 @@ private:
      * @return true if c is a separator/whitespace character
      */
     [[nodiscard]] inline static constexpr bool
-    is_separator(const CharT c) noexcept {
-      return (
-          c >= CharT('\t') && c <= CharT('\r') || // ASCII control characters
-          c == CharT(' ') ||                      // ASCII space
-          c == 0xA0 ||                            // ANSI NO-BREAK SPACE
-          c >= 0x2000 && c <= 0x200A ||           // EN QUAD through HAIR SPACE
-          c == 0x2028 ||                          // LINE SEPARATOR
-          c == 0x2029 ||                          // PARAGRAPH SEPARATOR
-          c == 0x202F ||                          // NARROW NO-BREAK SPACE
-          c == 0x205F ||                          // MEDIUM MATHEMATICAL SPACE
-          c == 0x3000                             // IDEOGRAPHIC SPACE
+    is_separator(const Char c) noexcept {
+      return (c >= Char('\t') && c <= Char('\r') || // ASCII control characters
+              c == Char(' ') ||                     // ASCII space
+              c == 0xA0 ||                          // ANSI NO-BREAK SPACE
+              c >= 0x2000 && c <= 0x200A || // EN QUAD through HAIR SPACE
+              c == 0x2028 ||                // LINE SEPARATOR
+              c == 0x2029 ||                // PARAGRAPH SEPARATOR
+              c == 0x202F ||                // NARROW NO-BREAK SPACE
+              c == 0x205F ||                // MEDIUM MATHEMATICAL SPACE
+              c == 0x3000                   // IDEOGRAPHIC SPACE
       );
     }
 
@@ -256,8 +261,8 @@ private:
      * @return true if c is an additive sign character
      */
     [[nodiscard]] inline static constexpr bool
-    is_additive_sign(const CharT c) noexcept {
-      return (c == CharT('+') || c == CharT('-') || c == 0x2212 || // MINUS SIGN
+    is_additive_sign(const Char c) noexcept {
+      return (c == Char('+') || c == Char('-') || c == 0x2212 || // MINUS SIGN
               c == 0x208A || // SUBSCRIPT PLUS
               c == 0x208B || // SUBSCRIPT MINUS
               c == 0x207A || // SUPERSCRIPT PLUS
@@ -279,10 +284,10 @@ private:
      * @return true if c is an operator character
      */
     [[nodiscard]] inline static constexpr bool
-    is_operator(const CharT c) noexcept {
-      return (c == CharT('+') || c == CharT('-') || c == CharT('*') || // ASCII
-              c == CharT('/') || c == CharT(',') ||                    // ASCII
-              c == 0xB7 || c == 0xD7 || c == 0xF7 ||                   // ANSI
+    is_operator(const Char c) noexcept {
+      return (c == Char('+') || c == Char('-') || c == Char('*') || // ASCII
+              c == Char('/') || c == Char(',') ||                   // ASCII
+              c == 0xB7 || c == 0xD7 || c == 0xF7 ||                // ANSI
               c >= 0x2200 && c <= 0x2219 || // Unicode before roots
               c >= 0x221E && c <= 0x22FF || // Unicode after roots
               c == 0x208A ||                // SUBSCRIPT PLUS
@@ -303,8 +308,8 @@ private:
      * @return true if c is a left parenthesis
      */
     [[nodiscard]] inline static constexpr bool
-    is_left_parenthesis(const CharT c) noexcept {
-      return (c == CharT('(') ||
+    is_left_parenthesis(const Char c) noexcept {
+      return (c == Char('(') ||
               c == 0x208D || // U+208D ₍ SUBSCRIPT LEFT PARENTHESIS
               c == 0xFE59 || // U+FE59 ﹙ SMALL LEFT PARENTHESIS
               c == 0xFF08    // U+FF08 （ FULLWIDTH LEFT PARENTHESIS
@@ -320,8 +325,8 @@ private:
      * @return true if c is a right parenthesis
      */
     [[nodiscard]] inline static constexpr bool
-    is_right_parenthesis(const CharT c) noexcept {
-      return (c == CharT(')') ||
+    is_right_parenthesis(const Char c) noexcept {
+      return (c == Char(')') ||
               c == 0x208E || // U+208E ₎ SUBSCRIPT RIGHT PARENTHESIS
               c == 0xFE5A || // U+FE5A ﹚ SMALL RIGHT PARENTHESIS
               c == 0xFF09    // U+FF09 ） FULLWIDTH RIGHT PARENTHESIS
@@ -335,7 +340,7 @@ private:
      * @return true if c is a parenthesis
      */
     [[nodiscard]] inline static constexpr bool
-    is_parenthesis(const CharT c) noexcept {
+    is_parenthesis(const Char c) noexcept {
       return is_left_parenthesis(c) || is_right_parenthesis(c);
     }
 
@@ -348,7 +353,7 @@ private:
      * @return true if c is in the printable ASCII range
      */
     [[nodiscard]] inline static constexpr bool
-    is_printable_ascii(const CharT c) noexcept {
+    is_printable_ascii(const Char c) noexcept {
       return c >= 0x20 && c <= 0x7E;
     }
 
@@ -365,7 +370,7 @@ private:
      * @param depth Reference to the implicit argument depth counter
      */
     [[nodiscard]] inline static constexpr bool
-    start_implicit_argument(const CharT *const input, const CharT *const end,
+    start_implicit_argument(const Char *const input, const Char *const end,
                             char *&output, Length &depth) noexcept {
       if (input + 1 == end) {
         return false;
@@ -393,7 +398,7 @@ private:
      * @return true if c marks the end of an implicit argument
      */
     [[nodiscard]] inline static constexpr bool
-    is_implicit_argument_end(const CharT c) noexcept {
+    is_implicit_argument_end(const Char c) noexcept {
       return is_separator(c) || is_operator(c) || is_parenthesis(c);
     }
 
@@ -406,7 +411,7 @@ private:
      * @return true if c is an implicit function symbol
      */
     [[nodiscard]] inline static constexpr bool
-    is_implicit_function(const CharT c) noexcept {
+    is_implicit_function(const Char c) noexcept {
       return (c == 0x221A || // √
               c == 0x23B7 || // ⎷
               c == 0x221B || // ∛
@@ -431,8 +436,8 @@ private:
      *         function symbol
      */
     [[nodiscard]] inline static constexpr bool
-    is_unary_sign_after_implicit_function(const CharT c,
-                                          const CharT previous) noexcept {
+    is_unary_sign_after_implicit_function(const Char c,
+                                          const Char previous) noexcept {
       return is_additive_sign(c) && is_implicit_function(previous);
     }
 
@@ -447,7 +452,7 @@ private:
      * @return true if c is a sign immediately following ⏨
      */
     [[nodiscard]] inline static constexpr bool
-    is_decimal_exponent_sign(const CharT c, const CharT previous) noexcept {
+    is_decimal_exponent_sign(const Char c, const Char previous) noexcept {
       return previous == 0x23E8 && is_additive_sign(c);
     }
 
@@ -460,9 +465,9 @@ private:
      * @return true if the current position continues a decimal exponent prefix
      */
     [[nodiscard]] inline static constexpr bool
-    is_decimal_exponent_continuation(const CharT *const input,
-                                     const CharT *const begin) noexcept {
-      return input[-1] == CharT(0x23E8) || // U+23E8 ⏨ DECIMAL EXPONENT SYMBOL
+    is_decimal_exponent_continuation(const Char *const input,
+                                     const Char *const begin) noexcept {
+      return input[-1] == Char(0x23E8) || // U+23E8 ⏨ DECIMAL EXPONENT SYMBOL
              (input - begin >= 2 &&
               is_decimal_exponent_sign(input[-1], input[-2]));
     }
@@ -482,8 +487,8 @@ private:
      *    b. Pass through printable ASCII unchanged.
      *    c. Normalize separators, fullwidth forms, and subscripts.
      *    d. Dispatch special symbols through the switch statement.
-     *    e. Stop at the first unsupported code unit.
-     * 4. Finalize by closing any still-active superscript/argument state.
+     *    e. Fail stop at the first unsupported code unit.
+     * 4 (optional). Closing any still-active superscript/argument state.
      *
      * **State Machines:**
      * - **Initial-superscript mode (bool only_superscript):**
@@ -633,7 +638,6 @@ private:
           case 0xF7:   // ÷ ANSI DIVISION SIGN
           case 0x2044: // ⁄ FRACTION SLASH
           case 0x2215: // ∕ DIVISION SLASH
-          case 0x29F8: // ⧸ BIG SOLIDUS
             *output++ = '/';
             break;
 
@@ -650,38 +654,38 @@ private:
           // TODO
           // https://www.fileformat.info/info/unicode/category/Sm/list.htm
           // Relational Operators
-          case 0x2260: // ≠
+          case 0x2260: // ≠ NOT EQUAL TO
             output = append(output, "!=");
             break;
 
-          case 0x2261: // ≡
+          case 0x2261: // ≡ IDENTICAL TO
             output = append(output, "==");
             break;
 
-          case 0x2264: // ≤
+          case 0x2264: // ≤ LESS-THAN OR EQUAL TO
             output = append(output, "<=");
             break;
 
-          case 0x2265: // ≥
+          case 0x2265: // ≥ GREATER-THAN OR EQUAL TO
             output = append(output, ">=");
             break;
 
-          case 0x2243: // ≃
-          case 0x2245: // ≅
-          case 0x2248: // ≈
+          case 0x2243: // ≃ ASYMPTOTICALLY EQUAL TO
+          case 0x2245: // ≅ APPROXIMATELY EQUAL TO
+          case 0x2248: // ≈ ALMOST EQUAL TO
             output = append(output, "~=");
             break;
 #endif
           // Fractions - ANSI
-          case 0xBC: // ¼
+          case 0xBC: // ¼ VULGAR FRACTION ONE QUARTER
             output = append(output, "1/4");
             break;
 
-          case 0xBD: // ½
+          case 0xBD: // ½ VULGAR FRACTION ONE HALF
             output = append(output, "1/2");
             break;
 
-          case 0xBE: // ¾
+          case 0xBE: // ¾ VULGAR FRACTION THREE QUARTERS
             output = append(output, "3/4");
             break;
 
