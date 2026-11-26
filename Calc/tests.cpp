@@ -12,6 +12,13 @@
 #include <cfenv>
 
 namespace Calc {
+/**
+ * @brief Parse binary string to Value type.
+ *
+ * @param x Binary string to parse.
+ *
+ * @return Parsed value or NaN if parsing failed.
+ */
 [[nodiscard]] constexpr static Value bin(const std::string_view x) noexcept {
   UInteger bin_val;
   auto res = fast_float::from_chars(x.data(), x.data() + x.size(), bin_val, 2);
@@ -22,6 +29,13 @@ namespace Calc {
   return std::numeric_limits<Value>::quiet_NaN();
 }
 
+/**
+ * @brief Parse hexadecimal string to Value type.
+ *
+ * @param x Hexadecimal string to parse.
+ *
+ * @return Parsed value or NaN if parsing failed.
+ */
 [[nodiscard]] constexpr static Value hex(const std::string_view x) noexcept {
   UInteger hex_val;
   auto res = fast_float::from_chars(x.data(), x.data() + x.size(), hex_val, 16);
@@ -32,6 +46,15 @@ namespace Calc {
   return std::numeric_limits<Value>::quiet_NaN();
 }
 
+/**
+ * @brief Parse binary and hexadecimal strings to Value type.
+ *
+ * @param ret Pointer to the end of the output buffer
+ *
+ * @return Pointer to the end of the output buffer.
+ *
+ * @see bin(), hex()
+ */
 constexpr static auto binary_and_hex_parsing(char *ret) {
   {
     constexpr std::string_view data = "10101011110011011110111101101001";
@@ -44,8 +67,8 @@ constexpr static auto binary_and_hex_parsing(char *ret) {
   return ret;
 }
 
+/// @see https://en.cppreference.com/w/cpp/numeric/fenv/fegetround
 constexpr static std::string_view round_name(int const d) {
-// https://en.cppreference.com/w/cpp/numeric/fenv/fegetround
 #define CASE_RETURN_NAME(x)                                                    \
   case x:                                                                      \
     return #x
@@ -61,6 +84,13 @@ constexpr static std::string_view round_name(int const d) {
 #undef CASE_RETURN_NAME
 }
 
+/**
+ * @brief Run Calc tests.
+ *
+ * @return Test results in ANSI string.
+ *
+ * @see test_equasions
+ */
 std::string tests() {
   std::string output;
   output.resize(
