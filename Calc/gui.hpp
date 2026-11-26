@@ -10,7 +10,8 @@
  * user input, write program output, work with system database, etc.
  *
  * Uses HE_GUI_FRAMEWORK framework (this file + targetver.h on Win32) for
- * Windows GUI and... TODO: Qt Widgets or what Qt is best? for cross-platform GUI.
+ * Windows GUI and... TODO: Qt Widgets or what Qt is best? for cross-platform
+ * GUI.
  */
 
 static_assert(__cplusplus >= 202302L,
@@ -97,7 +98,7 @@ namespace GUI {
 
 #if (NTDDI_VERSION >= NTDDI_WINTHRESHOLD)
 /**
- * HE_GUI_FRAMEWORK_SUPPORT_WINDOWS_VERSION_CHECK deprecated because it's
+ * HE_GUI_FRAMEWORK_SUPPORT_WINDOWS_VERSION_CHECK removed because it's
  * overhead and the OS version checked only in compile time. Not fully
  * implemented.
  */
@@ -295,7 +296,7 @@ static void __cdecl _setup_crt_leak_check() noexcept {
 #endif
 //---------------------------------------------------------------------------
 /**
- * Dialog procedure type.
+ * @brief Dialog procedure type.
  */
 typedef INT_PTR CALLBACK DlgProc(HWND, UINT, WPARAM, LPARAM) noexcept;
 
@@ -335,6 +336,7 @@ open_link(const HWND window, const LPARAM lParam, const UINT id) noexcept {
 
 /**
  * @brief Set text to window. Shoul be zero terminated!
+ *
  * @see Edit
  */
 constexpr static void set_text(const HWND window, LPCSTR const text) noexcept {
@@ -343,7 +345,8 @@ constexpr static void set_text(const HWND window, LPCSTR const text) noexcept {
 
 /**
  * @brief Set text to window
- * @warning parameter text_end is for C string terminator.
+ *
+ * @param text_end is for C string terminator.
  *
  * @see Edit
  */
@@ -389,6 +392,7 @@ constexpr static void goto_end_of_text(const HWND window) noexcept {
  * @warning This can'be usable only after Edit called one time!
  * @warning This can'be usable only if Edit is multiline and for Dialog
  *          local edit option is enabled.
+ *
  * @see Edit
  */
 class EditView {
@@ -396,6 +400,7 @@ public:
   EditView() = delete;
   EditView(EditView const &) = delete;
   EditView &operator=(EditView const &) = delete;
+  EditView(EditView &&) = delete;
 
   constexpr explicit EditView(const HWND edit) noexcept
       : _length(static_cast<UINT>(SendMessageA(edit, WM_GETTEXTLENGTH, 0, 0))) {
@@ -408,12 +413,14 @@ public:
 
   /**
    * @return Length in UTF-16 characters of the text.
+   *
    * @see text()
    */
   [[nodiscard]] constexpr auto length() const noexcept { return _length; }
 
   /**
    * @return Pointer (LPCWSTR) to the UTF-16 text.
+   *
    * @see length()
    */
   [[nodiscard]] constexpr auto text() const noexcept { return _text; }
@@ -432,6 +439,7 @@ public:
 
   /**
    * @return Size in bytes of the data.
+   *
    * @see data()
    */
   [[nodiscard]] constexpr auto size() const noexcept {
@@ -440,6 +448,7 @@ public:
 
   /**
    * @return BYTE pointer to the the data.
+   *
    * @see size()
    */
   [[nodiscard]] constexpr auto data() const noexcept {
@@ -454,9 +463,11 @@ private:
 
 /**
  * @brief GUI helper to use Edit control.
+ *
  * @warning This relocate memory.
  * @warning This can'be usable only if Edit is multiline and for Dialog
  *          local edit option is enabled.
+ *
  * @see EditView
  */
 class Edit {
@@ -464,12 +475,15 @@ public:
   Edit() = delete;
   Edit(Edit const &) = delete;
   Edit &operator=(Edit const &) = delete;
+  Edit(Edit &&) = delete;
 
   /**
    * @brief Acquires and resizes the edit control's text buffer.
+   *
    * @param edit Handle to a multiline edit control with the dialog-local edit
    *             option enabled.
    * @param max_length Maximum text capacity in UTF-16 characters.
+   *
    * @note The control's local memory may be relocated. The buffer remains
    *       locked for this object's lifetime and is restored to the control
    *       when the object is destroyed.
@@ -492,6 +506,7 @@ public:
 
   /**
    * @return Length in UTF-16 characters of the text.
+   *
    * @see text()
    */
   [[nodiscard]] constexpr UINT length() const noexcept {
@@ -500,12 +515,14 @@ public:
 
   /**
    * @return Pointer (LPWSTR) to the UTF-16 text.
+   *
    * @see length()
    */
   [[nodiscard]] constexpr auto text() const noexcept { return _text; }
 
   /**
-   * Set end of the text.
+   * @brief Set end of the text.
+   *
    * @see text(), length()
    */
   constexpr void set_text_end(LPCWSTR const text_end) const noexcept {
@@ -515,7 +532,8 @@ public:
   }
 
   /**
-   * Set length in characters of the text.
+   * @brief Set length in characters of the text.
+   *
    * @see text(), length()
    */
   constexpr void set_length(const UINT new_length) const noexcept {
@@ -525,7 +543,7 @@ public:
   }
 
   /**
-   * Write UTF-8 text.
+   * @brief Write UTF-8 text.
    */
   constexpr void write(LPCSTR const new_text,
                        const UINT new_length) const noexcept {
@@ -535,21 +553,21 @@ public:
   }
 
   /**
-   * Write UTF-8 text.
+   * @brief Write UTF-8 text.
    */
   constexpr void write(const std::string_view text) const noexcept {
     write(text.data(), static_cast<UINT>(text.size()));
   }
 
   /**
-   * Write UTF-8 text.
+   * @brief Write UTF-8 text.
    */
   constexpr void write(const std::string &text) const noexcept {
     write(text.data(), static_cast<UINT>(text.size()));
   }
 
   /**
-   * Write UTF-8 text.
+   * @brief Write UTF-8 text.
    */
   constexpr void write(LPCSTR const text,
                        LPCSTR const text_end) const noexcept {
@@ -571,12 +589,14 @@ public:
 
   /**
    * @return Size in bytes of the data.
+   *
    * @see data()
    */
   [[nodiscard]] constexpr auto size() const noexcept { return _max_size; }
 
   /**
    * @return BYTE pointer to the the data.
+   *
    * @see size()
    */
   [[nodiscard]] constexpr auto data() noexcept {
@@ -584,7 +604,8 @@ public:
   }
 
   /**
-   * Set size in bytes of the data.
+   * @brief Set size in bytes of the data.
+   *
    * @see data(), size()
    */
   constexpr void set_size(const UINT size) const noexcept {
@@ -599,7 +620,7 @@ private:
 };
 
 /**
- * Helper to write data to system database.
+ * @brief Helper to write data to system database.
  */
 struct RegWrite {
   RegWrite() = delete;
@@ -634,7 +655,7 @@ private:
 };
 
 /**
- * Helper for read data from system database.
+ * @brief Helper for read data from system database.
  */
 struct RegRead {
   RegRead() = delete;
@@ -698,8 +719,9 @@ private:
 }
 
 /**
- * Convert coordinates from logical with USER_DEFAULT_SCREEN_DPI to physical for
- * dpi.
+ * @brief Convert coordinates from logical with USER_DEFAULT_SCREEN_DPI to
+ * physical for dpi.
+ *
  * @return physical coordinates.
  */
 [[nodiscard]] constexpr static auto physical(LONG logical, LONG dpi) noexcept {
@@ -708,8 +730,9 @@ private:
 }
 
 /**
- * Convert coordinates from physical with dpi to logical with
+ * @brief Convert coordinates from physical with dpi to logical with
  * USER_DEFAULT_SCREEN_DPI.
+ *
  * @return logical coordinates.
  */
 [[nodiscard]] constexpr static auto logical(LONG physical, LONG dpi) noexcept {
@@ -722,7 +745,7 @@ private:
 #ifdef HE_GUI_FRAMEWORK_SUPPORT_DARK_MODE
 // clang-format off
 /**
- * Dynamic colors API for Windows 10 1903+.
+ * @brief Dynamic colors API for Windows 10 1903+.
  *
  * Uses the undocumented uxtheme exports:
  *   #104 RefreshImmersiveColorPolicyState
@@ -753,7 +776,7 @@ static FlushMenuThemesFn FlushMenuThemes [[indeterminate]];
 // clang-format on
 
 /**
- * Init theming: get real adresses of uxtheme functions.
+ * @brief Init theming: get real adresses of uxtheme functions.
  *
  * @warning Should be called before WinMain!
  */
@@ -773,7 +796,7 @@ constexpr static void init_uxtheme_callers() noexcept {
 }
 
 /**
- * Application theme management.
+ * @brief Application theme management.
  *
  * Provides a comprehensive theme management system for the calculator
  * application, supporting both light and dark modes. The theme system
@@ -808,7 +831,7 @@ class Theme {
       CreateSolidBrush(_dark_bakground_field_color);
 
   /**
-   * Cached dark mode setting for the application.
+   * @brief Cached dark mode setting for the application.
    *
    * Stores whether dark mode is currently enabled. This value is determined
    * from the Windows Registry during initialization (in is_dark_mode with
@@ -820,11 +843,12 @@ class Theme {
   [[no_unique_address]] bool _dark_mode [[indeterminate]];
 
   /**
-   * Checks whether dark mode is currently enabled.
+   * @brief Checks whether dark mode is currently enabled.
    *
    * Returns the cached dark mode setting for the application.
    *
    * @return true if dark mode is enabled, false otherwise.
+   *
    * @note This reflects the cached state; use is_dark_mode(is_main_window)
    *       to detect the current system preference.
    */
@@ -833,7 +857,8 @@ class Theme {
   }
 
   /**
-   * Determines if dark mode should be used (system preference detection).
+   * @brief Determines if dark mode should be used (system preference
+   * detection).
    *
    * For the main application window, reads the Windows Registry to detect the
    * user's preferred application theme and caches the result in _dark_mode.
@@ -844,9 +869,12 @@ class Theme {
    *                       (HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\
    *                       CurrentVersion\\Themes\\Personalize\\AppsUseLightTheme).
    *                       If false, uses the cached _dark_mode value.
+   *
    * @return true if dark mode is enabled, false for light mode.
+   *
    * @note Registry value: AppsUseLightTheme = 0 means dark mode is enabled,
    *       non-zero means light mode is enabled.
+   *
    * @see init()
    */
   [[nodiscard]] constexpr auto
@@ -875,13 +903,14 @@ public:
   Theme(Theme &&) = delete;
 
   /**
-   * Initializes the application theme system.
+   * @brief Initializes the application theme system.
    *
    * Must be called before any window is initialized. This function:
    * - Sets the application's preferred appearance mode to allow dark themes
    * - Applies the theme to the main application window
    *
    * @param application_main_window The HWND of the main application window.
+   *
    * @warning Must be called during application initialization, before window
    *          creation.
    */
@@ -891,7 +920,7 @@ public:
   }
 
   /**
-   * Applies the theme to a window and all its child controls.
+   * @brief Applies the theme to a window and all its child controls.
    *
    * Applies theme to application title bar, application frame, menus, and for
    * interactive controls that repaints itself based on its current state.
@@ -907,6 +936,7 @@ public:
    *                       false.
    *
    * @note Child windows are automatically enumerated and themed recursively.
+   *
    * @see dialog_background(), static_control(), edit()
    */
   constexpr void apply(const HWND window, const bool redraw = false,
@@ -922,13 +952,14 @@ public:
   }
 
   /**
-   * Gets the appropriate background brush for DIALOG controls.
+   * @brief Gets the appropriate background brush for DIALOG controls.
    *
    * Returns the correct brush based on the current theme (light or dark mode).
    * In dark mode, returns a dark background brush; in light mode, returns the
    * system default window background brush.
    *
    * @return An INT_PTR representing the HBRUSH to use for dialog backgrounds.
+   *
    * @note Use this in WM_CTLCOLORDLG message handling to properly theme
    * dialogs.
    */
@@ -939,7 +970,7 @@ public:
   }
 
   /**
-   * Applies theme to STATIC control.
+   * @brief Applies theme to STATIC control.
    *
    * Configures the text and background colors for static controls based on
    * the current theme. In dark mode, uses custom dark theme colors; in light
@@ -947,11 +978,14 @@ public:
    *
    * @param wPhdc The WPARAM value from WM_CTLCOLORSTATIC, which contains the
    *              device context handle (HBRUSH cast to WPARAM).
+   *
    * @return An INT_PTR representing the HBRUSH to use for the control
    *         background.
+   *
    * @note Use this in WM_CTLCOLORSTATIC message handling. The returned brush
    *       paints the static control background, while text and background
    *       colors are set on the provided device context.
+   *
    * @see _dark_bakground_text_color, _dark_bakground_window_color
    */
   [[nodiscard]] constexpr auto
@@ -967,7 +1001,7 @@ public:
   }
 
   /**
-   * Applies theme to EDIT controls.
+   * @brief Applies theme to EDIT controls.
    *
    * Configures the text and background colors for edit controls based on
    * the current theme. In dark mode, uses custom dark theme colors for input
@@ -975,10 +1009,13 @@ public:
    *
    * @param wPhdc The WPARAM value from WM_CTLCOLOREDIT, which contains the
    *              device context handle (HBRUSH cast to WPARAM).
+   *
    * @return An INT_PTR representing the HBRUSH to use for the control
    *         background, or FALSE to use default light mode behavior.
+   *
    * @note Use this in WM_CTLCOLOREDIT message handling (e.g., for text input
    *       fields in the calculator display).
+   *
    * @see _dark_bakground_text_color, _dark_bakground_field_color
    */
   [[nodiscard]] constexpr auto edit(const WPARAM wPhdc) const noexcept {
@@ -995,16 +1032,19 @@ public:
 
 private:
   /**
-   * Applies theme styling to a window via SetWindowTheme.
+   * @brief Applies theme styling to a window via SetWindowTheme.
    *
    * Callback function used with EnumChildWindows to recursively apply the
    * theme to all child windows. Sets the window theme based on whether dark
    * mode is enabled, using either "DarkMode_Explorer" or "Explorer" theme.
    *
    * @param window The HWND of the window to theme.
+   *
    * @param dark The LPARAM indicating whether dark mode is enabled (non-zero
    *        for dark, zero for light).
+   *
    * @return TRUE to continue enumeration of child windows.
+   *
    * @note This is a static callback function for use with EnumChildWindows().
    */
   constexpr static BOOL CALLBACK theme(const HWND window,
@@ -1014,13 +1054,14 @@ private:
   }
 
   /**
-   * Applies dark mode theme to the application title bar and frame.
+   * @brief Applies dark mode theme to the application title bar and frame.
    *
    * Uses the Windows Desktop Window Manager (DWM) API to apply immersive dark
    * mode styling to the window's title bar and frame, creating a cohesive dark
    * theme appearance.
    *
    * @param window The HWND of the window to apply title bar theming to.
+   *
    * @note This uses DwmSetWindowAttribute with DWMWA_USE_IMMERSIVE_DARK_MODE
    *       to enable Windows 10 1903+ native dark mode for window frames.
    */
@@ -1031,7 +1072,7 @@ private:
   }
 
   /**
-   * Refreshes and applies dark mode theme to menus.
+   * @brief Refreshes and applies dark mode theme to menus.
    *
    * Updates the application's menu appearance to match the current theme by
    * refreshing the immersive color policy state and flushing menu themes.
@@ -1046,7 +1087,7 @@ private:
 };
 #endif
 
-/// Helper to work with points in Layout
+/// @brief Helper to work with points in Layout
 struct Point final : tagPOINT {
   constexpr Point() noexcept { /*no init here*/ };
 
@@ -1056,7 +1097,7 @@ struct Point final : tagPOINT {
   }
 };
 
-/// Helper to work with rectangles in Layout
+/// @brief Helper to work with rectangles in Layout
 struct Rect final : tagRECT {
   constexpr Rect() noexcept { /*no init here*/ };
 
@@ -1080,7 +1121,7 @@ struct Rect final : tagRECT {
   [[nodiscard]] constexpr auto height() const noexcept { return bottom - top; }
 };
 
-/// Helper for resize Layout
+/// @brief Helper for resize Layout
 enum class Anchor : BYTE {
   None = 0,
   HorizontalStretch = 1 << 0,
@@ -1091,19 +1132,19 @@ enum class Anchor : BYTE {
   Bottom = 1 << 5
 };
 
-/// Bitwise OR for Anchor
+/// @brief Bitwise OR for Anchor
 constexpr static auto operator|(Anchor lhs, Anchor rhs) noexcept {
   using T = std::underlying_type_t<Anchor>;
   return static_cast<Anchor>(static_cast<T>(lhs) | static_cast<T>(rhs));
 }
 
-/// Bitwise AND for Anchor
+/// @brief Bitwise AND for Anchor
 constexpr static auto operator&(Anchor lhs, Anchor rhs) noexcept {
   using T = std::underlying_type_t<Anchor>;
   return static_cast<Anchor>(static_cast<T>(lhs) & static_cast<T>(rhs));
 }
 
-/// Helper to check if a flag is set for Anchor
+/// @brief Helper to check if a flag is set for Anchor
 constexpr static auto has_flag(Anchor value, Anchor flag) noexcept {
   return static_cast<bool>(value & flag);
 }
@@ -1175,7 +1216,9 @@ constexpr static auto has_flag(Anchor value, Anchor flag) noexcept {
  * ```
  *
  * @note Non-copyable and non-move-constructible for safety
+ *
  * @note All initialization must occur before the first resize call
+ *
  * @see Anchor, Constraints, Point, Rect
  */
 template <typename BYTE elements> class Layout {
@@ -1212,7 +1255,7 @@ protected:
    *
    * @tparam elements Number of controls managed by the parent Layout
    */
-  template <typename BYTE elements> struct Constraints {
+  template <typename uint8_t elements> struct Constraints {
     /**
      * @brief Default constructor.
      *
@@ -1242,15 +1285,19 @@ protected:
      *
      * @param layout Pointer to the parent Layout instance (for querying
      *        dimensions)
+     *
      * @param index Zero-based index in the constraints arrays [0, elements)
+     *
      * @param handle The HWND of the child control being registered
+     *
      * @param client Reference to Rect containing the control's current position
      *        and size in client coordinates relative to the parent
+     *
      * @param anchor Anchor flags specifying how this control should resize
      *
      * @note This method should only be called by Layout::init_anchor()
      */
-    constexpr void init(const Layout *layout, const BYTE index,
+    constexpr void init(const Layout *layout, const uint8_t index,
                         const HWND handle, const Rect &client,
                         const Anchor anchor) noexcept {
       handles[index] = handle;
@@ -1268,19 +1315,19 @@ protected:
     }
 
     // clang-format off
-    /// Window handles for all managed controls
+    /// @brief Window handles for all managed controls
     [[no_unique_address]] std::array<HWND, elements> handles [[indeterminate]];
     
-    /// Original widths of all controls
+    /// @brief Original widths of all controls
     [[no_unique_address]] std::array<LONG, elements> widths [[indeterminate]];
     
-    /// Original heights of all controls
+    /// @brief Original heights of all controls
     [[no_unique_address]] std::array<LONG, elements> heights [[indeterminate]];
     
-    /// Margin information (distances from edges) for all controls
+    /// @brief Margin information (distances from edges) for all controls
     [[no_unique_address]] std::array<Rect, elements> margins [[indeterminate]];
     
-    /// Anchor flags specifying resize behavior for all controls
+    /// @brief Anchor flags specifying resize behavior for all controls
     [[no_unique_address]] std::array<Anchor, elements> anchors [[indeterminate]];
     // clang-format on
   };
@@ -1298,6 +1345,7 @@ public:
    *        will be captured
    *
    * @post _width and _height contain the current client dimensions
+   *
    * @note Call this before init_anchor() and resize()
    */
   constexpr void init_window(const HWND window) noexcept {
@@ -1315,12 +1363,15 @@ public:
    * can be used to prevent controls from becoming too small or overlapping.
    *
    * @param window The HWND of the parent dialog window
+   *
    * @param min_width Minimum width in pixels (typically used in
    *        WM_GETMINMAXINFO)
+   *
    * @param min_height Minimum height in pixels (typically used in
    *        WM_GETMINMAXINFO)
    *
    * @post _min_width and _min_height are set for later reference
+   *
    * @note These values are stored but not enforced by the Layout class;
    *       they are typically used by the dialog procedure for WM_GETMINMAXINFO
    */
@@ -1350,15 +1401,19 @@ public:
    * 4. Calls Constraints::init() to store margins and dimensions
    *
    * @param parent The HWND of the parent dialog window
+   *
    * @param index Zero-based index for this control in the constraints arrays
    *        Must be < elements
+   *
    * @param id The dialog control ID (passed to GetDlgItem)
+   *
    * @param anchor Combination of Anchor flags specifying resize behavior
    *
    * @pre init_window() must be called first to establish layout dimensions
    * @pre index must be in range [0, elements)
    *
    * @post Control is registered in _constraints at the given index
+   *
    * @post Control's current position/size and anchor settings are recorded
    *
    * @warning Windows API calls are synchronous and may block if window is busy
@@ -1410,17 +1465,22 @@ public:
    * 3. Apply all updates atomically via EndDeferWindowPos
    *
    * @param width New client area width in pixels
+   *
    * @param height New client area height in pixels
    *
    * @pre Controls must be registered via init_anchor() before calling
+   *
    * @post All managed controls are repositioned and resized atomically
+   *
    * @post Internal _width and _height are updated to new dimensions
    *
    * @note Uses BeginDeferWindowPos/EndDeferWindowPos for batched updates,
    *       minimizing window redraws and providing atomic-like behavior
+   *
    * @note The deferred position update uses SWP_NOZORDER | SWP_NOACTIVATE flags
    *
    * @warning Should only be called from WM_SIZE message handler
+   *
    * @see WM_SIZE message
    */
   constexpr void resize(const LONG width, const LONG height) noexcept {
@@ -1481,18 +1541,21 @@ public:
   // clang-format off
   /**
    * @brief Returns the current width of the layout in pixels.
+   * 
    * @return Current width of the parent window's client area
    */
   [[nodiscard]] constexpr auto width() const noexcept  { return _width; }
 
   /**
    * @brief Returns the current height of the layout in pixels.
+   * 
    * @return Current height of the parent window's client area
    */
   [[nodiscard]] constexpr auto height() const noexcept { return _height; }
 
   /**
    * @brief Returns the minimum width specified for this layout.
+   * 
    * @return Minimum width in pixels (set via init_min_sizes)
    */
   [[nodiscard]] constexpr auto min_width() const noexcept { return _min_width; }
@@ -1500,12 +1563,14 @@ public:
   /**
    * @brief Returns the minimum width as a dimension (alias for min_width()).
    * Useful for WM_GETMINMAXINFO where both min_x and min_y represent dimensions.
+   * 
    * @return Minimum width in pixels
    */
   [[nodiscard]] constexpr auto min_x() const noexcept     { return _min_width; }
 
   /**
    * @brief Returns the minimum height specified for this layout.
+   * 
    * @return Minimum height in pixels (set via init_min_sizes)
    */
   [[nodiscard]] constexpr auto min_height() const noexcept { return _min_height; }
@@ -1513,17 +1578,21 @@ public:
   /**
    * @brief Returns the minimum height as a dimension (alias for min_height()).
    * Useful for WM_GETMINMAXINFO where both min_x and min_y represent dimensions.
+   * 
    * @return Minimum height in pixels
    */
   [[nodiscard]] constexpr auto min_y() const noexcept      { return _min_height; }
 
   /**
    * @brief Retrieves the HWND of a managed control by its index.
+   * 
    * @param index Zero-based index [0, elements) of the control
+   * 
    * @return HWND of the control at the specified index
+   * 
    * @pre index must be < elements
    */
-  [[nodiscard]] constexpr auto handle(const BYTE index) const noexcept {
+  [[nodiscard]] constexpr auto handle(const uint8_t index) const noexcept {
     assert(index < elements);
     [[assume(index < elements)]];
     return _constraints.handles[index];
@@ -1532,19 +1601,20 @@ public:
   // clang-format on
 
 private:
-  /// Current width of the parent window's client area in pixels
+  /// @brief Current width of the parent window's client area in pixels
   [[no_unique_address]] LONG _width [[indeterminate]];
 
-  /// Current height of the parent window's client area in pixels
+  /// @brief Current height of the parent window's client area in pixels
   [[no_unique_address]] LONG _height [[indeterminate]];
 
-  /// Minimum allowable width for the window in pixels
+  /// @brief @brief Minimum allowable width for the window in pixels
   [[no_unique_address]] LONG _min_width [[indeterminate]];
 
-  /// Minimum allowable height for the window in pixels
+  /// @brief Minimum allowable height for the window in pixels
   [[no_unique_address]] LONG _min_height [[indeterminate]];
 
-  /// Storage for all control constraints (handles, sizes, margins, anchors)
+  /// @brief Storage for all control constraints (handles, sizes, margins,
+  /// anchors)
   [[no_unique_address]] Constraints<elements> _constraints [[indeterminate]];
 };
 
@@ -1594,7 +1664,7 @@ constexpr static const auto indexes =
                         COLOR_MENUBAR});
 
 /**
- * Complete snapshot of system colors.
+ * @brief Complete snapshot of system colors.
  *
  * The values are indexed by the corresponding COLOR_* value:
  *
@@ -1608,13 +1678,13 @@ class Colors final {
       [[indeterminate]];
 
 public:
-  /// Get a system color by its COLOR_* index.
+  /// @brief Get a system color by its COLOR_* index.
   [[nodiscard]] constexpr const COLORREF &
   operator[](const INT index) const noexcept {
     return _values[index];
   }
 
-  /// Get a mutable system color by its COLOR_* index.
+  /// @brief Get a mutable system color by its COLOR_* index.
   [[nodiscard]] constexpr COLORREF &operator[](const INT index) noexcept {
     return _values[index];
   }
@@ -1625,7 +1695,7 @@ public:
 };
 
 /**
- * Get all system colors.
+ * @brief Get all system colors.
  *
  * system provides GetSysColor() only as a scalar API, so the complete
  * system-color table is collected with one GetSysColor() call per entry.
@@ -1641,7 +1711,7 @@ public:
 }
 
 /**
- * Set all system colors.
+ * @brief Set all system colors.
  *
  * SetSysColors() accepts an array of COLOR_* indices and an array of COLORREF
  * values. System broadcasts WM_SYSCOLORCHANGE after a successful change and
@@ -1654,7 +1724,7 @@ constexpr static bool set_colors(Colors &&new_values) noexcept {
 }
 
 /**
- * Windows/DWM colors.
+ * @brief Windows/DWM colors.
  *
  * There is no single global Windows 10/11 "color palette" exposed through DWM.
  *
@@ -1667,7 +1737,7 @@ constexpr static bool set_colors(Colors &&new_values) noexcept {
  */
 struct DWMColors final {
   /**
-   * Global DWM colorization color in 0xAARRGGBB format.
+   * @brief Global DWM colorization color in 0xAARRGGBB format.
    *
    * This is NOT a COLORREF.
    */
@@ -1675,31 +1745,24 @@ struct DWMColors final {
 
   [[no_unique_address]] BOOL colorization_opaque [[indeterminate]];
 
-  /**
-   * DWM window border color.
-   */
+  /// @brief DWM window border color.
   [[no_unique_address]] COLORREF border [[indeterminate]];
 
-  /**
-   * DWM window caption/title-bar color.
-   */
+  /// @brief DWM window caption/title-bar color.
   [[no_unique_address]] COLORREF caption [[indeterminate]];
 
-  /**
-   * DWM window caption text color.
-   */
+  /// @brief DWM window caption text color.
   [[no_unique_address]] COLORREF text [[indeterminate]];
 
-  /**
-   * True when DwmGetColorizationColor() succeeded.
-   */
+  /// @brief both true when DwmGetColorizationColor() succeeded.
   [[no_unique_address]] bool has_window_colors [[indeterminate]];
 
+  ///
   [[no_unique_address]] bool has_colorization [[indeterminate]];
 };
 
 /**
- * Get DWM colors for Windows 10/11.
+ * @brief Get DWM colors for Windows 10/11.
  *
  * DwmGetColorizationColor() is queried independently because it is a global DWM
  * value.
@@ -1714,9 +1777,6 @@ struct DWMColors final {
 constexpr static DWMColors dwm_colors(const HWND window) noexcept {
   DWMColors result;
 
-  /**
-   * Global DWM colorization/accent color.
-   */
   if (SUCCEEDED(DwmGetColorizationColor(&result.colorization_argb,
                                         &result.colorization_opaque))) {
     result.has_colorization = true;
@@ -1736,7 +1796,7 @@ constexpr static DWMColors dwm_colors(const HWND window) noexcept {
 }
 
 /**
- * Convert a DWM 0xAARRGGBB color to a COLORREF.
+ * @brief Convert a DWM 0xAARRGGBB color to a COLORREF.
  *
  * DWM uses:
  *
@@ -1752,38 +1812,6 @@ argb_to_colorref(const DWORD value) noexcept {
 }
 
 } // namespace Colors
-
-#ifdef HE_GUI_FRAMEWORK_SUPPORT_WINDOWS_VERSION_CHECK
-constexpr static... check_system_version(...) noexcept {
-  auto ntdll = GetModuleHandleA("ntdll.dll");
-  // clang-format off
-  typedef void (WINAPI* pfnRtlGetNtVersionNumbers)(ULONG*, ULONG*, ULONG*) noexcept;
-#pragma warning(push)
-#pragma warning(disable : 4191) // allow FARPROC -> function pointer casts here
-  auto RtlGetNtVersionNumbers = (pfnRtlGetNtVersionNumbers)GetProcAddress(ntdll, "RtlGetNtVersionNumbers");
-#pragma warning(pop)
-  // clang-format on
-
-  ULONG major, minor, build;
-
-  /**
-   * Note: Windows 11 and Windows 10 both return Major 10.
-   * Differentiate by build number (Windows 11 is Build >= 22000).
-   */
-  RtlGetNtVersionNumbers(&major, &minor, &build);
-
-  // Mask out the build number flags
-  build &= 0xFFFF;
-
-  if (major == 10 && build >= 22000) {
-    // Windows 11
-  }
-
-  if (major == 10 && build >= 18362) {
-    // Windows 10 1903 and later supports dark mode
-  }
-}
-#endif
 
 #endif
 
