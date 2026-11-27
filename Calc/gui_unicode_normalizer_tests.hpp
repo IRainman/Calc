@@ -88,9 +88,23 @@ constinit static auto normalizer_tests = std::to_array<NormalizerTest>({
      "\xE2\x81\xA4" // U+2064
      "3",
      "2+3", false},
+    {"√"
+     "\xE2\x81\xA4"
+     "1",
+     "sqrt(+1)", false},
+    {"1⏨"
+     "\xE2\x81\xA4"
+     "3",
+     "1*10^(+3)", false},
+    {"√x"
+     "\xE2\x81\xA4"
+     "2",
+     "sqrt(x)+2", false},
 
+    // Degree sign
     {"90°", "90*pi/180", false},
     {"45°+π", "45*pi/180+pi", false},
+    {"√90°", "sqrt(90*pi/180)", false},
 
     {// Fractions
      "¼½¾⅐⅑⅒⅓⅔⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞⅟↉3⅟₉",
@@ -141,6 +155,8 @@ constinit static auto normalizer_tests = std::to_array<NormalizerTest>({
     {"√x²", "sqrt(x^(2))", false},
     {"√√(x+1)", "sqrt(sqrt(x+1))", false},
     {"∛∜(x+1)", "cbrt(qdrt(x+1))", false},
+    {"√√(x+1)+2", "sqrt(sqrt(x+1))+2", false},
+    {"∛∜(x+1)-2", "cbrt(qdrt(x+1))-2", false},
 
     // Decimal exponent notation
     {"⏨", "", true},
