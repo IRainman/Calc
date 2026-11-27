@@ -278,8 +278,8 @@ private:
    * @see normalizer_tests, Normalizer, Edit, EditView
    */
   constexpr inline void gui_tests() {
-    std::string &output = _equasion;
-
+    std::string output [[indeterminate]];
+    output.resize(cfg::input_max_text_length);
     auto output_end = output.data();
 
     const auto start = std::chrono::steady_clock::now();
@@ -308,6 +308,15 @@ private:
         // If result unexpected:
         if (test.failed != normalizer.failed() || test.output != _equasion) {
           ++failed;
+          output_end =
+              fmt::format_to(output_end,
+                             FMT_COMPILE("Test: \"{}\"\n"
+                                         "should fail = {}\n"
+                                         "is failed   = {}\n"
+                                         "output = \"{}\"\n"
+                                         "expect = \"{}\"\n\n"),
+                             test.input, test.failed, normalizer.failed(),
+                             _equasion, test.output);
         }
       }
 #else
@@ -337,7 +346,8 @@ private:
                            (end - start) / (normalizer_tests.size() * count))
                            .count());
 #endif
-    set_result(output.data(), output_end);
+    Edit input(_layout.handle(1), cfg::input_max_text_length);
+    input.write(output.data(), output_end);
   }
 #endif
   /**
