@@ -581,14 +581,12 @@ private:
             [[unlikely]] goto fast_processing_end;
           }
 
-          // Exit superscript mode when encountering a non-superscript
-          // character.
+          // Exit superscript mode when encountering a non-superscript unit.
           if (in_superscript && !is_superscript(c)) [[unlikely]] {
             in_superscript = false;
-
             if (close_superscript) {
-              *output++ = ')';
               close_superscript = false;
+              *output++ = ')';
             }
           }
 
@@ -696,7 +694,7 @@ private:
             output = append(output, "~=");
             break;
 #endif
-          case 0x00B0: // ° DEGREE SIGN
+          case 0xB0: // ° DEGREE SIGN
             output = append(output, "*pi/180");
             break;
 
