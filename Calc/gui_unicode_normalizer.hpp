@@ -33,7 +33,10 @@ namespace GUI {
  *     expression. Its exponent is handled as an implicit argument, unless an
  *     explicit opening parenthesis is already present.
  *   - Subscripts: ₀₋₉ and the supported Unicode subscript letters
- *   - Operators and punctuation: common Unicode variants normalized to ASCII
+ *   - Operators and punctuation: common Unicode variants normalized to ASCII,
+ *     including invisible times (⁢) → "*", invisible plus (⁤) → "+",
+ *     and bullet operator (∙) → "*"
+ *   - Degree notation: ° → "*pi/180" (conversion to radians)
  *   - Fullwidth forms: U+FF01-U+FF5E mapped directly to U+0021-U+007E
  *   - Whitespace/separators: supported Unicode separator characters mapped
  *     to ASCII space
@@ -272,11 +275,12 @@ private:
     is_additive_sign(const C c) noexcept {
       return (c == C('+') || // ASCII
               c == C('-') || // ASCII
-              c == 0x2212 || // MINUS SIGN
+              c == 0x2064 || // INVISIBLE PLUS
               c == 0x208A || // SUBSCRIPT PLUS
               c == 0x208B || // SUBSCRIPT MINUS
               c == 0x207A || // SUPERSCRIPT PLUS
               c == 0x207B || // SUPERSCRIPT MINUS
+              c == 0x2212 || // MINUS SIGN
               c == 0xFE62 || // SMALL PLUS
               c == 0xFE63 || // SMALL HYPHEN-MINUS
               c == 0xFF0B || // FULLWIDTH PLUS
@@ -590,8 +594,12 @@ private:
             }
           }
 
-          // Exit implicit argument mode when encountering argument boundary
+                    // Exit implicit argument mode when encountering argument boundary.
+          // An opening parenthesis after an implicit function starts its
+          // explicit argument and must not close the enclosing argument.
           if (in_implicit_argument && is_implicit_argument_end(c) &&
+              !(is_left_parenthesis(c) && input != _begin &&
+                is_implicit_function(input[-1])) &&
               !is_decimal_exponent_sign(c, input[-1]) &&
               !is_unary_sign_after_implicit_function(c, input[-1]))
               [[unlikely]] {
