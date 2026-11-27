@@ -4,14 +4,7 @@
 
 /* TODO: mapping and converting functionality
 
-//  0xB0  ° DEGREE SIGN
 //  0xB1 ± PLUS-MINUS SIGN
-
-90° → 90 * pi / 180
-| Unicode   | Calc               |
-| --------- | ------------------ |
-| `°`       | `deg`*             |
-| `º`       | `deg`*             |
 
 | alternative | Calc               |
 | ----------- | ------------------ |
@@ -201,6 +194,25 @@ not implemented yet
 | `⊆`     | `subseteq`       | **not supported** |
 | `∩`     | `intersection`   | **not supported** |
 | `∪`     | `union`          | **not supported** |
+
+
+≠ ≤ ≥ ≡ ≈	Comparisons	Requires relational operators in the
+            lexer/parser
+
+%	    Percent/modulo	Needs an explicit semantic decision
+
+‰ ‱	Permille / per ten thousand	Needs postfix operator semantics
+
+∑ ∏     Summation / product	Requires bounds and iteration
+
+∫ ∬ ∭ ∮	Integrals Requires calculus expression support
+
+∂ ∇	    Partial derivative / nabla Requires calculus semantics
+
+⌊⌋ ⌈⌉	Floor / ceiling notation Requires paired delimiter handling
+
+
+
 */
 
 #include "pch.hpp"
