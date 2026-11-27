@@ -593,6 +593,7 @@ public:
   constexpr void write(LPCSTR const new_text,
                        const UINT new_length) const noexcept {
     assert(new_length <= length());
+    [[assume(new_length <= length())]];
     set_length(MultiByteToWideChar(CP_UTF8, 0, new_text, new_length, text(),
                                    length()));
   }
