@@ -296,15 +296,21 @@ private:
     [[nodiscard]] inline static constexpr bool is_operator(const C c) noexcept {
       return (c == C('+') || c == C('-') || c == C('*') || // ASCII
               c == C('/') || c == C(',') ||                // ASCII
-              c == 0xB7 || c == 0xD7 || c == 0xF7 ||       // ANSI
+
+              c == 0xB7 || c == 0xD7 || c == 0xF7 || // ANSI
+
+              c == 0x2062 || // INVISIBLE TIMES
+              c == 0x2064 || // INVISIBLE PLUS
+              c == 0x208A || // SUBSCRIPT PLUS
+              c == 0x208B || // SUBSCRIPT MINUS
+
               c >= 0x2200 && c <= 0x2219 || // Unicode before roots
               c >= 0x221F && c <= 0x22FF || // Unicode after roots
-              c == 0x208A ||                // SUBSCRIPT PLUS
-              c == 0x208B ||                // SUBSCRIPT MINUS
-              c == 0xFE62 ||                // SMALL PLUS
-              c == 0xFE63 ||                // SMALL HYPHEN-MINUS
-              c == 0xFF0B ||                // FULLWIDTH PLUS
-              c == 0xFF0D                   // FULLWIDTH HYPHEN-MINUS
+
+              c == 0xFE62 || // SMALL PLUS
+              c == 0xFE63 || // SMALL HYPHEN-MINUS
+              c == 0xFF0B || // FULLWIDTH PLUS
+              c == 0xFF0D    // FULLWIDTH HYPHEN-MINUS
       );
     }
 
@@ -633,6 +639,7 @@ private:
           // Operators - ANSI and Unicode (Small and Subscripts)
 
           // Plus sign variants
+          case 0x2064: // ⁤ INVISIBLE PLUS
           case 0x208A: // ₊ SUBSCRIPT PLUS SIGN
           case 0xFE62: // ﹢ SMALL PLUS SIGN
             *output++ = '+';
@@ -656,7 +663,9 @@ private:
           case 0xB7:   // · ANSI MIDDLE DOT
           case 0xD7:   // × ANSI MULTIPLICATION SIGN
           case 0x204E: // ⁎ LOW ASTERISK
+          case 0x2062: // ⁢ INVISIBLE TIMES
           case 0x2217: // ∗ ASTERISK OPERATOR
+          case 0x2219: // ∙ BULLET OPERATOR
           case 0x22C5: // ⋅ DOT OPERATOR
           case 0xFE61: // ﹡ SMALL ASTERISK
             *output++ = '*';
@@ -687,6 +696,10 @@ private:
             output = append(output, "~=");
             break;
 #endif
+          case 0x00B0: // ° DEGREE SIGN
+            output = append(output, "*pi/180");
+            break;
+
           // Fractions - ANSI
           case 0xBC: // ¼ VULGAR FRACTION ONE QUARTER
             output = append(output, "1/4");

@@ -80,6 +80,17 @@ constinit static auto normalizer_tests = std::to_array<NormalizerTest>({
 
     {// Operators, parentheses and punctuation
      "₊﹢₋−﹣⁎∗⋅﹡⁄∕·×÷()₍₎﹙﹚﹐﹒+-*/", "++---****//**/()()(),.+-*/", false},
+    {"2"
+     "\xE2\x81\xA2" // U+2062
+     "3",
+     "2*3", false},
+    {"2"
+     "\xE2\x81\xA4" // U+2064
+     "3",
+     "2+3", false},
+
+    {"90°", "90*pi/180", false},
+    {"45°+π", "45*pi/180+pi", false},
 
     {// Fractions
      "¼½¾⅐⅑⅒⅓⅔⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞⅟↉3⅟₉",
@@ -107,6 +118,7 @@ constinit static auto normalizer_tests = std::to_array<NormalizerTest>({
      "sigma beta inf e gamma gamma alpha riemann_zeta mu mu sigma epsilon beta "
      "beta inf gamma alpha riemann_zeta mu mu sigma epsilon beta inf e E ",
      true},
+
     // Mathematical functions
     {"√x", "sqrt(x)", false},
     {"∛x", "cbrt(x)", false},
@@ -231,6 +243,7 @@ constinit static auto normalizer_tests = std::to_array<NormalizerTest>({
     {"x⁽⁾", "x^()", false},
     {"x⁽²⁾", "x^(2)", false},
     {"x²⁽⁾", "x^(2())", false},
+    {"x⁽²⁾+1", "x^(2)+1", false},
 
 #ifdef CALC_TEST_EQUATION_SOLVER
     {"x⁽ⁿ⁾", "x^(n)", false},
@@ -244,6 +257,9 @@ constinit static auto normalizer_tests = std::to_array<NormalizerTest>({
     {"²x³", "2", true},
     {"² ³", "2", true},
     {"¹²³⁴⁵⁶⁷⁸⁹⁰ ¹²³⁴⁵⁶⁷⁸⁹⁰", "1234567890", true},
+
+    {"2∙3", "2*3", false},
+    {"√x∙2", "sqrt(x)*2", false},
 
     // Unary signs at the start of implicit function arguments
     {"√−1", "sqrt(-1)", false},
@@ -296,13 +312,13 @@ constinit static auto normalizer_tests = std::to_array<NormalizerTest>({
     {"㏑(1)+㏒(10)", "ln(1)+log(10)", false},
     {"１２３．４５６", "123.456", false},
     {"﹣９﹒０９", "-9.09", false},
+    {"﹣₉﹒₀₉⏨₉", "-9.09*10^(9)", false},
     {"½∜(7π÷2)", "1/2qdrt(7pi/2)", false},
     {"½∜(7π÷3)R☉×c * (⅒+⅟₉)⏨₉  +ℯ⁶",
      "1/2qdrt(7pi/3)R_sun*c * (1/10+1/9)*10^(9)  +e^(6)", false},
     {"⅜∛176 + R☉(7π÷3⏨⁵)c * (⅟₁₇₉ + ⅞)⏨₇ + R⛢(7π÷3⏨⁵)c",
      "3/8cbrt(176) + R_sun(7pi/3*10^(5))c * (1/179 + 7/8)*10^(7) + "
      "R_uranus(7pi/3*10^(5))c"},
-    {"﹣₉﹒₀₉⏨₉", "−9.09*10^(9)", false},
     {"12³×(231² - 1)³ + 744 - 0.00000000000075",
      "12^(3)*(231^(2) - 1)^(3) + 744 - 0.00000000000075", false},
 
