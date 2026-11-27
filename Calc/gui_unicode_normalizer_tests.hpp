@@ -158,6 +158,24 @@ constinit static auto normalizer_tests = std::to_array<NormalizerTest>({
     {"√√(x+1)+2", "sqrt(sqrt(x+1))+2", false},
     {"∛∜(x+1)-2", "cbrt(qdrt(x+1))-2", false},
 
+    // Nested implicit functions and explicit parenthesis boundaries
+    {"√√(x+1)", "sqrt(sqrt(x+1))", false},
+    {"∛∜(x+1)", "cbrt(qdrt(x+1))", false},
+    {"√√(x+1)+2", "sqrt(sqrt(x+1))+2", false},
+    {"∛∜(x+1)-2", "cbrt(qdrt(x+1))-2", false},
+
+    // Explicit outer argument with an implicit inner argument
+    {"√(√x+1)", "sqrt(sqrt(x)+1)", false},
+
+    // Nested explicit arguments
+    {"√(√(x+1)+2)", "sqrt(sqrt(x+1)+2)", false},
+
+    // Nested implicit functions with multiple parenthesis levels
+    {"√√((x+1)*(y+2))", "sqrt(sqrt((x+1)*(y+2)))", false},
+
+    // An implicit argument containing another implicit function
+    {"√√(x+√y+z)", "sqrt(sqrt(x+sqrt(y)+z))", false},
+
     // Decimal exponent notation
     {"⏨", "", true},
     {"⏨+3", "", true},
